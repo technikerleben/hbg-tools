@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meine Webseite speichern</title>
+  <style>
+    :root {
+      --slate: #3E5668;
+      --rust-dark: #9E4E22;
+      --sage-dark: #4D8B3F;
+      --sage-pale: #DDF0D8;
+      --error: #C0392B;
+      --error-pale: #FDECEA;
+      --bg: #F5F4F1;
+      --white: #FFFFFF;
+      --text: #1E2A35;
+      --muted: #5A6A78;
+      --border: #D4D0C8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--slate);
+      color: white;
+      padding: 16px 28px;
+    }
+    header h1 { font-size: 1.4rem; font-weight: 700; }
+    header p  { font-size: 0.85rem; opacity: 0.75; margin-top: 2px; }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 24px 28px;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 340px;
+      padding: 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      resize: vertical;
+      background: var(--white);
+      color: var(--text);
+      outline: none;
+    }
+    textarea:focus { border-color: var(--slate); }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .dateiname-wrap {
+      display: flex;
+      align-items: center;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--white);
+      flex: 1;
+      min-width: 200px;
+    }
+    #dateiname {
+      border: none;
+      outline: none;
+      padding: 11px 14px;
+      font-size: 1rem;
+      color: var(--text);
+      background: transparent;
+      flex: 1;
+    }
+    .ext {
+      padding: 11px 14px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      background: var(--bg);
+      border-left: 2px solid var(--border);
+    }
+
+    button {
+      padding: 12px 28px;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: var(--sage-dark);
+      color: white;
+      min-height: 48px;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+    button:hover { opacity: 0.88; }
+    button:active { transform: scale(0.97); }
+
+    #meldung {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: none;
+    }
+    #meldung.ok    { display: block; background: var(--sage-pale); color: var(--sage-dark); }
+    #meldung.fehler { display: block; background: var(--error-pale); color: var(--error); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🌐 Meine Webseite speichern</h1>
+  <p>Code einfügen → Dateiname wählen → herunterladen</p>
+</header>
+
+<main>
+
+  <div>
+    <label for="editor">1. Deinen HTML-Code hier einfügen:</label>
+    <textarea id="editor" placeholder="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;...&lt;/html&gt;" spellcheck="false" autocorrect="off" autocapitalize="none"></textarea>
+  </div>
+
+  <div>
+    <label for="dateiname">2. Dateiname wählen und speichern:</label>
+    <div class="row">
+      <div class="dateiname-wrap">
+        <input type="text" id="dateiname" value="meine-seite" autocorrect="off" autocapitalize="none" spellcheck="false" />
+        <span class="ext">.html</span>
+      </div>
+      <button onclick="speichern()">⬇️ Als Datei speichern</button>
+    </div>
+  </div>
+
+  <div id="meldung" role="status" aria-live="polite"></div>
+
+</main>
+
+<script>
+function speichern() {
+  const code = document.getElementById('editor').value.trim();
+  const m = document.getElementById('meldung');
+
+  if (!code) {
+    m.className = 'fehler';
+    m.textContent = '⚠️ Bitte zuerst deinen HTML-Code einfügen!';
+    return;
+  }
+
+  const name = (document.getElementById('dateiname').value.trim() || 'meine-seite')
+    .replace(/\.html$/i, '') + '.html';
+
+  const blob = new Blob([code], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  m.className = 'ok';
+  m.textContent = '✅ ' + name + ' wurde gespeichert!';
+}
+</script>
+
+</body>
+</html>

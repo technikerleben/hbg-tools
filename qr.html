@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Konverter · HBG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* Schieferblau */
+    --slate-dark:  #2C3D4C;
+    --slate-base:  #3E5668;
+    --slate-mid:   #6A8599;
+    --slate-pale:  #D0DCE6;
+    --slate-ghost: #EEF3F7;
+    /* Rostorange */
+    --rust-base:   #D97A4A;
+    --rust-pale:   #F5DDD1;
+    /* Salbeigrün */
+    --sage-base:   #7DBB6F;
+    --sage-pale:   #DDF0D8;
+    /* Neutral */
+    --bg:          #F5F4F1;
+    --text:        #1E2A35;
+    --text-muted:  #5A6A78;
+    --white:       #FFFFFF;
+
+    --radius: 10px;
+    --mono:   'Space Mono', monospace;
+    --sans:   'DM Sans', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 24px;
+    background: var(--slate-dark);
+    color: #fff;
+  }
+  .logo-mark {
+    width: 28px; height: 28px;
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    grid-template-rows: repeat(3,1fr);
+    gap: 3px;
+  }
+  .logo-mark span { background: var(--sage-base); border-radius: 2px; }
+  .logo-mark span:nth-child(5) { background: var(--rust-base); }
+  header h1 {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: #fff;
+  }
+  header h1 em { color: var(--sage-base); font-style: normal; }
+  .badge {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 3px 8px;
+    border: 1px solid var(--slate-mid);
+    border-radius: 20px;
+    color: var(--slate-pale);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Layout ── */
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 370px 1fr;
+  }
+
+  aside {
+    background: var(--white);
+    border-right: 1px solid var(--slate-pale);
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .preview-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 40px;
+    background:
+      radial-gradient(ellipse at 25% 25%, rgba(62,86,104,0.06) 0%, transparent 55%),
+      radial-gradient(ellipse at 75% 75%, rgba(125,187,111,0.05) 0%, transparent 55%),
+      var(--bg);
+  }
+
+  /* ── Section ── */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: var(--slate-base);
+    text-transform: uppercase;
+    padding-bottom: 7px;
+    border-bottom: 2px solid var(--slate-pale);
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+
+  /* ── Fields ── */
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    letter-spacing: 0.04em;
+  }
+  input[type="text"] {
+    width: 100%;
+    background: var(--slate-ghost);
+    border: 1.5px solid var(--slate-pale);
+    border-radius: 8px;
+    padding: 8px 11px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    outline: none;
+    transition: border-color .15s, background .15s;
+  }
+  input[type="text"]:focus {
+    border-color: var(--slate-base);
+    background: var(--white);
+  }
+
+  /* ── 3-Line Center Inputs ── */
+  .line-inputs { display: flex; flex-direction: column; gap: 6px; }
+  .line-row {
+    display: grid;
+    grid-template-columns: 18px 1fr 30px;
+    align-items: center;
+    gap: 6px;
+  }
+  .line-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--slate-mid);
+    text-align: center;
+    font-weight: 700;
+  }
+  .char-count {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--slate-mid);
+    text-align: right;
+  }
+  .char-count.over { color: #C0392B; font-weight: 700; }
+
+  /* ── Toggle ── */
+  .center-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-track {
+    position: absolute; inset: 0;
+    background: var(--slate-pale);
+    border-radius: 20px; cursor: pointer;
+    transition: background .2s;
+  }
+  .toggle input:checked + .toggle-track { background: var(--rust-base); }
+  .toggle-track::after {
+    content: ''; position: absolute;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: white; top: 3px; left: 3px;
+    transition: transform .2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+  .toggle input:checked + .toggle-track::after { transform: translateX(16px); }
+
+  /* ── Color Picker ── */
+  .color-block {
+    background: var(--slate-ghost);
+    border: 1.5px solid var(--slate-pale);
+    border-radius: var(--radius);
+    padding: 12px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .color-block-head { display: flex; align-items: center; gap: 10px; }
+  .swatch {
+    width: 30px; height: 30px;
+    border-radius: 7px;
+    border: 2px solid var(--slate-pale);
+    flex-shrink: 0; cursor: pointer;
+    position: relative; overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
+  }
+  .swatch input[type="color"] {
+    position: absolute; width: 200%; height: 200%;
+    top: -50%; left: -50%;
+    opacity: 0; cursor: pointer; border: none; padding: 0;
+  }
+  .hex-input {
+    flex: 1;
+    background: var(--white);
+    border: 1.5px solid var(--slate-pale);
+    border-radius: 7px;
+    padding: 6px 10px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    outline: none;
+    transition: border-color .15s;
+    text-transform: uppercase;
+  }
+  .hex-input:focus { border-color: var(--slate-base); }
+
+  .sliders { display: flex; flex-direction: column; gap: 6px; }
+  .slider-row {
+    display: grid;
+    grid-template-columns: 14px 1fr 32px;
+    align-items: center; gap: 8px;
+  }
+  .slider-key {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--slate-mid); font-weight: 700;
+  }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 5px;
+    border-radius: 3px; outline: none; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px; height: 15px; border-radius: 50%;
+    background: var(--white);
+    border: 2px solid var(--slate-base);
+    box-shadow: 0 1px 4px rgba(0,0,0,.18);
+    cursor: pointer;
+  }
+  input[type="range"].r-track { background: linear-gradient(to right, #f0e0e0, #e53e3e); }
+  input[type="range"].g-track { background: linear-gradient(to right, #e0f0e0, #38a169); }
+  input[type="range"].b-track { background: linear-gradient(to right, #e0e8f8, #3182ce); }
+  .slider-val {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--text-muted); text-align: right;
+  }
+
+  /* ── Canvas ── */
+  #qrCanvas {
+    border-radius: 14px;
+    box-shadow:
+      0 0 0 1px var(--slate-pale),
+      0 8px 32px rgba(44,61,76,.15),
+      0 2px 8px rgba(44,61,76,.1);
+    image-rendering: pixelated;
+    max-width: 380px; max-height: 380px;
+    width: auto; height: auto;
+  }
+
+  /* ── Meta + Download ── */
+  .meta-row {
+    display: flex; align-items: center; gap: 12px;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .meta-tag {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--text-muted);
+    padding: 3px 8px;
+    border: 1px solid var(--slate-pale);
+    border-radius: 4px; letter-spacing: 0.04em;
+    background: var(--white);
+  }
+  .meta-tag span { color: var(--slate-base); font-weight: 700; }
+
+  .dl-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--rust-base);
+    color: #fff;
+    font-family: var(--mono); font-size: 12px;
+    font-weight: 700; letter-spacing: 0.06em;
+    padding: 10px 22px;
+    border: none; border-radius: 8px;
+    cursor: pointer;
+    transition: background .15s, transform .1s, box-shadow .15s;
+    box-shadow: 0 2px 8px rgba(217,122,74,.3);
+  }
+  .dl-btn:hover { background: #c4663a; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(217,122,74,.4); }
+  .dl-btn:active { transform: translateY(0); }
+  .dl-btn svg { width: 14px; height: 14px; }
+
+  /* ── Warning ── */
+  .warn {
+    font-family: var(--mono); font-size: 10px;
+    color: #C0392B;
+    background: #fdf2f2;
+    border: 1px solid #f5c6c6;
+    border-radius: 6px; padding: 6px 10px;
+    display: none;
+  }
+  .warn.visible { display: block; }
+
+  /* ── Scrollbar ── */
+  aside::-webkit-scrollbar { width: 4px; }
+  aside::-webkit-scrollbar-track { background: transparent; }
+  aside::-webkit-scrollbar-thumb { background: var(--slate-pale); border-radius: 2px; }
+
+  @media (max-width: 740px) {
+    main { grid-template-columns: 1fr; }
+    aside { border-right: none; border-bottom: 1px solid var(--slate-pale); max-height: 55vh; }
+    .preview-area { min-height: 45vh; padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">
+    <span></span><span></span><span></span>
+    <span></span><span></span><span></span>
+    <span></span><span></span><span></span>
+  </div>
+  <h1>QR <em>Konverter</em></h1>
+  <span class="badge">EC-LEVEL H · 30%</span>
+</header>
+
+<main>
+  <aside>
+
+    <!-- QR Inhalt -->
+    <div>
+      <div class="section-label">QR-Code Inhalt</div>
+      <div class="field">
+        <span class="field-label">URL / Text</span>
+        <input type="text" id="qrInput" value="https://example.com" placeholder="https://...">
+      </div>
+    </div>
+
+    <!-- Zentraler Text (3 Zeilen) -->
+    <div>
+      <div class="section-label">Zentraler Text</div>
+      <div class="center-toggle-row">
+        <span class="field-label" style="font-size:12px;color:var(--text)">Text einblenden</span>
+        <label class="toggle">
+          <input type="checkbox" id="showCenterText" checked>
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+      <div id="centerTextFields">
+        <div class="field" style="margin-bottom:8px">
+          <span class="field-label">3 Zeilen · max. 10 Zeichen</span>
+        </div>
+        <div class="line-inputs">
+          <div class="line-row">
+            <span class="line-num">1</span>
+            <input type="text" id="cl1" value="SCAN" maxlength="10" placeholder="Zeile 1">
+            <span class="char-count" id="cc1">4</span>
+          </div>
+          <div class="line-row">
+            <span class="line-num">2</span>
+            <input type="text" id="cl2" value="" maxlength="10" placeholder="Zeile 2">
+            <span class="char-count" id="cc2">0</span>
+          </div>
+          <div class="line-row">
+            <span class="line-num">3</span>
+            <input type="text" id="cl3" value="" maxlength="10" placeholder="Zeile 3">
+            <span class="char-count" id="cc3">0</span>
+          </div>
+        </div>
+        <div class="warn" id="textWarn" style="margin-top:8px">
+          Zu viel Text – Lesbarkeit des QR-Codes kann beeinträchtigt sein
+        </div>
+      </div>
+    </div>
+
+    <!-- Farbe Hintergrund -->
+    <div>
+      <div class="section-label">Hintergrundfarbe</div>
+      <div class="color-block">
+        <div class="color-block-head">
+          <div class="swatch" id="swBg">
+            <input type="color" id="cpBgNative" value="#f5f4f1">
+          </div>
+          <input type="text" class="hex-input" id="hexBg" value="#F5F4F1" maxlength="7">
+        </div>
+        <div class="sliders">
+          <div class="slider-row"><span class="slider-key">R</span><input type="range" class="r-track" id="rBg" min="0" max="255" value="245"><span class="slider-val" id="rvBg">245</span></div>
+          <div class="slider-row"><span class="slider-key">G</span><input type="range" class="g-track" id="gBg" min="0" max="255" value="244"><span class="slider-val" id="gvBg">244</span></div>
+          <div class="slider-row"><span class="slider-key">B</span><input type="range" class="b-track" id="bBg" min="0" max="255" value="241"><span class="slider-val" id="bvBg">241</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Farbe QR-Pixel -->
+    <div>
+      <div class="section-label">QR-Code Pixelfarbe</div>
+      <div class="color-block">
+        <div class="color-block-head">
+          <div class="swatch" id="swQr">
+            <input type="color" id="cpQrNative" value="#3e5668">
+          </div>
+          <input type="text" class="hex-input" id="hexQr" value="#3E5668" maxlength="7">
+        </div>
+        <div class="sliders">
+          <div class="slider-row"><span class="slider-key">R</span><input type="range" class="r-track" id="rQr" min="0" max="255" value="62"><span class="slider-val" id="rvQr">62</span></div>
+          <div class="slider-row"><span class="slider-key">G</span><input type="range" class="g-track" id="gQr" min="0" max="255" value="86"><span class="slider-val" id="gvQr">86</span></div>
+          <div class="slider-row"><span class="slider-key">B</span><input type="range" class="b-track" id="bQr" min="0" max="255" value="104"><span class="slider-val" id="bvQr">104</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Farbe Center Text -->
+    <div>
+      <div class="section-label">Farbe: Zentraler Text</div>
+      <div class="color-block">
+        <div class="color-block-head">
+          <div class="swatch" id="swTxt">
+            <input type="color" id="cpTxtNative" value="#7dbb6f">
+          </div>
+          <input type="text" class="hex-input" id="hexTxt" value="#7DBB6F" maxlength="7">
+        </div>
+        <div class="sliders">
+          <div class="slider-row"><span class="slider-key">R</span><input type="range" class="r-track" id="rTxt" min="0" max="255" value="125"><span class="slider-val" id="rvTxt">125</span></div>
+          <div class="slider-row"><span class="slider-key">G</span><input type="range" class="g-track" id="gTxt" min="0" max="255" value="187"><span class="slider-val" id="gvTxt">187</span></div>
+          <div class="slider-row"><span class="slider-key">B</span><input type="range" class="b-track" id="bTxt" min="0" max="255" value="111"><span class="slider-val" id="bvTxt">111</span></div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- Preview -->
+  <div class="preview-area">
+    <canvas id="qrCanvas" width="400" height="400"></canvas>
+    <div class="meta-row">
+      <span class="meta-tag">Module: <span id="metaModules">–</span></span>
+      <span class="meta-tag">Ausgabe: <span id="metaSize">400×400 px</span></span>
+      <button class="dl-btn" onclick="downloadQR()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        PNG herunterladen
+      </button>
+    </div>
+  </div>
+</main>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+const state = {
+  bg:  { r: 245, g: 244, b: 241 }, // #F5F4F1
+  qr:  { r:  62, g:  86, b: 104 }, // #3E5668
+  txt: { r: 125, g: 187, b: 111 }, // #7DBB6F
+};
+
+// ── Color utils ─────────────────────────────────────────────────────────────
+const toHex = c => '#' + [c.r,c.g,c.b].map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase();
+const fromHex = h => {
+  const s = h.replace('#','');
+  if (s.length !== 6) return null;
+  const n = parseInt(s, 16);
+  if (isNaN(n)) return null;
+  return { r:(n>>16)&0xff, g:(n>>8)&0xff, b:n&0xff };
+};
+const rgba = (c,a=1) => `rgba(${c.r},${c.g},${c.b},${a})`;
+
+// ── Color configs ────────────────────────────────────────────────────────────
+const CC = [
+  { key:'bg',  hex:'hexBg',  nat:'cpBgNative', sw:'swBg',
+    r:'rBg', g:'gBg', b:'bBg', rv:'rvBg', gv:'gvBg', bv:'bvBg' },
+  { key:'qr',  hex:'hexQr',  nat:'cpQrNative', sw:'swQr',
+    r:'rQr', g:'gQr', b:'bQr', rv:'rvQr', gv:'gvQr', bv:'bvQr' },
+  { key:'txt', hex:'hexTxt', nat:'cpTxtNative', sw:'swTxt',
+    r:'rTxt', g:'gTxt', b:'bTxt', rv:'rvTxt', gv:'gvTxt', bv:'bvTxt' },
+];
+
+function syncUI(cfg) {
+  const c = state[cfg.key];
+  const hex = toHex(c);
+  document.getElementById(cfg.hex).value = hex;
+  document.getElementById(cfg.nat).value = hex;
+  document.getElementById(cfg.sw).style.background = hex;
+  document.getElementById(cfg.r).value = c.r;
+  document.getElementById(cfg.g).value = c.g;
+  document.getElementById(cfg.b).value = c.b;
+  document.getElementById(cfg.rv).textContent = c.r;
+  document.getElementById(cfg.gv).textContent = c.g;
+  document.getElementById(cfg.bv).textContent = c.b;
+}
+
+function wireColor(cfg) {
+  document.getElementById(cfg.hex).addEventListener('input', e => {
+    const p = fromHex(e.target.value); if (p) { Object.assign(state[cfg.key],p); syncUI(cfg); draw(); }
+  });
+  document.getElementById(cfg.nat).addEventListener('input', e => {
+    const p = fromHex(e.target.value); if (p) { Object.assign(state[cfg.key],p); syncUI(cfg); draw(); }
+  });
+  ['r','g','b'].forEach(ch => {
+    document.getElementById(cfg[ch]).addEventListener('input', e => {
+      state[cfg.key][ch] = parseInt(e.target.value); syncUI(cfg); draw();
+    });
+  });
+}
+CC.forEach(c => { syncUI(c); wireColor(c); });
+
+// ── Canvas ──────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('qrCanvas');
+const ctx    = canvas.getContext('2d');
+
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+function draw() {
+  const qrText  = document.getElementById('qrInput').value.trim() || 'https://example.com';
+  const lines   = ['cl1','cl2','cl3'].map(id => document.getElementById(id).value.trim());
+  const showCT  = document.getElementById('showCenterText').checked;
+  const hasText = showCT && lines.some(l => l.length > 0);
+
+  // Update char counters
+  ['1','2','3'].forEach((n,i) => {
+    const cc = document.getElementById('cc'+n);
+    cc.textContent = lines[i].length;
+    cc.classList.toggle('over', lines[i].length >= 10);
+  });
+
+  // Generate QR matrix
+  let qr = null;
+  for (let t = 0; t <= 10; t++) {
+    try { qr = qrcode(t,'H'); qr.addData(qrText); qr.make(); break; }
+    catch(_) { qr = null; }
+  }
+  if (!qr) return;
+
+  const modules  = qr.getModuleCount();
+  const SIZE     = 400;
+  const PAD      = Math.round(SIZE * 0.04);
+  const cellSize = (SIZE - PAD*2) / modules;
+  const qrPx     = modules * cellSize;
+
+  canvas.width = canvas.height = SIZE;
+
+  // BG
+  ctx.fillStyle = rgba(state.bg);
+  ctx.fillRect(0, 0, SIZE, SIZE);
+
+  // Center zone – 28% of QR area, taller to fit 3 lines
+  const cFrac = 0.28;
+  const cW = qrPx * cFrac;
+  const cH = cW * 1.15; // slightly taller for 3 lines
+  const cX = PAD + (qrPx - cW) / 2;
+  const cY = PAD + (qrPx - cH) / 2;
+
+  // Draw modules (skip center zone if text active)
+  ctx.fillStyle = rgba(state.qr);
+  for (let r = 0; r < modules; r++) {
+    for (let c = 0; c < modules; c++) {
+      if (!qr.isDark(r,c)) continue;
+      const px = PAD + c * cellSize;
+      const py = PAD + r * cellSize;
+      if (hasText) {
+        const mg = cellSize * 0.7;
+        if (px+cellSize > cX-mg && px < cX+cW+mg &&
+            py+cellSize > cY-mg && py < cY+cH+mg) continue;
+      }
+      const rr = Math.max(1, cellSize * 0.2);
+      roundRect(px+0.5, py+0.5, cellSize-1, cellSize-1, rr);
+      ctx.fill();
+    }
+  }
+
+  // Center box + text
+  if (hasText) {
+    const bPad = cellSize * 1.2;
+    const bX = cX - bPad, bY = cY - bPad;
+    const bW = cW + bPad*2, bH = cH + bPad*2;
+    const br = Math.min(bW,bH) * 0.15;
+
+    // Shadow
+    ctx.save();
+    ctx.shadowColor = rgba(state.qr, 0.15);
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = rgba(state.bg);
+    roundRect(bX, bY, bW, bH, br);
+    ctx.fill();
+    ctx.restore();
+
+    // Border
+    ctx.save();
+    ctx.strokeStyle = rgba(state.qr, 0.3);
+    ctx.lineWidth = Math.max(1, cellSize * 0.35);
+    roundRect(bX, bY, bW, bH, br);
+    ctx.stroke();
+    ctx.restore();
+
+    // Text lines
+    const visibleLines = lines.filter(l => l.length > 0);
+    const totalLines   = visibleLines.length;
+    const lineH        = bH / (totalLines + 1);
+    const fontSize     = Math.max(8, Math.min(bW * 0.28, lineH * 0.65));
+
+    ctx.fillStyle = rgba(state.txt);
+    ctx.font = `700 ${fontSize}px 'Space Mono', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    visibleLines.forEach((line, i) => {
+      const ty = bY + lineH * (i+1);
+      ctx.fillText(line.toUpperCase(), bX + bW/2, ty);
+    });
+
+    // Warn if many filled lines
+    const filledChars = lines.reduce((s,l)=>s+l.length,0);
+    document.getElementById('textWarn').classList.toggle('visible', filledChars > 20);
+  } else {
+    document.getElementById('textWarn').classList.remove('visible');
+  }
+
+  document.getElementById('metaModules').textContent = `${modules}×${modules}`;
+  document.getElementById('metaSize').textContent = `${SIZE}×${SIZE} px`;
+}
+
+// ── Event listeners ─────────────────────────────────────────────────────────
+document.getElementById('qrInput').addEventListener('input', draw);
+['cl1','cl2','cl3'].forEach(id => document.getElementById(id).addEventListener('input', draw));
+document.getElementById('showCenterText').addEventListener('change', e => {
+  document.getElementById('centerTextFields').style.opacity = e.target.checked ? '1' : '0.45';
+  draw();
+});
+
+// ── Download ─────────────────────────────────────────────────────────────────
+function downloadQR() {
+  const a = document.createElement('a');
+  a.download = 'hbg-qrcode.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+draw();
+</script>
+</body>
+</html>

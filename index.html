@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kleine Tools – HBG</title>
+  <style>
+    :root {
+      --col-slate-dark:  #2C3D4C;
+      --col-slate:       #3E5668;
+      --col-slate-mid:   #6A8599;
+      --col-slate-pale:  #D0DCE6;
+      --col-slate-ghost: #EEF3F7;
+      --col-rust-dark:   #9E4E22;
+      --col-rust:        #D97A4A;
+      --col-rust-pale:   #F5DDD1;
+      --col-rust-ghost:  #FBF0EB;
+      --col-sage-dark:   #4D8B3F;
+      --col-sage:        #7DBB6F;
+      --col-sage-pale:   #DDF0D8;
+      --col-bg:          #F5F4F1;
+      --col-white:       #FFFFFF;
+      --col-text:        #1E2A35;
+      --col-text-muted:  #5A6A78;
+      --col-border:      #D4D0C8;
+      --col-shadow:      rgba(62,86,104,0.10);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--col-bg);
+      color: var(--col-text);
+      font-size: 1rem;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--col-slate);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    header {
+      background: var(--col-slate);
+      color: white;
+      padding: 20px 32px;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    header p {
+      font-size: 0.875rem;
+      color: var(--col-slate-pale);
+      margin-top: 2px;
+    }
+
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .tool-card {
+      background: var(--col-white);
+      border: 1px solid var(--col-border);
+      border-radius: 12px;
+      padding: 20px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 1px 4px var(--col-shadow);
+      transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+    }
+
+    .tool-card:hover {
+      box-shadow: 0 4px 16px var(--col-shadow);
+      transform: translateY(-2px);
+      border-color: var(--col-slate-mid);
+    }
+
+    .tool-card:active {
+      transform: translateY(0);
+    }
+
+    .tool-icon {
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .tool-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--col-slate-dark);
+    }
+
+    .tool-desc {
+      font-size: 0.875rem;
+      color: var(--col-text-muted);
+      flex: 1;
+    }
+
+    .tool-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: var(--col-slate-pale);
+      color: var(--col-slate-dark);
+      align-self: flex-start;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 0.8rem;
+      color: var(--col-text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🛠 Kleine Tools für den Unterricht</h1>
+    <p>Schnell erreichbar, ohne Anmeldung, direkt im Browser</p>
+  </header>
+
+  <main>
+    <div class="tools-grid">
+
+      <a href="qr.html" class="tool-card">
+        <div class="tool-icon">⬛</div>
+        <div class="tool-name">QR-Code-Generator</div>
+        <div class="tool-desc">Links, Texte oder URLs sofort als QR-Code erzeugen und herunterladen.</div>
+        <span class="tool-badge">qr.html</span>
+      </a>
+
+      <a href="code.html" class="tool-card">
+        <div class="tool-icon">📄</div>
+        <div class="tool-name">Code → HTML-Datei</div>
+        <div class="tool-desc">HTML-Code einfügen und direkt als fertige .html-Datei herunterladen.</div>
+        <span class="tool-badge">code.html</span>
+      </a>
+
+    </div>
+  </main>
+
+  <footer>HBG Dortmund · Interne Tools</footer>
+
+</body>
+</html>
