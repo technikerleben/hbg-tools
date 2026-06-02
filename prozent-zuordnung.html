@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prozentrechnung – Begriffe zuordnen</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #fdf6ee;
+  --card: #ffffff;
+  --primary: #e05c2a;
+  --primary-light: #fef0e9;
+  --primary-mid: #f9c9ae;
+  --green: #2d9e6b;
+  --green-light: #e6f7f0;
+  --red: #d93535;
+  --red-light: #fdeaea;
+  --blue: #2563eb;
+  --blue-light: #eff6ff;
+  --text: #1a1a2e;
+  --muted: #7a7a90;
+  --border: #e8e0d5;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 16px 60px;
+}
+
+/* ---- HEADER ---- */
+.header {
+  width: 100%; max-width: 720px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 28px;
+}
+.logo {
+  font-family: 'Baloo 2', cursive;
+  font-size: 22px; font-weight: 800; color: var(--primary);
+  letter-spacing: -0.5px;
+}
+.logo span { color: var(--text); }
+.progress-wrap {
+  display: flex; align-items: center; gap: 10px;
+}
+.dot {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 3px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Baloo 2', cursive; font-weight: 800; font-size: 14px;
+  color: var(--muted); background: var(--card);
+  transition: all .35s;
+}
+.dot.active { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+.dot.done { border-color: var(--green); background: var(--green); color: #fff; }
+.dot-line { width: 22px; height: 3px; background: var(--border); border-radius: 2px; transition: background .35s; }
+.dot-line.done { background: var(--green); }
+
+/* ---- TASK CARD ---- */
+.task-card {
+  width: 100%; max-width: 720px;
+  background: var(--card); border-radius: 24px;
+  padding: 28px 32px 24px;
+  box-shadow: var(--shadow);
+  border: 1.5px solid var(--border);
+  margin-bottom: 20px;
+  animation: slideIn .4s ease;
+}
+@keyframes slideIn {
+  from { opacity:0; transform: translateY(18px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+.task-num {
+  font-family: 'Baloo 2', cursive;
+  font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--primary); margin-bottom: 8px;
+}
+.task-text {
+  font-family: 'Baloo 2', cursive;
+  font-size: 19px; font-weight: 700; color: var(--text);
+  line-height: 1.45; margin-bottom: 22px;
+}
+.task-text em {
+  font-style: normal;
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 1px 6px; border-radius: 6px;
+}
+
+/* ---- DROP ZONES ---- */
+.drop-row {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  justify-content: center; margin-bottom: 22px;
+}
+.drop-zone {
+  flex: 1; min-width: 160px; max-width: 210px;
+  border: 2.5px dashed #c8c0b5;
+  border-radius: 16px;
+  background: #faf8f5;
+  padding: 14px 12px 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  transition: border-color .2s, background .2s;
+  min-height: 90px;
+}
+.drop-zone .zone-label {
+  font-family: 'Baloo 2', cursive;
+  font-size: 13px; font-weight: 800;
+  color: var(--muted); letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.drop-zone .zone-slot {
+  width: 100%; min-height: 40px;
+  border: 2px dashed #d8d0c5;
+  border-radius: 10px;
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: #bbb; font-weight: 600;
+  transition: all .2s;
+}
+.drop-zone.over {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+.drop-zone.over .zone-slot {
+  border-color: var(--primary);
+}
+.drop-zone.filled .zone-slot {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  border-style: solid;
+}
+.drop-zone.correct .zone-slot { background: var(--green-light); border-color: var(--green); border-style: solid; }
+.drop-zone.wrong .zone-slot { background: var(--red-light); border-color: var(--red); border-style: solid; animation: shake .35s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+/* ---- CHIPS ---- */
+.chips-area {
+  width: 100%; max-width: 720px;
+  background: var(--card); border-radius: 20px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+  border: 1.5px solid var(--border);
+  margin-bottom: 20px;
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+}
+.chip {
+  padding: 9px 18px; border-radius: 40px;
+  background: var(--primary-light);
+  border: 2px solid var(--primary-mid);
+  font-family: 'Baloo 2', cursive;
+  font-size: 15px; font-weight: 700; color: var(--primary);
+  cursor: grab; user-select: none;
+  transition: transform .15s, box-shadow .15s, opacity .25s;
+  box-shadow: 0 2px 8px rgba(224,92,42,0.10);
+}
+.chip:hover { transform: scale(1.05); box-shadow: 0 4px 14px rgba(224,92,42,0.2); }
+.chip:active { cursor: grabbing; transform: scale(1.09); }
+.chip.used { opacity: 0.22; pointer-events: none; }
+.chip.dragging { opacity: 0.5; }
+
+/* special chip colors */
+.chip.green-chip {
+  background: var(--green-light);
+  border-color: #93dfc0;
+  color: var(--green);
+  box-shadow: 0 2px 8px rgba(45,158,107,0.10);
+}
+.chip.blue-chip {
+  background: var(--blue-light);
+  border-color: #93c5fd;
+  color: var(--blue);
+  box-shadow: 0 2px 8px rgba(37,99,235,0.10);
+}
+
+/* chip placed inside a zone */
+.placed-chip {
+  padding: 7px 14px; border-radius: 30px;
+  font-family: 'Baloo 2', cursive;
+  font-size: 14px; font-weight: 700;
+  background: var(--primary);
+  color: #fff; cursor: pointer;
+  transition: transform .15s;
+}
+.placed-chip:hover { transform: scale(1.04); }
+
+/* ---- BUTTONS ---- */
+.btn-row {
+  display: flex; gap: 12px; justify-content: center;
+  width: 100%; max-width: 720px;
+}
+.btn {
+  padding: 13px 38px; border-radius: 14px;
+  border: none; cursor: pointer;
+  font-family: 'Baloo 2', cursive;
+  font-size: 17px; font-weight: 800;
+  transition: all .2s;
+}
+.btn-primary {
+  background: var(--primary); color: #fff;
+  box-shadow: 0 4px 18px rgba(224,92,42,0.30);
+}
+.btn-primary:hover { background: #c94e20; }
+.btn-primary:disabled { background: #e8c4b0; box-shadow: none; cursor: not-allowed; }
+.btn-secondary {
+  background: var(--card); color: var(--primary);
+  border: 2px solid var(--primary-mid);
+}
+.btn-secondary:hover { background: var(--primary-light); }
+
+/* ---- FEEDBACK ---- */
+.feedback {
+  text-align: center; min-height: 28px;
+  font-family: 'Baloo 2', cursive;
+  font-size: 16px; font-weight: 700;
+  margin-bottom: 14px;
+}
+.feedback.ok { color: var(--green); }
+.feedback.err { color: var(--red); }
+
+/* ---- RESULTS ---- */
+.results-screen {
+  display: none;
+  width: 100%; max-width: 720px;
+  animation: slideIn .4s ease;
+}
+.results-screen.show { display: block; }
+.results-banner {
+  background: linear-gradient(135deg, #2d9e6b, #1d7a52);
+  color: #fff; border-radius: 24px;
+  padding: 32px 36px; text-align: center;
+  box-shadow: 0 8px 36px rgba(45,158,107,0.30);
+  margin-bottom: 22px;
+}
+.results-banner h2 {
+  font-family: 'Baloo 2', cursive;
+  font-size: 32px; font-weight: 800; margin-bottom: 8px;
+}
+.results-banner p { font-size: 17px; opacity: .9; }
+.score-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.25);
+  border-radius: 50px; padding: 8px 28px;
+  font-family: 'Baloo 2', cursive;
+  font-size: 28px; font-weight: 800;
+  margin: 14px 0 4px;
+}
+.results-list {
+  background: var(--card); border-radius: 20px;
+  padding: 22px 24px;
+  box-shadow: var(--shadow);
+  border: 1.5px solid var(--border);
+  margin-bottom: 22px;
+}
+.results-list h3 {
+  font-family: 'Baloo 2', cursive;
+  font-size: 18px; color: var(--text); margin-bottom: 16px;
+}
+.result-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.result-item:last-child { border-bottom: none; }
+.ri-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.ri-body { flex: 1; }
+.ri-task { font-size: 13px; color: var(--muted); font-weight: 500; margin-bottom: 3px; }
+.ri-detail {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.ri-tag {
+  padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;
+}
+.ri-tag.correct { background: var(--green-light); color: var(--green); }
+.ri-tag.wrong-tag { background: var(--red-light); color: var(--red); }
+.ri-tag.expected { background: #f1f5f9; color: #475569; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Prozent<span>rechnung</span></div>
+  <div class="progress-wrap" id="progressWrap">
+    <div class="dot active" id="dot0">1</div>
+    <div class="dot-line" id="dl0"></div>
+    <div class="dot" id="dot1">2</div>
+    <div class="dot-line" id="dl1"></div>
+    <div class="dot" id="dot2">3</div>
+    <div class="dot-line" id="dl2"></div>
+    <div class="dot" id="dot3">4</div>
+  </div>
+</div>
+
+<!-- MAIN GAME -->
+<div id="gameArea">
+  <div class="task-card" id="taskCard">
+    <div class="task-num" id="taskNum">Aufgabe 1 von 4</div>
+    <div class="task-text" id="taskText"></div>
+    <div class="drop-row" id="dropRow"></div>
+  </div>
+
+  <div class="chips-area" id="chipsArea"></div>
+
+  <div class="feedback" id="feedback"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btnCheck" onclick="checkAnswer()">Überprüfen ✓</button>
+    <button class="btn btn-secondary" id="btnNext" onclick="nextTask()" style="display:none">Weiter →</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="results-screen" id="resultsScreen">
+  <div class="results-banner" id="resultsBanner">
+    <h2 id="resultsTitle">🎉 Super gemacht!</h2>
+    <p id="resultsSubtitle">Du hast alle Aufgaben bearbeitet!</p>
+    <div class="score-badge" id="scoreDisplay">4 / 4</div>
+    <p style="font-size:14px; opacity:.8; margin-top:4px">richtige Aufgaben</p>
+  </div>
+  <div class="results-list">
+    <h3>📋 Auswertung</h3>
+    <div id="resultsList"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="restartGame()">🔄 Nochmal versuchen</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const tasks = [
+  {
+    text: 'In einer Klasse sind <em>25 Schülerinnen und Schüler</em>. Davon kommen <em>5</em> mit dem Fahrrad. Das sind <em>20 %</em> der Klasse.',
+    values: {
+      grundwert:    { label: '25 Schülerinnen und Schüler', hint: 'Das Ganze' },
+      prozentwert:  { label: '5 Schülerinnen und Schüler',  hint: 'Der Teil' },
+      prozentsatz:  { label: '20 %',                        hint: 'der Anteil in %' }
+    }
+  },
+  {
+    text: 'Ein T-Shirt kostet ursprünglich <em>40 €</em>. Im Angebot werden <em>25 %</em> Rabatt gewährt. Du sparst also <em>10 €</em>.',
+    values: {
+      grundwert:    { label: '40 €',  hint: 'Das Ganze' },
+      prozentwert:  { label: '10 €',  hint: 'Der Teil' },
+      prozentsatz:  { label: '25 %',  hint: 'der Anteil in %' }
+    }
+  },
+  {
+    text: 'Von <em>200 Fahrzeugen</em> auf einem Parkplatz sind <em>30</em> Elektroautos. Das entspricht <em>15 %</em> aller Fahrzeuge.',
+    values: {
+      grundwert:    { label: '200 Fahrzeuge',  hint: 'Das Ganze' },
+      prozentwert:  { label: '30 Fahrzeuge',   hint: 'Der Teil' },
+      prozentsatz:  { label: '15 %',           hint: 'der Anteil in %' }
+    }
+  },
+  {
+    text: 'Eine Fußballmannschaft hat in dieser Saison <em>60 Spiele</em> gespielt und <em>45</em> davon gewonnen. Die Gewinnquote beträgt <em>75 %</em>.',
+    values: {
+      grundwert:    { label: '60 Spiele',  hint: 'Das Ganze' },
+      prozentwert:  { label: '45 Spiele',  hint: 'Der Teil' },
+      prozentsatz:  { label: '75 %',       hint: 'der Anteil in %' }
+    }
+  }
+];
+
+const zoneConfig = [
+  { key: 'grundwert',   label: 'Grundwert (G)',   emoji: '🏠', color: 'blue'  },
+  { key: 'prozentwert', label: 'Prozentwert (W)',  emoji: '🎯', color: 'orange' },
+  { key: 'prozentsatz', label: 'Prozentsatz (p%)', emoji: '📊', color: 'green' }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentTask = 0;
+let results = []; // { correct: bool, placed: {key: label}, expected: {key: label} }
+let checked = false;
+let dragging = null;
+let placements = {}; // key -> label currently placed
+
+// ============================================================
+// BUILD TASK
+// ============================================================
+function buildTask() {
+  checked = false;
+  placements = {};
+
+  const task = tasks[currentTask];
+
+  // Task num + text
+  document.getElementById('taskNum').textContent = `Aufgabe ${currentTask + 1} von ${tasks.length}`;
+  document.getElementById('taskText').innerHTML = task.text;
+
+  // Drop zones
+  const dropRow = document.getElementById('dropRow');
+  dropRow.innerHTML = '';
+  zoneConfig.forEach(z => {
+    const div = document.createElement('div');
+    div.className = 'drop-zone';
+    div.id = 'zone_' + z.key;
+    div.dataset.key = z.key;
+    div.innerHTML = `
+      <div class="zone-label">${z.emoji} ${z.label}</div>
+      <div class="zone-slot" id="slot_${z.key}">Hierher ziehen</div>
+    `;
+    setupDropZone(div);
+    dropRow.appendChild(div);
+  });
+
+  // Chips — shuffled
+  const values = task.values;
+  const chips = Object.entries(values).map(([key, v]) => ({ key, label: v.label }));
+  shuffle(chips);
+
+  const chipsArea = document.getElementById('chipsArea');
+  chipsArea.innerHTML = '';
+  chips.forEach(c => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.draggable = true;
+    chip.id = 'chip_' + c.key;
+    chip.dataset.key = c.key;
+    chip.dataset.label = c.label;
+    chip.textContent = c.label;
+    setupChip(chip);
+    chipsArea.appendChild(chip);
+  });
+
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('btnCheck').disabled = false;
+  document.getElementById('btnCheck').style.display = '';
+  document.getElementById('btnNext').style.display = 'none';
+}
+
+// ============================================================
+// DRAG & DROP
+// ============================================================
+function setupChip(chip) {
+  chip.addEventListener('dragstart', e => {
+    dragging = chip;
+    chip.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  chip.addEventListener('dragend', () => {
+    chip.classList.remove('dragging');
+    dragging = null;
+  });
+
+  // Touch drag support
+  let touchOffset = { x: 0, y: 0 };
+  let ghost = null;
+  chip.addEventListener('touchstart', e => {
+    if (chip.classList.contains('used')) return;
+    const t = e.touches[0];
+    touchOffset.x = t.clientX - chip.getBoundingClientRect().left;
+    touchOffset.y = t.clientY - chip.getBoundingClientRect().top;
+    ghost = chip.cloneNode(true);
+    ghost.style.cssText = `position:fixed;pointer-events:none;opacity:0.7;z-index:9999;
+      transform:scale(1.1);left:${t.clientX - touchOffset.x}px;top:${t.clientY - touchOffset.y}px;`;
+    document.body.appendChild(ghost);
+    dragging = chip;
+  }, { passive: true });
+  chip.addEventListener('touchmove', e => {
+    if (!ghost) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    ghost.style.left = (t.clientX - touchOffset.x) + 'px';
+    ghost.style.top  = (t.clientY - touchOffset.y) + 'px';
+    // highlight nearest zone
+    document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('over'));
+    const el = document.elementFromPoint(t.clientX, t.clientY);
+    const zone = el ? el.closest('.drop-zone') : null;
+    if (zone) zone.classList.add('over');
+  }, { passive: false });
+  chip.addEventListener('touchend', e => {
+    if (!ghost) return;
+    const t = e.changedTouches[0];
+    ghost.remove(); ghost = null;
+    const el = document.elementFromPoint(t.clientX, t.clientY);
+    const zone = el ? el.closest('.drop-zone') : null;
+    document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('over'));
+    if (zone && !checked) placeChip(zone, dragging);
+    dragging = null;
+  }, { passive: true });
+}
+
+function setupDropZone(zone) {
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
+  zone.addEventListener('dragleave', () => { zone.classList.remove('over'); });
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('over');
+    if (checked || !dragging) return;
+    placeChip(zone, dragging);
+  });
+  zone.addEventListener('click', () => {
+    if (checked) return;
+    const key = zone.dataset.key;
+    if (placements[key]) returnChip(zone, key);
+  });
+}
+
+function placeChip(zone, chip) {
+  const zoneKey  = zone.dataset.key;
+  const chipLabel = chip.dataset.label;
+  const chipKey   = chip.dataset.key;
+
+  // If something already there, return it
+  if (placements[zoneKey]) {
+    returnChip(zone, zoneKey);
+  }
+
+  // Place
+  placements[zoneKey] = chipLabel;
+  chip.classList.add('used');
+
+  const slot = document.getElementById('slot_' + zoneKey);
+  slot.innerHTML = '';
+  const placed = document.createElement('div');
+  placed.className = 'placed-chip';
+  placed.textContent = chipLabel;
+  placed.dataset.chipKey = chipKey;
+  placed.title = 'Klicken zum Entfernen';
+  slot.appendChild(placed);
+  zone.classList.add('filled');
+  zone.classList.remove('over');
+}
+
+function returnChip(zone, key) {
+  const label = placements[key];
+  delete placements[key];
+  // un-use the chip with this label
+  document.querySelectorAll('.chip').forEach(c => {
+    if (c.dataset.label === label) c.classList.remove('used');
+  });
+  const slot = document.getElementById('slot_' + key);
+  slot.innerHTML = 'Hierher ziehen';
+  zone.classList.remove('filled', 'correct', 'wrong');
+}
+
+// ============================================================
+// CHECK
+// ============================================================
+function checkAnswer() {
+  const allFilled = zoneConfig.every(z => placements[z.key]);
+  if (!allFilled) {
+    setFeedback('❗ Bitte alle drei Felder befüllen!', false);
+    return;
+  }
+
+  checked = true;
+  const task = tasks[currentTask];
+  let allCorrect = true;
+  const placedResult = {};
+  const expectedResult = {};
+
+  zoneConfig.forEach(z => {
+    const placed = placements[z.key];
+    const expected = task.values[z.key].label;
+    placedResult[z.key] = placed;
+    expectedResult[z.key] = expected;
+    const zone = document.getElementById('zone_' + z.key);
+    zone.classList.remove('filled');
+    if (placed === expected) {
+      zone.classList.add('correct');
+    } else {
+      zone.classList.add('wrong');
+      allCorrect = false;
+    }
+  });
+
+  results[currentTask] = {
+    correct: allCorrect,
+    placed: placedResult,
+    expected: expectedResult,
+    taskText: task.text
+  };
+
+  if (allCorrect) {
+    setFeedback('✅ Alles richtig! Weiter so!', true);
+    updateDot(currentTask, 'done-correct');
+  } else {
+    setFeedback('❌ Nicht ganz richtig. Schau die farbigen Felder an!', false);
+    updateDot(currentTask, 'done-wrong');
+  }
+
+  document.getElementById('btnCheck').style.display = 'none';
+  document.getElementById('btnNext').style.display = '';
+  document.getElementById('btnNext').textContent =
+    currentTask < tasks.length - 1 ? 'Nächste Aufgabe →' : 'Auswertung 🏁';
+}
+
+// ============================================================
+// NEXT
+// ============================================================
+function nextTask() {
+  currentTask++;
+  if (currentTask >= tasks.length) {
+    showResults();
+  } else {
+    updateDot(currentTask - 1, results[currentTask-1]?.correct ? 'done-correct' : 'done-wrong');
+    updateDot(currentTask, 'active');
+    buildTask();
+    document.getElementById('taskCard').style.animation = 'none';
+    requestAnimationFrame(() => {
+      document.getElementById('taskCard').style.animation = '';
+    });
+  }
+}
+
+// ============================================================
+// RESULTS
+// ============================================================
+function showResults() {
+  document.getElementById('gameArea').style.display = 'none';
+  const rs = document.getElementById('resultsScreen');
+  rs.classList.add('show');
+
+  const correct = results.filter(r => r.correct).length;
+  const total = tasks.length;
+
+  document.getElementById('scoreDisplay').textContent = `${correct} / ${total}`;
+
+  let title, subtitle;
+  if (correct === total) {
+    title = '🎉 Perfekt! Alle richtig!';
+    subtitle = 'Du hast alle Begriffe perfekt zugeordnet!';
+    document.querySelector('.results-banner').style.background = 'linear-gradient(135deg,#2d9e6b,#1d7a52)';
+  } else if (correct >= total / 2) {
+    title = '👍 Gut gemacht!';
+    subtitle = `Du hast ${correct} von ${total} Aufgaben richtig!`;
+    document.querySelector('.results-banner').style.background = 'linear-gradient(135deg,#e08c2a,#b86a10)';
+  } else {
+    title = '💪 Weiter üben!';
+    subtitle = `Du hast ${correct} von ${total} richtig. Versuche es nochmal!`;
+    document.querySelector('.results-banner').style.background = 'linear-gradient(135deg,#d93535,#a31c1c)';
+  }
+  document.getElementById('resultsTitle').textContent = title;
+  document.getElementById('resultsSubtitle').textContent = subtitle;
+
+  const list = document.getElementById('resultsList');
+  list.innerHTML = '';
+  results.forEach((r, i) => {
+    const item = document.createElement('div');
+    item.className = 'result-item';
+
+    let details = '';
+    zoneConfig.forEach(z => {
+      const placed   = r.placed[z.key];
+      const expected = r.expected[z.key];
+      const ok = placed === expected;
+      details += `<div style="margin-bottom:6px">
+        <span style="font-size:12px;color:var(--muted);font-weight:600">${z.label}:</span><br>
+        <span class="ri-tag ${ok ? 'correct' : 'wrong-tag'}">${placed}</span>
+        ${!ok ? `<span style="font-size:11px;color:var(--muted)"> → richtig wäre: </span><span class="ri-tag expected">${expected}</span>` : ''}
+      </div>`;
+    });
+
+    item.innerHTML = `
+      <div class="ri-icon">${r.correct ? '✅' : '❌'}</div>
+      <div class="ri-body">
+        <div class="ri-task">Aufgabe ${i+1}</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:8px">${r.taskText.replace(/<[^>]+>/g, '')}</div>
+        <div>${details}</div>
+      </div>`;
+    list.appendChild(item);
+  });
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function setFeedback(msg, ok) {
+  const fb = document.getElementById('feedback');
+  fb.textContent = msg;
+  fb.className = 'feedback ' + (ok ? 'ok' : 'err');
+}
+
+function updateDot(idx, state) {
+  const dot = document.getElementById('dot' + idx);
+  const line = idx > 0 ? document.getElementById('dl' + (idx-1)) : null;
+  dot.className = 'dot';
+  if (state === 'active') { dot.classList.add('active'); }
+  if (state === 'done-correct') {
+    dot.classList.add('done'); dot.textContent = '✓';
+    if (line) line.classList.add('done');
+  }
+  if (state === 'done-wrong') {
+    dot.style.borderColor = 'var(--red)';
+    dot.style.background = 'var(--red-light)';
+    dot.style.color = 'var(--red)';
+    dot.textContent = idx + 1;
+    if (line) { line.style.background = 'var(--red)'; }
+  }
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function restartGame() {
+  currentTask = 0;
+  results = [];
+  placements = {};
+  checked = false;
+  // Reset dots
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('dot' + i);
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.style.borderColor = ''; dot.style.background = ''; dot.style.color = '';
+    dot.textContent = i + 1;
+  }
+  document.querySelectorAll('.dot-line').forEach(l => {
+    l.className = 'dot-line'; l.style.background = '';
+  });
+  document.getElementById('resultsScreen').classList.remove('show');
+  document.getElementById('gameArea').style.display = '';
+  buildTask();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+buildTask();
+</script>
+</body>
+</html>
