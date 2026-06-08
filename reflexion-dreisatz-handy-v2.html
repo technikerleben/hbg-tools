@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dreisatz – Reflexion & Sicherung</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: #f0f4ff;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 12px 40px;
+  }
+
+  .top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; max-width: 700px; margin-bottom: 10px; gap: 12px;
+  }
+  .stepper {
+    display: flex; align-items: center;
+    background: #fff; border-radius: 40px;
+    padding: 8px 20px; box-shadow: 0 2px 12px #0001;
+    flex: 1; justify-content: space-between;
+  }
+  .step-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    flex: 1; position: relative;
+  }
+  .step-item:not(:last-child)::after {
+    content: ''; position: absolute; top: 16px; left: 62%; width: 76%; height: 2px;
+    background: #dde3f0; z-index: 0;
+  }
+  .step-circle {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px;
+    background: #dde3f0; color: #999;
+    position: relative; z-index: 1; transition: background .3s, color .3s;
+  }
+  .step-circle.active { background: #2563eb; color: #fff; }
+  .step-circle.done   { background: #22c55e; color: #fff; }
+  .step-label { font-size: 10px; color: #888; font-weight: 700; }
+  .step-label.active { color: #2563eb; }
+  .step-label.done   { color: #22c55e; }
+
+  .timer-box {
+    display: flex; align-items: center; gap: 5px;
+    background: #fff; border-radius: 20px; padding: 6px 14px;
+    font-weight: 800; font-size: 17px; color: #2563eb;
+    box-shadow: 0 2px 8px #0001; min-width: 76px; justify-content: center;
+    flex-shrink: 0;
+  }
+  .timer-box.warning { color: #ef4444; animation: pulse .5s infinite alternate; }
+  @keyframes pulse { from{opacity:1} to{opacity:.4} }
+
+  .context-box {
+    background: #fff; border-radius: 14px; padding: 14px 20px;
+    box-shadow: 0 2px 10px #0001; margin-bottom: 14px;
+    max-width: 680px; width: 100%;
+    display: flex; align-items: center; gap: 14px;
+    border-left: 5px solid #2563eb;
+  }
+  .context-box .phone-icon { font-size: 32px; flex-shrink: 0; }
+  .context-box .context-text { font-size: 14px; font-weight: 700; color: #334155; line-height: 1.5; }
+  .context-box .context-text strong { color: #2563eb; }
+
+  .task-title {
+    font-size: 19px; font-weight: 800; color: #2563eb;
+    text-align: center; margin-bottom: 18px;
+    max-width: 680px; min-height: 50px;
+  }
+
+  .main-layout {
+    display: flex; align-items: center; gap: 0; margin-bottom: 24px;
+  }
+
+  /* ARROW PANELS */
+  .arrow-panel {
+    position: relative;
+    width: 130px; height: 200px;
+    flex-shrink: 0;
+  }
+  .arrow-panel svg {
+    position: absolute; top: 0; left: 0;
+    width: 130px; height: 200px;
+  }
+  .op-drop {
+    position: absolute;
+    width: 78px; height: 32px;
+    border: 2.5px dashed #93c5fd; border-radius: 8px;
+    background: #eff6ff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #2563eb;
+    cursor: pointer; transition: background .2s, border-color .2s;
+    user-select: none;
+  }
+  .op-drop.over   { background: #dbeafe; border-color: #2563eb; }
+  .op-drop.filled { background: #d1fae5; border-color: #22c55e; border-style: solid; color: #166534; }
+  .op-drop.wrong  { background: #fee2e2; border-color: #ef4444; animation: shake .3s; }
+  .op-drop.locked { background: #f1f5f9; border-color: #c7d2e7; color: #94a3b8; cursor: default; pointer-events: none; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+
+  /* TABLE */
+  table {
+    border-collapse: collapse; background: #fff;
+    box-shadow: 0 4px 20px #0002;
+    min-width: 280px;
+  }
+  th {
+    padding: 11px 20px; font-size: 14px; font-weight: 800; color: #166534;
+    border: 2.5px solid #22c55e; background: #f0fdf4;
+    text-align: center; min-width: 115px;
+  }
+  th.drop-header { padding: 7px 8px; border: 2.5px dashed #22c55e; }
+  td {
+    padding: 13px 20px; font-size: 16px; font-weight: 700;
+    border: 1.5px solid #d1d5db; text-align: center; background: #fff;
+  }
+  td.answer-cell { padding: 7px 8px; }
+
+  /* the "1" row highlight */
+  tr.highlight-one td {
+    background: #fefce8;
+    color: #854d0e;
+    font-weight: 800;
+  }
+
+  .hdr-drop {
+    width: 120px; height: 32px; border: 2.5px dashed #22c55e; border-radius: 8px;
+    background: #f0fdf4; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #166534;
+    cursor: pointer; transition: background .2s, border-color .2s; margin: auto;
+  }
+  .hdr-drop.over   { background: #dcfce7; border-color: #16a34a; }
+  .hdr-drop.filled { background: #d1fae5; border-color: #22c55e; border-style: solid; }
+  .hdr-drop.wrong  { background: #fee2e2; border-color: #ef4444; animation: shake .3s; }
+
+  /* TOOLBOX */
+  .toolbox-row {
+    display: flex; gap: 14px; margin-bottom: 24px;
+    flex-wrap: wrap; justify-content: center; max-width: 680px; width: 100%;
+  }
+  .toolbox {
+    flex: 1; min-width: 150px; background: #fff; border-radius: 14px;
+    padding: 12px 14px; box-shadow: 0 2px 10px #0001;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .toolbox-title {
+    font-size: 12px; font-weight: 800; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .toolbox-title.active { color: #2563eb; }
+  .toolbox-items { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+
+  .drag-chip {
+    padding: 7px 14px; border-radius: 10px; border: 2px dashed #93c5fd;
+    background: #eff6ff; font-size: 13px; font-weight: 800; color: #1d4ed8;
+    cursor: grab; user-select: none; transition: transform .15s, box-shadow .15s, opacity .2s;
+  }
+  .drag-chip:active { cursor: grabbing; transform: scale(1.08); }
+  .drag-chip.used { opacity: 0.25; pointer-events: none; }
+  .drag-chip.locked-chip { border-color: #e2e8f0; background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
+  .lock-msg { font-size: 11px; color: #94a3b8; }
+
+  .btn-check {
+    padding: 13px 46px; background: #2563eb; color: #fff;
+    border: none; border-radius: 14px; font-family: 'Nunito', sans-serif;
+    font-size: 17px; font-weight: 800; cursor: pointer;
+    box-shadow: 0 4px 18px #2563eb44; transition: background .2s, transform .1s;
+  }
+  .btn-check:hover { background: #1d4ed8; }
+  .btn-check:disabled { background: #93c5fd; cursor: not-allowed; box-shadow: none; }
+
+  .feedback {
+    margin-top: 14px; font-size: 15px; font-weight: 800;
+    text-align: center; min-height: 24px;
+  }
+  .feedback.ok { color: #22c55e; }
+  .feedback.error { color: #ef4444; }
+
+  /* ---- STEP 3: MULTIPLE CHOICE ---- */
+  .mc-section {
+    display: none;
+    flex-direction: column; align-items: center;
+    width: 100%; max-width: 680px;
+  }
+  .mc-section.show { display: flex; }
+
+  .mc-card {
+    background: #fff; border-radius: 16px; padding: 22px 26px;
+    box-shadow: 0 4px 20px #0002; width: 100%; margin-bottom: 20px;
+  }
+  .mc-question-text {
+    font-size: 17px; font-weight: 800; color: #1e3a8a;
+    margin-bottom: 18px; text-align: center; line-height: 1.5;
+  }
+  .mc-question-text span {
+    background: #eff6ff; color: #2563eb;
+    border-radius: 8px; padding: 2px 8px;
+  }
+  .mc-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  .mc-opt {
+    padding: 14px 10px; border-radius: 12px;
+    border: 2.5px solid #dde3f0; background: #f8fafc;
+    font-size: 15px; font-weight: 800; color: #334155;
+    cursor: pointer; text-align: center;
+    transition: all .2s; user-select: none;
+  }
+  .mc-opt:hover { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; }
+  .mc-opt.selected { border-color: #2563eb; background: #dbeafe; color: #1d4ed8; }
+  .mc-opt.correct  { border-color: #22c55e; background: #d1fae5; color: #166534; pointer-events: none; }
+  .mc-opt.wrong-sel{ border-color: #ef4444; background: #fee2e2; color: #ef4444; pointer-events: none; animation: shake .35s; }
+  .mc-opt.locked   { pointer-events: none; opacity: .55; }
+  .mc-opt .mc-emoji { font-size: 22px; display: block; margin-bottom: 4px; }
+
+  .hint-row {
+    background: #fefce8; border: 1.5px solid #fde68a;
+    border-radius: 12px; padding: 12px 16px;
+    font-size: 13px; font-weight: 700; color: #854d0e;
+    margin-bottom: 20px; width: 100%; text-align: center;
+  }
+  .hint-row strong { color: #92400e; }
+
+  /* SUCCESS */
+  .success-banner {
+    display: none; background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff; border-radius: 16px; padding: 22px 32px;
+    font-size: 19px; font-weight: 800; text-align: center;
+    box-shadow: 0 8px 32px #22c55e44; margin-top: 4px;
+    max-width: 680px; width: 100%;
+  }
+  .success-banner.show { display: block; }
+  .success-banner small { font-size: 14px; font-weight: 600; display: block; margin-top: 8px; opacity: .9; }
+
+  .schema-recap {
+    display: none; background: #fff; border-radius: 14px;
+    padding: 18px 22px; box-shadow: 0 2px 12px #0001;
+    margin-top: 14px; max-width: 680px; width: 100%;
+    font-size: 13px; font-weight: 700; color: #334155;
+    border-left: 5px solid #22c55e;
+  }
+  .schema-recap.show { display: block; }
+  .schema-recap h3 { font-size: 15px; font-weight: 800; color: #166534; margin-bottom: 10px; }
+  .schema-recap ol { padding-left: 20px; line-height: 2; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="stepper">
+    <div class="step-item">
+      <div class="step-circle active" id="sc1">1</div>
+      <div class="step-label active" id="sl1">Überschriften</div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle" id="sc2">2</div>
+      <div class="step-label" id="sl2">Operatoren</div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle" id="sc3">3</div>
+      <div class="step-label" id="sl3">Ergebnis wählen</div>
+    </div>
+  </div>
+  <div class="timer-box" id="timerBox">⏱ <span id="timerVal">40</span></div>
+</div>
+
+<!-- CONTEXT BOX -->
+<div class="context-box">
+  <div class="phone-icon">📱</div>
+  <div class="context-text">
+    <strong>Aufgabe:</strong> Ein Handy hat eine maximale Akkulaufzeit von <strong>1 000 Minuten</strong> (= 100 %).
+    Dein Handy zeigt noch <strong>20 Minuten</strong> Restlaufzeit an.
+    Wie viel Prozent Akku sind das noch?
+  </div>
+</div>
+
+<!-- TASK TITLE -->
+<div class="task-title" id="taskTitle">Schritt 1: Ziehe die passenden Überschriften in die Tabelle.</div>
+
+<!-- MAIN LAYOUT (table + arrows) -->
+<div class="main-layout" id="mainLayout">
+
+  <!-- LEFT ARROWS -->
+  <div class="arrow-panel">
+    <svg viewBox="0 0 130 200" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 50 55 C 10 55, 10 110, 50 110" stroke="#222" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <polygon points="50,98 42,114 58,114" fill="#222"/>
+      <path d="M 50 130 C 10 130, 10 180, 50 180" stroke="#222" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <polygon points="50,168 42,184 58,184" fill="#222"/>
+    </svg>
+    <div class="op-drop locked" id="opL1" style="top:58px; left:52px;">?</div>
+    <div class="op-drop locked" id="opL2" style="top:132px; left:52px;">?</div>
+  </div>
+
+  <!-- TABLE -->
+  <table>
+    <thead>
+      <tr>
+        <th class="drop-header" id="th1"><div class="hdr-drop" id="hdr1">?</div></th>
+        <th class="drop-header" id="th2"><div class="hdr-drop" id="hdr2">?</div></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1 000 Min</td>
+        <td>100 %</td>
+      </tr>
+      <tr class="highlight-one">
+        <td>1 Min</td>
+        <td id="onePct">0,1 %</td>
+      </tr>
+      <tr>
+        <td>20 Min</td>
+        <td id="resultCell">— %</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- RIGHT ARROWS -->
+  <div class="arrow-panel">
+    <svg viewBox="0 0 130 200" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 80 55 C 120 55, 120 110, 80 110" stroke="#222" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <polygon points="80,98 72,114 88,114" fill="#222"/>
+      <path d="M 80 130 C 120 130, 120 180, 80 180" stroke="#222" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <polygon points="80,168 72,184 88,184" fill="#222"/>
+    </svg>
+    <div class="op-drop locked" id="opR1" style="top:58px; left:0px;">?</div>
+    <div class="op-drop locked" id="opR2" style="top:132px; left:0px;">?</div>
+  </div>
+
+</div>
+
+<!-- TOOLBOXES -->
+<div class="toolbox-row">
+  <div class="toolbox">
+    <div class="toolbox-title active" id="bt1">Überschriften</div>
+    <div class="toolbox-items" id="items1">
+      <div class="drag-chip" draggable="true" data-val="Akku-Minuten" data-type="header" id="chip_h1">Akku-Minuten</div>
+      <div class="drag-chip" draggable="true" data-val="Prozentsatz p%" data-type="header" id="chip_h2">Prozentsatz p%</div>
+    </div>
+  </div>
+  <div class="toolbox">
+    <div class="toolbox-title" id="bt2">Operatoren</div>
+    <div class="toolbox-items" id="items2">
+      <div class="drag-chip locked-chip" draggable="false" data-val="÷1000" data-type="op" id="chip_o1">: 1 000</div>
+      <div class="drag-chip locked-chip" draggable="false" data-val="÷1000" data-type="op" id="chip_o2">: 1 000</div>
+      <div class="drag-chip locked-chip" draggable="false" data-val="·20" data-type="op" id="chip_o3">· 20</div>
+      <div class="drag-chip locked-chip" draggable="false" data-val="·20" data-type="op" id="chip_o4">· 20</div>
+    </div>
+    <div class="lock-msg" id="lockMsg2">🔒 Wird in Schritt 2 freigeschaltet.</div>
+  </div>
+</div>
+
+<div style="display:flex;justify-content:center;">
+  <button class="btn-check" id="btnCheck" onclick="checkStep()">Prüfen ✓</button>
+</div>
+<div class="feedback" id="feedback"></div>
+
+<!-- STEP 3: MULTIPLE CHOICE -->
+<div class="mc-section" id="mcSection">
+
+  <div class="hint-row">
+    💡 Du hast <strong>: 1 000</strong> und dann <strong>· 20</strong> gerechnet.<br>
+    Die berühmte <strong>„1"</strong> in der mittleren Zeile: <strong>1 Minute = 0,1 %</strong>
+  </div>
+
+  <div class="mc-card">
+    <div class="mc-question-text">
+      20 Minuten Restlaufzeit entsprechen wie viel Prozent Akku?<br>
+      <span>Wähle das richtige Ergebnis!</span>
+    </div>
+    <div class="mc-grid">
+      <div class="mc-opt" data-val="wrong1" onclick="selectMC(this)">
+        <span class="mc-emoji">🔋</span>0,02 %
+      </div>
+      <div class="mc-opt" data-val="correct" onclick="selectMC(this)">
+        <span class="mc-emoji">🔋</span>2 %
+      </div>
+      <div class="mc-opt" data-val="wrong2" onclick="selectMC(this)">
+        <span class="mc-emoji">🔋</span>20 %
+      </div>
+      <div class="mc-opt" data-val="wrong3" onclick="selectMC(this)">
+        <span class="mc-emoji">🔋</span>0,2 %
+      </div>
+      <div class="mc-opt" data-val="wrong4" onclick="selectMC(this)">
+        <span class="mc-emoji">🔋</span>200 %
+      </div>
+      <div class="mc-opt" data-val="wrong5" onclick="selectMC(this)">
+        <span class="mc-emoji">🔋</span>0,002 %
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:center;">
+    <button class="btn-check" id="btnMC" onclick="checkMC()">Prüfen ✓</button>
+  </div>
+  <div class="feedback" id="feedbackMC"></div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-banner" id="successBanner">
+  🎉 Geschafft! Das Dreisatz-Schema sitzt!
+  <small>20 Minuten = <strong>2 %</strong> Akku &nbsp;|&nbsp; Dreisatz: ÷ 1 000 dann · 20</small>
+</div>
+
+<div class="schema-recap" id="schemaRecap">
+  <h3>📋 Das Dreisatz-Schema – so geht's immer:</h3>
+  <ol>
+    <li>Überschriften eintragen: <em>Größe</em> und <em>Prozentsatz p%</em></li>
+    <li>100 % = Grundwert oben eintragen</li>
+    <li>Durch den Grundwert dividieren → die berühmte <strong>„1"</strong></li>
+    <li>Mit dem gesuchten Wert multiplizieren → Ergebnis!</li>
+  </ol>
+</div>
+
+<script>
+var currentStep = 1;
+var timerSec = 40;
+var timerInterval = null;
+var dragging = null;
+var mcSelected = null;
+
+function startTimer() {
+  timerSec = 40;
+  document.getElementById('timerVal').textContent = timerSec;
+  document.getElementById('timerBox').classList.remove('warning');
+  clearInterval(timerInterval);
+  timerInterval = setInterval(function() {
+    timerSec--;
+    document.getElementById('timerVal').textContent = timerSec;
+    if (timerSec <= 8) document.getElementById('timerBox').classList.add('warning');
+    if (timerSec <= 0) {
+      clearInterval(timerInterval);
+      showFeedback('⏰ Zeit abgelaufen! Versuche es nochmal.', false);
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  document.getElementById('timerVal').textContent = '∞';
+  document.getElementById('timerBox').classList.remove('warning');
+}
+
+// ── DRAG & DROP ──────────────────────────────────────────────
+function initDrag(chip) {
+  chip.addEventListener('dragstart', function(e) {
+    dragging = chip;
+    e.dataTransfer.setData('text/plain', chip.dataset.val);
+    chip.style.opacity = '0.45';
+  });
+  chip.addEventListener('dragend', function() {
+    chip.style.opacity = '';
+    dragging = null;
+  });
+  // Touch support
+  var ghost = null, tOff = {};
+  chip.addEventListener('touchstart', function(e) {
+    if (chip.classList.contains('used') || chip.classList.contains('locked-chip')) return;
+    var t = e.touches[0], r = chip.getBoundingClientRect();
+    tOff = { x: t.clientX - r.left, y: t.clientY - r.top };
+    ghost = chip.cloneNode(true);
+    ghost.style.cssText = 'position:fixed;pointer-events:none;opacity:0.7;z-index:9999;transform:scale(1.08);left:'+(t.clientX-tOff.x)+'px;top:'+(t.clientY-tOff.y)+'px;';
+    document.body.appendChild(ghost);
+    dragging = chip;
+  }, { passive: true });
+  chip.addEventListener('touchmove', function(e) {
+    if (!ghost) return; e.preventDefault();
+    var t = e.touches[0];
+    ghost.style.left = (t.clientX - tOff.x) + 'px';
+    ghost.style.top  = (t.clientY - tOff.y) + 'px';
+    document.querySelectorAll('.hdr-drop, .op-drop').forEach(function(z) { z.classList.remove('over'); });
+    var el = document.elementFromPoint(t.clientX, t.clientY);
+    var zone = el ? (el.classList.contains('hdr-drop') || el.classList.contains('op-drop') ? el : null) : null;
+    if (zone) zone.classList.add('over');
+  }, { passive: false });
+  chip.addEventListener('touchend', function(e) {
+    if (!ghost) return;
+    var t = e.changedTouches[0];
+    ghost.remove(); ghost = null;
+    document.querySelectorAll('.hdr-drop, .op-drop').forEach(function(z) { z.classList.remove('over'); });
+    var el = document.elementFromPoint(t.clientX, t.clientY);
+    var zone = null;
+    if (el) {
+      if (el.classList.contains('hdr-drop') || el.classList.contains('op-drop')) zone = el;
+    }
+    if (zone && dragging) placeChip(zone, dragging);
+    dragging = null;
+  }, { passive: true });
+}
+
+function initDrop(zone) {
+  zone.addEventListener('dragover', function(e) {
+    if (zone.classList.contains('locked')) return;
+    e.preventDefault(); zone.classList.add('over');
+  });
+  zone.addEventListener('dragleave', function() { zone.classList.remove('over'); });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault(); zone.classList.remove('over');
+    if (zone.classList.contains('locked') || !dragging) return;
+    placeChip(zone, dragging);
+  });
+  zone.addEventListener('click', function() {
+    if (!zone.classList.contains('filled') || zone.classList.contains('locked')) return;
+    returnChip(zone);
+  });
+}
+
+document.querySelectorAll('.drag-chip:not(.locked-chip)').forEach(initDrag);
+document.querySelectorAll('.hdr-drop, .op-drop').forEach(initDrop);
+
+function placeChip(zone, chip) {
+  var isHdr = zone.classList.contains('hdr-drop');
+  var isOp  = zone.classList.contains('op-drop');
+  if (isHdr && chip.dataset.type !== 'header') return;
+  if (isOp  && chip.dataset.type !== 'op')     return;
+  if (zone.classList.contains('filled')) returnChip(zone);
+  var label = chip.dataset.val;
+  if (label === '÷1000') label = ': 1 000';
+  if (label === '·20')   label = '· 20';
+  zone.textContent = label;
+  zone.classList.add('filled'); zone.classList.remove('wrong');
+  zone.dataset.current = chip.dataset.val;
+  chip.classList.add('used');
+}
+
+function returnChip(zone) {
+  var val = zone.dataset.current;
+  var freed = false;
+  document.querySelectorAll('.drag-chip').forEach(function(c) {
+    if (!freed && c.dataset.val === val && c.classList.contains('used') && !c.classList.contains('locked-chip')) {
+      c.classList.remove('used'); freed = true;
+    }
+  });
+  zone.textContent = '?';
+  zone.classList.remove('filled', 'wrong');
+  delete zone.dataset.current;
+}
+
+// ── CHECK LOGIC ──────────────────────────────────────────────
+function checkStep() {
+  clearInterval(timerInterval);
+
+  if (currentStep === 1) {
+    var h1 = document.getElementById('hdr1').dataset.current;
+    var h2 = document.getElementById('hdr2').dataset.current;
+    if (!h1 || !h2) {
+      showFeedback('❗ Bitte beide Überschriften einsetzen!', false);
+      startTimer(); return;
+    }
+    if (h1 === 'Akku-Minuten' && h2 === 'Prozentsatz p%') {
+      markGood(['hdr1','hdr2']); advance();
+    } else if (h1 === 'Prozentsatz p%' && h2 === 'Akku-Minuten') {
+      markBad(['hdr1','hdr2']);
+      showFeedback('❌ Vertauscht! Linke Spalte = Akku-Minuten.', false);
+      startTimer();
+    } else {
+      markBad(['hdr1','hdr2']);
+      showFeedback('❌ Nicht richtig – versuche es nochmal!', false);
+      startTimer();
+    }
+
+  } else if (currentStep === 2) {
+    var ids  = ['opL1','opL2','opR1','opR2'];
+    var vals = ids.map(function(id) { return document.getElementById(id).dataset.current || ''; });
+    if (vals.some(function(v){ return !v; })) {
+      showFeedback('❗ Bitte alle 4 Operatoren einsetzen!', false);
+      startTimer(); return;
+    }
+    var correct = ['÷1000','·20','÷1000','·20'];
+    var allOk = vals.every(function(v,i){ return v === correct[i]; });
+    if (allOk) {
+      markGood(ids); advance();
+    } else {
+      markBad(ids.filter(function(_,i){ return vals[i] !== correct[i]; }));
+      showFeedback('❌ Nicht richtig – versuche es nochmal!', false);
+      startTimer();
+    }
+  }
+}
+
+function markGood(ids) {
+  ids.forEach(function(id){ document.getElementById(id).classList.remove('wrong'); });
+  showFeedback('✅ Richtig! Weiter zum nächsten Schritt…', true);
+}
+function markBad(ids) {
+  ids.forEach(function(id){
+    var el = document.getElementById(id);
+    el.classList.add('wrong');
+    setTimeout(function(){ el.classList.remove('wrong'); }, 600);
+  });
+}
+
+function advance() {
+  updateStepper(currentStep, true);
+  currentStep++;
+  updateStepper(currentStep, false);
+  setTimeout(function(){ setupStep(currentStep); startTimer(); }, 900);
+}
+
+function setupStep(step) {
+  showFeedback('', false);
+
+  if (step === 2) {
+    // freeze headers
+    document.getElementById('th1').innerHTML = '<b style="color:#166634;font-size:14px">Akku-Minuten</b>';
+    document.getElementById('th2').innerHTML = '<b style="color:#166634;font-size:14px">Prozentsatz p%</b>';
+    // unlock operators
+    ['opL1','opL2','opR1','opR2'].forEach(function(id){
+      var el = document.getElementById(id);
+      el.classList.remove('locked');
+      el.textContent = '?';
+      el.classList.remove('filled');
+      delete el.dataset.current;
+    });
+    ['chip_o1','chip_o2','chip_o3','chip_o4'].forEach(function(id){
+      var c = document.getElementById(id);
+      c.classList.remove('locked-chip');
+      c.setAttribute('draggable','true');
+      c.classList.remove('used');
+      initDrag(c);
+    });
+    document.getElementById('lockMsg2').style.display = 'none';
+    document.getElementById('bt1').classList.remove('active');
+    document.getElementById('bt2').classList.add('active');
+    document.getElementById('taskTitle').textContent = 'Schritt 2: Ziehe die richtigen Operatoren in die Pfeile.';
+  }
+
+  if (step === 3) {
+    // lock operators display
+    var opLabels = {'÷1000':': 1 000','·20':'· 20'};
+    var opCorrect = {opL1:'÷1000', opL2:'·20', opR1:'÷1000', opR2:'·20'};
+    ['opL1','opL2','opR1','opR2'].forEach(function(id){
+      var el = document.getElementById(id);
+      el.classList.add('locked','filled');
+      el.textContent = opLabels[opCorrect[id]];
+    });
+    // hide table controls, show MC
+    document.getElementById('bt2').classList.remove('active');
+    document.getElementById('taskTitle').textContent = 'Schritt 3: Wähle das richtige Ergebnis!';
+    document.getElementById('btnCheck').style.display = 'none';
+    document.getElementById('mcSection').classList.add('show');
+    stopTimer();
+  }
+}
+
+function updateStepper(step, done) {
+  var sc = document.getElementById('sc' + step);
+  var sl = document.getElementById('sl' + step);
+  if (done) {
+    sc.className = 'step-circle done'; sc.textContent = '✓';
+    sl.className = 'step-label done';
+  } else {
+    sc.className = 'step-circle active';
+    sl.className = 'step-label active';
+  }
+}
+
+// ── MULTIPLE CHOICE ──────────────────────────────────────────
+function selectMC(opt) {
+  if (opt.classList.contains('locked') || opt.classList.contains('correct') || opt.classList.contains('wrong-sel')) return;
+  document.querySelectorAll('.mc-opt').forEach(function(o){ o.classList.remove('selected'); });
+  opt.classList.add('selected');
+  mcSelected = opt;
+}
+
+function checkMC() {
+  if (!mcSelected) {
+    document.getElementById('feedbackMC').textContent = '❗ Bitte eine Antwort auswählen!';
+    document.getElementById('feedbackMC').className = 'feedback error';
+    return;
+  }
+  if (mcSelected.dataset.val === 'correct') {
+    document.querySelectorAll('.mc-opt').forEach(function(o){ o.classList.add('locked'); });
+    mcSelected.classList.remove('selected');
+    mcSelected.classList.add('correct');
+    document.getElementById('feedbackMC').textContent = '✅ Perfekt! 20 Minuten = 2 % Akku!';
+    document.getElementById('feedbackMC').className = 'feedback ok';
+    document.getElementById('resultCell').textContent = '2 %';
+    document.getElementById('resultCell').style.color = '#166534';
+    document.getElementById('resultCell').style.background = '#d1fae5';
+    document.getElementById('btnMC').disabled = true;
+    updateStepper(3, true);
+    setTimeout(function(){
+      document.getElementById('successBanner').classList.add('show');
+      document.getElementById('schemaRecap').classList.add('show');
+    }, 600);
+  } else {
+    // Mark wrong, shake, then reset so student must try again
+    mcSelected.classList.remove('selected');
+    mcSelected.classList.add('wrong-sel');
+    document.getElementById('feedbackMC').textContent = '❌ Dies ist nicht korrekt. Versuche es nochmal!';
+    document.getElementById('feedbackMC').className = 'feedback error';
+    setTimeout(function(){
+      if (mcSelected) {
+        mcSelected.classList.remove('wrong-sel');
+        mcSelected.classList.remove('selected');
+      }
+      mcSelected = null;
+    }, 800);
+  }
+}
+
+function showFeedback(msg, ok) {
+  var fb = document.getElementById('feedback');
+  fb.textContent = msg;
+  fb.className = 'feedback ' + (ok ? 'ok' : 'error');
+}
+
+// INIT
+startTimer();
+</script>
+</body>
+</html>

@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warmup – Prozentrechnung</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #fdf6ee;
+  --card: #ffffff;
+  --primary: #e05c2a;
+  --primary-light: #fef0e9;
+  --primary-mid: #f9c9ae;
+  --green: #2d9e6b;
+  --green-light: #e6f7f0;
+  --red: #d93535;
+  --red-light: #fdeaea;
+  --blue: #2563eb;
+  --blue-light: #eff6ff;
+  --yellow: #d97706;
+  --yellow-light: #fef3c7;
+  --text: #1a1a2e;
+  --muted: #7a7a90;
+  --border: #e8e0d5;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 60px;
+}
+
+/* ---- HEADER ---- */
+.header {
+  width: 100%; max-width: 740px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 22px;
+}
+.logo {
+  font-family: 'Baloo 2', cursive;
+  font-size: 21px; font-weight: 800; color: var(--primary);
+}
+.logo span { color: var(--text); }
+
+/* ---- STEPPER ---- */
+.stepper {
+  display: flex; align-items: center; gap: 0;
+}
+.step-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.step-circle {
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 3px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Baloo 2', cursive; font-weight: 800; font-size: 15px;
+  color: var(--muted); background: var(--card);
+  transition: all .35s;
+}
+.step-circle.active { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+.step-circle.done   { border-color: var(--green); background: var(--green); color: #fff; }
+.step-label {
+  font-size: 10px; font-weight: 700; color: var(--muted);
+  text-align: center; max-width: 70px; line-height: 1.2;
+}
+.step-label.active { color: var(--primary); }
+.step-label.done   { color: var(--green); }
+.step-line { width: 28px; height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 18px; transition: background .35s; }
+.step-line.done { background: var(--green); }
+
+/* ---- TIMER ---- */
+.timer-box {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--card); border-radius: 20px; padding: 7px 16px;
+  font-family: 'Baloo 2', cursive; font-weight: 800; font-size: 18px;
+  color: var(--blue); box-shadow: var(--shadow); min-width: 80px;
+  justify-content: center; flex-shrink: 0;
+  border: 1.5px solid var(--border);
+}
+.timer-box.warn { color: var(--red); animation: pulse .5s infinite alternate; }
+.timer-box.infinite { color: var(--muted); }
+@keyframes pulse { from{opacity:1} to{opacity:.35} }
+
+/* ---- TASK CARD ---- */
+.task-card {
+  width: 100%; max-width: 740px;
+  background: var(--card); border-radius: 24px;
+  padding: 28px 32px 24px;
+  box-shadow: var(--shadow);
+  border: 1.5px solid var(--border);
+  margin-bottom: 20px;
+  animation: slideIn .4s ease;
+}
+@keyframes slideIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+.part-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Baloo 2', cursive; font-size: 12px; font-weight: 800;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--primary); margin-bottom: 8px;
+}
+.task-title {
+  font-family: 'Baloo 2', cursive;
+  font-size: 19px; font-weight: 700; color: var(--text);
+  line-height: 1.45; margin-bottom: 22px;
+}
+.task-title em {
+  font-style: normal;
+  background: var(--primary-light); color: var(--primary);
+  padding: 1px 6px; border-radius: 6px;
+}
+
+/* ---- FEEDBACK ---- */
+.feedback {
+  text-align: center; min-height: 28px;
+  font-family: 'Baloo 2', cursive;
+  font-size: 16px; font-weight: 700;
+  margin-bottom: 14px; max-width: 740px; width: 100%;
+}
+.feedback.ok  { color: var(--green); }
+.feedback.err { color: var(--red);   }
+
+/* ---- BUTTON ---- */
+.btn-row { display: flex; gap: 12px; justify-content: center; width: 100%; max-width: 740px; }
+.btn {
+  padding: 13px 42px; border-radius: 14px;
+  border: none; cursor: pointer;
+  font-family: 'Baloo 2', cursive;
+  font-size: 17px; font-weight: 800;
+  transition: all .2s;
+}
+.btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 18px rgba(224,92,42,.3); }
+.btn-primary:hover { background: #c94e20; }
+.btn-primary:disabled { background: #e8c4b0; box-shadow: none; cursor: not-allowed; }
+.btn-secondary { background: var(--card); color: var(--primary); border: 2px solid var(--primary-mid); }
+.btn-secondary:hover { background: var(--primary-light); }
+
+/* ========================================================
+   PART 1 — Merksatz lückentext
+   ======================================================== */
+.merksatz-box {
+  background: var(--yellow-light);
+  border: 2px solid #fcd34d;
+  border-radius: 18px;
+  padding: 22px 26px;
+  font-family: 'Baloo 2', cursive;
+  font-size: 17px; font-weight: 700; color: var(--text);
+  line-height: 2.0;
+  text-align: center;
+  margin-bottom: 22px;
+}
+.blank {
+  display: inline-block;
+  min-width: 110px;
+  border-bottom: 3px dashed #d97706;
+  margin: 0 6px;
+  text-align: center;
+  vertical-align: bottom;
+  padding: 2px 8px;
+  border-radius: 6px 6px 0 0;
+  font-weight: 800; color: var(--yellow);
+  font-size: 16px; cursor: pointer;
+  transition: background .2s;
+  position: relative;
+}
+.blank.over { background: #fef3c7; border-color: #d97706; }
+.blank.filled { background: #fef9c3; border-color: #d97706; border-style: solid; color: #92400e; }
+.blank.correct { background: var(--green-light); border-color: var(--green); border-style: solid; color: #065f46; }
+.blank.wrong { background: var(--red-light); border-color: var(--red); border-style: solid; animation: shake .35s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+
+.word-chips {
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+  margin-bottom: 22px;
+}
+.word-chip {
+  padding: 10px 20px; border-radius: 40px;
+  background: var(--yellow-light);
+  border: 2px solid #fcd34d;
+  font-family: 'Baloo 2', cursive;
+  font-size: 15px; font-weight: 700; color: #92400e;
+  cursor: grab; user-select: none;
+  transition: transform .15s, box-shadow .15s, opacity .25s;
+  box-shadow: 0 2px 8px rgba(217,119,6,.12);
+}
+.word-chip:hover { transform: scale(1.05); box-shadow: 0 4px 14px rgba(217,119,6,.22); }
+.word-chip:active { cursor: grabbing; transform: scale(1.09); }
+.word-chip.used { opacity: 0.22; pointer-events: none; }
+
+/* ========================================================
+   PART 2 — Zuordnung
+   ======================================================== */
+.zuordnung-text {
+  font-family: 'Baloo 2', cursive;
+  font-size: 17px; font-weight: 700; color: var(--text);
+  line-height: 1.6; margin-bottom: 20px;
+  background: var(--blue-light); border-radius: 14px;
+  padding: 16px 20px; border: 1.5px solid #93c5fd;
+}
+.zuordnung-text em {
+  font-style: normal; background: #dbeafe; color: var(--blue);
+  padding: 1px 6px; border-radius: 6px;
+}
+.drop-row {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  justify-content: center; margin-bottom: 22px;
+}
+.drop-zone {
+  flex: 1; min-width: 160px; max-width: 210px;
+  border: 2.5px dashed #c8c0b5;
+  border-radius: 16px; background: #faf8f5;
+  padding: 14px 12px 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  transition: border-color .2s, background .2s;
+  min-height: 90px;
+}
+.drop-zone .zone-label {
+  font-family: 'Baloo 2', cursive;
+  font-size: 12px; font-weight: 800;
+  color: var(--muted); letter-spacing: .5px;
+  text-transform: uppercase; text-align: center;
+}
+.drop-zone .zone-slot {
+  width: 100%; min-height: 40px;
+  border: 2px dashed #d8d0c5; border-radius: 10px;
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: #bbb; font-weight: 600;
+  transition: all .2s;
+}
+.drop-zone.over { border-color: var(--primary); background: var(--primary-light); }
+.drop-zone.over .zone-slot { border-color: var(--primary); }
+.drop-zone.filled .zone-slot { background: var(--primary-light); border-color: var(--primary); border-style: solid; }
+.drop-zone.correct .zone-slot { background: var(--green-light); border-color: var(--green); border-style: solid; }
+.drop-zone.wrong .zone-slot { background: var(--red-light); border-color: var(--red); border-style: solid; animation: shake .35s; }
+
+.chips-area {
+  width: 100%; max-width: 740px;
+  background: var(--card); border-radius: 20px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+  border: 1.5px solid var(--border);
+  margin-bottom: 20px;
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+}
+.chip {
+  padding: 9px 18px; border-radius: 40px;
+  background: var(--primary-light);
+  border: 2px solid var(--primary-mid);
+  font-family: 'Baloo 2', cursive;
+  font-size: 15px; font-weight: 700; color: var(--primary);
+  cursor: grab; user-select: none;
+  transition: transform .15s, box-shadow .15s, opacity .25s;
+  box-shadow: 0 2px 8px rgba(224,92,42,.10);
+}
+.chip:hover { transform: scale(1.05); }
+.chip:active { cursor: grabbing; transform: scale(1.09); }
+.chip.used { opacity: 0.22; pointer-events: none; }
+.placed-chip {
+  padding: 7px 14px; border-radius: 30px;
+  font-family: 'Baloo 2', cursive;
+  font-size: 14px; font-weight: 700;
+  background: var(--primary); color: #fff; cursor: pointer;
+  transition: transform .15s;
+}
+.placed-chip:hover { transform: scale(1.04); }
+
+/* ========================================================
+   PART 3 — Multiple Choice
+   ======================================================== */
+.mc-question {
+  margin-bottom: 26px;
+}
+.mc-q-text {
+  font-family: 'Baloo 2', cursive;
+  font-size: 17px; font-weight: 700; color: var(--text);
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.mc-q-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  font-family: 'Baloo 2', cursive; font-size: 13px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.mc-options {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.mc-opt {
+  padding: 10px 20px; border-radius: 12px;
+  border: 2.5px solid var(--border);
+  background: var(--card);
+  font-family: 'Baloo 2', cursive; font-size: 15px; font-weight: 700;
+  color: var(--text); cursor: pointer;
+  transition: all .2s;
+}
+.mc-opt:hover { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+.mc-opt.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+.mc-opt.correct  { border-color: var(--green);   background: var(--green-light);   color: #065f46; pointer-events:none; }
+.mc-opt.wrong-sel{ border-color: var(--red);     background: var(--red-light);     color: var(--red); pointer-events:none; animation: shake .35s; }
+.mc-opt.missed   { border-color: var(--green);   background: var(--green-light);   color: #065f46; pointer-events:none; opacity:.6; }
+.mc-opt.locked   { pointer-events: none; opacity: .6; }
+.mc-divider { height: 1.5px; background: var(--border); margin: 8px 0 24px; border-radius: 2px; }
+
+/* ========================================================
+   SUCCESS
+   ======================================================== */
+.success-banner {
+  display: none;
+  width: 100%; max-width: 740px;
+  background: linear-gradient(135deg, #2d9e6b, #1d7a52);
+  color: #fff; border-radius: 24px;
+  padding: 32px 36px; text-align: center;
+  box-shadow: 0 8px 36px rgba(45,158,107,.3);
+  animation: slideIn .4s ease;
+}
+.success-banner.show { display: block; }
+.success-banner h2 { font-family: 'Baloo 2', cursive; font-size: 30px; font-weight: 800; margin-bottom: 10px; }
+.success-banner p  { font-size: 16px; opacity: .9; margin-bottom: 16px; }
+.score-chips { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+.score-chip {
+  background: rgba(255,255,255,.22); border-radius: 40px;
+  padding: 8px 22px; font-family: 'Baloo 2', cursive;
+  font-size: 15px; font-weight: 800;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">🔥 Warm<span>up</span></div>
+  <div style="display:flex; align-items:flex-start; gap:6px" id="stepper">
+    <div class="step-wrap">
+      <div class="step-circle active" id="sc1">1</div>
+      <div class="step-label active" id="sl1">Merksatz</div>
+    </div>
+    <div class="step-line" id="line1"></div>
+    <div class="step-wrap">
+      <div class="step-circle" id="sc2">2</div>
+      <div class="step-label" id="sl2">Zuordnung</div>
+    </div>
+    <div class="step-line" id="line2"></div>
+    <div class="step-wrap">
+      <div class="step-circle" id="sc3">3</div>
+      <div class="step-label" id="sl3">Umrechnen</div>
+    </div>
+  </div>
+  <div class="timer-box" id="timerBox">⏱ <span id="timerVal">40</span></div>
+</div>
+
+<!-- PART 1: Merksatz -->
+<div id="part1">
+  <div class="task-card">
+    <div class="part-badge">📌 Teil 1 von 3</div>
+    <div class="task-title">Setze die drei Begriffe in den Merksatz ein!</div>
+
+    <div class="merksatz-box" id="merksatzBox">
+      Der <span class="blank" id="blank_gw" data-key="gw">?</span>
+      ist das Ganze (100&nbsp;%). Der
+      <span class="blank" id="blank_pw" data-key="pw">?</span>
+      ist der Teil davon. Der
+      <span class="blank" id="blank_ps" data-key="ps">?</span>
+      gibt an, wie viel Prozent der Teil vom Ganzen beträgt.
+    </div>
+
+    <div class="word-chips" id="wordChips">
+      <div class="word-chip" draggable="true" data-val="gw" id="wchip_gw">Grundwert</div>
+      <div class="word-chip" draggable="true" data-val="pw" id="wchip_pw">Prozentwert</div>
+      <div class="word-chip" draggable="true" data-val="ps" id="wchip_ps">Prozentsatz</div>
+    </div>
+  </div>
+
+  <div class="feedback" id="fb1"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn1" onclick="checkPart1()">Prüfen ✓</button>
+  </div>
+</div>
+
+<!-- PART 2: Zuordnung -->
+<div id="part2" style="display:none; width:100%; max-width:740px; display:none; flex-direction:column; align-items:center;">
+  <div class="task-card">
+    <div class="part-badge">🎯 Teil 2 von 3</div>
+    <div class="task-title">Ordne die Werte richtig zu!</div>
+    <div class="zuordnung-text" id="z2text"></div>
+    <div class="drop-row" id="z2drops"></div>
+  </div>
+
+  <div class="chips-area" id="z2chips"></div>
+  <div class="feedback" id="fb2"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn2" onclick="checkPart2()">Prüfen ✓</button>
+    <button class="btn btn-secondary" id="btn2next" onclick="goPart3()" style="display:none">Weiter →</button>
+  </div>
+</div>
+
+<!-- PART 3: Multiple Choice -->
+<div id="part3" style="display:none; width:100%; max-width:740px;">
+  <div class="task-card">
+    <div class="part-badge">🧠 Teil 3 von 3</div>
+    <div class="task-title">Wähle die richtige Antwort!</div>
+
+    <!-- Q1 -->
+    <div class="mc-question" id="mcq1">
+      <div class="mc-q-text"><div class="mc-q-num">1</div> Was sind 25&nbsp;% als Hundertstelbruch?</div>
+      <div class="mc-options">
+        <div class="mc-opt" data-q="1" data-val="wrong1" onclick="selectMC(this)">1/4</div>
+        <div class="mc-opt" data-q="1" data-val="correct" onclick="selectMC(this)">25/100</div>
+        <div class="mc-opt" data-q="1" data-val="wrong2" onclick="selectMC(this)">2/5</div>
+      </div>
+    </div>
+    <div class="mc-divider"></div>
+
+    <!-- Q2 -->
+    <div class="mc-question" id="mcq2">
+      <div class="mc-q-text"><div class="mc-q-num">2</div> Was sind 75&nbsp;% als gekürzter Bruch?</div>
+      <div class="mc-options">
+        <div class="mc-opt" data-q="2" data-val="wrong1" onclick="selectMC(this)">7/10</div>
+        <div class="mc-opt" data-q="2" data-val="correct" onclick="selectMC(this)">3/4</div>
+        <div class="mc-opt" data-q="2" data-val="wrong2" onclick="selectMC(this)">75/10</div>
+      </div>
+    </div>
+    <div class="mc-divider"></div>
+
+    <!-- Q3 -->
+    <div class="mc-question" id="mcq3">
+      <div class="mc-q-text"><div class="mc-q-num">3</div> Was sind 10&nbsp;% als Dezimalzahl?</div>
+      <div class="mc-options">
+        <div class="mc-opt" data-q="3" data-val="wrong1" onclick="selectMC(this)">1,0</div>
+        <div class="mc-opt" data-q="3" data-val="correct" onclick="selectMC(this)">0,1</div>
+        <div class="mc-opt" data-q="3" data-val="wrong2" onclick="selectMC(this)">0,01</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feedback" id="fb3"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn3" onclick="checkPart3()">Prüfen ✓</button>
+    <button class="btn btn-secondary" id="btn3next" onclick="showSuccess()" style="display:none">Auswertung 🏁</button>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-banner" id="successBanner">
+  <h2>🎉 Warmup geschafft!</h2>
+  <p>Du hast alle drei Teile abgeschlossen. Super Start in die Stunde!</p>
+  <div class="score-chips">
+    <div class="score-chip" id="s1chip">✅ Merksatz</div>
+    <div class="score-chip" id="s2chip">✅ Zuordnung</div>
+    <div class="score-chip" id="s3chip">✅ Umrechnen</div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// GLOBAL STATE
+// ============================================================
+var currentPart = 1;
+var timerSec = 40;
+var timerInterval = null;
+var p1scores = 0, p2correct = false, p3scores = 0;
+
+// Part 1
+var p1placements = {}; // key -> val
+var p1dragging = null;
+
+// Part 2
+var p2placements = {};
+var p2dragging = null;
+var p2checked = false;
+
+// Part 3
+var p3answers = {}; // q -> val
+
+// ============================================================
+// TIMER
+// ============================================================
+function startTimer(seconds) {
+  timerSec = seconds;
+  document.getElementById('timerVal').textContent = timerSec;
+  document.getElementById('timerBox').className = 'timer-box';
+  clearInterval(timerInterval);
+  timerInterval = setInterval(function() {
+    timerSec--;
+    document.getElementById('timerVal').textContent = timerSec;
+    if (timerSec <= 8) document.getElementById('timerBox').classList.add('warn');
+    if (timerSec <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('timerVal').textContent = '0';
+    }
+  }, 1000);
+}
+function stopTimer() {
+  clearInterval(timerInterval);
+  document.getElementById('timerVal').textContent = '∞';
+  document.getElementById('timerBox').className = 'timer-box infinite';
+}
+
+// ============================================================
+// STEPPER
+// ============================================================
+function setStep(active) {
+  for (var i = 1; i <= 3; i++) {
+    var sc = document.getElementById('sc' + i);
+    var sl = document.getElementById('sl' + i);
+    if (i < active) {
+      sc.className = 'step-circle done'; sc.textContent = '✓';
+      sl.className = 'step-label done';
+      if (i < 3) document.getElementById('line' + i).classList.add('done');
+    } else if (i === active) {
+      sc.className = 'step-circle active';
+      sl.className = 'step-label active';
+    } else {
+      sc.className = 'step-circle';
+      sl.className = 'step-label';
+    }
+  }
+}
+
+// ============================================================
+// PART 1 — MERKSATZ
+// ============================================================
+var correctMap = { gw: 'gw', pw: 'pw', ps: 'ps' };
+var labelMap   = { gw: 'Grundwert', pw: 'Prozentwert', ps: 'Prozentsatz' };
+
+document.querySelectorAll('.word-chip').forEach(function(chip) {
+  chip.addEventListener('dragstart', function(e) {
+    p1dragging = chip;
+    chip.style.opacity = '0.45';
+    e.dataTransfer.setData('text/plain', chip.dataset.val);
+  });
+  chip.addEventListener('dragend', function() {
+    chip.style.opacity = '';
+    p1dragging = null;
+  });
+  // Touch
+  var ghost = null, tOff = {};
+  chip.addEventListener('touchstart', function(e) {
+    if (chip.classList.contains('used')) return;
+    var t = e.touches[0];
+    var r = chip.getBoundingClientRect();
+    tOff = { x: t.clientX - r.left, y: t.clientY - r.top };
+    ghost = chip.cloneNode(true);
+    ghost.style.cssText = 'position:fixed;pointer-events:none;opacity:0.7;z-index:9999;transform:scale(1.08);left:' + (t.clientX - tOff.x) + 'px;top:' + (t.clientY - tOff.y) + 'px;';
+    document.body.appendChild(ghost);
+    p1dragging = chip;
+  }, { passive: true });
+  chip.addEventListener('touchmove', function(e) {
+    if (!ghost) return;
+    e.preventDefault();
+    var t = e.touches[0];
+    ghost.style.left = (t.clientX - tOff.x) + 'px';
+    ghost.style.top  = (t.clientY - tOff.y) + 'px';
+    document.querySelectorAll('.blank').forEach(function(b) { b.classList.remove('over'); });
+    var el = document.elementFromPoint(t.clientX, t.clientY);
+    var bl = el ? el.closest('.blank') : null;
+    if (bl) bl.classList.add('over');
+  }, { passive: false });
+  chip.addEventListener('touchend', function(e) {
+    if (!ghost) return;
+    var t = e.changedTouches[0];
+    ghost.remove(); ghost = null;
+    document.querySelectorAll('.blank').forEach(function(b) { b.classList.remove('over'); });
+    var el = document.elementFromPoint(t.clientX, t.clientY);
+    var bl = el ? el.closest('.blank') : null;
+    if (bl && p1dragging) placeWord(bl, p1dragging);
+    p1dragging = null;
+  }, { passive: true });
+});
+
+document.querySelectorAll('.blank').forEach(function(blank) {
+  blank.addEventListener('dragover', function(e) { e.preventDefault(); blank.classList.add('over'); });
+  blank.addEventListener('dragleave', function() { blank.classList.remove('over'); });
+  blank.addEventListener('drop', function(e) {
+    e.preventDefault(); blank.classList.remove('over');
+    if (p1dragging) placeWord(blank, p1dragging);
+  });
+  blank.addEventListener('click', function() {
+    if (blank.classList.contains('filled') && !blank.classList.contains('correct')) {
+      returnWord(blank);
+    }
+  });
+});
+
+function placeWord(blank, chip) {
+  if (blank.classList.contains('correct')) return;
+  if (blank.dataset.current) returnWord(blank);
+  var val = chip.dataset.val;
+  p1placements[blank.dataset.key] = val;
+  blank.dataset.current = val;
+  blank.textContent = labelMap[val];
+  blank.classList.add('filled');
+  blank.classList.remove('wrong');
+  chip.classList.add('used');
+}
+
+function returnWord(blank) {
+  var val = blank.dataset.current;
+  if (!val) return;
+  delete p1placements[blank.dataset.key];
+  delete blank.dataset.current;
+  blank.textContent = '?';
+  blank.classList.remove('filled', 'wrong', 'correct');
+  var chip = document.getElementById('wchip_' + val);
+  if (chip) chip.classList.remove('used');
+}
+
+function checkPart1() {
+  clearInterval(timerInterval);
+  var keys = ['gw', 'pw', 'ps'];
+  var allFilled = keys.every(function(k) { return !!p1placements[k]; });
+  if (!allFilled) {
+    setFb('fb1', '❗ Bitte alle drei Lücken ausfüllen!', false);
+    startTimer(40); return;
+  }
+  var allOk = keys.every(function(k) { return p1placements[k] === k; });
+  if (allOk) {
+    keys.forEach(function(k) {
+      var bl = document.getElementById('blank_' + k);
+      bl.classList.remove('filled', 'wrong');
+      bl.classList.add('correct');
+    });
+    document.querySelectorAll('.word-chip').forEach(function(c) { c.style.pointerEvents = 'none'; });
+    document.getElementById('btn1').disabled = true;
+    p1scores = 3;
+    setFb('fb1', '✅ Perfekt! Alle drei Begriffe richtig!', true);
+    setTimeout(goPart2, 1200);
+    setStep(2);
+  } else {
+    keys.forEach(function(k) {
+      var bl = document.getElementById('blank_' + k);
+      if (p1placements[k] !== k) {
+        bl.classList.add('wrong');
+        setTimeout(function() { bl.classList.remove('wrong'); }, 500);
+      }
+    });
+    setFb('fb1', '❌ Nicht ganz – versuche es nochmal!', false);
+    startTimer(40);
+  }
+}
+
+// ============================================================
+// PART 2 — ZUORDNUNG
+// ============================================================
+var zuTask = {
+  text: 'In einer Schule gibt es <em>400 Schülerinnen und Schüler</em>. Davon fahren <em>60</em> mit dem Fahrrad. Das sind <em>15 %</em>.',
+  values: {
+    grundwert:   { label: '400 Schülerinnen und Schüler' },
+    prozentwert: { label: '60 Schülerinnen und Schüler'  },
+    prozentsatz: { label: '15 %'                          }
+  }
+};
+var zoneConfig2 = [
+  { key: 'grundwert',   label: '🏠 Grundwert (G)'   },
+  { key: 'prozentwert', label: '🎯 Prozentwert (W)'  },
+  { key: 'prozentsatz', label: '📊 Prozentsatz (p%)' }
+];
+
+function goPart2() {
+  document.getElementById('part1').style.display = 'none';
+  var p2 = document.getElementById('part2');
+  p2.style.display = 'flex';
+  p2checked = false;
+  p2placements = {};
+  buildPart2();
+  startTimer(40);
+}
+
+function buildPart2() {
+  document.getElementById('z2text').innerHTML = zuTask.text;
+  // Drop zones
+  var dr = document.getElementById('z2drops');
+  dr.innerHTML = '';
+  zoneConfig2.forEach(function(z) {
+    var div = document.createElement('div');
+    div.className = 'drop-zone';
+    div.id = 'z2zone_' + z.key;
+    div.dataset.key = z.key;
+    div.innerHTML = '<div class="zone-label">' + z.label + '</div><div class="zone-slot" id="z2slot_' + z.key + '">Hierher ziehen</div>';
+    setupDropZone2(div);
+    dr.appendChild(div);
+  });
+  // Chips
+  var ca = document.getElementById('z2chips');
+  ca.innerHTML = '';
+  var entries = Object.entries(zuTask.values).map(function(e) { return { key: e[0], label: e[1].label }; });
+  shuffle(entries);
+  entries.forEach(function(c) {
+    var chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.draggable = true;
+    chip.id = 'z2chip_' + c.key;
+    chip.dataset.key = c.key;
+    chip.dataset.label = c.label;
+    chip.textContent = c.label;
+    setupChip2(chip);
+    ca.appendChild(chip);
+  });
+  document.getElementById('btn2').style.display = '';
+  document.getElementById('btn2next').style.display = 'none';
+}
+
+function setupChip2(chip) {
+  chip.addEventListener('dragstart', function(e) {
+    p2dragging = chip;
+    chip.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  chip.addEventListener('dragend', function() {
+    chip.classList.remove('dragging');
+    p2dragging = null;
+  });
+  var ghost2 = null, tOff2 = {};
+  chip.addEventListener('touchstart', function(e) {
+    if (chip.classList.contains('used')) return;
+    var t = e.touches[0]; var r = chip.getBoundingClientRect();
+    tOff2 = { x: t.clientX - r.left, y: t.clientY - r.top };
+    ghost2 = chip.cloneNode(true);
+    ghost2.style.cssText = 'position:fixed;pointer-events:none;opacity:0.7;z-index:9999;transform:scale(1.08);left:' + (t.clientX - tOff2.x) + 'px;top:' + (t.clientY - tOff2.y) + 'px;';
+    document.body.appendChild(ghost2);
+    p2dragging = chip;
+  }, { passive: true });
+  chip.addEventListener('touchmove', function(e) {
+    if (!ghost2) return; e.preventDefault();
+    var t = e.touches[0];
+    ghost2.style.left = (t.clientX - tOff2.x) + 'px';
+    ghost2.style.top  = (t.clientY - tOff2.y) + 'px';
+    document.querySelectorAll('#z2drops .drop-zone').forEach(function(z) { z.classList.remove('over'); });
+    var el = document.elementFromPoint(t.clientX, t.clientY);
+    var zone = el ? el.closest('.drop-zone') : null;
+    if (zone) zone.classList.add('over');
+  }, { passive: false });
+  chip.addEventListener('touchend', function(e) {
+    if (!ghost2) return;
+    var t = e.changedTouches[0];
+    ghost2.remove(); ghost2 = null;
+    document.querySelectorAll('#z2drops .drop-zone').forEach(function(z) { z.classList.remove('over'); });
+    var el = document.elementFromPoint(t.clientX, t.clientY);
+    var zone = el ? el.closest('.drop-zone') : null;
+    if (zone && p2dragging && !p2checked) placeChip2(zone, p2dragging);
+    p2dragging = null;
+  }, { passive: true });
+}
+
+function setupDropZone2(zone) {
+  zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('over'); });
+  zone.addEventListener('dragleave', function() { zone.classList.remove('over'); });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault(); zone.classList.remove('over');
+    if (p2checked || !p2dragging) return;
+    placeChip2(zone, p2dragging);
+  });
+  zone.addEventListener('click', function() {
+    if (p2checked) return;
+    var key = zone.dataset.key;
+    if (p2placements[key]) returnChip2(zone, key);
+  });
+}
+
+function placeChip2(zone, chip) {
+  var zk = zone.dataset.key;
+  var cl = chip.dataset.label;
+  if (p2placements[zk]) returnChip2(zone, zk);
+  p2placements[zk] = cl;
+  chip.classList.add('used');
+  var slot = document.getElementById('z2slot_' + zk);
+  slot.innerHTML = '';
+  var placed = document.createElement('div');
+  placed.className = 'placed-chip';
+  placed.textContent = cl;
+  slot.appendChild(placed);
+  zone.classList.add('filled'); zone.classList.remove('over');
+}
+
+function returnChip2(zone, key) {
+  var label = p2placements[key];
+  delete p2placements[key];
+  document.querySelectorAll('#z2chips .chip').forEach(function(c) {
+    if (c.dataset.label === label) c.classList.remove('used');
+  });
+  var slot = document.getElementById('z2slot_' + key);
+  slot.innerHTML = 'Hierher ziehen';
+  zone.classList.remove('filled', 'correct', 'wrong');
+}
+
+function checkPart2() {
+  clearInterval(timerInterval);
+  var allFilled = zoneConfig2.every(function(z) { return !!p2placements[z.key]; });
+  if (!allFilled) {
+    setFb('fb2', '❗ Bitte alle drei Felder befüllen!', false);
+    startTimer(40); return;
+  }
+  p2checked = true;
+  var allOk = true;
+  zoneConfig2.forEach(function(z) {
+    var placed = p2placements[z.key];
+    var expected = zuTask.values[z.key].label;
+    var zone = document.getElementById('z2zone_' + z.key);
+    zone.classList.remove('filled');
+    if (placed === expected) { zone.classList.add('correct'); }
+    else { zone.classList.add('wrong'); allOk = false; }
+  });
+  if (allOk) {
+    p2correct = true;
+    setFb('fb2', '✅ Super! Alle Werte richtig zugeordnet!', true);
+    document.getElementById('btn2').style.display = 'none';
+    document.getElementById('btn2next').style.display = '';
+    setStep(3);
+  } else {
+    setFb('fb2', '❌ Nicht ganz – schau auf die farbigen Felder!', false);
+    document.getElementById('btn2').style.display = 'none';
+    document.getElementById('btn2next').style.display = '';
+    document.getElementById('btn2next').textContent = 'Weiter →';
+  }
+}
+
+function goPart3() {
+  document.getElementById('part2').style.display = 'none';
+  document.getElementById('part3').style.display = 'block';
+  stopTimer();
+  setStep(3);
+}
+
+// ============================================================
+// PART 3 — MULTIPLE CHOICE
+// ============================================================
+var mc_correct = { '1': 'correct', '2': 'correct', '3': 'correct' };
+
+function selectMC(opt) {
+  var q = opt.dataset.q;
+  // If already checked for this q, ignore
+  if (opt.classList.contains('locked')) return;
+  // Deselect others in same question
+  document.querySelectorAll('.mc-opt[data-q="' + q + '"]').forEach(function(o) {
+    o.classList.remove('selected');
+  });
+  opt.classList.add('selected');
+  p3answers[q] = opt.dataset.val;
+}
+
+function checkPart3() {
+  var allAnswered = ['1','2','3'].every(function(q) { return !!p3answers[q]; });
+  if (!allAnswered) {
+    setFb('fb3', '❗ Bitte alle drei Fragen beantworten!', false);
+    return;
+  }
+  var score = 0;
+  ['1','2','3'].forEach(function(q) {
+    var opts = document.querySelectorAll('.mc-opt[data-q="' + q + '"]');
+    opts.forEach(function(o) {
+      o.classList.add('locked');
+      if (o.dataset.val === 'correct') {
+        if (p3answers[q] === 'correct') { o.classList.add('correct'); score++; }
+        else { o.classList.add('missed'); }
+      } else if (o.dataset.val === p3answers[q]) {
+        o.classList.add('wrong-sel');
+      }
+      o.classList.remove('selected');
+    });
+  });
+  p3scores = score;
+  if (score === 3) {
+    setFb('fb3', '✅ Perfekt – alle 3 richtig!', true);
+  } else if (score >= 1) {
+    setFb('fb3', '👍 ' + score + ' von 3 richtig. Die Lösungen sind grün markiert.', true);
+  } else {
+    setFb('fb3', '❌ Leider keine richtige Antwort. Schau auf die grünen Felder!', false);
+  }
+  document.getElementById('btn3').style.display = 'none';
+  document.getElementById('btn3next').style.display = '';
+}
+
+function showSuccess() {
+  document.getElementById('part3').style.display = 'none';
+  var sb = document.getElementById('successBanner');
+  sb.classList.add('show');
+  // update chips
+  document.getElementById('s1chip').textContent = p1scores === 3 ? '✅ Merksatz' : '🔄 Merksatz';
+  document.getElementById('s2chip').textContent = p2correct ? '✅ Zuordnung' : '🔄 Zuordnung';
+  document.getElementById('s3chip').textContent = p3scores + '/3 Umrechnen';
+  // mark all steps done
+  for (var i = 1; i <= 3; i++) {
+    var sc = document.getElementById('sc' + i);
+    sc.className = 'step-circle done'; sc.textContent = '✓';
+    document.getElementById('sl' + i).className = 'step-label done';
+    if (i < 3) document.getElementById('line' + i).classList.add('done');
+  }
+  stopTimer();
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function setFb(id, msg, ok) {
+  var fb = document.getElementById(id);
+  fb.textContent = msg;
+  fb.className = 'feedback ' + (ok ? 'ok' : 'err');
+}
+function shuffle(arr) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+setStep(1);
+startTimer(40);
+</script>
+</body>
+</html>
