@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Der Viertaktmotor – HBG</title>
+<style>
+  :root {
+    --col-slate-dark:  #2C3D4C;
+    --col-slate:       #3E5668;
+    --col-slate-mid:   #6A8599;
+    --col-slate-pale:  #D0DCE6;
+    --col-slate-ghost: #EEF3F7;
+    --col-rust-dark:   #9E4E22;
+    --col-rust:        #D97A4A;
+    --col-rust-pale:   #F5DDD1;
+    --col-sage-dark:   #4D8B3F;
+    --col-sage:        #7DBB6F;
+    --col-sage-pale:   #DDF0D8;
+    --col-warning:      #C17B00;
+    --col-warning-pale: #FFF3CC;
+    --col-warning-text: #5C4400;
+    --col-error:        #C0392B;
+    --col-error-pale:   #FDECEA;
+    --col-error-text:   #7A1B14;
+    --col-bg:           #F5F4F1;
+    --col-white:        #FFFFFF;
+    --col-text:         #1E2A35;
+    --col-text-muted:   #5A6A78;
+    --col-border:       #D4D0C8;
+    --col-disabled-bg:  #EBEBEA;
+    --col-disabled-text:#7A7672;
+    --col-focus:        #3E5668;
+    --col-shadow:       rgba(62,86,104,0.10);
+    --text-xs:   0.694rem;
+    --text-sm:   0.833rem;
+    --text-base: 1rem;
+    --text-md:   1.2rem;
+    --text-lg:   1.44rem;
+    --text-xl:   1.728rem;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; overflow: hidden; }
+
+  body {
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--col-bg);
+    color: var(--col-text);
+    font-size: var(--text-base);
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--col-focus);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* ===== Header ===== */
+  header {
+    background: var(--col-slate);
+    color: white;
+    padding: 8px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    z-index: 20;
+  }
+  header h1 { font-size: var(--text-lg); font-weight: 700; line-height: 1.2; }
+  .header-meta {
+    font-size: var(--text-xs);
+    color: var(--col-slate-pale);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .hbg-wordmark { display: inline-flex; align-items: flex-end; gap: 5px; }
+  .hbg-wordmark__main { font-size: var(--text-md); font-weight: 800; color: white; }
+  .hbg-wordmark__sub  { font-size: var(--text-sm); color: #EBA882; margin-bottom: 1px; }
+
+  /* ===== Bühne (3D) ===== */
+  #stage {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    background: linear-gradient(170deg, var(--col-slate-ghost) 0%, var(--col-bg) 55%, #ECE9E3 100%);
+    touch-action: none;
+    overflow: hidden;
+  }
+  #stage canvas { display: block; }
+
+  /* Taktanzeige (klickbare Pills) */
+  #takt-leiste {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+  }
+  .takt-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 2px solid var(--col-slate);
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(4px);
+    color: var(--col-slate);
+    border-radius: 999px;
+    padding: 7px 14px;
+    min-height: 44px;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.25s, color 0.25s, border-color 0.25s, transform 0.15s;
+    white-space: nowrap;
+  }
+  .takt-pill .nr {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--col-slate);
+    color: white;
+    font-size: var(--text-xs);
+    transition: background 0.25s;
+  }
+  .takt-pill:hover { background: var(--col-slate-ghost); }
+  .takt-pill.aktiv {
+    background: var(--col-slate);
+    color: white;
+    transform: scale(1.05);
+  }
+  .takt-pill.aktiv .nr { background: var(--col-rust); }
+  .takt-pill:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* Bedien-Hinweis */
+  #hinweis {
+    position: absolute;
+    left: 14px;
+    bottom: 12px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(4px);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: var(--text-xs);
+    color: var(--col-text-muted);
+    z-index: 10;
+    box-shadow: 0 2px 8px var(--col-shadow);
+    pointer-events: none;
+    max-width: 240px;
+  }
+
+  /* Explosions-Badge */
+  #explo-badge {
+    position: absolute;
+    top: 68px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background: var(--col-rust-pale);
+    color: var(--col-rust-dark);
+    border: 1.5px solid var(--col-rust);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  /* ===== Info-Panel ===== */
+  #info-panel {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 304px;
+    max-width: calc(100% - 24px);
+    max-height: calc(100% - 24px);
+    overflow-y: auto;
+    background: var(--col-white);
+    border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(44,61,76,0.22);
+    border-left: 5px solid var(--col-rust);
+    padding: 16px 18px 18px;
+    z-index: 15;
+    visibility: hidden;
+    opacity: 0;
+  }
+  #info-panel .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    background: var(--col-slate);
+    color: white;
+    margin-bottom: 8px;
+  }
+  #info-panel h2 {
+    font-size: var(--text-md);
+    color: var(--col-slate-dark);
+    margin-bottom: 8px;
+    padding-right: 36px;
+  }
+  #info-panel p { font-size: var(--text-sm); margin-bottom: 10px; }
+  #info-merke {
+    background: var(--col-slate-pale);
+    border-left: 4px solid var(--col-slate-mid);
+    border-radius: 0 8px 8px 0;
+    padding: 9px 12px;
+    font-size: var(--text-sm);
+  }
+  #info-merke::before { content: '💡 '; }
+  #info-schliessen {
+    position: absolute;
+    top: 10px; right: 10px;
+    width: 36px; height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: var(--col-slate-ghost);
+    color: var(--col-slate);
+    font-size: var(--text-md);
+    font-weight: 700;
+    cursor: pointer;
+    line-height: 1;
+  }
+  #info-schliessen:hover { background: var(--col-slate-pale); }
+
+  /* ===== Steuerleiste unten ===== */
+  #steuerung {
+    flex-shrink: 0;
+    background: var(--col-white);
+    border-top: 1px solid var(--col-border);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    flex-wrap: wrap;
+    z-index: 20;
+  }
+  .btn-primary {
+    background: var(--col-rust-dark);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: var(--text-base);
+    font-weight: 600;
+    min-height: 44px;
+    min-width: 118px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-primary:hover  { background: #B55E2A; }
+  .btn-primary:active { background: #7D3C18; transform: translateY(1px); }
+  .btn-primary:disabled { background: var(--col-disabled-bg); color: var(--col-disabled-text); cursor: not-allowed; }
+  .btn-secondary {
+    background: transparent;
+    color: var(--col-slate);
+    border: 2px solid var(--col-slate);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    min-height: 44px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+  .btn-secondary:hover { background: var(--col-slate-ghost); }
+
+  .regler-gruppe {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 200px;
+    flex: 1;
+    max-width: 340px;
+  }
+  .regler-gruppe label {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--col-slate);
+    white-space: nowrap;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--col-slate-pale);
+    cursor: pointer;
+    min-width: 90px;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--col-slate);
+    border: 3px solid white;
+    box-shadow: 0 1px 5px rgba(44,61,76,0.4);
+    cursor: pointer;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--col-slate);
+    border: 3px solid white;
+    box-shadow: 0 1px 5px rgba(44,61,76,0.4);
+    cursor: pointer;
+  }
+  #explo-regler::-webkit-slider-thumb { background: var(--col-rust-dark); }
+  #explo-regler::-moz-range-thumb     { background: var(--col-rust-dark); }
+
+  /* Ladebildschirm */
+  #lade-schirm {
+    position: absolute;
+    inset: 0;
+    background: var(--col-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    z-index: 50;
+    color: var(--col-text-muted);
+    font-size: var(--text-sm);
+  }
+  #lade-schirm .spinner {
+    width: 38px; height: 38px;
+    border: 4px solid var(--col-slate-pale);
+    border-top-color: var(--col-rust);
+    border-radius: 50%;
+    animation: dreh 0.8s linear infinite;
+  }
+  @keyframes dreh { to { transform: rotate(360deg); } }
+
+  @media (max-width: 740px) {
+    .takt-pill .label { display: none; }
+    #hinweis { display: none; }
+    #steuerung { gap: 12px; padding: 8px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Der Viertaktmotor</h1>
+    <div class="header-meta">HBG Dortmund · WP Technik · Klasse 7/8</div>
+  </div>
+  <div class="hbg-wordmark">
+    <span class="hbg-wordmark__main">HBG</span>
+    <span class="hbg-wordmark__sub">SRL</span>
+  </div>
+</header>
+
+<div id="stage">
+  <div id="takt-leiste" role="group" aria-label="Die vier Takte – antippen, um einen Takt einzeln abzuspielen">
+    <button class="takt-pill" data-takt="0"><span class="nr">1</span><span class="label">Ansaugen</span></button>
+    <button class="takt-pill" data-takt="1"><span class="nr">2</span><span class="label">Verdichten</span></button>
+    <button class="takt-pill" data-takt="2"><span class="nr">3</span><span class="label">Arbeiten</span></button>
+    <button class="takt-pill" data-takt="3"><span class="nr">4</span><span class="label">Ausstoßen</span></button>
+  </div>
+
+  <div id="explo-badge">🔧 Explosionsansicht – Motor pausiert</div>
+
+  <div id="hinweis">
+    🔄 Ziehen: drehen &nbsp;·&nbsp; 🤏 Zwei Finger: zoomen<br>
+    👆 Bauteil antippen: Info anzeigen
+  </div>
+
+  <aside id="info-panel" role="status" aria-live="polite">
+    <button id="info-schliessen" aria-label="Info schließen">×</button>
+    <span class="badge">Bauteil</span>
+    <h2 id="info-titel"></h2>
+    <p id="info-text"></p>
+    <div id="info-merke"></div>
+  </aside>
+
+  <div id="lade-schirm">
+    <div class="spinner" aria-hidden="true"></div>
+    <span>3D-Motor wird geladen …</span>
+  </div>
+</div>
+
+<div id="steuerung">
+  <button id="btn-play" class="btn-primary">⏸ Pause</button>
+
+  <div class="regler-gruppe">
+    <label for="tempo-regler">🐢 Tempo 🐇</label>
+    <input type="range" id="tempo-regler" min="20" max="250" value="100" aria-label="Geschwindigkeit der Animation">
+  </div>
+
+  <div class="regler-gruppe">
+    <label for="explo-regler">🔧 Explosionsansicht</label>
+    <input type="range" id="explo-regler" min="0" max="100" value="0" aria-label="Explosionsdarstellung – Bauteile auseinanderziehen">
+  </div>
+
+  <button id="btn-ansicht" class="btn-secondary">↺ Ansicht</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+'use strict';
+
+/* =====================================================================
+   Der Viertaktmotor – interaktive 3D-Lernanimation
+   Three.js (Modell + Kinematik) · GSAP (Takte, Explosion, Effekte)
+   ===================================================================== */
+
+// ---------- Bauteil-Informationen (Klasse 7/8) ----------
+const BAUTEILE = {
+  kolben: {
+    name: 'Kolben',
+    text: 'Der Kolben gleitet im Zylinder auf und ab. Beim Arbeitstakt drückt ihn das verbrennende Gemisch mit großer Kraft nach unten. Diese Kraft gibt er über das Pleuel an die Kurbelwelle weiter. Die Kolbenringe dichten den Spalt zum Zylinder ab.',
+    merke: 'Der Kolben nimmt die Kraft der Verbrennung auf.'
+  },
+  pleuel: {
+    name: 'Pleuel',
+    text: 'Das Pleuel verbindet den Kolben mit der Kurbelwelle. Oben bewegt es sich auf und ab, unten dreht es sich im Kreis. So hilft es, die Auf-und-Ab-Bewegung in eine Drehbewegung umzuwandeln.',
+    merke: 'Pleuel = Verbindungsstange zwischen Kolben und Kurbelwelle.'
+  },
+  kurbelwelle: {
+    name: 'Kurbelwelle',
+    text: 'Die Kurbelwelle macht aus der Hubbewegung des Kolbens eine Drehbewegung – wie bei einer Fahrradkurbel. Die Gegengewichte sorgen für einen ruhigen Lauf. Ihre Drehung treibt später Getriebe und Räder an.',
+    merke: 'Die Kurbelwelle verwandelt Hub in Drehung.'
+  },
+  schwungrad: {
+    name: 'Schwungrad',
+    text: 'Das Schwungrad ist eine schwere Scheibe an der Kurbelwelle. Nur in einem von vier Takten entsteht Kraft. Das Schwungrad speichert den Schwung und dreht den Motor durch die anderen drei Takte.',
+    merke: 'Das Schwungrad überbrückt die Takte ohne Antrieb.'
+  },
+  zylinderblock: {
+    name: 'Zylinderblock',
+    text: 'Der Zylinderblock ist das Gehäuse des Motors. In ihm liegt der Zylinder, in dem der Kolben läuft. Kühlrippen oder Wasserkanäle führen die Hitze ab, damit der Motor nicht überhitzt.',
+    merke: 'Hier ist er halbdurchsichtig, damit du hineinschauen kannst.'
+  },
+  zylinderkopf: {
+    name: 'Zylinderkopf',
+    text: 'Der Zylinderkopf verschließt den Zylinder nach oben. In ihm sitzen die Ventile, die Kanäle und die Zündkerze. Zwischen Kopf und Kolben liegt der Brennraum.',
+    merke: 'Im Zylinderkopf wird der Gaswechsel gesteuert.'
+  },
+  einlassventil: {
+    name: 'Einlassventil',
+    text: 'Das Einlassventil öffnet sich beim 1. Takt (Ansaugen). Dann strömt frisches Benzin-Luft-Gemisch in den Zylinder. In allen anderen Takten ist es fest geschlossen.',
+    merke: 'Einlass = das Frische kommt rein.'
+  },
+  auslassventil: {
+    name: 'Auslassventil',
+    text: 'Das Auslassventil öffnet sich beim 4. Takt (Ausstoßen). Der Kolben schiebt die verbrannten Abgase hinaus. Beim Verdichten und Arbeiten ist es dicht geschlossen.',
+    merke: 'Auslass = das Verbrannte muss raus.'
+  },
+  nockenwelle: {
+    name: 'Nockenwelle',
+    text: 'Die Nockenwelle dreht sich halb so schnell wie die Kurbelwelle. Ihre eiförmigen Nocken drücken die Ventile genau zum richtigen Zeitpunkt auf. Angetrieben wird sie über einen Zahnriemen oder eine Kette.',
+    merke: 'Die Nockenwelle steuert die Ventile.'
+  },
+  zuendkerze: {
+    name: 'Zündkerze',
+    text: 'Die Zündkerze erzeugt am Ende des Verdichtens einen elektrischen Funken. Er zündet das zusammengepresste Gemisch – der Arbeitstakt beginnt.',
+    merke: 'Ohne Funken keine Verbrennung (beim Benzinmotor).'
+  },
+  einlasskanal: {
+    name: 'Einlasskanal',
+    text: 'Durch den Einlasskanal strömt das frische Benzin-Luft-Gemisch vom Vergaser oder von der Einspritzung zum Einlassventil.',
+    merke: 'Der Weg des frischen Gemischs in den Motor.'
+  },
+  auslasskanal: {
+    name: 'Auslasskanal',
+    text: 'Durch den Auslasskanal verlassen die heißen Abgase den Motor. Von hier geht es weiter zum Auspuff.',
+    merke: 'Der Weg der Abgase aus dem Motor.'
+  },
+  oelwanne: {
+    name: 'Ölwanne',
+    text: 'Die Ölwanne sammelt unten das Motoröl. Eine Pumpe drückt es von hier zu allen beweglichen Teilen. Das Öl schmiert und kühlt – ohne Öl würde der Motor festlaufen.',
+    merke: 'Schmierung ist überlebenswichtig für den Motor.'
+  }
+};
+
+const TAKT_NAMEN = ['Ansaugen', 'Verdichten', 'Arbeiten', 'Ausstoßen'];
+
+// ---------- Grundgrößen der Kinematik ----------
+const R = 1.0;          // Kurbelradius
+const L = 3.2;          // Pleuellänge
+const DEG = Math.PI / 180;
+const KAMMER_OBEN = 5.12;   // Oberkante Brennraum
+
+// ---------- Zustand ----------
+const zustand = {
+  winkel: 0,            // Kurbelwinkel 0–720°
+  laeuft: true,
+  tempo: 1.0,           // Faktor (Regler)
+  explodiert: 0,        // 0–1
+  warAktivVorExplosion: true,
+  taktTween: null,
+  auswahl: null
+};
+
+// ---------- Renderer / Szene / Kamera ----------
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+
+// Eigene, sanft gedämpfte Orbit-Steuerung (Touch + Maus)
+const orbit = {
+  ziel: new THREE.Vector3(0, 2.4, 0),
+  theta: 0.65, phi: 1.18, radius: 13.5,
+  sollTheta: 0.65, sollPhi: 1.18, sollRadius: 13.5,
+  minR: 6, maxR: 26
+};
+
+function kameraAnwenden() {
+  // Bei Explosion: Ziel höher, Abstand größer (weiches Nachführen)
+  const e = zustand.explodiert;
+  const zielY = 2.4 + e * 2.3;
+  const radiusZuschlag = e * 15.0;
+
+  orbit.theta += (orbit.sollTheta - orbit.theta) * 0.12;
+  orbit.phi   += (orbit.sollPhi   - orbit.phi)   * 0.12;
+  orbit.radius += (orbit.sollRadius - orbit.radius) * 0.12;
+  orbit.ziel.y += (zielY - orbit.ziel.y) * 0.08;
+
+  const r = orbit.radius + radiusZuschlag;
+  const sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+  camera.position.set(
+    orbit.ziel.x + r * sp * Math.sin(orbit.theta),
+    orbit.ziel.y + r * cp,
+    orbit.ziel.z + r * sp * Math.cos(orbit.theta)
+  );
+  camera.lookAt(orbit.ziel);
+}
+
+// ---------- Licht ----------
+scene.add(new THREE.HemisphereLight(0xf4f7fa, 0x8a8f96, 0.85));
+const hauptlicht = new THREE.DirectionalLight(0xffffff, 0.85);
+hauptlicht.position.set(6, 10, 7);
+scene.add(hauptlicht);
+const kantenlicht = new THREE.DirectionalLight(0xd0dce6, 0.4);
+kantenlicht.position.set(-7, 4, -6);
+scene.add(kantenlicht);
+const fuelllicht = new THREE.DirectionalLight(0xffffff, 0.22);
+fuelllicht.position.set(0, -6, 4);
+scene.add(fuelllicht);
+
+// Zündblitz-Licht (wird per GSAP aufgeblendet)
+const blitzLicht = new THREE.PointLight(0xffa64d, 0, 9);
+blitzLicht.position.set(0, 4.85, 0);
+scene.add(blitzLicht);
+
+// ---------- Materialien ----------
+function metall(farbe, rauheit = 0.38, metallisch = 0.75) {
+  return new THREE.MeshStandardMaterial({ color: farbe, roughness: rauheit, metalness: metallisch });
+}
+function glasMetall(farbe, deckkraft) {
+  return new THREE.MeshStandardMaterial({
+    color: farbe, roughness: 0.25, metalness: 0.55,
+    transparent: true, opacity: deckkraft, depthWrite: false
+  });
+}
+
+const MAT = {
+  block:   glasMetall(0x9fb2c0, 0.26),
+  kopf:    glasMetall(0x93a6b5, 0.30),
+  kolben:  metall(0xcfd4d9, 0.3, 0.85),
+  ring:    metall(0x5a626a, 0.35, 0.9),
+  pleuel:  metall(0xb7bdc4, 0.4, 0.8),
+  kurbel:  metall(0x8d949c, 0.42, 0.85),
+  schwung: metall(0x6f7780, 0.45, 0.85),
+  wanne:   metall(0x55606b, 0.5, 0.7),
+  ventilE: metall(0xc9ced4, 0.3, 0.9),
+  ventilA: metall(0xb4a89a, 0.32, 0.9),
+  nocke:   metall(0x9aa1a9, 0.38, 0.85),
+  kanalE:  metall(0xaab6c0, 0.4, 0.7),
+  kanalA:  metall(0x9d9489, 0.42, 0.7),
+  kerze:   metall(0xe8e6e0, 0.5, 0.2),
+  kerzeMetall: metall(0xc9ced4, 0.3, 0.9)
+};
+
+// ---------- Hilfsfunktionen Modellbau ----------
+const bauteilGruppen = {};   // partId -> THREE.Group
+const klickbareMeshes = [];
+
+function neuesBauteil(id, explosionsVersatz) {
+  const g = new THREE.Group();
+  g.userData.partId = id;
+  g.userData.basisPos = new THREE.Vector3();
+  g.userData.exploVersatz = explosionsVersatz.clone();
+  scene.add(g);
+  bauteilGruppen[id] = g;
+  return g;
+}
+
+function mesh(geo, mat, gruppe, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0) {
+  const m = new THREE.Mesh(geo, mat);
+  m.position.set(x, y, z);
+  m.rotation.set(rx, ry, rz);
+  gruppe.add(m);
+  klickbareMeshes.push(m);
+  return m;
+}
+
+// ===================================================================
+// MODELLBAU
+// ===================================================================
+
+// ---- Zylinderblock (halbtransparent, mit Kühlrippen) ----
+{
+  const g = neuesBauteil('zylinderblock', new THREE.Vector3(0, 4.4, 0));
+  const wand = mesh(new THREE.CylinderGeometry(1.32, 1.38, 2.95, 40, 1, true), MAT.block, g, 0, 3.78);
+  wand.material.side = THREE.DoubleSide;
+  wand.renderOrder = 4;
+  // Kühlrippen
+  for (let i = 0; i < 5; i++) {
+    const rippe = mesh(new THREE.CylinderGeometry(1.56, 1.56, 0.1, 40), MAT.block, g, 0, 2.65 + i * 0.58);
+    rippe.renderOrder = 4;
+  }
+  // Sockel zum Kurbelgehäuse
+  const sockel = mesh(new THREE.CylinderGeometry(1.5, 1.7, 0.55, 40), MAT.block, g, 0, 2.05);
+  sockel.renderOrder = 4;
+}
+
+// ---- Kurbelgehäuse-Rahmen + Ölwanne ----
+{
+  const g = neuesBauteil('oelwanne', new THREE.Vector3(0, -2.6, 0));
+  mesh(new THREE.BoxGeometry(3.6, 0.18, 2.7), MAT.wanne, g, 0, -0.85);       // Flansch
+  const wanne = mesh(new THREE.BoxGeometry(3.1, 1.15, 2.2), MAT.wanne, g, 0, -1.5);
+  wanne.geometry.translate(0, 0, 0);
+  mesh(new THREE.BoxGeometry(2.2, 0.45, 1.5), MAT.wanne, g, 0, -2.2);        // Tiefer Sumpf
+}
+
+// ---- Kurbelwelle (rotiert um die z-Achse) ----
+let kurbelGruppe;
+{
+  const g = neuesBauteil('kurbelwelle', new THREE.Vector3(0, -1.3, 0));
+  kurbelGruppe = g;
+  // Hauptlagerzapfen
+  mesh(new THREE.CylinderGeometry(0.3, 0.3, 1.0, 24), MAT.kurbel, g, 0, 0, 1.15, Math.PI / 2);
+  mesh(new THREE.CylinderGeometry(0.3, 0.3, 1.0, 24), MAT.kurbel, g, 0, 0, -1.15, Math.PI / 2);
+  // Kurbelwangen mit Gegengewicht (Halbscheibe zeigt vom Hubzapfen weg)
+  for (const seite of [-0.55, 0.55]) {
+    mesh(new THREE.BoxGeometry(0.7, 2.0, 0.3), MAT.kurbel, g, 0, 0.1, seite);
+    const gegen = mesh(
+      new THREE.CylinderGeometry(1.12, 1.12, 0.3, 28, 1, false, Math.PI / 2, Math.PI),
+      MAT.kurbel, g, 0, 0, seite, Math.PI / 2
+    );
+    gegen.rotation.z = Math.PI; // Halbscheibe nach unten (gegenüber Hubzapfen)
+  }
+  // Hubzapfen (hier greift das Pleuel an) – lokal bei (0, R, 0)
+  mesh(new THREE.CylinderGeometry(0.27, 0.27, 0.85, 24), MAT.kurbel, g, 0, R, 0, Math.PI / 2);
+}
+
+// ---- Schwungrad (sitzt hinten auf der Kurbelwelle) ----
+let schwungGruppe;
+{
+  const g = neuesBauteil('schwungrad', new THREE.Vector3(0, -1.3, 2.1));
+  schwungGruppe = g;
+  g.userData.basisPos.set(0, 0, 1.95);
+  mesh(new THREE.CylinderGeometry(1.7, 1.7, 0.36, 48), MAT.schwung, g, 0, 0, 0, Math.PI / 2);
+  mesh(new THREE.CylinderGeometry(1.74, 1.74, 0.18, 48), MAT.kurbel, g, 0, 0, 0.12, Math.PI / 2); // Zahnkranz angedeutet
+  mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.7, 24), MAT.kurbel, g, 0, 0, -0.3, Math.PI / 2);
+  // Wuchtbohrungen als Marker, damit die Drehung sichtbar wird
+  for (let i = 0; i < 6; i++) {
+    const a = i / 6 * Math.PI * 2;
+    mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.4, 16), MAT.wanne, g,
+      Math.cos(a) * 1.15, Math.sin(a) * 1.15, 0.05, Math.PI / 2);
+  }
+}
+
+// ---- Kolben (mit Ringen und Bolzen) ----
+let kolbenGruppe;
+{
+  const g = neuesBauteil('kolben', new THREE.Vector3(0, 1.1, 0));
+  kolbenGruppe = g;
+  mesh(new THREE.CylinderGeometry(0.86, 0.86, 1.25, 36), MAT.kolben, g, 0, 0.08);
+  for (let i = 0; i < 3; i++) {
+    mesh(new THREE.TorusGeometry(0.865, 0.035, 10, 40), MAT.ring, g, 0, 0.52 - i * 0.16, 0, Math.PI / 2);
+  }
+  mesh(new THREE.CylinderGeometry(0.16, 0.16, 1.1, 18), MAT.ring, g, 0, 0, 0, Math.PI / 2); // Kolbenbolzen
+}
+
+// ---- Pleuel (Ursprung am Hubzapfen, zeigt nach +y zum Kolben) ----
+let pleuelGruppe;
+{
+  const g = neuesBauteil('pleuel', new THREE.Vector3(0, 0.3, 0));
+  pleuelGruppe = g;
+  const schaft = new THREE.BoxGeometry(0.3, L - 0.7, 0.18);
+  schaft.translate(0, L / 2, 0);
+  mesh(schaft, MAT.pleuel, g);
+  mesh(new THREE.TorusGeometry(0.38, 0.13, 12, 28), MAT.pleuel, g, 0, 0, 0);          // Großes Auge
+  mesh(new THREE.TorusGeometry(0.21, 0.1, 12, 24), MAT.pleuel, g, 0, L, 0);           // Kleines Auge
+}
+
+// ---- Zylinderkopf (halbtransparent) ----
+{
+  const g = neuesBauteil('zylinderkopf', new THREE.Vector3(0, 4.8, 0));
+  const kopf = mesh(new THREE.CylinderGeometry(1.42, 1.36, 1.05, 40), MAT.kopf, g, 0, 5.77);
+  kopf.renderOrder = 5;
+  const deckel = mesh(new THREE.CylinderGeometry(1.46, 1.46, 0.12, 40), MAT.kopf, g, 0, 6.36);
+  deckel.renderOrder = 5;
+}
+
+// ---- Ventile ----
+function ventilBauen(id, mat, x, versatz) {
+  const g = neuesBauteil(id, versatz);
+  g.userData.basisPos.set(x, 5.2, 0.3);
+  mesh(new THREE.CylinderGeometry(0.36, 0.3, 0.09, 24), mat, g, 0, 0);      // Teller
+  mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.55, 12), mat, g, 0, 0.8);  // Schaft
+  mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.16, 16), mat, g, 0, 1.5);    // Federteller
+  // Ventilfeder angedeutet
+  mesh(new THREE.TorusGeometry(0.17, 0.035, 8, 24), mat, g, 0, 1.18, 0, Math.PI / 2);
+  mesh(new THREE.TorusGeometry(0.17, 0.035, 8, 24), mat, g, 0, 1.32, 0, Math.PI / 2);
+  return g;
+}
+const ventilEinlass = ventilBauen('einlassventil', MAT.ventilE, -0.5, new THREE.Vector3(-0.9, 6.3, 0));
+const ventilAuslass = ventilBauen('auslassventil', MAT.ventilA, 0.5, new THREE.Vector3(0.9, 6.3, 0));
+
+// ---- Zündkerze ----
+{
+  const g = neuesBauteil('zuendkerze', new THREE.Vector3(0, 7.2, 0));
+  g.userData.basisPos.set(0, 5.32, -0.62);
+  g.rotation.x = -0.28;
+  mesh(new THREE.CylinderGeometry(0.09, 0.05, 0.34, 12), MAT.kerzeMetall, g, 0, 0);   // Elektrode
+  mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.42, 14), MAT.kerzeMetall, g, 0, 0.36); // Gewinde
+  mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.5, 14), MAT.kerze, g, 0, 0.82);        // Isolator
+  mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.3, 10), MAT.kerzeMetall, g, 0, 1.2);   // Anschluss
+}
+
+// ---- Ein- und Auslasskanal ----
+function kanalBauen(id, mat, richtung, versatz) {
+  const g = neuesBauteil(id, versatz);
+  const schraeg = mesh(new THREE.CylinderGeometry(0.24, 0.24, 1.3, 20), mat, g,
+    richtung * 1.0, 6.05, 0.3, 0, 0, richtung * 1.05);
+  const rohr = mesh(new THREE.CylinderGeometry(0.24, 0.24, 1.2, 20), mat, g,
+    richtung * 2.05, 6.32, 0.3, 0, 0, richtung * Math.PI / 2);
+  const muendung = mesh(new THREE.TorusGeometry(0.24, 0.06, 10, 24), mat, g,
+    richtung * 2.62, 6.32, 0.3, 0, Math.PI / 2, 0);
+  return g;
+}
+kanalBauen('einlasskanal', MAT.kanalE, -1, new THREE.Vector3(-1.5, 4.8, 0));
+kanalBauen('auslasskanal', MAT.kanalA, 1, new THREE.Vector3(1.5, 4.8, 0));
+
+// ---- Nockenwelle (zwei Nocken über den Ventilschäften) ----
+let nockeEinlass, nockeAuslass;
+{
+  const g = neuesBauteil('nockenwelle', new THREE.Vector3(0, 6.9, 0));
+  g.userData.basisPos.set(0, 7.05, 0.3);
+  mesh(new THREE.CylinderGeometry(0.11, 0.11, 2.6, 16), MAT.nocke, g, 0, 0, 0, 0, 0, Math.PI / 2);
+  mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.18, 18), MAT.nocke, g, -1.15, 0, 0, 0, 0, Math.PI / 2);
+  mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.18, 18), MAT.nocke, g, 1.15, 0, 0, 0, 0, Math.PI / 2);
+
+  function nocke(x) {
+    const n = new THREE.Group();
+    n.position.set(x, 0, 0);
+    const basis = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.26, 24), MAT.nocke);
+    basis.rotation.z = Math.PI / 2;
+    n.add(basis); klickbareMeshes.push(basis);
+    const spitze = new THREE.Mesh(new THREE.SphereGeometry(0.21, 18, 14), MAT.nocke);
+    spitze.scale.set(0.6, 1.25, 1);
+    spitze.position.y = 0.22;
+    n.add(spitze); klickbareMeshes.push(spitze);
+    g.add(n);
+    return n;
+  }
+  nockeEinlass = nocke(-0.5);
+  nockeAuslass = nocke(0.5);
+}
+
+// ---- Gassäule im Zylinder (Farbe zeigt die Taktphase) ----
+const gasMat = new THREE.MeshBasicMaterial({
+  color: 0x8fbfe6, transparent: true, opacity: 0, depthWrite: false
+});
+const gasMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.84, 0.84, 1, 32), gasMat);
+gasMesh.renderOrder = 2;
+scene.add(gasMesh);
+
+// Zündblitz-Kugel
+const blitzMat = new THREE.MeshBasicMaterial({ color: 0xffd9a0, transparent: true, opacity: 0, depthWrite: false });
+const blitzKugel = new THREE.Mesh(new THREE.SphereGeometry(0.5, 20, 16), blitzMat);
+blitzKugel.position.set(0, 4.9, 0);
+blitzKugel.renderOrder = 3;
+scene.add(blitzKugel);
+
+// ---- Partikelströme (Frischgas blau, Abgas grau) ----
+function strom(pfad, farbe, anzahl) {
+  const pos = new Float32Array(anzahl * 3);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({
+    color: farbe, size: 0.14, transparent: true, opacity: 0, depthWrite: false, sizeAttenuation: true
+  });
+  const punkte = new THREE.Points(geo, mat);
+  punkte.renderOrder = 3;
+  scene.add(punkte);
+  const t = Array.from({ length: anzahl }, () => Math.random());
+  const seitlich = Array.from({ length: anzahl }, () => (Math.random() - 0.5) * 0.22);
+
+  function pfadPunkt(p, ziel) {
+    const seg = Math.min(Math.floor(p * (pfad.length - 1)), pfad.length - 2);
+    const lok = p * (pfad.length - 1) - seg;
+    ziel.lerpVectors(pfad[seg], pfad[seg + 1], lok);
+  }
+  const tmp = new THREE.Vector3();
+
+  return {
+    mat,
+    update(dt, aktiv) {
+      const zielOpazitaet = aktiv ? 0.9 : 0;
+      mat.opacity += (zielOpazitaet - mat.opacity) * Math.min(1, dt * 6);
+      if (mat.opacity < 0.02) return;
+      for (let i = 0; i < anzahl; i++) {
+        if (aktiv) {
+          t[i] += dt * (0.55 + (i % 5) * 0.06);
+          if (t[i] > 1) t[i] -= 1;
+        }
+        pfadPunkt(t[i], tmp);
+        pos[i * 3] = tmp.x + seitlich[i];
+        pos[i * 3 + 1] = tmp.y + seitlich[(i + 7) % anzahl] * 0.6;
+        pos[i * 3 + 2] = tmp.z + seitlich[(i + 3) % anzahl];
+      }
+      geo.attributes.position.needsUpdate = true;
+    }
+  };
+}
+
+const stromEinlass = strom([
+  new THREE.Vector3(-2.95, 6.32, 0.3),
+  new THREE.Vector3(-1.6, 6.25, 0.3),
+  new THREE.Vector3(-0.55, 5.6, 0.3),
+  new THREE.Vector3(-0.4, 4.4, 0.15)
+], 0x4d86b8, 26);
+
+const stromAuslass = strom([
+  new THREE.Vector3(0.4, 4.5, 0.15),
+  new THREE.Vector3(0.55, 5.6, 0.3),
+  new THREE.Vector3(1.6, 6.25, 0.3),
+  new THREE.Vector3(2.95, 6.32, 0.3)
+], 0x8a8f94, 26);
+
+// ===================================================================
+// KINEMATIK & PHASENLOGIK
+// ===================================================================
+
+function kolbenHoehe(rad) {
+  return R * Math.cos(rad) + Math.sqrt(L * L - R * R * Math.sin(rad) * Math.sin(rad));
+}
+
+// Sanfte Ventilerhebung um ein Winkelzentrum (wickelsicher über 720°)
+function hub(winkel, zentrum, halbweite) {
+  let d = Math.abs(winkel - zentrum);
+  d = Math.min(d, 720 - d);
+  if (d >= halbweite) return 0;
+  const c = Math.cos((d / halbweite) * Math.PI / 2);
+  return c * c;
+}
+
+function aktuellerTakt(winkel) {
+  return Math.min(3, Math.floor(((winkel % 720) + 720) % 720 / 180));
+}
+
+const farbFrisch   = new THREE.Color(0x8fbfe6);
+const farbDicht    = new THREE.Color(0x4d7396);
+const farbFeuer    = new THREE.Color(0xf2913c);
+const farbHeiss    = new THREE.Color(0xb98a66);
+const farbAbgas    = new THREE.Color(0x9aa0a4);
+const gasFarbe = new THREE.Color();
+
+function gasZustand(w) {
+  // Liefert Farbe + Deckkraft der Gassäule je nach Kurbelwinkel
+  if (w < 180) {                       // Ansaugen
+    gasFarbe.copy(farbFrisch);
+    return 0.06 + (w / 180) * 0.3;
+  } else if (w < 360) {                // Verdichten
+    gasFarbe.copy(farbFrisch).lerp(farbDicht, (w - 180) / 180);
+    return 0.36 + (w - 180) / 180 * 0.14;
+  } else if (w < 540) {                // Arbeiten
+    const p = (w - 360) / 180;
+    if (p < 0.45) gasFarbe.copy(farbFeuer).lerp(farbHeiss, p / 0.45);
+    else gasFarbe.copy(farbHeiss).lerp(farbAbgas, (p - 0.45) / 0.55);
+    return 0.52 - p * 0.14;
+  } else {                             // Ausstoßen
+    gasFarbe.copy(farbAbgas);
+    return 0.36 * (1 - (w - 540) / 180) + 0.04;
+  }
+}
+
+let letzterWinkel = 0;
+function zuendungPruefen() {
+  const a = letzterWinkel % 720, b = zustand.winkel % 720;
+  if ((a < 360 && b >= 360) || (b < a && a < 360)) zuenden();
+}
+
+function zuenden() {
+  gsap.killTweensOf([blitzLicht, blitzMat, blitzKugel.scale]);
+  blitzKugel.scale.set(0.4, 0.4, 0.4);
+  gsap.to(blitzLicht, { intensity: 3.4, duration: 0.05, yoyo: true, repeat: 1, ease: 'power2.out' });
+  gsap.to(blitzMat, { opacity: 0.95, duration: 0.05 });
+  gsap.to(blitzMat, { opacity: 0, duration: 0.45, delay: 0.07, ease: 'power2.out' });
+  gsap.to(blitzKugel.scale, { x: 1.7, y: 1.5, z: 1.7, duration: 0.5, ease: 'power2.out' });
+}
+
+// Explosionsversatz auf alle Bauteile anwenden
+function versatzAnwenden(gruppe, basisX, basisY, basisZ) {
+  const v = gruppe.userData.exploVersatz, e = zustand.explodiert;
+  gruppe.position.set(basisX + v.x * e, basisY + v.y * e, basisZ + v.z * e);
+}
+
+function motorAktualisieren(dt) {
+  if (zustand.laeuft && zustand.explodiert < 0.01 && !zustand.taktTween) {
+    zustand.winkel = (zustand.winkel + dt * 200 * zustand.tempo) % 720;
+  }
+  const w = ((zustand.winkel % 720) + 720) % 720;
+  zuendungPruefen();
+  letzterWinkel = zustand.winkel;
+
+  const rad = w * DEG;
+  const kolbenY = kolbenHoehe(rad);
+
+  // Kurbelwelle & Schwungrad
+  kurbelGruppe.rotation.z = -rad;
+  versatzAnwenden(kurbelGruppe, 0, 0, 0);
+  schwungGruppe.rotation.z = -rad;
+  versatzAnwenden(schwungGruppe, 0, 0, 1.95);
+
+  // Hubzapfen-Weltposition
+  const zapfenX = R * Math.sin(rad);
+  const zapfenY = R * Math.cos(rad);
+
+  // Pleuel: vom Hubzapfen zum Kolbenbolzen
+  pleuelGruppe.rotation.z = Math.asin(R * Math.sin(rad) / L);
+  versatzAnwenden(pleuelGruppe, zapfenX, zapfenY, 0);
+
+  // Kolben
+  versatzAnwenden(kolbenGruppe, 0, kolbenY, 0);
+
+  // Ventile (Hub nach unten = öffnen)
+  const hubE = hub(w, 90, 108);
+  const hubA = hub(w, 630, 108);
+  const vE = ventilEinlass.userData.basisPos, vA = ventilAuslass.userData.basisPos;
+  versatzAnwenden(ventilEinlass, vE.x, vE.y - hubE * 0.3, vE.z);
+  versatzAnwenden(ventilAuslass, vA.x, vA.y - hubA * 0.3, vA.z);
+
+  // Nockenwelle (halbe Drehzahl) + Nockenorientierung
+  const nockenGruppe = bauteilGruppen['nockenwelle'];
+  const nb = nockenGruppe.userData.basisPos;
+  versatzAnwenden(nockenGruppe, nb.x, nb.y, nb.z);
+  nockeEinlass.rotation.z = -rad / 2 + 225 * DEG;
+  nockeAuslass.rotation.z = -rad / 2 + 135 * DEG;
+
+  // Statische Bauteile: nur Explosionsversatz
+  for (const id of ['zylinderblock', 'zylinderkopf', 'oelwanne', 'einlasskanal', 'auslasskanal']) {
+    versatzAnwenden(bauteilGruppen[id], 0, 0, 0);
+  }
+  const kz = bauteilGruppen['zuendkerze'];
+  versatzAnwenden(kz, kz.userData.basisPos.x, kz.userData.basisPos.y, kz.userData.basisPos.z);
+
+  // Gassäule (nur in zusammengebauter Ansicht sichtbar)
+  const kolbenOben = kolbenY + 0.72;
+  const h = Math.max(0.06, KAMMER_OBEN - kolbenOben);
+  gasMesh.scale.set(1, h, 1);
+  gasMesh.position.y = kolbenOben + h / 2;
+  const sichtbar = 1 - Math.min(1, zustand.explodiert * 3);
+  gasMat.opacity = gasZustand(w) * sichtbar;
+  gasMat.color.copy(gasFarbe);
+
+  // Partikel
+  const taktNr = aktuellerTakt(w);
+  const bewegt = (zustand.laeuft || zustand.taktTween) && zustand.explodiert < 0.01;
+  stromEinlass.update(dt, bewegt && taktNr === 0);
+  stromAuslass.update(dt, bewegt && taktNr === 3);
+
+  // Taktanzeige
+  taktPillsAktualisieren(taktNr);
+}
+
+// ===================================================================
+// UI: Taktanzeige, Steuerung, Info-Panel
+// ===================================================================
+const pills = Array.from(document.querySelectorAll('.takt-pill'));
+let letzterAngezeigterTakt = -1;
+
+function taktPillsAktualisieren(nr) {
+  if (nr === letzterAngezeigterTakt) return;
+  letzterAngezeigterTakt = nr;
+  pills.forEach((p, i) => p.classList.toggle('aktiv', i === nr));
+}
+
+const btnPlay = document.getElementById('btn-play');
+
+function playButtonAktualisieren() {
+  const aktiv = zustand.laeuft && !zustand.taktTween;
+  btnPlay.textContent = aktiv ? '⏸ Pause' : '▶ Start';
+}
+
+function motorPausieren() {
+  zustand.laeuft = false;
+  playButtonAktualisieren();
+}
+function motorStarten() {
+  if (zustand.explodiert > 0.01) return; // in Explosionsansicht nicht starten
+  zustand.laeuft = true;
+  playButtonAktualisieren();
+}
+
+btnPlay.addEventListener('click', () => {
+  if (zustand.taktTween) { zustand.taktTween.kill(); zustand.taktTween = null; }
+  if (zustand.explodiert > 0.01) {
+    // Erst Explosionsansicht schließen, dann starten
+    exploZuruecksetzen(true);
+    return;
+  }
+  zustand.laeuft ? motorPausieren() : motorStarten();
+});
+
+// --- Takt für Takt (GSAP-Tween über genau 180°) ---
+pills.forEach(pill => {
+  pill.addEventListener('click', () => {
+    if (zustand.explodiert > 0.01) {
+      zustand.warAktivVorExplosion = false;
+      exploZuruecksetzen(false);
+    }
+    const takt = parseInt(pill.dataset.takt, 10);
+    if (zustand.taktTween) zustand.taktTween.kill();
+    motorPausieren();
+    zustand.winkel = takt * 180;
+    letzterWinkel = zustand.winkel;
+    if (takt === 2) gsap.delayedCall(0.15, zuenden);  // Arbeitstakt beginnt mit dem Funken
+    zustand.taktTween = gsap.to(zustand, {
+      winkel: takt * 180 + 180,
+      duration: 2.8,
+      ease: 'power1.inOut',
+      onComplete() { zustand.taktTween = null; playButtonAktualisieren(); }
+    });
+    playButtonAktualisieren();
+  });
+});
+
+// --- Tempo ---
+const tempoRegler = document.getElementById('tempo-regler');
+try {
+  const gespeichert = localStorage.getItem('hbg_viertakt_tempo');
+  if (gespeichert) { tempoRegler.value = gespeichert; zustand.tempo = gespeichert / 100; }
+} catch (e) {}
+tempoRegler.addEventListener('input', () => {
+  zustand.tempo = tempoRegler.value / 100;
+  try { localStorage.setItem('hbg_viertakt_tempo', tempoRegler.value); } catch (e) {}
+});
+
+// --- Explosionsansicht ---
+const exploRegler = document.getElementById('explo-regler');
+const exploBadge = document.getElementById('explo-badge');
+const exploTween = gsap.quickTo(zustand, 'explodiert', { duration: 0.35, ease: 'power2.out' });
+
+exploRegler.addEventListener('input', () => {
+  const wert = exploRegler.value / 100;
+  if (wert > 0.01 && zustand.explodiert <= 0.01) {
+    zustand.warAktivVorExplosion = zustand.laeuft && !zustand.taktTween;
+    if (zustand.taktTween) { zustand.taktTween.kill(); zustand.taktTween = null; }
+    motorPausieren();
+    exploBadge.style.display = 'inline-flex';
+    gsap.fromTo(exploBadge, { opacity: 0, y: -6 }, { opacity: 1, y: 0, duration: 0.3 });
+  }
+  if (wert <= 0.01) badgeAusblenden();
+  exploTween(wert);
+});
+
+exploRegler.addEventListener('change', () => {
+  if (exploRegler.value / 100 <= 0.01 && zustand.warAktivVorExplosion) motorStarten();
+});
+
+function badgeAusblenden() {
+  if (exploBadge.style.display !== 'none') {
+    gsap.to(exploBadge, {
+      opacity: 0, duration: 0.25,
+      onComplete: () => { exploBadge.style.display = 'none'; }
+    });
+  }
+}
+
+function exploZuruecksetzen(starten) {
+  gsap.to(exploRegler, {
+    value: 0, duration: 0.5, ease: 'power2.inOut',
+    onUpdate: () => exploTween(exploRegler.value / 100),
+    onComplete: () => {
+      exploTween(0);
+      badgeAusblenden();
+      if (starten || zustand.warAktivVorExplosion) motorStarten();
+    }
+  });
+}
+
+// --- Ansicht zurücksetzen ---
+document.getElementById('btn-ansicht').addEventListener('click', () => {
+  gsap.to(orbit, { sollTheta: 0.65, sollPhi: 1.18, sollRadius: 13.5, duration: 0.9, ease: 'power2.inOut' });
+});
+
+// ===================================================================
+// Auswahl & Info-Panel (Raycasting)
+// ===================================================================
+const raycaster = new THREE.Raycaster();
+const zeiger = new THREE.Vector2();
+const panel = document.getElementById('info-panel');
+const infoTitel = document.getElementById('info-titel');
+const infoText = document.getElementById('info-text');
+const infoMerke = document.getElementById('info-merke');
+
+let pulseTween = null;
+
+function auswahlEntfernen() {
+  if (!zustand.auswahl) return;
+  if (pulseTween) { pulseTween.kill(); pulseTween = null; }
+  bauteilGruppen[zustand.auswahl].traverse(o => {
+    if (o.isMesh) {
+      o.material.emissive && o.material.emissive.setHex(0x000000);
+      o.material.emissiveIntensity = 1;
+    }
+  });
+  zustand.auswahl = null;
+}
+
+function bauteilWaehlen(id) {
+  if (zustand.auswahl === id) return;
+  auswahlEntfernen();
+  zustand.auswahl = id;
+
+  const g = bauteilGruppen[id];
+  const ziel = { i: 0 };
+  g.traverse(o => {
+    if (o.isMesh && o.material.emissive) o.material.emissive.setHex(0xD97A4A);
+  });
+  pulseTween = gsap.fromTo(ziel, { i: 0.95 }, {
+    i: 0.35, duration: 0.9, ease: 'sine.inOut', yoyo: true, repeat: -1,
+    onUpdate() {
+      g.traverse(o => { if (o.isMesh && o.material.emissive) o.material.emissiveIntensity = ziel.i; });
+    }
+  });
+
+  const info = BAUTEILE[id];
+  infoTitel.textContent = info.name;
+  infoText.textContent = info.text;
+  infoMerke.textContent = info.merke;
+  panel.style.visibility = 'visible';
+  gsap.fromTo(panel, { opacity: 0, x: 26 }, { opacity: 1, x: 0, duration: 0.35, ease: 'power2.out' });
+}
+
+function panelSchliessen() {
+  auswahlEntfernen();
+  gsap.to(panel, {
+    opacity: 0, x: 26, duration: 0.25, ease: 'power2.in',
+    onComplete: () => { panel.style.visibility = 'hidden'; }
+  });
+}
+document.getElementById('info-schliessen').addEventListener('click', panelSchliessen);
+
+function klickAufModell(clientX, clientY) {
+  const r = renderer.domElement.getBoundingClientRect();
+  zeiger.x = ((clientX - r.left) / r.width) * 2 - 1;
+  zeiger.y = -((clientY - r.top) / r.height) * 2 + 1;
+  raycaster.setFromCamera(zeiger, camera);
+  const treffer = raycaster.intersectObjects(klickbareMeshes, false);
+  for (const t of treffer) {
+    let o = t.object;
+    while (o && !o.userData.partId) o = o.parent;
+    if (o && o.userData.partId) { bauteilWaehlen(o.userData.partId); return; }
+  }
+  panelSchliessen();
+}
+
+// ===================================================================
+// Eingabe: Orbit (Drehen, Zoomen) + Tipp-Erkennung
+// ===================================================================
+const zeigerListe = new Map();
+let startPinchAbstand = 0, startRadius = 0;
+let tippStart = null;
+
+renderer.domElement.addEventListener('pointerdown', e => {
+  renderer.domElement.setPointerCapture(e.pointerId);
+  zeigerListe.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (zeigerListe.size === 1) {
+    tippStart = { x: e.clientX, y: e.clientY, t: performance.now() };
+  } else if (zeigerListe.size === 2) {
+    tippStart = null;
+    const [a, b] = [...zeigerListe.values()];
+    startPinchAbstand = Math.hypot(a.x - b.x, a.y - b.y);
+    startRadius = orbit.sollRadius;
+  }
+});
+
+renderer.domElement.addEventListener('pointermove', e => {
+  if (!zeigerListe.has(e.pointerId)) return;
+  const alt = zeigerListe.get(e.pointerId);
+  const dx = e.clientX - alt.x, dy = e.clientY - alt.y;
+  zeigerListe.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  if (zeigerListe.size === 1) {
+    orbit.sollTheta -= dx * 0.006;
+    orbit.sollPhi = Math.min(2.6, Math.max(0.35, orbit.sollPhi - dy * 0.005));
+    if (tippStart && Math.hypot(e.clientX - tippStart.x, e.clientY - tippStart.y) > 9) tippStart = null;
+  } else if (zeigerListe.size === 2) {
+    const [a, b] = [...zeigerListe.values()];
+    const abstand = Math.hypot(a.x - b.x, a.y - b.y);
+    if (startPinchAbstand > 0) {
+      orbit.sollRadius = Math.min(orbit.maxR, Math.max(orbit.minR, startRadius * startPinchAbstand / abstand));
+    }
+  }
+});
+
+function zeigerEnde(e) {
+  if (zeigerListe.size === 1 && tippStart && performance.now() - tippStart.t < 450) {
+    klickAufModell(e.clientX, e.clientY);
+  }
+  zeigerListe.delete(e.pointerId);
+  tippStart = null;
+}
+renderer.domElement.addEventListener('pointerup', zeigerEnde);
+renderer.domElement.addEventListener('pointercancel', e => zeigerListe.delete(e.pointerId));
+
+renderer.domElement.addEventListener('wheel', e => {
+  e.preventDefault();
+  orbit.sollRadius = Math.min(orbit.maxR, Math.max(orbit.minR, orbit.sollRadius + e.deltaY * 0.012));
+}, { passive: false });
+
+// ===================================================================
+// Größe, Render-Schleife, Intro
+// ===================================================================
+function groesseAnpassen() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', groesseAnpassen);
+groesseAnpassen();
+
+const uhr = new THREE.Clock();
+function schleife() {
+  requestAnimationFrame(schleife);
+  const dt = Math.min(uhr.getDelta(), 0.05);
+  motorAktualisieren(dt);
+  kameraAnwenden();
+  renderer.render(scene, camera);
+}
+schleife();
+
+// Eleganter Einstieg: Kamerafahrt + UI einblenden
+window.addEventListener('load', () => {
+  const lade = document.getElementById('lade-schirm');
+  gsap.to(lade, { opacity: 0, duration: 0.5, delay: 0.2, onComplete: () => lade.remove() });
+  orbit.radius = 24; orbit.theta = 1.7;
+  gsap.to(orbit, { sollRadius: 13.5, duration: 1.8, ease: 'power2.out' });
+  gsap.fromTo('#takt-leiste', { opacity: 0, y: -14 }, { opacity: 1, y: 0, duration: 0.7, delay: 0.6 });
+  gsap.fromTo('#hinweis', { opacity: 0 }, { opacity: 1, duration: 0.7, delay: 1.0 });
+});
+playButtonAktualisieren();
+</script>
+</body>
+</html>
