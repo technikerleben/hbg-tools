@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interaktive Simulation: Viertaktmotor</title>
+  <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/",
+      "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js"
+    }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0f141b;
+      --panel: rgba(20, 28, 38, 0.92);
+      --panel-soft: rgba(255,255,255,0.065);
+      --text: #eef3f7;
+      --muted: #a9b6c5;
+      --accent: #5da9ff;
+      --accent-2: #ff9c55;
+      --good: #7bd88f;
+      --danger: #ff6b6b;
+      --stroke: rgba(255,255,255,0.12);
+      --shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body {
+      background:
+        radial-gradient(circle at 25% 15%, rgba(93,169,255,0.16), transparent 34%),
+        radial-gradient(circle at 75% 70%, rgba(255,156,85,0.12), transparent 32%),
+        linear-gradient(135deg, #0f141b 0%, #151c26 46%, #0b0f15 100%);
+    }
+    #app { position: relative; width: 100vw; height: 100vh; }
+    canvas { display: block; width: 100%; height: 100%; }
+    .topbar {
+      position: absolute; left: 24px; top: 20px; right: 24px; z-index: 10;
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; pointer-events: none;
+    }
+    .titleCard, .infoCard, .controls, .stageCard, .hintCard {
+      background: var(--panel); border: 1px solid var(--stroke); box-shadow: var(--shadow); backdrop-filter: blur(16px);
+      border-radius: 20px;
+    }
+    .titleCard { padding: 18px 20px; max-width: 560px; }
+    .titleCard h1 { margin: 0 0 8px; font-size: clamp(1.35rem, 2.4vw, 2.25rem); font-weight: 760; letter-spacing: -0.03em; }
+    .titleCard p { margin: 0; color: var(--muted); font-size: 0.98rem; line-height: 1.35; }
+    .stageCard {
+      min-width: 230px; padding: 14px 16px; text-align: right;
+    }
+    .stageLabel { color: var(--muted); font-size: .82rem; text-transform: uppercase; letter-spacing: .1em; }
+    .stageName { margin-top: 3px; font-size: 1.5rem; font-weight: 770; letter-spacing: -.03em; }
+    .stageDescription { margin-top: 4px; color: var(--muted); font-size: .92rem; line-height: 1.25; }
+    .side {
+      position: absolute; right: 24px; top: 140px; width: min(360px, calc(100vw - 48px)); z-index: 10; display: grid; gap: 14px;
+    }
+    .infoCard { padding: 18px; }
+    .infoCard h2 { margin: 0 0 8px; font-size: 1.25rem; letter-spacing: -.02em; }
+    .infoCard p { margin: 0; color: var(--muted); line-height: 1.45; font-size: 1rem; }
+    .partBadge { display: inline-block; margin-bottom: 10px; padding: 4px 9px; border-radius: 999px; background: rgba(93,169,255,.16); color: #beddff; border: 1px solid rgba(93,169,255,.28); font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+    .controls {
+      position: absolute; left: 24px; bottom: 24px; right: 24px; z-index: 10; padding: 16px; display: grid; gap: 14px; grid-template-columns: auto 1fr 1fr auto; align-items: center;
+    }
+    button {
+      border: 1px solid rgba(255,255,255,0.16); color: white; background: linear-gradient(180deg, rgba(93,169,255,.95), rgba(59,121,205,.95));
+      border-radius: 14px; padding: 13px 18px; font-size: 1rem; font-weight: 750; cursor: pointer; min-width: 120px; box-shadow: 0 12px 28px rgba(35,104,190,.25);
+    }
+    button:hover { filter: brightness(1.08); }
+    .sliderGroup { display: grid; gap: 7px; min-width: 180px; }
+    .sliderTop { display: flex; justify-content: space-between; color: var(--muted); font-size: .88rem; }
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .legend { display: flex; gap: 10px; align-items: center; justify-content: flex-end; flex-wrap: wrap; color: var(--muted); font-size: .86rem; }
+    .dot { width: 10px; height: 10px; border-radius: 99px; display: inline-block; margin-right: 5px; }
+    .blue { background: var(--accent); } .orange { background: var(--accent-2); } .green { background: var(--good); } .red { background: var(--danger); }
+    .hintCard { position: absolute; left: 24px; top: 150px; max-width: 330px; z-index: 10; padding: 13px 15px; color: var(--muted); line-height: 1.35; font-size: .92rem; }
+    .label {
+      position: absolute; z-index: 9; transform: translate(-50%, -50%); padding: 5px 8px; border-radius: 9px;
+      background: rgba(10,15,22,.74); border: 1px solid rgba(255,255,255,.12); color: rgba(238,243,247,.86); font-size: 12px; pointer-events: none; white-space: nowrap;
+    }
+    .label.hidden { display: none; }
+    @media (max-width: 950px) {
+      .topbar { flex-direction: column; right: 16px; left: 16px; top: 14px; }
+      .stageCard { text-align: left; min-width: 0; }
+      .side { top: auto; left: 16px; right: 16px; bottom: 152px; width: auto; }
+      .hintCard { display: none; }
+      .controls { left: 16px; right: 16px; bottom: 14px; grid-template-columns: 1fr; }
+      .legend { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="topbar">
+      <section class="titleCard">
+        <h1>Viertaktmotor</h1>
+        <p>Interaktive 3D-Simulation mit Start/Pause, Geschwindigkeit, Explosionsdarstellung und anklickbaren Bauteilen.</p>
+      </section>
+      <section class="stageCard" aria-live="polite">
+        <div class="stageLabel">Aktueller Takt</div>
+        <div class="stageName" id="stageName">Ansaugen</div>
+        <div class="stageDescription" id="stageDescription">Das Einlassventil öffnet sich. Das Gemisch strömt in den Zylinder.</div>
+      </section>
+    </div>
+
+    <div class="hintCard">Klicke ein Bauteil im Motor an. Mit dem Explosionsregler ziehst du die Teile auseinander, ohne die Motorbewegung zu stoppen.</div>
+
+    <aside class="side">
+      <section class="infoCard">
+        <span class="partBadge">Infofeld</span>
+        <h2 id="partTitle">Bauteil auswählen</h2>
+        <p id="partText">Klicke auf Kolben, Pleuelstange, Kurbelwelle, Einlassventil, Auslassventil, Zündkerze, Zylinder oder Brennraum.</p>
+      </section>
+    </aside>
+
+    <div class="controls">
+      <button id="playBtn">Pause</button>
+      <div class="sliderGroup">
+        <div class="sliderTop"><span>Geschwindigkeit</span><strong id="speedValue">1.0×</strong></div>
+        <input id="speedSlider" type="range" min="0.2" max="2.4" step="0.1" value="1" />
+      </div>
+      <div class="sliderGroup">
+        <div class="sliderTop"><span>Explosionsdarstellung</span><strong id="explodeValue">0%</strong></div>
+        <input id="explodeSlider" type="range" min="0" max="1" step="0.01" value="0" />
+      </div>
+      <div class="legend">
+        <span><i class="dot blue"></i>Luft/Kraftstoff</span>
+        <span><i class="dot orange"></i>Zündung/Arbeit</span>
+        <span><i class="dot red"></i>Abgas</span>
+        <span><i class="dot green"></i>Bewegung</span>
+      </div>
+    </div>
+  </div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import gsap from 'gsap';
+
+const app = document.getElementById('app');
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x0f141b, 8, 26);
+
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(5.8, 3.4, 7.2);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+app.prepend(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 1.1, 0);
+controls.maxDistance = 14;
+controls.minDistance = 4;
+controls.maxPolarAngle = Math.PI * 0.48;
+
+const ambient = new THREE.HemisphereLight(0xddeaff, 0x20232a, 1.3);
+scene.add(ambient);
+const key = new THREE.DirectionalLight(0xffffff, 2.6);
+key.position.set(4, 7, 5);
+key.castShadow = true;
+key.shadow.camera.near = 0.1;
+key.shadow.camera.far = 20;
+key.shadow.mapSize.set(2048, 2048);
+scene.add(key);
+const rim = new THREE.PointLight(0x5da9ff, 2.4, 12);
+rim.position.set(-4, 3, -4);
+scene.add(rim);
+
+const floor = new THREE.Mesh(
+  new THREE.CircleGeometry(7, 80),
+  new THREE.MeshStandardMaterial({ color: 0x111923, roughness: 0.82, metalness: 0.1 })
+);
+floor.rotation.x = -Math.PI / 2;
+floor.position.y = -1.04;
+floor.receiveShadow = true;
+scene.add(floor);
+
+function mat(color, metalness = .25, roughness = .42, opacity = 1) {
+  return new THREE.MeshStandardMaterial({ color, metalness, roughness, transparent: opacity < 1, opacity });
+}
+const materials = {
+  steel: mat(0x9aa8b7, .55, .3),
+  dark: mat(0x2a313b, .35, .38),
+  piston: mat(0xc1ccd7, .6, .24),
+  brass: mat(0xd6a651, .45, .28),
+  blue: mat(0x5da9ff, .1, .22, .58),
+  orange: mat(0xff9c55, .1, .22, .78),
+  red: mat(0xff6b6b, .1, .22, .7),
+  green: mat(0x7bd88f, .15, .26),
+  glass: mat(0x6f879c, .18, .18, .24),
+  spark: mat(0xfff1a8, .0, .18),
+  selected: mat(0xffd37a, .25, .2)
+};
+
+const motor = new THREE.Group();
+scene.add(motor);
+
+const clickable = [];
+const partInfo = {
+  piston: ['Kolben', 'Der Kolben bewegt sich im Zylinder auf und ab. Dadurch saugt er Gemisch an, verdichtet es und nimmt die Kraft der Explosion auf.'],
+  conrod: ['Pleuelstange', 'Die Pleuelstange verbindet Kolben und Kurbelwelle. Sie überträgt die Auf-und-ab-Bewegung des Kolbens.'],
+  crank: ['Kurbelwelle', 'Die Kurbelwelle macht aus der geraden Bewegung des Kolbens eine Drehbewegung. Diese Drehung kann später Räder antreiben.'],
+  intake: ['Einlassventil', 'Durch das Einlassventil kommt frisches Luft-Kraftstoff-Gemisch in den Zylinder. Es ist nur beim Ansaugen geöffnet.'],
+  exhaust: ['Auslassventil', 'Durch das Auslassventil entweichen die verbrannten Gase. Es ist beim Ausstoßen geöffnet.'],
+  spark: ['Zündkerze', 'Die Zündkerze erzeugt im richtigen Moment einen Funken. Dadurch entzündet sich das verdichtete Gemisch.'],
+  cylinder: ['Zylinder', 'Der Zylinder führt den Kolben. In seinem oberen Bereich laufen Verdichten, Zünden und Verbrennen ab.'],
+  chamber: ['Brennraum', 'Im Brennraum wird das Gemisch stark verdichtet und gezündet. Hier entsteht der Druck, der den Kolben nach unten drückt.']
+};
+
+function register(obj, key, labelText, labelOffset = new THREE.Vector3()) {
+  obj.userData.partKey = key;
+  obj.userData.labelText = labelText;
+  obj.userData.labelOffset = labelOffset;
+  clickable.push(obj);
+  return obj;
+}
+
+function roundedBox(w,h,d,r=0.06,s=4) {
+  const shape = new THREE.Shape();
+  const x=-w/2, y=-h/2;
+  shape.moveTo(x+r,y); shape.lineTo(x+w-r,y); shape.quadraticCurveTo(x+w,y,x+w,y+r);
+  shape.lineTo(x+w,y+h-r); shape.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  shape.lineTo(x+r,y+h); shape.quadraticCurveTo(x,y+h,x,y+h-r);
+  shape.lineTo(x,y+r); shape.quadraticCurveTo(x,y,x+r,y);
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: d, bevelEnabled: true, bevelSegments: s, steps: 1, bevelSize: r/2, bevelThickness: r/2 });
+  geo.center(); return geo;
+}
+
+const cylinderGroup = new THREE.Group();
+motor.add(cylinderGroup);
+const cylOuter = register(new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.05, 3.65, 64, 1, true), materials.glass), 'cylinder', 'Zylinder', new THREE.Vector3(-.8, .8, 0));
+cylOuter.position.y = 1.25;
+cylOuter.castShadow = true;
+cylinderGroup.add(cylOuter);
+const cylRimTop = new THREE.Mesh(new THREE.TorusGeometry(1.055, .035, 12, 64), materials.steel);
+cylRimTop.position.y = 3.075; cylRimTop.rotation.x = Math.PI/2; cylinderGroup.add(cylRimTop);
+const cylRimBottom = cylRimTop.clone(); cylRimBottom.position.y = -.575; cylinderGroup.add(cylRimBottom);
+const head = new THREE.Mesh(new THREE.CylinderGeometry(1.18, 1.08, .45, 64), materials.dark);
+head.position.y = 3.28; head.castShadow = true; cylinderGroup.add(head);
+const chamber = register(new THREE.Mesh(new THREE.SphereGeometry(.72, 42, 20, 0, Math.PI*2, 0, Math.PI/2), materials.orange), 'chamber', 'Brennraum', new THREE.Vector3(.7, .35, 0));
+chamber.position.y = 3.04; chamber.rotation.x = Math.PI; cylinderGroup.add(chamber);
+
+const pistonGroup = new THREE.Group();
+motor.add(pistonGroup);
+const piston = register(new THREE.Mesh(new THREE.CylinderGeometry(.82, .82, .48, 64), materials.piston), 'piston', 'Kolben', new THREE.Vector3(.85, .25, 0));
+piston.castShadow = true; pistonGroup.add(piston);
+const pistonRing1 = new THREE.Mesh(new THREE.TorusGeometry(.825,.026,10,60), materials.dark); pistonRing1.rotation.x=Math.PI/2; pistonRing1.position.y=.12; pistonGroup.add(pistonRing1);
+const pistonRing2 = pistonRing1.clone(); pistonRing2.position.y=-.04; pistonGroup.add(pistonRing2);
+
+const crankGroup = new THREE.Group();
+crankGroup.position.y = -1.0;
+motor.add(crankGroup);
+const shaft = register(new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,2.7,32), materials.steel), 'crank', 'Kurbelwelle', new THREE.Vector3(0,-.55,1.3));
+shaft.rotation.z = Math.PI/2; shaft.castShadow = true; crankGroup.add(shaft);
+const counter = new THREE.Mesh(new THREE.BoxGeometry(.42,.86,.22), materials.dark); counter.castShadow=true; counter.position.x=.38; crankGroup.add(counter);
+const crankPin = new THREE.Group(); crankGroup.add(crankPin);
+const pinMesh = new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.7,24), materials.brass); pinMesh.rotation.z = Math.PI/2; pinMesh.castShadow=true; crankPin.add(pinMesh);
+register(pinMesh, 'crank', 'Kurbelwelle', new THREE.Vector3(.4,-.4,0));
+
+const conrod = register(new THREE.Mesh(roundedBox(.18, 2.25, .18, .055), materials.green), 'conrod', 'Pleuelstange', new THREE.Vector3(.28,0,0));
+conrod.castShadow = true;
+motor.add(conrod);
+
+const intakeGroup = new THREE.Group(); intakeGroup.position.set(-.52,3.25,0); motor.add(intakeGroup);
+const exhaustGroup = new THREE.Group(); exhaustGroup.position.set(.52,3.25,0); motor.add(exhaustGroup);
+function makeValve(group, key, label, colorMat){
+  const stem = register(new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.9,20), colorMat), key, label, new THREE.Vector3(0,.35,0));
+  stem.castShadow=true; group.add(stem);
+  const plate = new THREE.Mesh(new THREE.CylinderGeometry(.24,.17,.11,32), colorMat); plate.position.y=-.48; plate.castShadow=true; group.add(plate);
+  plate.userData.partKey = key; plate.userData.labelText = label; clickable.push(plate);
+  return {stem, plate, group};
+}
+const intakeValve = makeValve(intakeGroup,'intake','Einlassventil',materials.blue);
+const exhaustValve = makeValve(exhaustGroup,'exhaust','Auslassventil',materials.red);
+
+const sparkGroup = new THREE.Group(); sparkGroup.position.set(0,3.74,0); motor.add(sparkGroup);
+const sparkBody = register(new THREE.Mesh(new THREE.CylinderGeometry(.12,.15,.52,24), materials.steel), 'spark', 'Zündkerze', new THREE.Vector3(.15,.4,0));
+sparkBody.castShadow=true; sparkGroup.add(sparkBody);
+const sparkTip = new THREE.Mesh(new THREE.ConeGeometry(.07,.22,20), materials.spark); sparkTip.position.y=-.36; sparkTip.rotation.x=Math.PI; sparkGroup.add(sparkTip);
+sparkTip.userData.partKey = 'spark'; sparkTip.userData.labelText = 'Zündkerze'; clickable.push(sparkTip);
+
+const intakePipe = new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,1.8,24), materials.blue); intakePipe.rotation.z=Math.PI/2; intakePipe.position.set(-1.65,3.17,0); motor.add(intakePipe);
+const exhaustPipe = new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,1.8,24), materials.red); exhaustPipe.rotation.z=Math.PI/2; exhaustPipe.position.set(1.65,3.17,0); motor.add(exhaustPipe);
+
+const intakeFlow = new THREE.Group(); motor.add(intakeFlow);
+for(let i=0;i<9;i++){
+  const s = new THREE.Mesh(new THREE.SphereGeometry(.055,16,10), materials.blue);
+  s.position.set(-2.55 + i*.22, 3.17, 0);
+  intakeFlow.add(s);
+}
+const exhaustFlow = new THREE.Group(); motor.add(exhaustFlow);
+for(let i=0;i<9;i++){
+  const s = new THREE.Mesh(new THREE.SphereGeometry(.055,16,10), materials.red);
+  s.position.set(.72 + i*.22, 3.17, 0);
+  exhaustFlow.add(s);
+}
+const sparkFlash = new THREE.PointLight(0xffcc55, 0, 3); sparkFlash.position.set(0,2.86,0); motor.add(sparkFlash);
+const flame = new THREE.Mesh(new THREE.SphereGeometry(.52,32,18), materials.orange); flame.position.set(0,2.63,0); flame.scale.set(.2,.2,.2); motor.add(flame);
+
+const labels = new Map();
+['Kolben','Pleuelstange','Kurbelwelle','Einlassventil','Auslassventil','Zündkerze','Zylinder','Brennraum'].forEach(t => {
+  const el = document.createElement('div'); el.className = 'label hidden'; el.textContent = t; app.appendChild(el); labels.set(t, el);
+});
+
+const basePositions = new Map();
+const explosionTargets = new Map();
+const explodable = [cylinderGroup,pistonGroup,crankGroup,intakeGroup,exhaustGroup,sparkGroup,intakePipe,exhaustPipe,chamber];
+explodable.forEach(o => basePositions.set(o, o.position.clone()));
+explosionTargets.set(cylinderGroup, new THREE.Vector3(0, .2, -.55));
+explosionTargets.set(pistonGroup, new THREE.Vector3(0, -.15, .95));
+explosionTargets.set(crankGroup, new THREE.Vector3(0, -.9, 0));
+explosionTargets.set(intakeGroup, new THREE.Vector3(-1.35, .55, 0));
+explosionTargets.set(exhaustGroup, new THREE.Vector3(1.35, .55, 0));
+explosionTargets.set(sparkGroup, new THREE.Vector3(0, 1.05, 0));
+explosionTargets.set(intakePipe, new THREE.Vector3(-1.75, .55, 0));
+explosionTargets.set(exhaustPipe, new THREE.Vector3(1.75, .55, 0));
+explosionTargets.set(chamber, new THREE.Vector3(.65, .35, -.8));
+
+let running = true;
+let speed = 1;
+let explode = 0;
+let theta = 0;
+const crankRadius = .68;
+const rodLength = 2.15;
+const crankBaseY = -1.0;
+
+const stageName = document.getElementById('stageName');
+const stageDescription = document.getElementById('stageDescription');
+const stages = [
+  ['Ansaugen', 'Das Einlassventil öffnet sich. Das Gemisch strömt in den Zylinder.'],
+  ['Verdichten', 'Beide Ventile sind geschlossen. Der Kolben drückt das Gemisch stark zusammen.'],
+  ['Arbeiten', 'Die Zündkerze funkt. Der Druck schiebt den Kolben kräftig nach unten.'],
+  ['Ausstoßen', 'Das Auslassventil öffnet sich. Der Kolben schiebt die Abgase hinaus.']
+];
+let currentStage = -1;
+
+function pistonYFromTheta(a){
+  // a = 0 top dead centre, pi bottom dead centre
+  const yPin = crankBaseY + crankRadius * Math.cos(a);
+  const xPin = crankRadius * Math.sin(a);
+  const ySmall = yPin + Math.sqrt(Math.max(.01, rodLength*rodLength - xPin*xPin));
+  return ySmall;
+}
+
+function updateMechanics(dt){
+  if(running) theta = (theta + dt * speed * Math.PI * .88) % (Math.PI*4);
+  const a = theta % (Math.PI*2);
+  const xPin = crankRadius * Math.sin(a);
+  const yPin = crankBaseY + crankRadius * Math.cos(a);
+  const pY = pistonYFromTheta(a);
+  pistonGroup.position.y = pY;
+  crankGroup.rotation.z = a;
+  crankPin.position.set(xPin, yPin-crankBaseY, 0);
+  const midX = xPin/2;
+  const midY = (yPin + pY)/2;
+  const dx = -xPin;
+  const dy = pY-yPin;
+  conrod.position.set(midX, midY, 0);
+  conrod.scale.y = Math.sqrt(dx*dx+dy*dy)/2.25;
+  conrod.rotation.z = Math.atan2(-dx, dy);
+
+  const cycle = theta / (Math.PI*4);
+  const stage = Math.floor(cycle * 4) % 4;
+  if(stage !== currentStage){
+    currentStage = stage;
+    stageName.textContent = stages[stage][0];
+    stageDescription.textContent = stages[stage][1];
+    gsap.fromTo('.stageCard', { scale: .985 }, { scale: 1, duration: .35, ease: 'power2.out' });
+  }
+
+  const local = (cycle*4)%1;
+  intakeValve.group.position.y = stage===0 ? -0.28 : 0;
+  exhaustValve.group.position.y = stage===3 ? -0.28 : 0;
+  intakeFlow.visible = stage===0;
+  exhaustFlow.visible = stage===3;
+  flame.visible = stage===2;
+  const flamePulse = stage===2 ? Math.max(0, 1-local*1.15) : 0;
+  flame.scale.setScalar(.22 + flamePulse*.92);
+  flame.material.opacity = .15 + flamePulse*.58;
+  sparkFlash.intensity = (stage===2 && local < .18) ? 8 * (1-local/.18) : 0;
+
+  intakeFlow.children.forEach((s,i)=>{
+    s.position.x = -2.55 + ((i*.22 + local*1.7) % 1.98);
+    s.material.opacity = .25 + .45*Math.sin(local*Math.PI + i);
+  });
+  exhaustFlow.children.forEach((s,i)=>{
+    s.position.x = .72 + ((i*.22 + local*1.75) % 1.98);
+    s.material.opacity = .25 + .45*Math.sin(local*Math.PI + i);
+  });
+}
+
+function updateExplosion(){
+  explodable.forEach(o => {
+    const base = basePositions.get(o);
+    const target = explosionTargets.get(o) || new THREE.Vector3();
+    o.position.copy(base).addScaledVector(target, explode);
+  });
+}
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let selected = null;
+let originalMaterial = null;
+const partTitle = document.getElementById('partTitle');
+const partText = document.getElementById('partText');
+
+function setSelected(obj){
+  const key = obj.userData.partKey;
+  if(!key) return;
+  if(selected && originalMaterial) selected.material = originalMaterial;
+  selected = obj;
+  originalMaterial = obj.material;
+  obj.material = materials.selected;
+  const info = partInfo[key];
+  partTitle.textContent = info[0];
+  partText.textContent = info[1];
+  gsap.fromTo('.infoCard', { y: 8, opacity: .72 }, { y: 0, opacity: 1, duration: .28, ease: 'power2.out' });
+}
+
+function onPointerDown(event){
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(clickable, true);
+  if(hits.length) setSelected(hits[0].object);
+}
+renderer.domElement.addEventListener('pointerdown', onPointerDown);
+renderer.domElement.addEventListener('pointermove', (event)=>{
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(clickable, true);
+  renderer.domElement.style.cursor = hits.length ? 'pointer' : 'grab';
+});
+
+const playBtn = document.getElementById('playBtn');
+playBtn.addEventListener('click', () => { running = !running; playBtn.textContent = running ? 'Pause' : 'Start'; });
+const speedSlider = document.getElementById('speedSlider');
+const speedValue = document.getElementById('speedValue');
+speedSlider.addEventListener('input', e => { speed = Number(e.target.value); speedValue.textContent = speed.toFixed(1)+'×'; });
+const explodeSlider = document.getElementById('explodeSlider');
+const explodeValue = document.getElementById('explodeValue');
+explodeSlider.addEventListener('input', e => {
+  gsap.to(window, { duration: .22, ease: 'power2.out', onUpdate:()=>{}, });
+  explode = Number(e.target.value);
+  explodeValue.textContent = Math.round(explode*100)+'%';
+  updateExplosion();
+});
+
+function updateLabels(){
+  const seen = new Set();
+  clickable.forEach(obj => {
+    if(seen.has(obj.userData.labelText)) return;
+    seen.add(obj.userData.labelText);
+    const el = labels.get(obj.userData.labelText);
+    if(!el) return;
+    const pos = new THREE.Vector3();
+    obj.getWorldPosition(pos);
+    pos.add(obj.userData.labelOffset || new THREE.Vector3());
+    pos.project(camera);
+    const x = (pos.x * .5 + .5) * window.innerWidth;
+    const y = (-pos.y * .5 + .5) * window.innerHeight;
+    const visible = explode > .42 && pos.z < 1;
+    el.classList.toggle('hidden', !visible);
+    el.style.left = x+'px'; el.style.top = y+'px';
+  });
+}
+
+const clock = new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(.035, clock.getDelta());
+  updateMechanics(dt);
+  updateExplosion();
+  controls.update();
+  updateLabels();
+  renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+gsap.from('.titleCard', { y: -16, opacity: 0, duration: .7, ease: 'power3.out' });
+gsap.from('.stageCard', { y: -16, opacity: 0, duration: .7, delay: .1, ease: 'power3.out' });
+gsap.from('.controls', { y: 26, opacity: 0, duration: .7, delay: .2, ease: 'power3.out' });
+gsap.from('.infoCard', { x: 22, opacity: 0, duration: .7, delay: .25, ease: 'power3.out' });
+
+updateExplosion();
+animate();
+</script>
+</body>
+</html>
