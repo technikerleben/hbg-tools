@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Turbinen-Simulator – HBG</title>
+<style>
+:root {
+  --col-slate-dark:  #2C3D4C;
+  --col-slate:       #3E5668;
+  --col-slate-mid:   #6A8599;
+  --col-slate-pale:  #D0DCE6;
+  --col-slate-ghost: #EEF3F7;
+  --col-rust-dark:   #9E4E22;
+  --col-rust:        #D97A4A;
+  --col-rust-pale:   #F5DDD1;
+  --col-sage-dark:   #4D8B3F;
+  --col-sage:        #7DBB6F;
+  --col-sage-pale:   #DDF0D8;
+  --col-warning:      #C17B00;
+  --col-warning-pale: #FFF3CC;
+  --col-warning-text: #5C4400;
+  --col-error:        #C0392B;
+  --col-error-pale:   #FDECEA;
+  --col-error-text:   #7A1B14;
+  --col-bg:           #F5F4F1;
+  --col-white:        #FFFFFF;
+  --col-text:         #1E2A35;
+  --col-text-muted:   #5A6A78;
+  --col-border:       #D4D0C8;
+  --col-disabled-bg:  #EBEBEA;
+  --col-disabled-text:#7A7672;
+  --col-focus:        #3E5668;
+  --col-shadow:       rgba(62,86,104,0.10);
+  --text-xs:   0.694rem;
+  --text-sm:   0.833rem;
+  --text-base: 1rem;
+  --text-md:   1.2rem;
+  --text-lg:   1.44rem;
+  --text-xl:   1.728rem;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--col-bg);
+  color: var(--col-text);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+:focus-visible {
+  outline: 3px solid var(--col-focus);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ---------- Header ---------- */
+header {
+  background: var(--col-slate);
+  color: white;
+  padding: 10px 24px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+header h1 { font-size: var(--text-lg); font-weight: 700; line-height: 1.2; }
+.header-meta {
+  font-size: var(--text-xs);
+  color: var(--col-slate-pale);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.hbg-wordmark { display: inline-flex; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+.hbg-wordmark__main { font-size: var(--text-md); font-weight: 800; color: white; }
+.hbg-wordmark__sub  { font-size: var(--text-sm); color: #EBA882; margin-bottom: 1px; }
+
+/* ---------- Modus-Pills ---------- */
+nav.modi {
+  display: flex;
+  gap: 8px;
+  padding: 10px 24px;
+  background: var(--col-white);
+  border-bottom: 1px solid var(--col-border);
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+.pill {
+  border: 2px solid var(--col-slate);
+  background: transparent;
+  color: var(--col-slate);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  min-height: 44px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+.pill:hover { background: var(--col-slate-ghost); }
+.pill[aria-pressed="true"] {
+  background: var(--col-slate);
+  color: white;
+}
+
+/* ---------- Hauptlayout ---------- */
+main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+#szene-wrap {
+  flex: 1.55;
+  position: relative;
+  min-width: 0;
+  background: var(--col-slate-ghost);
+}
+#szene-wrap canvas { display: block; touch-action: none; }
+.szene-hinweis {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  background: rgba(44,61,76,0.85);
+  color: white;
+  font-size: var(--text-sm);
+  padding: 7px 16px;
+  border-radius: 999px;
+  pointer-events: none;
+  white-space: nowrap;
+  transition: opacity 0.4s;
+}
+.szene-hinweis.aus { opacity: 0; }
+
+/* Explosions-Slider als Overlay */
+#explosion-ui {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--col-white);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px var(--col-shadow);
+  padding: 10px 18px;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  width: min(420px, 88%);
+}
+#explosion-ui.aktiv { display: flex; }
+#explosion-ui label { font-size: var(--text-sm); font-weight: 700; color: var(--col-slate); white-space: nowrap; }
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--col-slate-pale);
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--col-rust-dark);
+  border: 3px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  cursor: pointer;
+}
+input[type="range"]:focus-visible { outline: 3px solid var(--col-focus); outline-offset: 3px; }
+
+/* ---------- Seitenpanel ---------- */
+#panel {
+  flex: 1;
+  max-width: 400px;
+  min-width: 300px;
+  background: var(--col-white);
+  border-left: 1px solid var(--col-border);
+  overflow-y: auto;
+  padding: 18px 20px 28px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  line-height: 1.4;
+}
+.badge--slate { background: var(--col-slate); color: white; }
+.badge--rust  { background: var(--col-rust-dark); color: white; }
+.badge--pale-sage { background: var(--col-sage-pale); color: var(--col-sage-dark); }
+
+.panel-titel {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin: 8px 0 4px;
+  line-height: 1.25;
+}
+.panel-text { margin: 12px 0; }
+.panel-text p { margin-bottom: 10px; }
+.panel-text p.spricht {
+  background: var(--col-rust-pale);
+  border-radius: 6px;
+  box-shadow: 0 0 0 6px var(--col-rust-pale);
+}
+
+.merke-box {
+  background: var(--col-slate-pale);
+  border-left: 4px solid var(--col-slate-mid);
+  border-radius: 0 8px 8px 0;
+  padding: 10px 14px;
+  margin: 12px 0;
+  font-size: var(--text-sm);
+}
+.merke-box strong { color: var(--col-slate); }
+
+.tts-leiste { display: flex; gap: 8px; margin: 14px 0 6px; flex-wrap: wrap; }
+
+.btn-primary, .btn-secondary, .btn-success {
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: var(--text-base);
+  font-weight: 600;
+  min-height: 44px;
+  min-width: 44px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-primary { background: var(--col-rust-dark); color: white; }
+.btn-primary:hover  { background: #B55E2A; }
+.btn-primary:active { background: #7D3C18; transform: translateY(1px); }
+.btn-primary:disabled { background: var(--col-disabled-bg); color: var(--col-disabled-text); cursor: not-allowed; }
+.btn-secondary { background: transparent; color: var(--col-slate); border: 2px solid var(--col-slate); }
+.btn-secondary:hover { background: var(--col-slate-ghost); }
+.btn-success { background: var(--col-sage-dark); color: white; }
+.btn-success:hover { background: #3D7032; }
+
+/* Bauteil-Schnellwahl */
+.teil-liste { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.teil-chip {
+  border: 2px solid var(--col-border);
+  background: var(--col-white);
+  color: var(--col-text);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  min-height: 44px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.2s, background 0.2s;
+}
+.teil-chip:hover { background: var(--col-slate-ghost); }
+.teil-chip.aktiv { border-color: var(--col-rust-dark); background: var(--col-rust-pale); color: var(--col-rust-dark); }
+
+/* Feedback-Boxen */
+.feedback-richtig {
+  background: var(--col-sage-pale);
+  border-left: 4px solid var(--col-sage-dark);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  color: #2D5C25;
+  margin: 12px 0;
+}
+.feedback-richtig::before { content: '✓ '; font-weight: 700; color: var(--col-sage-dark); }
+.feedback-falsch {
+  background: var(--col-error-pale);
+  border-left: 4px solid var(--col-error);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  color: var(--col-error-text);
+  margin: 12px 0;
+}
+.feedback-falsch::before { content: '✗ '; font-weight: 700; color: var(--col-error); }
+.feedback-warnung {
+  background: var(--col-warning-pale);
+  border-left: 4px solid var(--col-warning);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  color: var(--col-warning-text);
+  margin: 12px 0;
+  font-size: var(--text-sm);
+}
+.feedback-warnung::before { content: '⚠ '; font-weight: 700; }
+
+/* Energiefluss-Modus */
+.energie-block { margin: 14px 0; }
+.energie-block label { display: block; font-size: var(--text-sm); font-weight: 700; color: var(--col-slate); margin-bottom: 6px; }
+.messwert {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 10px 0 4px;
+  font-size: var(--text-sm);
+  color: var(--col-text-muted);
+}
+.messwert strong { font-size: var(--text-md); color: var(--col-text); font-variant-numeric: tabular-nums; }
+.progress-bar { height: 12px; background: var(--col-slate-pale); border-radius: 6px; overflow: hidden; }
+.progress-bar__fill { height: 100%; background: var(--col-rust); border-radius: 6px; transition: width 0.15s linear; }
+
+.lampe-wrap { display: flex; align-items: center; gap: 14px; margin-top: 16px; }
+.lampe {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: #E8E5DC;
+  border: 3px solid var(--col-border);
+  flex-shrink: 0;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.lampe-text { font-size: var(--text-sm); color: var(--col-text-muted); }
+
+/* Quiz */
+.quiz-frage-text { font-weight: 600; font-size: var(--text-md); margin: 10px 0; }
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  color: var(--col-text-muted);
+  margin-top: 14px;
+}
+.quiz-balken { height: 8px; background: var(--col-slate-pale); border-radius: 4px; overflow: hidden; margin: 6px 0 12px; }
+.quiz-balken__fill { height: 100%; background: var(--col-sage); border-radius: 4px; transition: width 0.4s ease; }
+.quiz-ergebnis { text-align: center; padding: 14px 0; }
+.quiz-ergebnis .sterne { font-size: 2.2rem; line-height: 1.2; }
+
+hr.trenner { border: none; border-top: 1px solid var(--col-border); margin: 16px 0; }
+
+/* Hochformat / schmale Geräte: untereinander */
+@media (max-width: 740px), (orientation: portrait) and (max-width: 900px) {
+  main { flex-direction: column; }
+  #szene-wrap { flex: 1.2; min-height: 280px; }
+  #panel { max-width: none; min-width: 0; border-left: none; border-top: 1px solid var(--col-border); flex: 1; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🌀 Turbinen-Simulator</h1>
+    <div class="header-meta">HBG Dortmund · WP Technik · Klasse 7/8</div>
+  </div>
+  <div class="hbg-wordmark">
+    <span class="hbg-wordmark__main">HBG</span>
+    <span class="hbg-wordmark__sub">SRL</span>
+  </div>
+</header>
+
+<nav class="modi" aria-label="Modus wählen">
+  <button class="pill" data-modus="erkunden" aria-pressed="true">🔍 Erkunden</button>
+  <button class="pill" data-modus="explosion" aria-pressed="false">🧩 Explosion</button>
+  <button class="pill" data-modus="energie" aria-pressed="false">⚡ Energiefluss</button>
+  <button class="pill" data-modus="quiz" aria-pressed="false">⭐ Quiz</button>
+</nav>
+
+<main>
+  <div id="szene-wrap">
+    <div id="explosion-ui">
+      <label for="explosion-slider">Auseinanderziehen</label>
+      <input type="range" id="explosion-slider" min="0" max="100" value="0" aria-label="Explosionsansicht: Bauteile auseinanderziehen">
+    </div>
+    <div class="szene-hinweis" id="szene-hinweis">👆 Tippe auf ein Bauteil · ☝️ Drehen · 🤏 Zoomen</div>
+  </div>
+
+  <aside id="panel" aria-live="polite"></aside>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+
+/* =========================================================
+   1) DATEN: Bauteile, Texte, Quiz
+   ========================================================= */
+const TEILE = {
+  einlauf: {
+    nr: 1,
+    name: 'Einströmdüse',
+    farbe: 0x3E5668,
+    text: [
+      'Durch die Einströmdüse gelangt das Wasser in die Turbine.',
+      'Die Düse wird nach vorne immer enger. Dadurch wird das Wasser schneller – aus Druck wird Bewegungsenergie.',
+      'Mit hohem Tempo trifft das Wasser dann auf die Schaufeln des Laufrads.'
+    ],
+    merke: 'Die Düse macht das Wasser schnell: Je enger die Öffnung, desto höher das Tempo.'
+  },
+  laufrad: {
+    nr: 2,
+    name: 'Laufrad mit Schaufeln',
+    farbe: 0xD97A4A,
+    text: [
+      'Das Laufrad ist das Herzstück der Turbine.',
+      'Das schnelle Wasser drückt gegen die schräg gestellten Schaufeln und schiebt sie zur Seite. So beginnt sich das Laufrad zu drehen.',
+      'Die Bewegungsenergie des Wassers wird hier in eine Drehbewegung umgewandelt.'
+    ],
+    merke: 'Am Laufrad wird Strömung zu Drehung – hier passiert die eigentliche Energieumwandlung.'
+  },
+  welle: {
+    nr: 3,
+    name: 'Welle',
+    farbe: 0x8A8F94,
+    text: [
+      'Die Welle ist eine stabile Stange aus Metall.',
+      'Sie ist fest mit dem Laufrad verbunden und dreht sich gemeinsam mit ihm.',
+      'Über die Welle gelangt die Drehbewegung vom Laufrad bis zum Generator. Ohne Welle könnte die Energie nicht weitergegeben werden.'
+    ],
+    merke: 'Die Welle überträgt die Drehbewegung – wie eine Verlängerung des Laufrads.'
+  },
+  generator: {
+    nr: 4,
+    name: 'Generator',
+    farbe: 0x2C3D4C,
+    text: [
+      'Der Generator macht aus der Drehbewegung elektrischen Strom.',
+      'In seinem Inneren drehen sich Magnete an Spulen aus Kupferdraht vorbei. Dadurch entsteht eine elektrische Spannung – genau wie beim Fahrraddynamo.',
+      'Je schneller sich die Welle dreht, desto mehr Strom wird erzeugt.'
+    ],
+    merke: 'Ein Generator funktioniert wie ein umgekehrter Elektromotor: Drehung rein, Strom raus.'
+  },
+  gehaeuse: {
+    nr: 5,
+    name: 'Gehäuse',
+    farbe: 0x6A8599,
+    text: [
+      'Das Gehäuse umschließt das Laufrad wie eine Schutzhülle.',
+      'Es führt das Wasser gezielt durch die Turbine, damit keine Energie verloren geht.',
+      'Außerdem schützt es Menschen vor den schnell drehenden Teilen. In echten Kraftwerken ist das Gehäuse aus dickem Stahl.'
+    ],
+    merke: 'Das Gehäuse lenkt die Strömung und schützt – Sicherheit geht vor!'
+  }
+};
+
+const UEBERSICHT_TEXT = [
+  'So funktioniert eine Turbine: Wasser strömt durch die Düse und wird dabei schneller.',
+  'Es trifft auf die Schaufeln des Laufrads und bringt es zum Drehen. Die Welle überträgt diese Drehung zum Generator.',
+  'Der Generator wandelt die Drehbewegung in elektrischen Strom um. Nach dem gleichen Prinzip arbeiten auch Dampfturbinen im Kraftwerk und Windräder.'
+];
+
+const QUIZ_AUFGABEN = [
+  { teil: 'einlauf',   frage: 'Tippe auf das Bauteil, das das Wasser schneller macht.' },
+  { teil: 'laufrad',   frage: 'Tippe auf das Bauteil, das die Strömung in eine Drehbewegung umwandelt.' },
+  { teil: 'welle',     frage: 'Tippe auf das Bauteil, das die Drehbewegung zum Generator überträgt.' },
+  { teil: 'generator', frage: 'Tippe auf das Bauteil, das aus der Drehung elektrischen Strom erzeugt.' },
+  { teil: 'gehaeuse',  frage: 'Tippe auf das Bauteil, das das Laufrad schützt und das Wasser führt.' }
+];
+
+const KEYS = { quiz: 'hbg_turbine_quiz' };
+function save(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); } catch(e) {} }
+function load(key) { try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : null; } catch(e) { return null; } }
+
+/* =========================================================
+   2) THREE.JS – Szene, Turbine, Partikel
+   ========================================================= */
+const wrap = document.getElementById('szene-wrap');
+const szene = new THREE.Scene();
+szene.background = new THREE.Color(0xEEF3F7);
+
+const kamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+wrap.appendChild(renderer.domElement);
+
+/* Licht */
+szene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const hemi = new THREE.HemisphereLight(0xEEF3F7, 0xD0DCE6, 0.4);
+szene.add(hemi);
+const sonne = new THREE.DirectionalLight(0xffffff, 0.75);
+sonne.position.set(5, 8, 6);
+szene.add(sonne);
+const fuellLicht = new THREE.DirectionalLight(0xffffff, 0.25);
+fuellLicht.position.set(-6, 3, -5);
+szene.add(fuellLicht);
+
+/* Boden-Schatten (dezent) */
+const boden = new THREE.Mesh(
+  new THREE.CircleGeometry(7, 48),
+  new THREE.MeshBasicMaterial({ color: 0xDDE6EC, transparent: true, opacity: 0.55 })
+);
+boden.rotation.x = -Math.PI / 2;
+boden.position.y = -2.1;
+szene.add(boden);
+
+/* ---- Bauteil-Gruppen ---- */
+const gruppen = {};   // id -> THREE.Group
+const basisPos = {};  // id -> Vector3
+const explodeDir = {
+  einlauf:   new THREE.Vector3(-2.2, 0, 0),
+  laufrad:   new THREE.Vector3(-0.7, 0, 0),
+  gehaeuse:  new THREE.Vector3(0, 2.1, 0),
+  welle:     new THREE.Vector3(0.8, 0, 0),
+  generator: new THREE.Vector3(2.3, 0, 0)
+};
+
+function stdMat(farbe, opts) {
+  return new THREE.MeshStandardMaterial(Object.assign({
+    color: farbe, roughness: 0.55, metalness: 0.25
+  }, opts || {}));
+}
+
+function neueGruppe(id, x, y, z) {
+  const g = new THREE.Group();
+  g.position.set(x, y || 0, z || 0);
+  g.userData.partId = id;
+  basisPos[id] = g.position.clone();
+  gruppen[id] = g;
+  szene.add(g);
+  return g;
+}
+
+/* 1) Einströmdüse: Rohr + Konus (Achse = x, Strömung von -x nach +x) */
+(function bauEinlauf() {
+  const g = neueGruppe('einlauf', 0, 0, 0);
+  const rohr = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 1.6, 32), stdMat(TEILE.einlauf.farbe));
+  rohr.rotation.z = -Math.PI / 2;
+  rohr.position.x = -4.3;
+  g.add(rohr);
+  const flansch = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, 0.18, 32), stdMat(0x2C3D4C));
+  flansch.rotation.z = -Math.PI / 2;
+  flansch.position.x = -5.05;
+  g.add(flansch);
+  const konus = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.95, 1.3, 32), stdMat(TEILE.einlauf.farbe));
+  konus.rotation.z = -Math.PI / 2;
+  konus.position.x = -2.85;
+  g.add(konus);
+})();
+
+/* 2) Laufrad: Nabe + 8 schräg gestellte Schaufeln */
+(function bauLaufrad() {
+  const g = neueGruppe('laufrad', -1.2, 0, 0);
+  const rotor = new THREE.Group();
+  rotor.name = 'rotor';
+  const nabe = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.7, 32), stdMat(0x9E4E22, { metalness: 0.4 }));
+  nabe.rotation.z = -Math.PI / 2;
+  rotor.add(nabe);
+  const spitze = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.42, 0.5, 32), stdMat(0x9E4E22, { metalness: 0.4 }));
+  spitze.rotation.z = Math.PI / 2;
+  spitze.position.x = -0.6;
+  rotor.add(spitze);
+  for (let i = 0; i < 8; i++) {
+    const pivot = new THREE.Group();
+    pivot.rotation.x = (i / 8) * Math.PI * 2;
+    const schaufel = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.95, 0.46), stdMat(TEILE.laufrad.farbe, { metalness: 0.35 }));
+    schaufel.position.y = 0.85;
+    schaufel.rotation.y = 0.55; /* Anstellwinkel */
+    pivot.add(schaufel);
+    rotor.add(pivot);
+  }
+  g.add(rotor);
+  g.userData.rotor = rotor;
+})();
+
+/* 3) Welle – Geometrie auf x-Achse gebacken, damit sie korrekt um die x-Achse rotiert */
+(function bauWelle() {
+  const g = neueGruppe('welle', 0, 0, 0);
+  const stabGeo = new THREE.CylinderGeometry(0.14, 0.14, 3.1, 24);
+  stabGeo.rotateZ(-Math.PI / 2); /* Längsachse = x */
+  const stab = new THREE.Mesh(stabGeo, stdMat(TEILE.welle.farbe, { metalness: 0.7, roughness: 0.3 }));
+  stab.position.x = 0.75;
+  stab.name = 'wellenstab';
+  /* Zwei Keilstreifen, damit die Drehung der glatten Welle sichtbar wird */
+  [0, Math.PI].forEach(w => {
+    const streifen = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.045, 0.07), stdMat(0x2C3D4C, { metalness: 0.5 }));
+    streifen.position.set(0, Math.cos(w) * 0.13, Math.sin(w) * 0.13);
+    streifen.rotation.x = w;
+    stab.add(streifen);
+  });
+  g.add(stab);
+
+  /* Drehrichtungs-Pfeil: rotierender Ringbogen mit Pfeilspitze um die Welle */
+  const pfeil = new THREE.Group();
+  pfeil.position.x = 1.7;
+  const ringEinheit = new THREE.Group();
+  const pfeilMat = stdMat(0x9E4E22, { metalness: 0.2, roughness: 0.4 });
+  pfeilMat.emissive = new THREE.Color(0x9E4E22);
+  pfeilMat.emissiveIntensity = 0.35;
+  const bogen = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.045, 10, 48, Math.PI * 1.45), pfeilMat);
+  ringEinheit.add(bogen);
+  const spitze = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.3, 14), pfeilMat);
+  spitze.position.set(0.42, 0, 0);   /* am Bogenanfang (Winkel 0) */
+  spitze.rotation.z = Math.PI;       /* zeigt in Bewegungsrichtung (-y lokal) */
+  ringEinheit.add(spitze);
+  ringEinheit.rotation.y = Math.PI / 2; /* Ringachse = x (wie die Welle) */
+  pfeil.add(ringEinheit);
+  g.add(pfeil);
+  g.userData.pfeil = pfeil;
+  const lager = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.55, 0.55), stdMat(0x5A6A78));
+  lager.position.set(0.9, -0.35, 0);
+  g.add(lager);
+  const lagerFuss = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.5, 0.7), stdMat(0x5A6A78));
+  lagerFuss.position.set(0.9, -1.3, 0);
+  g.add(lagerFuss);
+})();
+
+/* 4) Generator: Körper + Kupferringe + Sockel */
+(function bauGenerator() {
+  const g = neueGruppe('generator', 3.1, 0, 0);
+  const koerper = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 1.5, 32), stdMat(TEILE.generator.farbe));
+  koerper.rotation.z = -Math.PI / 2;
+  g.add(koerper);
+  [-0.42, 0, 0.42].forEach(dx => {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.87, 0.07, 14, 40), stdMat(0xB26B3A, { metalness: 0.6, roughness: 0.35 }));
+    ring.rotation.y = Math.PI / 2;
+    ring.position.x = dx;
+    g.add(ring);
+  });
+  const deckel = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.85, 0.35, 32), stdMat(0x2C3D4C));
+  deckel.rotation.z = -Math.PI / 2;
+  deckel.position.x = 0.9;
+  g.add(deckel);
+  const sockel = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.35, 1.4), stdMat(0x5A6A78));
+  sockel.position.y = -1.45;
+  g.add(sockel);
+})();
+
+/* 5) Gehäuse: halbtransparenter Zylinder ums Laufrad */
+(function bauGehaeuse() {
+  const g = neueGruppe('gehaeuse', -1.2, 0, 0);
+  const huelle = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.45, 1.45, 2.0, 40, 1, true),
+    stdMat(TEILE.gehaeuse.farbe, { transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false })
+  );
+  huelle.rotation.z = -Math.PI / 2;
+  g.add(huelle);
+  [-1.0, 1.0].forEach(dx => {
+    const rand = new THREE.Mesh(new THREE.TorusGeometry(1.45, 0.06, 12, 48), stdMat(0x3E5668));
+    rand.rotation.y = Math.PI / 2;
+    rand.position.x = dx;
+    g.add(rand);
+  });
+})();
+
+/* ---- Gesamtgehäuse: transparente Hülle ums komplette System (Explosionsansicht, Stufe 0) ---- */
+const gesamtGehaeuse = new THREE.Group();
+(function bauGesamtGehaeuse() {
+  const boxGeo = new THREE.BoxGeometry(9.8, 4.1, 3.4);
+  const huelle = new THREE.Mesh(boxGeo, new THREE.MeshStandardMaterial({
+    color: 0x6A8599, transparent: true, opacity: 0.14,
+    side: THREE.DoubleSide, depthWrite: false, roughness: 0.2, metalness: 0.1
+  }));
+  gesamtGehaeuse.add(huelle);
+  const kanten = new THREE.LineSegments(
+    new THREE.EdgesGeometry(boxGeo),
+    new THREE.LineBasicMaterial({ color: 0x3E5668, transparent: true, opacity: 0.55 })
+  );
+  gesamtGehaeuse.add(kanten);
+  gesamtGehaeuse.position.set(-0.6, -0.25, 0);
+  gesamtGehaeuse.visible = false;
+  szene.add(gesamtGehaeuse);
+})();
+
+/* ---- Wasser-Partikel ---- */
+const partikel = [];
+const partGeo = new THREE.SphereGeometry(0.055, 8, 8);
+const matWasserSchnell = new THREE.MeshStandardMaterial({ color: 0x3E7CB1, roughness: 0.3 });
+const matWasserLangsam = new THREE.MeshStandardMaterial({ color: 0x9CC4DE, roughness: 0.4, transparent: true, opacity: 0.75 });
+
+for (let i = 0; i < 70; i++) {
+  const m = new THREE.Mesh(partGeo, matWasserSchnell);
+  m.userData = {
+    x: -5.8 + Math.random() * 11,
+    winkel: Math.random() * Math.PI * 2,
+    radFrac: Math.pow(Math.random(), 0.6)
+  };
+  partikel.push(m);
+  szene.add(m);
+}
+
+function huellRadius(x) {
+  if (x < -3.5) return 0.85;
+  if (x < -2.2) return 0.85 - (x + 3.5) / 1.3 * 0.45; /* Düse verengt */
+  if (x < -0.2) return 0.4 + (x + 2.2) / 2.0 * 0.6;   /* im Gehäuse aufweiten */
+  return 1.05;
+}
+function partikelTempo(x, fluss) {
+  const basis = 0.9 + fluss * 3.2;
+  if (x >= -3.5 && x < -2.2) return basis * (1 + (x + 3.5) / 1.3 * 0.9); /* Düse: schneller */
+  if (x >= -1.2) return basis * 0.42; /* nach dem Laufrad: Energie abgegeben */
+  if (x >= -2.2) return basis * 1.9;
+  return basis;
+}
+
+/* ---- Kamera-Steuerung (eigene Orbit-Logik für Touch + Maus) ---- */
+const ziel = new THREE.Vector3(-0.4, -0.1, 0);
+let camTheta = 0.85, camPhi = 1.18, camRadius = 9.5;
+function kameraUpdate() {
+  camPhi = Math.max(0.25, Math.min(1.45, camPhi));
+  camRadius = Math.max(4.5, Math.min(16, camRadius));
+  kamera.position.set(
+    ziel.x + camRadius * Math.sin(camPhi) * Math.sin(camTheta),
+    ziel.y + camRadius * Math.cos(camPhi),
+    ziel.z + camRadius * Math.sin(camPhi) * Math.cos(camTheta)
+  );
+  kamera.lookAt(ziel);
+}
+kameraUpdate();
+
+const zeiger = new Map();
+let tapStart = null;
+let pinchDist = 0;
+
+renderer.domElement.addEventListener('pointerdown', e => {
+  renderer.domElement.setPointerCapture(e.pointerId);
+  zeiger.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (zeiger.size === 1) tapStart = { x: e.clientX, y: e.clientY, t: Date.now() };
+  if (zeiger.size === 2) {
+    const pts = [...zeiger.values()];
+    pinchDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+  }
+});
+renderer.domElement.addEventListener('pointermove', e => {
+  if (!zeiger.has(e.pointerId)) return;
+  const alt = zeiger.get(e.pointerId);
+  const dx = e.clientX - alt.x, dy = e.clientY - alt.y;
+  zeiger.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (zeiger.size === 1) {
+    camTheta -= dx * 0.0055;
+    camPhi   -= dy * 0.0055;
+    kameraUpdate();
+  } else if (zeiger.size === 2) {
+    const pts = [...zeiger.values()];
+    const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    camRadius *= pinchDist / Math.max(d, 1);
+    pinchDist = d;
+    kameraUpdate();
+  }
+});
+function zeigerEnde(e) {
+  if (zeiger.has(e.pointerId) && zeiger.size === 1 && tapStart) {
+    const dist = Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y);
+    if (dist < 8 && Date.now() - tapStart.t < 600) tapAuswerten(e.clientX, e.clientY);
+  }
+  zeiger.delete(e.pointerId);
+  tapStart = null;
+}
+renderer.domElement.addEventListener('pointerup', zeigerEnde);
+renderer.domElement.addEventListener('pointercancel', zeigerEnde);
+renderer.domElement.addEventListener('wheel', e => {
+  e.preventDefault();
+  camRadius *= (1 + Math.sign(e.deltaY) * 0.08);
+  kameraUpdate();
+}, { passive: false });
+
+/* ---- Raycasting: Bauteil antippen ---- */
+const raycaster = new THREE.Raycaster();
+function tapAuswerten(cx, cy) {
+  const r = renderer.domElement.getBoundingClientRect();
+  const nd = new THREE.Vector2(
+    ((cx - r.left) / r.width) * 2 - 1,
+    -((cy - r.top) / r.height) * 2 + 1
+  );
+  raycaster.setFromCamera(nd, kamera);
+  const treffer = raycaster.intersectObjects(Object.values(gruppen), true);
+  if (!treffer.length) return;
+  let obj = treffer[0].object;
+  while (obj && !obj.userData.partId) obj = obj.parent;
+  if (!obj) return;
+  if (modus === 'quiz') quizAntwort(obj.userData.partId);
+  else teilAuswaehlen(obj.userData.partId);
+}
+
+/* ---- Hervorhebung ---- */
+let aktivesTeil = null;
+function hervorheben(id) {
+  Object.values(gruppen).forEach(g => g.traverse(o => {
+    if (o.isMesh) o.material.emissive && o.material.emissive.setHex(0x000000);
+  }));
+  if (id) gruppen[id].traverse(o => {
+    if (o.isMesh && o.material.emissive) {
+      o.material.emissive.setHex(0xD97A4A);
+      o.material.emissiveIntensity = 0.38;
+    }
+  });
+}
+
+/* ---- Größenanpassung ---- */
+function groesseAnpassen() {
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h);
+  kamera.aspect = w / h;
+  kamera.updateProjectionMatrix();
+}
+window.addEventListener('resize', groesseAnpassen);
+new ResizeObserver(groesseAnpassen).observe(wrap);
+groesseAnpassen();
+
+/* ---- Animationsschleife ---- */
+let fluss = 0.55;            /* 0..1 – Strömungsstärke */
+let explodeT = 0, explodeZiel = 0;
+let rotorTempo = 0;
+let zuletzt = performance.now();
+
+function animieren(now) {
+  requestAnimationFrame(animieren);
+  const dt = Math.min((now - zuletzt) / 1000, 0.05);
+  zuletzt = now;
+
+  /* Rotor */
+  const zielTempo = fluss * 7.5;
+  rotorTempo += (zielTempo - rotorTempo) * Math.min(dt * 3, 1);
+  const rotor = gruppen.laufrad.userData.rotor;
+  rotor.rotation.x -= rotorTempo * dt;
+  /* Welle dreht um die x-Achse – wie das Laufrad */
+  const stab = gruppen.welle.getObjectByName('wellenstab');
+  if (stab) stab.rotation.x -= rotorTempo * dt;
+  /* Drehrichtungs-Pfeil läuft mit Rotorgeschwindigkeit um die Welle */
+  const pfeil = gruppen.welle.userData.pfeil;
+  if (pfeil) {
+    pfeil.rotation.x -= rotorTempo * dt;
+    pfeil.visible = rotorTempo > 0.15;
+  }
+
+  /* Explosion sanft animieren */
+  explodeT += (explodeZiel - explodeT) * Math.min(dt * 5, 1);
+  Object.keys(gruppen).forEach(id => {
+    gruppen[id].position.copy(basisPos[id]).addScaledVector(explodeDir[id], explodeT);
+  });
+
+  /* Gesamtgehäuse: zeigt in der Explosionsansicht bei Stufe 0 das integrierte System,
+     verblasst beim Auseinanderziehen */
+  const hFaktor = Math.max(0, 1 - explodeT * 2.2);
+  gesamtGehaeuse.visible = (modus === 'explosion') && hFaktor > 0.02;
+  if (gesamtGehaeuse.visible) {
+    gesamtGehaeuse.children[0].material.opacity = 0.14 * hFaktor;
+    gesamtGehaeuse.children[1].material.opacity = 0.55 * hFaktor;
+  }
+
+  /* Partikel */
+  const sichtbar = explodeT < 0.25;
+  partikel.forEach(p => {
+    p.visible = sichtbar && fluss > 0.02;
+    if (!p.visible) return;
+    const u = p.userData;
+    u.x += partikelTempo(u.x, fluss) * dt;
+    if (u.x > 5.6) {
+      u.x = -5.8 - Math.random() * 0.8;
+      u.winkel = Math.random() * Math.PI * 2;
+      u.radFrac = Math.pow(Math.random(), 0.6);
+    }
+    const rad = huellRadius(u.x) * u.radFrac;
+    p.position.set(u.x, Math.cos(u.winkel) * rad, Math.sin(u.winkel) * rad);
+    const langsam = u.x > -1.2;
+    p.material = langsam ? matWasserLangsam : matWasserSchnell;
+    p.scale.setScalar(langsam ? 0.8 : 1);
+  });
+
+  /* Energie-Anzeigen */
+  if (modus === 'energie') energieAnzeigen();
+
+  renderer.render(szene, kamera);
+}
+requestAnimationFrame(animieren);
+
+/* =========================================================
+   3) TEXT-TO-SPEECH (Web Speech API)
+   ========================================================= */
+const TTS = {
+  verfuegbar: 'speechSynthesis' in window,
+  stimmen: [],
+  laeuft: false,
+
+  stimmenLaden() {
+    if (!this.verfuegbar) return;
+    this.stimmen = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('de'));
+  },
+  besteStimme() {
+    const bevorzugt = ['anna', 'petra', 'helena', 'google deutsch', 'katja'];
+    for (const name of bevorzugt) {
+      const s = this.stimmen.find(v => v.name.toLowerCase().includes(name));
+      if (s) return s;
+    }
+    return this.stimmen[0] || null;
+  },
+  sprechen(saetze, container, fertigCb) {
+    if (!this.verfuegbar) return;
+    this.stopp();
+    this.laeuft = true;
+    const absaetze = container ? [...container.querySelectorAll('p')] : [];
+    let i = 0;
+    const naechster = () => {
+      if (!this.laeuft || i >= saetze.length) { this.stopp(); if (fertigCb) fertigCb(); return; }
+      absaetze.forEach(p => p.classList.remove('spricht'));
+      if (absaetze[i]) absaetze[i].classList.add('spricht');
+      const u = new SpeechSynthesisUtterance(saetze[i]);
+      u.lang = 'de-DE';
+      const stimme = this.besteStimme();
+      if (stimme) u.voice = stimme;
+      u.rate = 0.95;
+      u.onend = () => { i++; naechster(); };
+      u.onerror = () => { i++; naechster(); };
+      speechSynthesis.speak(u);
+    };
+    naechster();
+  },
+  stopp() {
+    this.laeuft = false;
+    if (this.verfuegbar) speechSynthesis.cancel();
+    document.querySelectorAll('.panel-text p.spricht').forEach(p => p.classList.remove('spricht'));
+    const btn = document.getElementById('tts-btn');
+    if (btn) btn.textContent = '🔊 Vorlesen';
+  }
+};
+if (TTS.verfuegbar) {
+  TTS.stimmenLaden();
+  speechSynthesis.onvoiceschanged = () => TTS.stimmenLaden();
+}
+
+/* =========================================================
+   4) PANEL & MODI
+   ========================================================= */
+const panel = document.getElementById('panel');
+const hinweis = document.getElementById('szene-hinweis');
+const explosionUI = document.getElementById('explosion-ui');
+let modus = 'erkunden';
+
+function ttsLeisteHTML() {
+  if (!TTS.verfuegbar) {
+    return '<div class="feedback-warnung">Vorlesen wird auf diesem Gerät leider nicht unterstützt.</div>';
+  }
+  return `<div class="tts-leiste">
+    <button class="btn-primary" id="tts-btn">🔊 Vorlesen</button>
+    <button class="btn-secondary" id="tts-stop">⏹ Stopp</button>
+  </div>`;
+}
+
+function ttsLeisteVerbinden(saetze) {
+  const btn = document.getElementById('tts-btn');
+  const stop = document.getElementById('tts-stop');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    if (TTS.laeuft) { TTS.stopp(); return; }
+    btn.textContent = '⏸ Spricht …';
+    TTS.sprechen(saetze, document.querySelector('.panel-text'), () => { btn.textContent = '🔊 Vorlesen'; });
+  });
+  if (stop) stop.addEventListener('click', () => TTS.stopp());
+}
+
+function teilChipsHTML(aktivId) {
+  return '<div class="teil-liste">' + Object.keys(TEILE).map(id =>
+    `<button class="teil-chip ${id === aktivId ? 'aktiv' : ''}" data-teil="${id}">${TEILE[id].nr} · ${TEILE[id].name}</button>`
+  ).join('') + '</div>';
+}
+function teilChipsVerbinden() {
+  panel.querySelectorAll('.teil-chip').forEach(b =>
+    b.addEventListener('click', () => teilAuswaehlen(b.dataset.teil))
+  );
+}
+
+/* --- Übersicht (Startansicht im Erkunden-Modus) --- */
+function zeigeUebersicht() {
+  aktivesTeil = null;
+  hervorheben(null);
+  TTS.stopp();
+  panel.innerHTML = `
+    <span class="badge badge--slate">Erkunden</span>
+    <h2 class="panel-titel">Wie funktioniert eine Turbine?</h2>
+    <div class="panel-text">${UEBERSICHT_TEXT.map(s => `<p>${s}</p>`).join('')}</div>
+    ${ttsLeisteHTML()}
+    <hr class="trenner">
+    <p style="font-size:var(--text-sm); color:var(--col-text-muted);">Tippe im 3D-Modell auf ein Bauteil – oder wähle hier:</p>
+    ${teilChipsHTML(null)}
+  `;
+  ttsLeisteVerbinden(UEBERSICHT_TEXT);
+  teilChipsVerbinden();
+}
+
+/* --- Bauteil-Detail --- */
+function teilAuswaehlen(id) {
+  if (modus === 'quiz') return;
+  const t = TEILE[id];
+  if (!t) return;
+  aktivesTeil = id;
+  hervorheben(id);
+  TTS.stopp();
+  const saetze = t.text.concat(['Merke: ' + t.merke]);
+  panel.innerHTML = `
+    <span class="badge badge--rust">Bauteil ${t.nr} von 5</span>
+    <h2 class="panel-titel">${t.name}</h2>
+    <div class="panel-text">${t.text.map(s => `<p>${s}</p>`).join('')}</div>
+    <div class="merke-box"><strong>📌 Merke:</strong> ${t.merke}</div>
+    ${ttsLeisteHTML()}
+    <hr class="trenner">
+    ${teilChipsHTML(id)}
+    <div style="margin-top:14px;"><button class="btn-secondary" id="zurueck-btn">← Zur Übersicht</button></div>
+  `;
+  ttsLeisteVerbinden(saetze);
+  teilChipsVerbinden();
+  document.getElementById('zurueck-btn').addEventListener('click', zeigeUebersicht);
+}
+
+/* --- Explosion --- */
+function zeigeExplosion() {
+  panel.innerHTML = `
+    <span class="badge badge--slate">Explosionsansicht</span>
+    <h2 class="panel-titel">Die Turbine in Einzelteilen</h2>
+    <div class="panel-text">
+      <p>Bei Stufe 0 siehst du das vollständige System in seinem transparenten Gehäuse – so ist die Turbine im Betrieb aufgebaut.</p>
+      <p>Ziehe den Schieberegler oben im Bild nach rechts, um die Bauteile auseinanderzuziehen. Tippe auf ein Bauteil, um die Erklärung zu lesen oder zu hören.</p>
+    </div>
+    <div class="merke-box"><strong>📌 Tipp:</strong> Achte darauf, wie Laufrad, Welle und Generator in einer Linie liegen – sie bilden den Antriebsstrang.</div>
+    ${teilChipsHTML(aktivesTeil)}
+  `;
+  teilChipsVerbinden();
+}
+
+/* --- Energiefluss --- */
+function zeigeEnergie() {
+  panel.innerHTML = `
+    <span class="badge badge--slate">Energiefluss</span>
+    <h2 class="panel-titel">Strömung → Drehung → Strom</h2>
+    <div class="panel-text">
+      <p>Verändere die Strömungsstärke und beobachte: Wie schnell dreht sich das Laufrad? Wie hell leuchtet die Lampe?</p>
+    </div>
+    <div class="energie-block">
+      <label for="fluss-slider">💧 Strömungsstärke</label>
+      <input type="range" id="fluss-slider" min="0" max="100" value="${Math.round(fluss * 100)}">
+    </div>
+    <div class="messwert"><span>Drehzahl Laufrad</span><strong><span id="drehzahl">0</span> U/min</strong></div>
+    <div class="messwert"><span>Erzeugte Leistung</span><strong><span id="leistung">0</span> %</strong></div>
+    <div class="progress-bar"><div class="progress-bar__fill" id="leistung-balken" style="width:0%"></div></div>
+    <div class="lampe-wrap">
+      <div class="lampe" id="lampe" aria-hidden="true"></div>
+      <div class="lampe-text" id="lampe-text">Die Lampe zeigt, wie viel Strom der Generator gerade erzeugt.</div>
+    </div>
+    <hr class="trenner">
+    <div class="merke-box"><strong>📌 Merke:</strong> Mehr Strömung → schnellere Drehung → mehr Strom. Die Energie wird dabei nur umgewandelt, nicht erzeugt.</div>
+  `;
+  document.getElementById('fluss-slider').addEventListener('input', e => {
+    fluss = e.target.value / 100;
+  });
+}
+
+function energieAnzeigen() {
+  const dz = document.getElementById('drehzahl');
+  if (!dz) return;
+  const drehzahl = Math.round(rotorTempo / (Math.PI * 2) * 60 * 30); /* skaliert auf anschauliche U/min */
+  const leistung = Math.round(Math.pow(fluss, 1.4) * 100);
+  dz.textContent = drehzahl;
+  document.getElementById('leistung').textContent = leistung;
+  document.getElementById('leistung-balken').style.width = leistung + '%';
+  const lampe = document.getElementById('lampe');
+  const glut = Math.pow(fluss, 1.4);
+  lampe.style.background = `rgb(${232 + glut * 23}, ${229 + glut * 4}, ${220 - glut * 120})`;
+  lampe.style.boxShadow = `0 0 ${glut * 34}px ${glut * 10}px rgba(255, 214, 80, ${glut * 0.8})`;
+}
+
+/* --- Quiz --- */
+const Quiz = {
+  aufgaben: [], index: 0, punkte: 0, ersterVersuch: true,
+
+  starten() {
+    this.aufgaben = [...QUIZ_AUFGABEN].sort(() => Math.random() - 0.5);
+    this.index = 0;
+    this.punkte = 0;
+    this.ersterVersuch = true;
+    hervorheben(null);
+    TTS.stopp();
+    this.render();
+  },
+  render(feedback) {
+    const a = this.aufgaben[this.index];
+    const pct = Math.round(this.index / this.aufgaben.length * 100);
+    panel.innerHTML = `
+      <span class="badge badge--rust">Quiz</span>
+      <div class="progress-label"><span>Aufgabe ${this.index + 1} von ${this.aufgaben.length}</span><span>${this.punkte} Punkte</span></div>
+      <div class="quiz-balken"><div class="quiz-balken__fill" style="width:${pct}%"></div></div>
+      <p class="quiz-frage-text">${a.frage}</p>
+      <p style="font-size:var(--text-sm); color:var(--col-text-muted);">👆 Tippe direkt im 3D-Modell auf das richtige Bauteil.</p>
+      <div id="quiz-feedback">${feedback || ''}</div>
+    `;
+  },
+  antwort(teilId) {
+    const a = this.aufgaben[this.index];
+    if (teilId === a.teil) {
+      if (this.ersterVersuch) this.punkte++;
+      hervorheben(teilId);
+      const richtigText = `Richtig! ${TEILE[teilId].name}: ${TEILE[teilId].merke}`;
+      this.index++;
+      this.ersterVersuch = true;
+      if (this.index >= this.aufgaben.length) { this.ende(richtigText); return; }
+      this.render(`<div class="feedback-richtig" role="status">${richtigText}</div>`);
+    } else {
+      this.ersterVersuch = false;
+      hervorheben(null);
+      const fb = document.getElementById('quiz-feedback');
+      if (fb) fb.innerHTML = `<div class="feedback-falsch" role="alert">Das war ${TEILE[teilId] ? 'die ' + TEILE[teilId].name : 'ein anderes Bauteil'}. Fast – versuch es nochmal!</div>`;
+    }
+  },
+  ende(letztesFeedback) {
+    const max = this.aufgaben.length;
+    save(KEYS.quiz, { punkte: this.punkte, max: max, datum: new Date().toISOString().slice(0, 10) });
+    const pct = this.punkte / max;
+    let sterne, text;
+    if (pct >= 0.9)      { sterne = '⭐⭐⭐'; text = 'Ausgezeichnet! Du kennst alle Bauteile.'; }
+    else if (pct >= 0.7) { sterne = '⭐⭐';   text = 'Gut gemacht! Fast alles richtig.'; }
+    else if (pct >= 0.5) { sterne = '⭐';     text = 'Schon gut – schau dir die Bauteile noch einmal im Erkunden-Modus an.'; }
+    else                 { sterne = '🔄';     text = 'Noch nicht ganz. Erkunde die Turbine und versuch es dann erneut!'; }
+    panel.innerHTML = `
+      <span class="badge badge--rust">Quiz</span>
+      <div class="feedback-richtig" role="status">${letztesFeedback}</div>
+      <div class="quiz-ergebnis">
+        <div class="sterne" aria-hidden="true">${sterne}</div>
+        <h2 class="panel-titel">${this.punkte} von ${max} Punkten</h2>
+        <p>${text}</p>
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:16px; flex-wrap:wrap;">
+          <button class="btn-primary" id="quiz-neu">🔁 Nochmal</button>
+          <button class="btn-secondary" id="quiz-erkunden">🔍 Erkunden</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('quiz-neu').addEventListener('click', () => Quiz.starten());
+    document.getElementById('quiz-erkunden').addEventListener('click', () => modusWechseln('erkunden'));
+  }
+};
+function quizAntwort(id) { Quiz.antwort(id); }
+
+/* --- Modus-Wechsel --- */
+const hinweise = {
+  erkunden:  '👆 Tippe auf ein Bauteil · ☝️ Drehen · 🤏 Zoomen',
+  explosion: '🧩 Schieberegler oben: Turbine auseinanderziehen',
+  energie:   '⚡ Regle die Strömung im Panel und beobachte die Turbine',
+  quiz:      '⭐ Tippe im Modell auf das gesuchte Bauteil'
+};
+
+function modusWechseln(neu) {
+  modus = neu;
+  TTS.stopp();
+  document.querySelectorAll('.pill').forEach(p =>
+    p.setAttribute('aria-pressed', String(p.dataset.modus === neu))
+  );
+  explosionUI.classList.toggle('aktiv', neu === 'explosion');
+  if (neu !== 'explosion') {
+    explodeZiel = 0;
+    document.getElementById('explosion-slider').value = 0;
+  }
+  hinweis.textContent = hinweise[neu];
+  hinweis.classList.remove('aus');
+  clearTimeout(modusWechseln._t);
+  modusWechseln._t = setTimeout(() => hinweis.classList.add('aus'), 5000);
+
+  if (neu === 'erkunden')  zeigeUebersicht();
+  if (neu === 'explosion') zeigeExplosion();
+  if (neu === 'energie')   zeigeEnergie();
+  if (neu === 'quiz')      Quiz.starten();
+}
+
+document.querySelectorAll('.pill').forEach(p =>
+  p.addEventListener('click', () => modusWechseln(p.dataset.modus))
+);
+document.getElementById('explosion-slider').addEventListener('input', e => {
+  explodeZiel = e.target.value / 100;
+});
+
+/* Start */
+zeigeUebersicht();
+setTimeout(() => hinweis.classList.add('aus'), 6000);
+</script>
+</body>
+</html>
