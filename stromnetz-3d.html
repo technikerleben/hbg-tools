@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Das Stromnetz in 3D – HBG</title>
+<style>
+:root{
+  --col-slate-dark:#2C3D4C; --col-slate:#3E5668; --col-slate-mid:#6A8599;
+  --col-slate-pale:#D0DCE6; --col-slate-ghost:#EEF3F7;
+  --col-rust-dark:#9E4E22; --col-rust:#D97A4A; --col-rust-pale:#F5DDD1;
+  --col-sage-dark:#4D8B3F; --col-sage:#7DBB6F; --col-sage-pale:#DDF0D8;
+  --col-warning:#C17B00; --col-warning-pale:#FFF3CC; --col-warning-text:#5C4400;
+  --col-error:#C0392B;
+  --col-bg:#F5F4F1; --col-white:#FFFFFF; --col-text:#1E2A35; --col-text-muted:#5A6A78;
+  --col-border:#D4D0C8; --col-focus:#3E5668; --col-shadow:rgba(62,86,104,0.18);
+  --text-xs:0.694rem; --text-sm:0.833rem; --text-base:1rem; --text-md:1.2rem;
+  --text-lg:1.44rem; --text-xl:1.728rem;
+  --lvl-hs:#D97A4A; --lvl-hv:#E2B23B; --lvl-ms:#7DBB6F; --lvl-ns:#7E9BB2;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:var(--col-slate-dark);
+  color:var(--col-text);font-size:var(--text-base);line-height:1.5;
+  -webkit-user-select:none;user-select:none}
+:focus-visible{outline:3px solid var(--col-focus);outline-offset:3px;border-radius:6px}
+#scene{position:fixed;inset:0;touch-action:none}
+#scene canvas{display:block}
+
+/* ---------- Kopfzeile ---------- */
+#topbar{position:fixed;top:10px;left:12px;display:flex;align-items:center;gap:10px;
+  background:rgba(44,61,76,0.88);backdrop-filter:blur(8px);color:#fff;
+  border-radius:12px;padding:8px 16px;box-shadow:0 4px 14px var(--col-shadow);z-index:20}
+#topbar h1{font-size:var(--text-md);font-weight:700;line-height:1.2}
+#topbar .sub{font-size:var(--text-xs);color:var(--col-slate-pale)}
+.badge{background:var(--col-rust-dark);color:#fff;font-size:var(--text-xs);font-weight:700;
+  padding:3px 9px;border-radius:999px;white-space:nowrap}
+#progress{background:rgba(255,255,255,0.14);font-size:var(--text-xs);font-weight:600;
+  padding:3px 10px;border-radius:999px;white-space:nowrap}
+
+/* ---------- Legende ---------- */
+#legend{position:fixed;top:10px;right:12px;background:rgba(255,255,255,0.93);
+  backdrop-filter:blur(8px);border-radius:12px;padding:10px 14px;z-index:20;
+  box-shadow:0 4px 14px var(--col-shadow);font-size:var(--text-xs)}
+#legend h2{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.06em;
+  color:var(--col-text-muted);margin-bottom:6px}
+.lg-row{display:flex;align-items:center;gap:8px;margin:3px 0;font-weight:600}
+.lg-line{width:26px;height:4px;border-radius:2px;flex:none}
+
+/* ---------- Status (HUD) ---------- */
+#hud{position:fixed;left:12px;bottom:88px;background:rgba(255,255,255,0.93);
+  backdrop-filter:blur(8px);border-radius:12px;padding:10px 14px;z-index:20;
+  box-shadow:0 4px 14px var(--col-shadow);width:215px;font-size:var(--text-xs)}
+.hud-row{display:flex;align-items:center;gap:8px;margin:4px 0}
+.hud-row .lbl{width:78px;font-weight:600;color:var(--col-text)}
+.hud-bar{flex:1;height:8px;background:var(--col-slate-ghost);border-radius:4px;overflow:hidden}
+.hud-bar i{display:block;height:100%;border-radius:4px;transition:width 0.4s}
+#bar-gen i{background:var(--col-rust)}
+#bar-load i{background:var(--col-slate-mid)}
+#hud-storage{margin-top:6px;font-weight:700;display:flex;align-items:center;gap:6px}
+#hud-clock{font-weight:700;font-variant-numeric:tabular-nums;color:var(--col-slate);
+  display:flex;align-items:center;gap:6px;margin-bottom:2px;font-size:var(--text-sm)}
+
+/* ---------- Steuerleiste unten ---------- */
+#controls{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:20;
+  display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.94);
+  backdrop-filter:blur(8px);border-radius:14px;padding:10px 16px;
+  box-shadow:0 6px 18px var(--col-shadow);max-width:96vw;flex-wrap:wrap;justify-content:center}
+.ctl-group{display:flex;align-items:center;gap:8px}
+.ctl-label{font-size:var(--text-xs);font-weight:700;color:var(--col-text-muted);
+  text-transform:uppercase;letter-spacing:0.05em}
+.scen-btn{border:2px solid var(--col-border);background:var(--col-white);color:var(--col-text);
+  font-size:var(--text-sm);font-weight:600;padding:9px 14px;border-radius:999px;cursor:pointer;
+  min-height:44px;transition:background 0.2s,border-color 0.2s}
+.scen-btn.active{background:var(--col-slate);border-color:var(--col-slate);color:#fff}
+#playBtn{width:44px;height:44px;border-radius:50%;border:none;background:var(--col-rust-dark);
+  color:#fff;font-size:1.05rem;cursor:pointer;flex:none}
+#timeSlider{width:170px;accent-color:var(--col-rust-dark);min-height:44px;cursor:pointer}
+
+/* ---------- Info-Panel ---------- */
+#panel{position:fixed;top:0;right:0;height:100%;width:min(340px,86vw);z-index:30;
+  background:var(--col-bg);box-shadow:-8px 0 30px rgba(0,0,0,0.25);
+  transform:translateX(105%);display:flex;flex-direction:column}
+#panel header{background:var(--col-slate);color:#fff;padding:16px 18px;position:relative}
+#panel header .p-icon{font-size:2rem;line-height:1}
+#panel header h2{font-size:var(--text-lg);margin-top:4px;line-height:1.2}
+.lvl-chip{display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:rgba(255,255,255,0.14);
+  font-size:var(--text-xs);font-weight:700;padding:4px 10px;border-radius:999px}
+.lvl-dot{width:10px;height:10px;border-radius:50%;flex:none}
+#closeBtn{position:absolute;top:10px;right:10px;width:44px;height:44px;border:none;
+  background:rgba(255,255,255,0.16);color:#fff;border-radius:50%;font-size:1.15rem;cursor:pointer}
+#panel .p-body{padding:16px 18px;overflow-y:auto;flex:1}
+#panel .p-body p.intro{font-size:var(--text-sm);color:var(--col-text-muted);margin-bottom:12px}
+.fact{display:flex;gap:10px;background:var(--col-white);border:1px solid var(--col-border);
+  border-left:4px solid var(--col-rust);border-radius:0 10px 10px 0;padding:10px 12px;
+  margin-bottom:10px;font-size:var(--text-sm)}
+.fact .f-ico{flex:none}
+.visited-tag{display:inline-flex;align-items:center;gap:6px;background:var(--col-sage-pale);
+  color:#2D5C25;font-size:var(--text-xs);font-weight:700;padding:4px 10px;border-radius:999px;margin-bottom:12px}
+#panel .p-foot{padding:12px 18px;border-top:1px solid var(--col-border)}
+.btn-secondary{width:100%;border:2px solid var(--col-slate);background:var(--col-white);
+  color:var(--col-slate);font-weight:700;font-size:var(--text-sm);padding:11px;border-radius:10px;
+  cursor:pointer;min-height:44px}
+
+/* ---------- Intro ---------- */
+#intro{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;
+  background:rgba(30,42,53,0.55);backdrop-filter:blur(3px)}
+#intro .card{background:var(--col-bg);border-radius:16px;padding:26px 30px;max-width:460px;
+  width:90vw;box-shadow:0 16px 50px rgba(0,0,0,0.35);text-align:center}
+#intro .card .big{font-size:2.4rem}
+#intro h2{font-size:var(--text-xl);color:var(--col-slate-dark);margin:8px 0 10px}
+#intro p{font-size:var(--text-sm);color:var(--col-text-muted);margin-bottom:6px}
+#startBtn{margin-top:16px;border:none;background:var(--col-rust-dark);color:#fff;font-weight:700;
+  font-size:var(--text-base);padding:13px 30px;border-radius:999px;cursor:pointer;min-height:44px}
+
+#hint{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);z-index:15;
+  background:rgba(44,61,76,0.85);color:#fff;font-size:var(--text-xs);font-weight:600;
+  padding:7px 14px;border-radius:999px;opacity:0;pointer-events:none}
+
+@media (max-width:760px){
+  #hud{display:none}
+  #legend{font-size:0.62rem;padding:8px 10px}
+  #timeSlider{width:110px}
+}
+</style>
+</head>
+<body>
+<div id="scene"></div>
+
+<div id="topbar">
+  <div>
+    <h1>Das Stromnetz in 3D</h1>
+    <div class="sub">Vom Kraftwerk bis zur Steckdose</div>
+  </div>
+  <span class="badge">WP Technik</span>
+  <span id="progress">🔍 0/12 erkundet</span>
+</div>
+
+<div id="legend" aria-label="Legende der Spannungsebenen">
+  <h2>Spannungsebenen</h2>
+  <div class="lg-row"><span class="lg-line" style="background:var(--lvl-hs)"></span>Höchstspannung · 380 kV</div>
+  <div class="lg-row"><span class="lg-line" style="background:var(--lvl-hv)"></span>Hochspannung · 110 kV</div>
+  <div class="lg-row"><span class="lg-line" style="background:var(--lvl-ms)"></span>Mittelspannung · 10 kV</div>
+  <div class="lg-row"><span class="lg-line" style="background:var(--lvl-ns)"></span>Niederspannung · 400/230 V</div>
+</div>
+
+<div id="hud">
+  <div id="hud-clock"><span id="dayIcon">☀️</span><span id="clockTxt">12:00 Uhr</span></div>
+  <div class="hud-row"><span class="lbl">Erzeugung</span><span class="hud-bar" id="bar-gen"><i style="width:50%"></i></span></div>
+  <div class="hud-row"><span class="lbl">Verbrauch</span><span class="hud-bar" id="bar-load"><i style="width:50%"></i></span></div>
+  <div id="hud-storage"><span id="stIco">🔋</span><span id="stTxt">Speicher: bereit</span></div>
+</div>
+
+<div id="controls">
+  <div class="ctl-group" role="group" aria-label="Szenario wählen">
+    <span class="ctl-label">Szenario</span>
+    <button class="scen-btn active" data-scen="normal">Normaler Tag</button>
+    <button class="scen-btn" data-scen="flaute">Dunkelflaute</button>
+    <button class="scen-btn" data-scen="gruen">Viel Wind &amp; Sonne</button>
+  </div>
+  <div class="ctl-group">
+    <span class="ctl-label">Tageszeit</span>
+    <button id="playBtn" aria-label="Tageszeit abspielen oder anhalten">⏸</button>
+    <input type="range" id="timeSlider" min="0" max="24" step="0.1" value="12" aria-label="Tageszeit einstellen">
+  </div>
+</div>
+
+<div id="hint">👆 Tippe auf ein Bauwerk, um mehr zu erfahren</div>
+
+<aside id="panel" role="dialog" aria-modal="false" aria-labelledby="p-title">
+  <header>
+    <div class="p-icon" id="p-icon" aria-hidden="true">⚡</div>
+    <h2 id="p-title">Titel</h2>
+    <div class="lvl-chip"><span class="lvl-dot" id="p-dot"></span><span id="p-level">Ebene</span></div>
+    <button id="closeBtn" aria-label="Steckbrief schließen">✕</button>
+  </header>
+  <div class="p-body">
+    <span class="visited-tag" id="p-visited" hidden>✓ Erkundet</span>
+    <p class="intro" id="p-intro"></p>
+    <div id="p-facts"></div>
+  </div>
+  <div class="p-foot">
+    <button class="btn-secondary" id="backBtn">↩ Zurück zur Übersicht</button>
+  </div>
+</aside>
+
+<div id="intro">
+  <div class="card">
+    <div class="big" aria-hidden="true">⚡🗼🏠</div>
+    <h2>Das Stromnetz in 3D</h2>
+    <p>Erkunde, wie Strom vom Kraftwerk bis zur Steckdose gelangt – über vier Spannungsebenen.</p>
+    <p><strong>Tippe auf die Bauwerke</strong>, um ihre Steckbriefe zu öffnen. Ziehe mit dem Finger, um die Kamera zu drehen, und zoome mit zwei Fingern.</p>
+    <p>Probiere die <strong>Szenarien</strong> und den <strong>Tag/Nacht-Regler</strong> aus: Wie verändert sich der Stromfluss?</p>
+    <button id="startBtn">Los geht's ▶</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+'use strict';
+/* ============================================================
+   Das Stromnetz in 3D · HBG Dortmund · WP Technik (Kl. 8–10)
+   Three.js r128 + GSAP 3 · Single File · iPad Querformat
+   ============================================================ */
+
+/* ---------- Grund-Setup ---------- */
+const container = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.1, 500);
+const HOME_CAM = new THREE.Vector3(2, 36, 50);
+const HOME_TGT = new THREE.Vector3(0, 0, -2);
+camera.position.copy(HOME_CAM);
+const camTarget = HOME_TGT.clone();
+camera.lookAt(camTarget);
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+/* ---------- Licht & Himmel ---------- */
+const hemi = new THREE.HemisphereLight(0xdfeaf2, 0x6b7a6a, 0.85);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff2dd, 1.0);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+sun.shadow.camera.left = -55; sun.shadow.camera.right = 55;
+sun.shadow.camera.top = 40;  sun.shadow.camera.bottom = -40;
+sun.shadow.camera.far = 200;
+scene.add(sun);
+const moon = new THREE.DirectionalLight(0x8fa6c4, 0.0);
+moon.position.set(-30, 40, -20);
+scene.add(moon);
+
+const SKY_DAY = new THREE.Color(0xCFE0EC);
+const SKY_NIGHT = new THREE.Color(0x121C26);
+const SKY_DAWN = new THREE.Color(0xE8B98F);
+scene.background = SKY_DAY.clone();
+scene.fog = new THREE.Fog(scene.background, 90, 230);
+
+/* Sterne */
+const starGeo = new THREE.BufferGeometry();
+{
+  const pts = [];
+  for (let i = 0; i < 320; i++) {
+    const a = Math.random() * Math.PI * 2, b = Math.random() * Math.PI * 0.45;
+    const r = 210;
+    pts.push(r * Math.cos(b) * Math.cos(a), 30 + r * Math.sin(b), r * Math.cos(b) * Math.sin(a));
+  }
+  starGeo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+}
+const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.9, transparent: true, opacity: 0, fog: false });
+scene.add(new THREE.Points(starGeo, starMat));
+
+/* ---------- Materialien ---------- */
+function lam(c, o) { return new THREE.MeshLambertMaterial(Object.assign({ color: c }, o || {})); }
+const M = {
+  steel: lam(0x99a3ab), steelDark: lam(0x4a545c), concrete: lam(0xbcc0c2),
+  white: lam(0xf0f2f4), wall: lam(0xEDE6DA), roof: lam(0x9E4E22),
+  rock: lam(0x8d9188), water: lam(0x4f8fb8, { emissive: 0x123a52, emissiveIntensity: 0.25 }),
+  grass: lam(0x7e9c74), gravel: lam(0xb4b0a6), wood: lam(0x7a5c3e),
+  panel: lam(0x1d3a5f, { emissive: 0x0a1c33, emissiveIntensity: 0.3 }),
+  sage: lam(0x4D8B3F), rust: lam(0xD97A4A), dark: lam(0x39424a),
+  coal: lam(0x3a3a3a), pipe: lam(0x6f8694, { transparent: true, opacity: 0.45 })
+};
+const winMat = new THREE.MeshLambertMaterial({ color: 0x32414f, emissive: 0xF7D9A0, emissiveIntensity: 0 });
+
+/* ---------- Helfer ---------- */
+const root = new THREE.Group();
+scene.add(root);
+const rotors = [];
+const clickables = [];
+
+function mesh(geo, mat, x, y, z, parent) {
+  const m = new THREE.Mesh(geo, mat);
+  m.position.set(x, y, z);
+  m.castShadow = true; m.receiveShadow = true;
+  (parent || root).add(m);
+  return m;
+}
+function box(w, h, d, mat, x, y, z, parent) { return mesh(new THREE.BoxGeometry(w, h, d), mat, x, y, z, parent); }
+function cyl(rt, rb, h, mat, x, y, z, parent, seg) { return mesh(new THREE.CylinderGeometry(rt, rb, h, seg || 10), mat, x, y, z, parent); }
+function group(x, z, id) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  root.add(g);
+  if (id) { g.userData.clickId = id; clickables.push(g); }
+  return g;
+}
+
+/* ---------- Boden & Deko ---------- */
+const ground = mesh(new THREE.PlaneGeometry(320, 240), M.grass, 0, 0, 0);
+ground.rotation.x = -Math.PI / 2;
+ground.castShadow = false;
+
+function tree(x, z, s) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); root.add(g);
+  cyl(0.07 * s, 0.1 * s, 0.7 * s, M.wood, 0, 0.35 * s, 0, g, 6);
+  mesh(new THREE.ConeGeometry(0.55 * s, 1.4 * s, 7), lam(0x55764d), 0, 1.25 * s, 0, g);
+}
+[[-46, 0], [-30, 14], [-20, -14], [4, -4], [14, 12], [24, -8], [26, 16], [44, 2], [42, 18], [-8, 20], [18, -20], [38, -6]]
+  .forEach((p, i) => tree(p[0], p[1], 0.9 + (i % 3) * 0.25));
+
+/* ============================================================
+   BAUWERKE
+   ============================================================ */
+
+/* --- Windpark --- */
+const windG = group(-37, -15, 'wind');
+function turbine(px, pz, parent) {
+  const t = new THREE.Group(); t.position.set(px, 0, pz); parent.add(t);
+  const tw = mesh(new THREE.CylinderGeometry(0.16, 0.4, 7.4, 8), M.white, 0, 3.7, 0, t);
+  tw.castShadow = true;
+  box(0.95, 0.5, 0.5, M.white, 0, 7.5, 0, t);
+  const rotor = new THREE.Group(); rotor.position.set(0, 7.5, 0.42); t.add(rotor);
+  mesh(new THREE.SphereGeometry(0.22, 8, 8), M.steelDark, 0, 0, 0, rotor);
+  for (let i = 0; i < 3; i++) {
+    const geo = new THREE.BoxGeometry(0.16, 3.3, 0.05);
+    geo.translate(0, 1.65, 0);
+    const bl = new THREE.Mesh(geo, M.white);
+    bl.castShadow = true;
+    bl.rotation.z = i * (Math.PI * 2 / 3);
+    rotor.add(bl);
+  }
+  rotors.push(rotor);
+  return t;
+}
+turbine(0, 0, windG);
+turbine(4.5, -4, windG);
+turbine(2.5, 4.5, windG);
+
+/* --- Kohlekraftwerk --- */
+const coalG = group(-39, 9, 'kohle');
+box(5.4, 3, 3.6, M.concrete, 0, 1.5, 0, coalG);
+box(5.6, 0.3, 3.8, M.steelDark, 0, 3.15, 0, coalG);
+cyl(0.32, 0.4, 7.2, lam(0xd8d2c8), 2.2, 3.6, -1, coalG, 10);
+cyl(0.34, 0.34, 0.5, M.rust, 2.2, 7.0, -1, coalG, 10);
+/* Kühlturm (Lathe) */
+{
+  const prof = [];
+  [[2.0, 0], [1.7, 1.2], [1.25, 3.0], [1.15, 4.0], [1.35, 5.2]].forEach(p => prof.push(new THREE.Vector2(p[0], p[1])));
+  const ct = mesh(new THREE.LatheGeometry(prof, 16), M.concrete, -2.6, 0, 1.6, coalG);
+  ct.castShadow = true;
+}
+mesh(new THREE.ConeGeometry(1.5, 1.1, 8), M.coal, 3.4, 0.55, 1.6, coalG); /* Kohlehalde */
+
+/* --- Pumpspeicherkraftwerk --- */
+const pumpG = group(-25, -23, 'pump');
+cyl(3.0, 7.0, 9, M.rock, 0, 4.5, 0, pumpG, 7);                 /* Berg (Kegelstumpf) */
+cyl(3.2, 3.2, 0.7, M.concrete, 0, 9.35, 0, pumpG, 14);         /* Beckenrand oben */
+cyl(2.8, 2.8, 0.3, M.water, 0, 9.65, 0, pumpG, 14);            /* Wasser oben */
+const ph = box(2.0, 1.5, 1.6, M.wall, 5.6, 0.75, 4.2, pumpG);  /* Krafthaus */
+box(2.2, 0.2, 1.8, M.roof, 5.6, 1.6, 4.2, pumpG);
+/* Druckrohr */
+{
+  const a = new THREE.Vector3(0.8, 9.0, 1.2), b = new THREE.Vector3(5.4, 1.0, 3.9);
+  const dir = b.clone().sub(a);
+  const p = cyl(0.22, 0.22, dir.length(), M.pipe, 0, 0, 0, pumpG, 8);
+  p.position.copy(a.clone().add(b).multiplyScalar(0.5));
+  p.lookAt(pumpG.position.clone().add(b));
+  p.rotateX(Math.PI / 2);
+}
+cyl(3.4, 3.4, 0.4, M.water, 7.5, 0.2, 6.8, pumpG, 14);         /* Unterbecken */
+
+/* --- Batteriespeicher --- */
+const battG = group(-2, 14, 'batt');
+mesh(new THREE.BoxGeometry(7, 0.12, 4.4), M.gravel, 0, 0.06, 0, battG).castShadow = false;
+for (let i = 0; i < 3; i++) {
+  box(1.9, 1.05, 1.1, M.white, -2 + i * 2, 0.62, -0.8, battG);
+  box(1.92, 0.22, 1.12, M.sage, -2 + i * 2, 1.0, -0.8, battG);
+}
+box(1.1, 0.9, 0.9, M.steelDark, 0, 0.55, 1.2, battG); /* kleiner Trafo */
+
+/* --- Umspannwerke --- */
+function umspannwerk(x, z, id, big) {
+  const g = group(x, z, id);
+  const w = big ? 9 : 7, d = big ? 6.4 : 5;
+  mesh(new THREE.BoxGeometry(w, 0.12, d), M.gravel, 0, 0.06, 0, g).castShadow = false;
+  /* Zaun */
+  [[0, d / 2], [0, -d / 2]].forEach(p => box(w, 0.5, 0.07, M.steelDark, p[0], 0.35, p[1], g));
+  [[w / 2, 0], [-w / 2, 0]].forEach(p => box(0.07, 0.5, d, M.steelDark, p[0], 0.35, p[1], g));
+  /* Transformatoren */
+  for (let i = 0; i < 2; i++) {
+    const tx = -1.6 + i * 3.2;
+    box(1.7, 1.25, 1.1, M.steelDark, tx, 0.74, 0.6, g);
+    for (let j = 0; j < 3; j++) cyl(0.07, 0.07, 0.7, lam(0xc8b89a), tx - 0.45 + j * 0.45, 1.7, 0.6, g, 6);
+  }
+  /* Portal */
+  const hh = big ? 3.4 : 2.8;
+  box(0.16, hh, 0.16, M.steel, -w / 2 + 0.8, hh / 2, -d / 2 + 0.9, g);
+  box(0.16, hh, 0.16, M.steel, w / 2 - 0.8, hh / 2, -d / 2 + 0.9, g);
+  box(w - 1.3, 0.14, 0.14, M.steel, 0, hh, -d / 2 + 0.9, g);
+  return g;
+}
+const uw1 = umspannwerk(-14, 2, 'uw1', true);
+const uw2 = umspannwerk(8, 2, 'uw2', false);
+
+/* --- Ortsnetztrafo --- */
+const kioskG = group(21, 6, 'kiosk');
+box(1.5, 1.5, 1.2, M.wall, 0, 0.78, 0, kioskG);
+box(1.7, 0.16, 1.4, M.roof, 0, 1.6, 0, kioskG);
+box(0.55, 0.95, 0.05, M.steelDark, 0, 0.55, 0.61, kioskG);
+
+/* --- Industrie --- */
+const indG = group(-3, -14, 'ind');
+box(6.5, 2.6, 4.2, lam(0xcfd3d6), 0, 1.3, 0, indG);
+box(6.7, 0.25, 4.4, M.steelDark, 0, 2.72, 0, indG);
+cyl(0.2, 0.24, 3.4, M.steel, 2.4, 4.2, -1.2, indG, 8);
+cyl(0.2, 0.24, 2.8, M.steel, 1.4, 3.9, -1.2, indG, 8);
+box(1.6, 1.3, 0.06, M.steelDark, 0, 0.7, 2.12, indG); /* Tor */
+for (let i = 0; i < 4; i++) {
+  const w = mesh(new THREE.PlaneGeometry(0.8, 0.6), winMat, -2.4 + i * 1.3, 1.8, 2.12, indG);
+  w.castShadow = false;
+}
+
+/* --- Solarpark --- */
+const solG = group(15, -15, 'solar');
+mesh(new THREE.BoxGeometry(9, 0.08, 7), lam(0x8aa17b), 0, 0.04, 0, solG).castShadow = false;
+for (let r = 0; r < 3; r++) {
+  const p = box(7.6, 0.08, 1.5, M.panel, 0, 0.75, -2.2 + r * 2.2, solG);
+  p.rotation.x = -0.42;
+}
+
+/* --- Wohngebiet --- */
+const homeG = group(33, 11, 'home');
+const windowMeshes = [];
+function house(px, pz, rot, parent) {
+  const h = new THREE.Group(); h.position.set(px, 0, pz); h.rotation.y = rot; parent.add(h);
+  box(1.7, 1.25, 1.5, M.wall, 0, 0.63, 0, h);
+  const roof = mesh(new THREE.ConeGeometry(1.45, 0.95, 4), M.roof, 0, 1.72, 0, h);
+  roof.rotation.y = Math.PI / 4;
+  [[-0.4, 0], [0.4, 0]].forEach(p => {
+    const w = mesh(new THREE.PlaneGeometry(0.42, 0.42), winMat, p[0], 0.72, 0.76, h);
+    w.castShadow = false; windowMeshes.push(w);
+  });
+  return h;
+}
+house(-3, -1, 0.2, homeG); house(0.5, -2.5, -0.3, homeG); house(3.5, -1, 0.15, homeG);
+house(-1.5, 2, 0.05, homeG); house(2, 2.6, -0.2, homeG); house(5.5, 1.5, 0.3, homeG);
+indG.children.forEach(c => { if (c.material === winMat) windowMeshes.push(c); });
+
+/* ============================================================
+   MASTEN & LEITUNGEN
+   ============================================================ */
+const LVL = {
+  hs: { col: 0xD97A4A, r: 0.055, h: 7.2 },
+  hv: { col: 0xE2B23B, r: 0.05, h: 5.2 },
+  ms: { col: 0x7DBB6F, r: 0.045, h: 2.9 },
+  ns: { col: 0x7E9BB2, r: 0.04, h: 2.0 },
+  wt: { col: 0x6FB7E0, r: 0.07, h: 0 }
+};
+const mastHS_G = [], mastHV_G = [];
+
+function towerSteel(x, z, lvl, ry) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry || 0; root.add(g);
+  const h = LVL[lvl].h;
+  box(0.3, h, 0.3, M.steelDark, 0, h / 2, 0, g);
+  box(h * 0.5, 0.13, 0.13, M.steelDark, 0, h - 0.5, 0, g);
+  box(h * 0.36, 0.13, 0.13, M.steelDark, 0, h - 1.3, 0, g);
+  cyl(0.05, 0.05, 0.5, M.steelDark, 0, h + 0.2, 0, g, 5);
+  (lvl === 'hs' ? mastHS_G : mastHV_G).push(g);
+  return g;
+}
+function poleWood(x, z, lvl) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); root.add(g);
+  const h = LVL[lvl].h;
+  cyl(0.07, 0.1, h, M.wood, 0, h / 2, 0, g, 6);
+  box(0.7, 0.08, 0.08, M.wood, 0, h - 0.15, 0, g);
+  return g;
+}
+
+/* klickbare Masten (je 1 Repräsentant) */
+const mastHSClick = towerSteel(-28, -8.5, 'hs');
+mastHSClick.userData.clickId = 'mastHS'; clickables.push(mastHSClick);
+towerSteel(-21, -4, 'hs');
+towerSteel(-30, 6.4, 'hs');
+towerSteel(-22, 4.4, 'hs');
+towerSteel(-19, -10, 'hs');
+const mastHVClick = towerSteel(-3.2, 2, 'hv');
+mastHVClick.userData.clickId = 'mastHV'; clickables.push(mastHVClick);
+towerSteel(-8.5, -6.5, 'hv');
+towerSteel(-7.5, 8.5, 'hv');
+poleWood(11.2, -6.5, 'ms');
+poleWood(15, 4.6, 'ms');
+poleWood(26.5, 8, 'ns');
+poleWood(30, 9.6, 'ns');
+
+/* Leitungs-Definitionen: Punkte [x,y,z] inkl. Durchhang */
+const lineDefs = [
+  { key: 'wind', lvl: 'hs', n: 9, pts: [[-36, 6.8, -14], [-32.5, 6.0, -11.2], [-28, 6.9, -8.5], [-24.5, 6.0, -6.2], [-21, 6.9, -4], [-17.5, 4.8, -1.8], [-15.5, 3.2, 0.6]] },
+  { key: 'coal', lvl: 'hs', n: 9, pts: [[-37, 6.5, 8.2], [-33.5, 5.9, 7.3], [-30, 6.9, 6.4], [-26, 6.0, 5.4], [-22, 6.9, 4.4], [-18.5, 4.9, 3.4], [-16.2, 3.3, 2.6]] },
+  { key: 'storage', lvl: 'hs', n: 8, bidi: true, pts: [[-19.5, 1.9, -18.4], [-19.2, 6.0, -14.4], [-19, 6.9, -10], [-17, 4.9, -4.6], [-15.2, 3.3, -0.6]] },
+  { key: 'ind', lvl: 'hv', n: 7, pts: [[-12.8, 3.0, -0.8], [-10.6, 4.0, -3.6], [-8.5, 4.9, -6.5], [-5.8, 3.6, -10.2], [-3.6, 2.4, -12.4]] },
+  { key: 'battery', lvl: 'hv', n: 7, bidi: true, pts: [[-12.5, 3.0, 4.4], [-10, 4.0, 6.4], [-7.5, 4.9, 8.5], [-4.6, 3.4, 11.2], [-2.6, 1.6, 13]] },
+  { key: 'transit', lvl: 'hv', n: 9, bidi: true, pts: [[-10.3, 3.2, 2], [-6.8, 4.1, 2], [-3.2, 4.9, 2], [1.2, 4.0, 2], [4.8, 3.0, 2]] },
+  { key: 'solar', lvl: 'ms', n: 6, pts: [[13.6, 1.2, -12.2], [12.4, 2.0, -9.3], [11.2, 2.7, -6.5], [9.8, 2.2, -3.4], [8.8, 1.8, -0.6]] },
+  { key: 'dist', lvl: 'ms', n: 7, pts: [[10.8, 2.0, 3.4], [13, 2.3, 4.1], [15, 2.7, 4.6], [18, 2.2, 5.4], [20.6, 1.5, 5.8]] },
+  { key: 'low', lvl: 'ns', n: 7, pts: [[21.8, 1.4, 6.4], [24.2, 1.5, 7.3], [26.5, 1.85, 8], [28.3, 1.5, 8.9], [30, 1.85, 9.6], [31.5, 1.2, 10.2]] },
+  { key: 'storage', lvl: 'wt', n: 5, bidi: true, pipe: true, pts: [[-24.2, 9.0, -21.8], [-22, 5.5, -20.4], [-20.2, 1.6, -19.2]] }
+];
+
+const lines = [];
+lineDefs.forEach(def => {
+  const vecs = def.pts.map(p => new THREE.Vector3(p[0], p[1], p[2]));
+  const curve = new THREE.CatmullRomCurve3(vecs);
+  const L = LVL[def.lvl];
+  if (!def.pipe) {
+    const tube = new THREE.Mesh(
+      new THREE.TubeGeometry(curve, 40, L.r, 5, false),
+      new THREE.MeshBasicMaterial({ color: L.col, transparent: true, opacity: 0.55 })
+    );
+    root.add(tube);
+    def.tubeMat = tube.material;
+  }
+  const pGeo = new THREE.SphereGeometry(def.pipe ? 0.16 : 0.13, 6, 6);
+  const pMat = new THREE.MeshBasicMaterial({ color: def.pipe ? 0x9fd8ff : L.col });
+  const parts = [];
+  for (let i = 0; i < def.n; i++) {
+    const s = new THREE.Mesh(pGeo, pMat);
+    s.userData.p = i / def.n;
+    root.add(s); parts.push(s);
+  }
+  lines.push({ def, curve, parts });
+});
+
+/* ============================================================
+   RAUCH / DAMPF
+   ============================================================ */
+function makePuffTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(32, 32, 4, 32, 32, 30);
+  g.addColorStop(0, 'rgba(255,255,255,0.85)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(c);
+}
+const puffTex = makePuffTexture();
+const puffs = [];
+const PUFF_SRC = [new THREE.Vector3(-36.8, 7.6, 8), new THREE.Vector3(-41.6, 5.5, 10.6)];
+function spawnPuff() {
+  const m = new THREE.SpriteMaterial({ map: puffTex, transparent: true, opacity: 0.5, depthWrite: false });
+  const s = new THREE.Sprite(m);
+  const src = PUFF_SRC[Math.floor(Math.random() * PUFF_SRC.length)];
+  s.position.copy(src).add(new THREE.Vector3((Math.random() - 0.5) * 0.4, 0, (Math.random() - 0.5) * 0.4));
+  s.scale.setScalar(0.8);
+  s.userData.life = 0;
+  scene.add(s); puffs.push(s);
+}
+
+/* ============================================================
+   SIMULATION
+   ============================================================ */
+const SCEN = {
+  normal: { wind: 0.55, solar: 0.7, name: 'Normaler Tag' },
+  flaute: { wind: 0.06, solar: 0.12, name: 'Dunkelflaute' },
+  gruen:  { wind: 1.0,  solar: 1.0,  name: 'Viel Wind & Sonne' }
+};
+const state = { t: 12, playing: true, scen: 'normal', flows: {}, daylight: 1, night: 0, windF: 0.5 };
+
+function gauss(x, m, s) { return Math.exp(-((x - m) ** 2) / (2 * s * s)); }
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+function computeState() {
+  const t = state.t, sc = SCEN[state.scen];
+  const sunH = Math.sin(((t - 6) / 12) * Math.PI);
+  state.daylight = Math.max(0, sunH);
+  state.night = 1 - clamp((sunH + 0.12) / 0.3, 0, 1);
+  const houses = clamp(0.28 + 0.55 * (gauss(t, 7.4, 1.3) + gauss(t, 19.6, 2.2)) + 0.06, 0, 1);
+  const industry = (t >= 6 && t < 22) ? 0.85 : 0.32;
+  const sol = sc.solar * state.daylight;
+  const wind = clamp(sc.wind * (0.85 + 0.15 * Math.sin(t * 1.9 + 1)), 0, 1);
+  state.windF = wind;
+  const load = 0.55 * houses + 0.45 * industry;
+  const gen = 0.55 * wind + 0.45 * sol;
+  const surplus = gen - load;
+  let coal, storage; /* storage > 0 = entladen */
+  if (surplus > 0.05) { storage = -clamp(surplus * 1.3, 0, 1); coal = 0.1; }
+  else if (surplus < -0.05) {
+    const d = -surplus;
+    coal = clamp(d * 1.15, 0.15, 1);
+    storage = clamp((d - 0.5) * 1.8, 0, 1);
+  } else { coal = 0.3; storage = 0; }
+  state.flows = {
+    wind, solar: sol, coal, storage,
+    ind: industry, dist: houses, low: houses,
+    transit: clamp(houses * 0.95 - sol * 0.75, -1, 1)
+  };
+  state.genTotal = clamp((gen + coal * 0.45 + Math.max(0, storage) * 0.25) / 1.15, 0, 1);
+  state.loadTotal = load;
+}
+
+/* ---------- HUD ---------- */
+const elClock = document.getElementById('clockTxt');
+const elDay = document.getElementById('dayIcon');
+const elGen = document.querySelector('#bar-gen i');
+const elLoad = document.querySelector('#bar-load i');
+const elStI = document.getElementById('stIco');
+const elStT = document.getElementById('stTxt');
+
+function updateHUD() {
+  const h = Math.floor(state.t), m = Math.floor((state.t - h) * 60);
+  elClock.textContent = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ' Uhr';
+  elDay.textContent = state.daylight > 0.05 ? '☀️' : '🌙';
+  elGen.style.width = Math.round(state.genTotal * 100) + '%';
+  elLoad.style.width = Math.round(state.loadTotal * 100) + '%';
+  const st = state.flows.storage;
+  if (st > 0.05) { elStI.textContent = '🔋'; elStT.textContent = 'Speicher: entlädt ▼'; }
+  else if (st < -0.05) { elStI.textContent = '⚡'; elStT.textContent = 'Speicher: lädt ▲'; }
+  else { elStI.textContent = '🔋'; elStT.textContent = 'Speicher: bereit'; }
+}
+
+/* ============================================================
+   STECKBRIEFE
+   ============================================================ */
+const LVL_UI = {
+  hs: ['Höchstspannung · 380 kV', 'var(--lvl-hs)'],
+  hv: ['Hochspannung · 110 kV', 'var(--lvl-hv)'],
+  ms: ['Mittelspannung · 10 kV', 'var(--lvl-ms)'],
+  ns: ['Niederspannung · 400/230 V', 'var(--lvl-ns)']
+};
+const INFO = {
+  wind: { icon: '🌬️', title: 'Windpark', lvl: 'hs',
+    intro: 'Windenergieanlagen wandeln die Bewegungsenergie des Windes in elektrischen Strom um.',
+    facts: [['⚡', 'Eine moderne Anlage leistet bis zu 7 Megawatt – genug für tausende Haushalte.'],
+      ['📏', 'Die Nabenhöhe beträgt oft über 140 m – höher als der Kölner Dom breit ist.'],
+      ['🥇', 'Windkraft ist die wichtigste Stromquelle Deutschlands (rund 30 % der Erzeugung).'],
+      ['⚠️', 'Bei Flaute liefert sie fast nichts – dann müssen andere Kraftwerke einspringen.']] },
+  kohle: { icon: '🏭', title: 'Kohlekraftwerk', lvl: 'hs',
+    intro: 'Hier wird Kohle verbrannt, um mit Dampfturbinen Strom zu erzeugen.',
+    facts: [['🎚️', 'Es ist regelbar: Die Leistung lässt sich an den Bedarf anpassen (Residuallast).'],
+      ['📉', 'Nur etwa 40–45 % der Energie aus der Kohle werden zu Strom – der Rest ist Abwärme.'],
+      ['🌍', 'Kohlestrom verursacht viel CO₂ – deshalb ist der Kohleausstieg bis 2038 geplant.'],
+      ['💨', 'Aus dem Kühlturm steigt übrigens nur Wasserdampf, kein Rauch.']] },
+  pump: { icon: '⛰️', title: 'Pumpspeicherkraftwerk', lvl: 'hs',
+    intro: 'Der größte „Akku" Deutschlands: Es speichert Strom als Lageenergie von Wasser.',
+    facts: [['🔼', 'Bei Stromüberschuss pumpt es Wasser ins Oberbecken hinauf.'],
+      ['🔽', 'Bei Strommangel fließt das Wasser bergab und treibt Turbinen an.'],
+      ['♻️', 'Wirkungsgrad: etwa 75–80 % der gespeicherten Energie kommen zurück.'],
+      ['⏱️', 'Es kann innerhalb weniger Minuten volle Leistung liefern.']] },
+  batt: { icon: '🔋', title: 'Batteriespeicher', lvl: 'hv',
+    intro: 'Container voller Lithium-Ionen-Zellen speichern Strom für kurze Zeiträume.',
+    facts: [['⚡', 'Reagiert in Millisekunden – viel schneller als jedes Kraftwerk.'],
+      ['🎯', 'Hauptaufgabe: die Netzfrequenz stabil bei 50 Hertz halten.'],
+      ['📦', 'In einem Container stecken tausende Zellen – wie riesige Powerbanks.'],
+      ['📈', 'Batteriespeicher werden gerade überall in Deutschland massiv ausgebaut.']] },
+  uw1: { icon: '🔌', title: 'Umspannwerk 380/110 kV', lvl: 'hs',
+    intro: 'Das Bindeglied zwischen Übertragungsnetz und regionalem Verteilnetz.',
+    facts: [['🔄', 'Große Transformatoren wandeln 380.000 V in 110.000 V um.'],
+      ['📐', 'Hohe Spannung bedeutet kleinen Strom – und damit geringe Verluste auf langen Strecken.'],
+      ['🎛️', 'Schaltanlagen können einzelne Leitungen zu- oder abschalten.'],
+      ['🧠', 'Von hier überwachen Netzbetreiber den Stromfluss in der Region.']] },
+  uw2: { icon: '🔌', title: 'Umspannwerk 110/10 kV', lvl: 'hv',
+    intro: 'Hier wird der Strom auf Mittelspannung gebracht und in Stadtteile verteilt.',
+    facts: [['🔄', 'Transformatoren wandeln 110.000 V in 10.000 V um.'],
+      ['🏘️', 'Das Mittelspannungsnetz versorgt Stadtteile, Gewerbe und große Gebäude wie Schulen.'],
+      ['☀️', 'Auch Solarparks speisen hier ein – mittags kann Strom sogar „rückwärts" fließen.']] },
+  kiosk: { icon: '🏚️', title: 'Ortsnetztransformator', lvl: 'ms',
+    intro: 'Das unscheinbare „Trafohäuschen" – die letzte Station vor deiner Steckdose.',
+    facts: [['🔄', 'Wandelt 10.000 V in die 400/230 V um, die zu Hause ankommen.'],
+      ['🏠', 'Eine Station versorgt etwa 150 bis 400 Haushalte.'],
+      ['👀', 'Du findest solche Häuschen in fast jeder Straße – achte mal darauf!']] },
+  ind: { icon: '🏗️', title: 'Industriebetrieb', lvl: 'hv',
+    intro: 'Großverbraucher wie Stahl- oder Chemiewerke haben eigene Hochspannungsanschlüsse.',
+    facts: [['📊', 'Die Industrie verbraucht rund 44 % des Stroms in Deutschland.'],
+      ['🏙️', 'Ein einziges großes Werk kann so viel Strom brauchen wie eine Kleinstadt.'],
+      ['🤝', 'Manche Betriebe drosseln gegen Geld ihre Produktion, wenn das Netz knapp ist.']] },
+  solar: { icon: '☀️', title: 'Solarpark', lvl: 'ms',
+    intro: 'Photovoltaik-Module wandeln Licht direkt in elektrischen Strom um – ganz ohne bewegliche Teile.',
+    facts: [['🌅', 'Liefert nur tagsüber Strom – mit einer deutlichen Spitze zur Mittagszeit.'],
+      ['🔬', 'Im Halbleiter Silizium lösen Lichtteilchen Elektronen heraus: der Photoeffekt.'],
+      ['📈', 'An sonnigen Sommertagen deckt Solar zeitweise über 40 % des deutschen Bedarfs.'],
+      ['🔋', 'Damit nachts Strom da ist, braucht es Speicher als Partner.']] },
+  home: { icon: '🏠', title: 'Wohngebiet', lvl: 'ns',
+    intro: 'Endstation des Stromnetzes: Hier kommt der Strom mit 230 Volt aus der Steckdose.',
+    facts: [['🔢', 'Ein Haushalt verbraucht etwa 2.500–3.500 kWh im Jahr.'],
+      ['🌆', 'Morgens und abends gibt es Verbrauchsspitzen – schau auf die HUD-Anzeige!'],
+      ['💡', 'Eine LED-Lampe braucht nur ein Zehntel der Energie einer alten Glühbirne.']] },
+  mastHS: { icon: '🗼', title: 'Höchstspannungsmast', lvl: 'hs',
+    intro: 'Die „Stromautobahn": Sie transportiert Energie über hunderte Kilometer durchs Land.',
+    facts: [['📏', 'Solche Masten sind bis zu 80 m hoch – die Leitungen führen 380.000 Volt.'],
+      ['📐', 'Je höher die Spannung, desto geringer die Verluste beim Transport.'],
+      ['🇪🇺', 'Über dieses Netz ist Deutschland mit den Nachbarländern verbunden.']] },
+  mastHV: { icon: '🗼', title: 'Hochspannungsmast', lvl: 'hv',
+    intro: 'Das 110-kV-Netz verteilt den Strom innerhalb einer Region.',
+    facts: [['🔗', 'Es verbindet Umspannwerke, Kraftwerke und große Industriebetriebe.'],
+      ['🏙️', 'Eine 110-kV-Leitung kann eine ganze Stadt versorgen.'],
+      ['🚧', 'In Städten verlaufen diese Leitungen oft unsichtbar als Erdkabel.']] }
+};
+const INFO_COUNT = Object.keys(INFO).length;
+
+/* ---------- Persistenz ---------- */
+const LS_KEY = 'hbg-stromnetz3d-v1';
+function loadLS() { try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch (e) { return {}; } }
+function saveLS() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify({ scen: state.scen, t: state.t, visited })); } catch (e) {}
+}
+const saved = loadLS();
+const visited = Array.isArray(saved.visited) ? saved.visited : [];
+if (saved.scen && SCEN[saved.scen]) state.scen = saved.scen;
+if (typeof saved.t === 'number') state.t = clamp(saved.t, 0, 24);
+
+const elProg = document.getElementById('progress');
+function updateProgress() { elProg.textContent = '🔍 ' + visited.length + '/' + INFO_COUNT + ' erkundet'; }
+updateProgress();
+
+/* ============================================================
+   KAMERA-STEUERUNG (eigene Orbit-Logik, Touch + Maus)
+   ============================================================ */
+const ctl = { dragging: false, sx: 0, sy: 0, moved: 0, pinch: 0, enabled: true };
+const sph = new THREE.Spherical();
+
+function applyOrbit(dTheta, dPhi, dRad) {
+  sph.setFromVector3(camera.position.clone().sub(camTarget));
+  sph.theta -= dTheta; sph.phi -= dPhi;
+  sph.phi = clamp(sph.phi, 0.18, 1.42);
+  sph.radius = clamp(sph.radius * (1 + dRad), 14, 120);
+  camera.position.copy(camTarget).add(new THREE.Vector3().setFromSpherical(sph));
+  camera.lookAt(camTarget);
+}
+
+const cv = renderer.domElement;
+cv.addEventListener('pointerdown', e => {
+  if (!ctl.enabled) return;
+  ctl.dragging = true; ctl.sx = e.clientX; ctl.sy = e.clientY; ctl.moved = 0;
+});
+cv.addEventListener('pointermove', e => {
+  if (!ctl.dragging || !ctl.enabled) return;
+  const dx = e.clientX - ctl.sx, dy = e.clientY - ctl.sy;
+  ctl.moved += Math.abs(dx) + Math.abs(dy);
+  applyOrbit(dx * 0.0042, dy * 0.0035, 0);
+  ctl.sx = e.clientX; ctl.sy = e.clientY;
+});
+window.addEventListener('pointerup', e => {
+  if (ctl.dragging && ctl.moved < 8 && ctl.enabled) handleTap(e.clientX, e.clientY);
+  ctl.dragging = false;
+});
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  if (ctl.enabled) applyOrbit(0, 0, e.deltaY > 0 ? 0.08 : -0.08);
+}, { passive: false });
+cv.addEventListener('touchstart', e => {
+  if (e.touches.length === 2) {
+    ctl.pinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    ctl.dragging = false;
+  }
+}, { passive: true });
+cv.addEventListener('touchmove', e => {
+  if (e.touches.length === 2 && ctl.enabled) {
+    const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    applyOrbit(0, 0, (ctl.pinch - d) * 0.004);
+    ctl.pinch = d;
+  }
+}, { passive: true });
+
+/* ---------- Raycasting & Auswahl ---------- */
+const raycaster = new THREE.Raycaster();
+const pointerV = new THREE.Vector2();
+const highlight = new THREE.Mesh(
+  new THREE.RingGeometry(1, 1.25, 32),
+  new THREE.MeshBasicMaterial({ color: 0xD97A4A, transparent: true, opacity: 0, side: THREE.DoubleSide })
+);
+highlight.rotation.x = -Math.PI / 2;
+highlight.position.y = 0.05;
+scene.add(highlight);
+
+function handleTap(x, y) {
+  pointerV.set((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1);
+  raycaster.setFromCamera(pointerV, camera);
+  const hits = raycaster.intersectObjects(clickables, true);
+  if (!hits.length) return;
+  let o = hits[0].object;
+  while (o && !o.userData.clickId) o = o.parent;
+  if (o) selectObject(o);
+}
+
+let currentSel = null;
+function selectObject(g) {
+  const id = g.userData.clickId;
+  const info = INFO[id];
+  if (!info) return;
+  currentSel = id;
+
+  /* Highlight-Ring */
+  const bb = new THREE.Box3().setFromObject(g);
+  const c = bb.getCenter(new THREE.Vector3());
+  const size = bb.getSize(new THREE.Vector3());
+  const rad = Math.max(size.x, size.z) * 0.62 + 0.6;
+  highlight.position.set(c.x, 0.06, c.z);
+  highlight.scale.setScalar(0.01);
+  gsap.killTweensOf(highlight.scale); gsap.killTweensOf(highlight.material);
+  gsap.to(highlight.scale, { x: rad, y: rad, z: rad, duration: 0.7, ease: 'back.out(2)' });
+  gsap.to(highlight.material, { opacity: 0.85, duration: 0.4 });
+
+  /* Kameraflug */
+  const tgt = c.clone(); tgt.y = Math.min(c.y, size.y * 0.45 + 0.5);
+  const dirOut = new THREE.Vector3(c.x, 0, c.z);
+  if (dirOut.length() < 1) dirOut.set(0, 0, 1); else dirOut.normalize();
+  const dist = Math.max(size.x, size.y, size.z) * 1.6 + 7;
+  const camPos = tgt.clone()
+    .add(dirOut.multiplyScalar(dist * 0.55))
+    .add(new THREE.Vector3(0, dist * 0.5, dist * 0.6));
+  flyTo(camPos, tgt, 1.5);
+  openPanel(id, info);
+}
+
+let flying = false;
+function flyTo(pos, tgt, dur) {
+  ctl.enabled = false; flying = true;
+  gsap.killTweensOf(camera.position); gsap.killTweensOf(camTarget);
+  gsap.to(camera.position, { x: pos.x, y: pos.y, z: pos.z, duration: dur, ease: 'power2.inOut' });
+  gsap.to(camTarget, {
+    x: tgt.x, y: tgt.y, z: tgt.z, duration: dur, ease: 'power2.inOut',
+    onUpdate: () => camera.lookAt(camTarget),
+    onComplete: () => { camera.lookAt(camTarget); ctl.enabled = true; flying = false; }
+  });
+}
+
+/* ---------- Panel ---------- */
+const panel = document.getElementById('panel');
+let panelOpen = false;
+function openPanel(id, info) {
+  document.getElementById('p-icon').textContent = info.icon;
+  document.getElementById('p-title').textContent = info.title;
+  const lu = LVL_UI[info.lvl];
+  document.getElementById('p-level').textContent = lu[0];
+  document.getElementById('p-dot').style.background = lu[1];
+  document.getElementById('p-intro').textContent = info.intro;
+  const wasVisited = visited.includes(id);
+  if (!wasVisited) { visited.push(id); saveLS(); updateProgress(); }
+  document.getElementById('p-visited').hidden = !wasVisited;
+  const fc = document.getElementById('p-facts');
+  fc.innerHTML = '';
+  info.facts.forEach(f => {
+    const d = document.createElement('div');
+    d.className = 'fact';
+    const i = document.createElement('span'); i.className = 'f-ico'; i.setAttribute('aria-hidden', 'true'); i.textContent = f[0];
+    const t = document.createElement('span'); t.textContent = f[1];
+    d.appendChild(i); d.appendChild(t); fc.appendChild(d);
+  });
+  if (!panelOpen) {
+    panelOpen = true;
+    gsap.to(panel, { x: 0, duration: 0.55, ease: 'power3.out' });
+  }
+  gsap.fromTo('#p-facts .fact', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.07, ease: 'power2.out', delay: 0.15 });
+}
+function closePanel(goHome) {
+  if (panelOpen) {
+    panelOpen = false;
+    gsap.to(panel, { x: '105%', duration: 0.45, ease: 'power3.in' });
+  }
+  gsap.to(highlight.material, { opacity: 0, duration: 0.35 });
+  currentSel = null;
+  if (goHome) flyTo(HOME_CAM, HOME_TGT, 1.6);
+}
+gsap.set(panel, { x: '105%' });
+document.getElementById('closeBtn').addEventListener('click', () => closePanel(false));
+document.getElementById('backBtn').addEventListener('click', () => closePanel(true));
+
+/* ---------- UI: Szenarien & Zeit ---------- */
+const scenBtns = document.querySelectorAll('.scen-btn');
+scenBtns.forEach(b => {
+  if (b.dataset.scen === state.scen) { scenBtns.forEach(x => x.classList.remove('active')); b.classList.add('active'); }
+  b.addEventListener('click', () => {
+    scenBtns.forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    state.scen = b.dataset.scen;
+    saveLS();
+  });
+});
+const slider = document.getElementById('timeSlider');
+slider.value = state.t;
+slider.addEventListener('input', () => {
+  state.t = parseFloat(slider.value);
+  state.playing = false;
+  playBtn.textContent = '▶';
+});
+slider.addEventListener('change', saveLS);
+const playBtn = document.getElementById('playBtn');
+playBtn.addEventListener('click', () => {
+  state.playing = !state.playing;
+  playBtn.textContent = state.playing ? '⏸' : '▶';
+});
+
+/* ---------- Intro ---------- */
+const intro = document.getElementById('intro');
+document.getElementById('startBtn').addEventListener('click', () => {
+  gsap.to(intro, { opacity: 0, duration: 0.5, onComplete: () => intro.remove() });
+  camera.position.set(-60, 70, 110);
+  camera.lookAt(camTarget);
+  flyTo(HOME_CAM, HOME_TGT, 2.6);
+  const hint = document.getElementById('hint');
+  gsap.to(hint, { opacity: 1, duration: 0.6, delay: 2.8 });
+  gsap.to(hint, { opacity: 0, duration: 0.8, delay: 9 });
+});
+
+/* ============================================================
+   ANIMATIONS-SCHLEIFE
+   ============================================================ */
+const tmpC = new THREE.Color();
+let lastT = performance.now(), puffAcc = 0;
+
+function flowOf(key) { return state.flows[key] || 0; }
+
+function animate(now) {
+  requestAnimationFrame(animate);
+  const dt = Math.min(0.05, (now - lastT) / 1000);
+  lastT = now;
+
+  /* Zeitfortschritt: 24 h in ~120 s */
+  if (state.playing) {
+    state.t = (state.t + dt * 0.2) % 24;
+    slider.value = state.t;
+  }
+  computeState();
+  updateHUD();
+
+  /* Himmel, Sonne, Nebel */
+  const d = state.daylight;
+  const sunAng = ((state.t - 6) / 12) * Math.PI;
+  sun.position.set(Math.cos(sunAng) * 60, Math.sin(sunAng) * 55 + 4, 24);
+  sun.intensity = d * 1.05;
+  moon.intensity = state.night * 0.22;
+  hemi.intensity = 0.22 + d * 0.65;
+  const horizon = clamp(1 - Math.abs(Math.sin(sunAng)) * 3.2, 0, 1);
+  tmpC.copy(SKY_NIGHT).lerp(SKY_DAY, d).lerp(SKY_DAWN, horizon * 0.55 * (d > 0 ? 1 : 0.4));
+  scene.background.copy(tmpC);
+  scene.fog.color.copy(tmpC);
+  starMat.opacity = state.night * 0.9;
+  winMat.emissiveIntensity = state.night * 1.1;
+
+  /* Rotoren */
+  rotors.forEach((r, i) => { r.rotation.z += dt * (0.4 + state.windF * 5) * (i % 2 ? 1 : 1.12); });
+
+  /* Dampf am Kraftwerk */
+  puffAcc += dt * (0.5 + flowOf('coal') * 6);
+  while (puffAcc > 1) { puffAcc -= 1; spawnPuff(); }
+  for (let i = puffs.length - 1; i >= 0; i--) {
+    const p = puffs[i];
+    p.userData.life += dt;
+    p.position.y += dt * 1.1;
+    p.position.x += dt * 0.35;
+    const lf = p.userData.life;
+    p.scale.setScalar(0.8 + lf * 1.1);
+    p.material.opacity = Math.max(0, 0.5 - lf * 0.18);
+    if (lf > 3) { scene.remove(p); p.material.dispose(); puffs.splice(i, 1); }
+  }
+
+  /* Strom-Partikel */
+  lines.forEach(l => {
+    const f = flowOf(l.def.key);
+    const fa = Math.abs(f);
+    const dir = (l.def.bidi && f < 0) ? -1 : 1;
+    const active = fa > 0.04;
+    if (l.def.tubeMat) l.def.tubeMat.opacity = 0.3 + fa * 0.6;
+    l.parts.forEach(p => {
+      p.visible = active;
+      if (!active) return;
+      p.userData.p = (p.userData.p + dt * (0.05 + fa * 0.14)) % 1;
+      const u = dir > 0 ? p.userData.p : 1 - p.userData.p;
+      l.curve.getPoint(u, p.position);
+      const s = 0.75 + fa * 0.6;
+      p.scale.setScalar(s);
+    });
+  });
+
+  /* Highlight-Puls */
+  if (currentSel) {
+    highlight.material.opacity = 0.55 + Math.sin(now * 0.004) * 0.25;
+  }
+
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(animate);
+
+</script>
+</body>
+</html>
