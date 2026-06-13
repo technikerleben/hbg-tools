@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Stromkreis-Simulator – Die Taschenlampe – HBG</title>
+<style>
+  :root {
+    --col-slate-dark:  #2C3D4C;
+    --col-slate:       #3E5668;
+    --col-slate-mid:   #6A8599;
+    --col-slate-pale:  #D0DCE6;
+    --col-slate-ghost: #EEF3F7;
+    --col-rust-dark:   #9E4E22;
+    --col-rust:        #D97A4A;
+    --col-rust-pale:   #F5DDD1;
+    --col-sage-dark:   #4D8B3F;
+    --col-sage:        #7DBB6F;
+    --col-sage-pale:   #DDF0D8;
+    --col-warning:      #C17B00;
+    --col-warning-pale: #FFF3CC;
+    --col-warning-text: #5C4400;
+    --col-error:        #C0392B;
+    --col-error-pale:   #FDECEA;
+    --col-error-text:   #7A1B14;
+    --col-bg:           #F5F4F1;
+    --col-white:        #FFFFFF;
+    --col-text:         #1E2A35;
+    --col-text-muted:   #5A6A78;
+    --col-border:       #D4D0C8;
+    --col-shadow:       rgba(62,86,104,0.10);
+    --text-xs:   0.694rem;
+    --text-sm:   0.833rem;
+    --text-base: 1rem;
+    --text-md:   1.2rem;
+    --text-lg:   1.44rem;
+    --text-xl:   1.728rem;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--col-bg);
+    color: var(--col-text);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+  }
+  :focus-visible { outline: 3px solid var(--col-slate); outline-offset: 3px; border-radius: 4px; }
+
+  header {
+    background: var(--col-slate);
+    color: white;
+    padding: 10px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  header h1 { font-size: var(--text-lg); font-weight: 700; line-height: 1.2; }
+  .header-meta { font-size: var(--text-xs); color: var(--col-slate-pale); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+  .hbg-wordmark { display: inline-flex; align-items: flex-end; gap: 5px; }
+  .hbg-wordmark__main { font-size: var(--text-lg); font-weight: 800; color: white; }
+  .hbg-wordmark__sub  { font-size: var(--text-sm); color: #EBA882; margin-bottom: 2px; }
+
+  /* Bühne */
+  #stage { position: relative; flex: 1; min-height: 0; }
+  #scene-canvas { display: block; width: 100%; height: 100%; }
+
+  /* Steuerleiste oben links */
+  .controls {
+    position: absolute; top: 16px; left: 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    z-index: 5;
+  }
+  .control-panel {
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--col-border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 2px 8px var(--col-shadow);
+    max-width: 230px;
+  }
+  .control-panel h2 { font-size: var(--text-sm); color: var(--col-slate); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .btn-row { display: flex; flex-direction: column; gap: 8px; }
+
+  .btn-primary, .btn-secondary {
+    padding: 9px 16px; border-radius: 8px; font-size: var(--text-base);
+    font-weight: 600; min-height: 44px; cursor: pointer; font-family: inherit;
+    transition: background 0.2s, transform 0.1s; width: 100%; text-align: left;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-primary { background: var(--col-rust-dark); color: #fff; border: none; }
+  .btn-primary:hover { background: #B55E2A; }
+  .btn-primary:active { transform: translateY(1px); }
+  .btn-secondary { background: transparent; color: var(--col-slate); border: 2px solid var(--col-slate); }
+  .btn-secondary:hover { background: var(--col-slate-ghost); }
+  .btn-icon { font-size: var(--text-md); line-height: 1; }
+
+  /* Hinweis unten */
+  .hint {
+    position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.94); border: 1px solid var(--col-border);
+    border-radius: 999px; padding: 8px 18px; font-size: var(--text-sm);
+    color: var(--col-text-muted); box-shadow: 0 2px 8px var(--col-shadow);
+    z-index: 5; text-align: center; max-width: 90%;
+  }
+
+  /* Status-Anzeige LED falsch gepolt */
+  .status-banner {
+    position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+    border-radius: 8px; padding: 10px 18px; font-size: var(--text-sm);
+    box-shadow: 0 2px 8px var(--col-shadow); z-index: 6; max-width: 460px;
+    display: none; align-items: flex-start; gap: 8px;
+  }
+  .status-banner.show { display: flex; }
+  .status-banner--warn { background: var(--col-warning-pale); color: var(--col-warning-text); border-left: 4px solid var(--col-warning); }
+
+  /* Info-Popup für Bauteile */
+  .overlay {
+    position: absolute; inset: 0; background: rgba(44,61,76,0.45);
+    display: none; align-items: center; justify-content: center; z-index: 20; padding: 20px;
+  }
+  .overlay.show { display: flex; }
+  .info-card {
+    background: var(--col-white); border-radius: 14px; max-width: 560px; width: 100%;
+    box-shadow: 0 8px 30px rgba(44,61,76,0.3); overflow: hidden;
+    max-height: 88%; display: flex; flex-direction: column;
+  }
+  .info-head { background: var(--col-slate); color: #fff; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
+  .info-head h3 { font-size: var(--text-lg); }
+  .info-close { background: rgba(255,255,255,0.15); border: none; color: #fff; width: 36px; height: 36px; border-radius: 8px; font-size: 22px; cursor: pointer; line-height: 1; }
+  .info-close:hover { background: rgba(255,255,255,0.3); }
+  .info-body { padding: 20px; overflow-y: auto; display: grid; grid-template-columns: 1fr 160px; gap: 20px; }
+  .info-body p { font-size: var(--text-base); }
+  .info-body .role-badge {
+    display: inline-block; background: var(--col-rust-pale); color: var(--col-rust-dark);
+    font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 3px 10px; border-radius: 999px; margin-bottom: 10px;
+  }
+  .schaltzeichen-box {
+    background: var(--col-slate-ghost); border: 1px solid var(--col-border); border-radius: 10px;
+    padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 6px; align-self: start;
+  }
+  .schaltzeichen-box svg { width: 100%; height: auto; }
+  .schaltzeichen-box .label { font-size: var(--text-xs); color: var(--col-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* Ladeanzeige */
+  #loader {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: var(--col-bg); z-index: 30; flex-direction: column; gap: 14px; color: var(--col-text-muted);
+  }
+  .spinner { width: 40px; height: 40px; border: 4px solid var(--col-slate-pale); border-top-color: var(--col-slate); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 720px) {
+    .info-body { grid-template-columns: 1fr; }
+    .schaltzeichen-box { max-width: 200px; margin: 0 auto; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Stromkreis-Simulator: Die Taschenlampe</h1>
+    <div class="header-meta">HBG Dortmund · WP Technik · Klasse 5</div>
+  </div>
+  <div class="hbg-wordmark">
+    <span class="hbg-wordmark__main">HBG</span>
+    <span class="hbg-wordmark__sub">Technik</span>
+  </div>
+</header>
+
+<div id="stage">
+  <canvas id="scene-canvas"></canvas>
+
+  <div id="loader"><div class="spinner"></div><span>3D-Modell wird geladen …</span></div>
+
+  <div class="controls">
+    <div class="control-panel">
+      <h2>Steuerung</h2>
+      <div class="btn-row">
+        <button id="btn-switch" class="btn-primary"><span class="btn-icon">🔌</span><span id="switch-label">Schalter einschalten</span></button>
+        <button id="btn-polung" class="btn-secondary"><span class="btn-icon">🔄</span>Batterie umpolen</button>
+        <button id="btn-reset" class="btn-secondary"><span class="btn-icon">↺</span>Ansicht zurücksetzen</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="status" class="status-banner status-banner--warn">
+    <span aria-hidden="true">⚠</span>
+    <span><strong>Die LED leuchtet nicht!</strong> Die LED ist falsch herum eingebaut. Strom fließt nur in <em>eine</em> Richtung durch sie. Pole die Batterie um oder denke nach, woran es liegt.</span>
+  </div>
+
+  <div class="hint">💡 Tippe auf ein Bauteil, um zu erfahren, was es macht – und sein Schaltzeichen zu sehen. Ziehen = drehen.</div>
+</div>
+
+<!-- Info-Popup -->
+<div id="overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="info-title">
+  <div class="info-card">
+    <div class="info-head">
+      <h3 id="info-title">Bauteil</h3>
+      <button id="info-close" class="info-close" aria-label="Schließen">×</button>
+    </div>
+    <div class="info-body">
+      <div>
+        <span id="info-role" class="role-badge">Bauteil</span>
+        <p id="info-text"></p>
+      </div>
+      <div class="schaltzeichen-box">
+        <div id="info-svg"></div>
+        <span class="label">Schaltzeichen</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.min.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ============================================================
+   Bauteil-Informationen (Klasse-5-Sprache) + Schaltzeichen-SVGs
+   ============================================================ */
+const BAUTEILE = {
+  batterie: {
+    titel: 'Batterie',
+    rolle: 'Energiequelle',
+    text: 'Die Batterie ist der Motor des Stromkreises. Sie liefert die Energie, damit der Strom fließen kann. Sie hat zwei Pole: den Pluspol (+) und den Minuspol (–). Der technische Strom fließt vom Pluspol durch die Leitungen bis zum Minuspol zurück.',
+    svg: `<svg viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Schaltzeichen Batterie">
+      <line x1="0" y1="35" x2="42" y2="35" stroke="#1E2A35" stroke-width="3"/>
+      <line x1="42" y1="12" x2="42" y2="58" stroke="#1E2A35" stroke-width="4"/>
+      <line x1="58" y1="22" x2="58" y2="48" stroke="#1E2A35" stroke-width="3"/>
+      <line x1="42" y1="35" x2="58" y2="35" stroke="#1E2A35" stroke-width="0"/>
+      <line x1="58" y1="35" x2="120" y2="35" stroke="#1E2A35" stroke-width="3"/>
+      <text x="34" y="10" font-size="14" font-family="Arial" fill="#9E4E22" font-weight="bold">+</text>
+      <text x="62" y="18" font-size="16" font-family="Arial" fill="#3E5668" font-weight="bold">–</text>
+    </svg>`
+  },
+  widerstand: {
+    titel: 'Widerstand',
+    rolle: 'Schützt die LED',
+    text: 'Der Widerstand bremst den Strom ein bisschen ab. Das ist wichtig, denn ohne ihn würde zu viel Strom durch die LED fließen – und die LED würde sofort kaputtgehen. Der Widerstand ist also wie ein Schutz für die LED. Die bunten Ringe verraten Fachleuten, wie stark er bremst.',
+    svg: `<svg viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Schaltzeichen Widerstand">
+      <line x1="0" y1="35" x2="30" y2="35" stroke="#1E2A35" stroke-width="3"/>
+      <rect x="30" y="22" width="60" height="26" fill="none" stroke="#1E2A35" stroke-width="3"/>
+      <line x1="90" y1="35" x2="120" y2="35" stroke="#1E2A35" stroke-width="3"/>
+    </svg>`
+  },
+  led: {
+    titel: 'Leuchtdiode (LED)',
+    rolle: 'Das Licht',
+    text: 'Die LED ist die Lampe der Taschenlampe – sie leuchtet, wenn Strom durch sie fließt. Aber Achtung: Eine LED ist eine Einbahnstraße! Der Strom kann nur in eine Richtung durch sie hindurch. Ist sie falsch herum eingebaut, bleibt sie dunkel. Das lange Bein gehört an den Pluspol.',
+    svg: `<svg viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Schaltzeichen Leuchtdiode">
+      <line x1="0" y1="35" x2="38" y2="35" stroke="#1E2A35" stroke-width="3"/>
+      <polygon points="38,20 38,50 66,35" fill="#1E2A35"/>
+      <line x1="66" y1="18" x2="66" y2="52" stroke="#1E2A35" stroke-width="3"/>
+      <line x1="66" y1="35" x2="120" y2="35" stroke="#1E2A35" stroke-width="3"/>
+      <line x1="70" y1="14" x2="82" y2="4" stroke="#D97A4A" stroke-width="2.5"/>
+      <polygon points="82,4 76,6 80,10" fill="#D97A4A"/>
+      <line x1="78" y1="20" x2="90" y2="10" stroke="#D97A4A" stroke-width="2.5"/>
+      <polygon points="90,10 84,12 88,16" fill="#D97A4A"/>
+    </svg>`
+  },
+  schalter: {
+    titel: 'Schalter',
+    rolle: 'An / Aus',
+    text: 'Mit dem Schalter machst du den Stromkreis auf oder zu. Ist der Schalter geschlossen, kann der Strom durchfließen und die LED leuchtet. Ist er offen, ist der Stromkreis unterbrochen – wie eine kaputte Brücke – und es fließt kein Strom.',
+    svg: `<svg viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Schaltzeichen Schalter">
+      <line x1="0" y1="35" x2="35" y2="35" stroke="#1E2A35" stroke-width="3"/>
+      <circle cx="35" cy="35" r="3.5" fill="#1E2A35"/>
+      <line x1="35" y1="35" x2="80" y2="16" stroke="#1E2A35" stroke-width="3"/>
+      <circle cx="85" cy="35" r="3.5" fill="#1E2A35"/>
+      <line x1="85" y1="35" x2="120" y2="35" stroke="#1E2A35" stroke-width="3"/>
+    </svg>`
+  },
+  kabel: {
+    titel: 'Verbindungskabel',
+    rolle: 'Die Leitung',
+    text: 'Die Kabel verbinden alle Bauteile miteinander, sodass ein geschlossener Kreis entsteht. Nur in einem geschlossenen Kreis kann Strom fließen. Im Inneren der Kabel sind dünne Metalldrähte – Metall leitet den Strom besonders gut.',
+    svg: `<svg viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Schaltzeichen Leitung">
+      <line x1="0" y1="35" x2="120" y2="35" stroke="#1E2A35" stroke-width="3"/>
+      <circle cx="60" cy="35" r="4" fill="#1E2A35"/>
+    </svg>`
+  }
+};
+
+/* ============================================================
+   Three.js Setup – helle technische Szene
+   ============================================================ */
+const canvas = document.getElementById('scene-canvas');
+const stage  = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = false;
+
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xF5F4F1);
+
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+const CAM_START = new THREE.Vector3(0, 11, 12);
+camera.position.copy(CAM_START);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 7;
+controls.maxDistance = 22;
+controls.maxPolarAngle = Math.PI * 0.49;
+controls.target.set(0, 0, 0);
+
+/* Licht – hell und technisch */
+scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+const key = new THREE.DirectionalLight(0xffffff, 1.1);
+key.position.set(6, 12, 8);
+key.castShadow = false;
+scene.add(key);
+const fill = new THREE.DirectionalLight(0xdfe8ef, 0.4);
+fill.position.set(-8, 5, -6);
+scene.add(fill);
+
+/* Materialien (Marken-/realistische Farben) */
+const matMetall   = new THREE.MeshStandardMaterial({ color: 0xbfc4c9, metalness: 0.85, roughness: 0.35 });
+const matMetallHell= new THREE.MeshStandardMaterial({ color: 0xe4e7ea, metalness: 0.9, roughness: 0.25 });
+const matKupfer   = new THREE.MeshStandardMaterial({ color: 0xc77b3a, metalness: 0.9, roughness: 0.4 });
+const matKabelRot = new THREE.MeshStandardMaterial({ color: 0xC0392B, roughness: 0.6 });
+const matKabelSw  = new THREE.MeshStandardMaterial({ color: 0x2C3D4C, roughness: 0.6 });
+const matKunststoffSchwarz = new THREE.MeshStandardMaterial({ color: 0x222831, roughness: 0.5 });
+
+/* Gruppen, die anklickbar sind */
+const clickable = [];
+function tag(obj, key) { obj.userData.bauteil = key; clickable.push(obj); }
+
+/* ---------- Layout: Bauteile rechteckig in horizontaler Ebene ----------
+   Vier Kanten eines Rechtecks in der XZ-Ebene. Jedes Bauteil sitzt mittig
+   auf einer Kante und schwebt exakt über seinem Schaltzeichen im Boden. */
+const NODE = {
+  ul: new THREE.Vector3(-5, 0,  3.2),   // unten links  (Batterie-Minuspol-Ecke)  [vorne links]
+  ol: new THREE.Vector3(-5, 0, -3.2),   // oben links   (Batterie-Plus-Ecke)
+  or: new THREE.Vector3( 5, 0, -3.2),   // oben rechts
+  ur: new THREE.Vector3( 5, 0,  3.2),   // unten rechts
+};
+// Kantenmitten = Bauteil-Positionen
+const POS = {
+  batterie:   new THREE.Vector3(-5, 0, 0),   // linke Kante
+  widerstand: new THREE.Vector3( 0, 0, -3.2), // hintere Kante (oben im Plan)
+  led:        new THREE.Vector3( 5, 0, 0),   // rechte Kante
+  schalter:   new THREE.Vector3( 0, 0,  3.2)  // vordere Kante (unten im Plan)
+};
+
+/* ---------- Schwebende Schaltung (Modell) ---------- */
+const modell = new THREE.Group();
+modell.position.y = 2.4;          // schwebt über dem Schaltplan-Boden
+scene.add(modell);
+
+/* BATTERIE – liegende Rundzelle, Längsachse entlang Z (linke Kante) */
+const batterieGroup = new THREE.Group();
+batterieGroup.position.copy(POS.batterie);
+const battKoerper = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.85, 0.85, 3.4, 40),
+  new THREE.MeshStandardMaterial({ color: 0x2C3D4C, metalness: 0.5, roughness: 0.4 })
+);
+battKoerper.rotation.x = Math.PI / 2;   // Achse entlang Z
+
+batterieGroup.add(battKoerper);
+const band = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.86, 0.86, 2.2, 40),
+  new THREE.MeshStandardMaterial({ color: 0xD97A4A, roughness: 0.55 })
+);
+band.rotation.x = Math.PI / 2;
+batterieGroup.add(band);
+// Pluspol-Knopf (hinten, -Z) – zeigt zur ol-Ecke (Plus)
+const plusPol = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.25, 24), matMetallHell);
+plusPol.rotation.x = Math.PI / 2;
+plusPol.position.z = -1.82;
+batterieGroup.add(plusPol);
+// Minuspol (flach, vorne +Z)
+const minusPol = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 0.12, 40), matMetall);
+minusPol.rotation.x = Math.PI / 2;
+minusPol.position.z = 1.76;
+batterieGroup.add(minusPol);
+function makeLabel(txt, color) {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = color; ctx.font = 'bold 110px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(txt, 64, 70);
+  const tex = new THREE.CanvasTexture(c);
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
+  spr.scale.set(0.7,0.7,0.7);
+  return spr;
+}
+const plusLabel  = makeLabel('+', '#9E4E22'); plusLabel.position.set(0, 1.0, -1.5); batterieGroup.add(plusLabel);
+const minusLabel = makeLabel('–', '#3E5668'); minusLabel.position.set(0, 1.0, 1.5); batterieGroup.add(minusLabel);
+tag(battKoerper, 'batterie'); tag(band, 'batterie'); tag(plusPol,'batterie'); tag(minusPol,'batterie');
+modell.add(batterieGroup);
+
+/* WIDERSTAND – Achse entlang X (hintere Kante) */
+const widerstandGroup = new THREE.Group();
+widerstandGroup.position.copy(POS.widerstand);
+const wKoerper = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.4, 0.4, 1.7, 32),
+  new THREE.MeshStandardMaterial({ color: 0xD9C9A3, roughness: 0.6 })
+);
+wKoerper.rotation.z = Math.PI / 2;   // Achse entlang X
+
+widerstandGroup.add(wKoerper);
+const ringFarben = [0xC0392B, 0x9E4E22, 0x4D8B3F, 0xC17B00];
+ringFarben.forEach((f, i) => {
+  const ring = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.42, 0.42, 0.16, 32),
+    new THREE.MeshStandardMaterial({ color: f, roughness: 0.5 })
+  );
+  ring.rotation.z = Math.PI / 2;
+  ring.position.x = -0.55 + i * 0.34;
+  widerstandGroup.add(ring);
+});
+tag(wKoerper, 'widerstand');
+widerstandGroup.children.forEach(c => { if (c !== wKoerper) tag(c,'widerstand'); });
+modell.add(widerstandGroup);
+
+/* LED – steht aufrecht (Kuppe nach oben), an rechter Kante */
+const ledGroup = new THREE.Group();
+ledGroup.position.copy(POS.led);
+const ledMat = new THREE.MeshStandardMaterial({ color: 0xC0392B, transparent: true, opacity: 0.55, roughness: 0.15, emissive: 0x000000 });
+const ledKoerper = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.9, 32), ledMat);
+ledKoerper.position.y = 1.0;
+ledGroup.add(ledKoerper);
+const ledKuppe = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 24, 0, Math.PI*2, 0, Math.PI/2), ledMat);
+ledKuppe.position.y = 1.45;
+ledGroup.add(ledKuppe);
+const ledRand = new THREE.Mesh(new THREE.CylinderGeometry(0.58, 0.58, 0.12, 32), new THREE.MeshStandardMaterial({ color: 0xC0392B, transparent:true, opacity:0.4, roughness:0.3 }));
+ledRand.position.y = 0.54;
+ledGroup.add(ledRand);
+// Zwei Beine gerade nach unten bis zum Kabel (y=0). Anschlusspunkte: z=-0.7 (lang/+) und z=+0.7 (kurz/-).
+// Langes Bein (Anode +) auf -Z-Seite – dort kommt der Strom an. Reicht bis ganz zum Kabel.
+const langBein = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,1.0,12), matMetallHell);
+langBein.position.set(0, 0.0, -0.28);
+ledGroup.add(langBein);
+// kleiner Markierungsring kennzeichnet das lange Bein als Pluspol
+const beinRing = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.03, 8, 20), new THREE.MeshStandardMaterial({ color: 0x9E4E22, roughness:0.5 }));
+beinRing.position.set(0, 0.35, -0.28);
+beinRing.rotation.x = Math.PI/2;
+ledGroup.add(beinRing);
+// Kurzes Bein (Kathode -) auf +Z-Seite – endet höher (sichtbar kürzer)
+const kurzBein = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,0.6,12), matMetallHell);
+kurzBein.position.set(0, 0.2, 0.28);
+ledGroup.add(kurzBein);
+const ledLight = new THREE.PointLight(0xffefc0, 0, 6, 2);
+ledLight.position.set(0, 1.3, 0);
+ledGroup.add(ledLight);
+tag(ledKoerper,'led'); tag(ledKuppe,'led'); tag(ledRand,'led');
+modell.add(ledGroup);
+
+/* SCHALTER – Kippschalter auf Sockel, vordere Kante */
+const schalterGroup = new THREE.Group();
+schalterGroup.position.copy(POS.schalter);
+const schSockel = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.5, 1.0), matKunststoffSchwarz);
+
+schalterGroup.add(schSockel);
+const schHebelPivot = new THREE.Group();
+schHebelPivot.position.set(0, 0.25, 0);
+const schHebel = new THREE.Mesh(new THREE.CylinderGeometry(0.14,0.14,0.9,16), new THREE.MeshStandardMaterial({ color: 0xC0392B, roughness:0.4 }));
+schHebel.position.y = 0.45;
+schHebelPivot.add(schHebel);
+const schKnauf = new THREE.Mesh(new THREE.SphereGeometry(0.22,20,16), new THREE.MeshStandardMaterial({ color:0xe4e7ea, metalness:0.6, roughness:0.3 }));
+schKnauf.position.y = 0.9;
+schHebelPivot.add(schKnauf);
+schHebelPivot.rotation.x = 0.5; // offen (kippt entlang Z-Achse, sichtbar von vorne)
+schalterGroup.add(schHebelPivot);
+tag(schSockel,'schalter'); tag(schHebel,'schalter'); tag(schKnauf,'schalter');
+modell.add(schalterGroup);
+
+/* ---------- Kabel entlang der vier Rechteckkanten (mit Anschluss an Bauteile) ---------- */
+/* Strompfad in technischer Richtung + -> - :
+   Batterie-Plus (ol-Ecke) -> Widerstand -> rechts -> LED -> unten -> Schalter -> Batterie-Minus (ul-Ecke) */
+const yB = 0; // lokale Höhe im Modell
+// Vollständiger Strompfad (für die Lichtimpulse – durchgehend, auch durch die LED)
+const pfadPunkte = [
+  new THREE.Vector3(-5, yB, -1.8),   // an Batterie-Pluspol
+  new THREE.Vector3(-5, yB, -3.2),   // Ecke ol
+  new THREE.Vector3(-0.85, yB, -3.2),// Widerstand-Eingang
+  new THREE.Vector3( 0.85, yB, -3.2),// Widerstand-Ausgang
+  new THREE.Vector3( 5, yB, -3.2),   // Ecke or
+  new THREE.Vector3( 5, yB, -0.28),  // hoch zum langen Bein (+)
+  new THREE.Vector3( 5, 0.45, -0.28),// in die LED hinein (langes Bein)
+  new THREE.Vector3( 5, 0.45,  0.28),// durch die LED zum kurzen Bein (-)
+  new THREE.Vector3( 5, yB,  0.28),  // runter vom kurzen Bein
+  new THREE.Vector3( 5, yB,  3.2),   // Ecke ur
+  new THREE.Vector3( 0.8, yB, 3.2),  // Schalter-Eingang
+  new THREE.Vector3(-0.8, yB, 3.2),  // Schalter-Ausgang
+  new THREE.Vector3(-5, yB,  3.2),   // Ecke ul
+  new THREE.Vector3(-5, yB,  1.8)    // an Batterie-Minuspol
+];
+const pfadKurve = new THREE.CatmullRomCurve3(pfadPunkte, false, 'catmullrom', 0.0);
+
+function tubeFrom(points, mat) {
+  const curve = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.0);
+  const geo = new THREE.TubeGeometry(curve, points.length * 12, 0.09, 12, false);
+  return new THREE.Mesh(geo, mat);
+}
+// Sichtbare Kabel haben eine LÜCKE an der LED – der Strom MUSS durch die LED fließen.
+// Kabel 1 (rot+schwarz-Übergang): Pluspol -> Widerstand -> bis langes Bein, dann Stummel hoch
+const kabelTeil1 = [
+  new THREE.Vector3(-5, yB, -1.8),
+  new THREE.Vector3(-5, yB, -3.2),
+  new THREE.Vector3(-0.85, yB, -3.2),
+  new THREE.Vector3( 0.85, yB, -3.2),
+  new THREE.Vector3( 5, yB, -3.2),
+  new THREE.Vector3( 5, yB, -0.28),   // bis unters lange Bein
+  new THREE.Vector3( 5, 0.05, -0.28)  // kurzer Stummel hoch zum Beinende -> hier ENDET das Kabel
+];
+// Kabel 2: vom kurzen Bein weiter über Schalter zum Minuspol
+const kabelTeil2 = [
+  new THREE.Vector3( 5, 0.05, 0.28),  // beginnt am kurzen Bein
+  new THREE.Vector3( 5, yB,  0.28),
+  new THREE.Vector3( 5, yB,  3.2),
+  new THREE.Vector3( 0.8, yB, 3.2),
+  new THREE.Vector3(-0.8, yB, 3.2),
+  new THREE.Vector3(-5, yB,  3.2),
+  new THREE.Vector3(-5, yB,  1.8)
+];
+// Roter Abschnitt nur Plus -> Widerstand-Eingang als eigenes Stück
+const kabelRot = tubeFrom([
+  new THREE.Vector3(-5, yB, -1.8),
+  new THREE.Vector3(-5, yB, -3.2),
+  new THREE.Vector3(-0.85, yB, -3.2)
+], matKabelRot);
+const kabelSw1 = tubeFrom(kabelTeil1.slice(2), matKabelSw);
+const kabelSw2 = tubeFrom(kabelTeil2, matKabelSw);
+tag(kabelRot,'kabel'); tag(kabelSw1,'kabel'); tag(kabelSw2,'kabel');
+modell.add(kabelRot, kabelSw1, kabelSw2);
+
+/* ---------- Strom-Lichtimpulse (3D, entlang Pfad) ---------- */
+const impulse = [];
+const ANZ_IMPULSE = 18;
+for (let i = 0; i < ANZ_IMPULSE; i++) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 12), new THREE.MeshBasicMaterial({ color: 0xC17B00 }));
+  m.userData.offset = i / ANZ_IMPULSE;
+  m.visible = false;
+  modell.add(m);
+  impulse.push(m);
+}
+
+/* ---------- Schaltplan-Boden direkt unter den Bauteilen ---------- */
+const boden = new THREE.Group();
+boden.position.y = -2.4;   // liegt unter dem schwebenden Modell
+scene.add(boden);
+const platte = new THREE.Mesh(
+  new THREE.PlaneGeometry(14, 10),
+  new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 })
+);
+platte.rotation.x = -Math.PI / 2;
+platte.position.y = -0.02;
+
+boden.add(platte);
+
+/* Schaltplan = dasselbe Rechteck wie die Bauteil-Anordnung (Draufsicht 1:1).
+   Knoten exakt unter den Modell-Ecken. */
+const SP = {
+  ol: new THREE.Vector3(-5, 0.03, -3.2),
+  or: new THREE.Vector3( 5, 0.03, -3.2),
+  ur: new THREE.Vector3( 5, 0.03,  3.2),
+  ul: new THREE.Vector3(-5, 0.03,  3.2)
+};
+const planLineMat = new THREE.LineBasicMaterial({ color: 0x1E2A35 });
+function planSeg(a, b) {
+  const g = new THREE.BufferGeometry().setFromPoints([a, b]);
+  const l = new THREE.Line(g, planLineMat.clone());
+  boden.add(l); return l;
+}
+// Hintere Kante (Widerstand) mit Lücke
+planSeg(SP.ol, new THREE.Vector3(-0.85,0.03,-3.2));
+planSeg(new THREE.Vector3(0.85,0.03,-3.2), SP.or);
+// Rechte Kante (LED) mit Lücke
+planSeg(SP.or, new THREE.Vector3(5,0.03,-0.7));
+planSeg(new THREE.Vector3(5,0.03,0.7), SP.ur);
+// Vordere Kante (Schalter) mit Lücke
+planSeg(SP.ur, new THREE.Vector3(0.8,0.03,3.2));
+planSeg(new THREE.Vector3(-0.8,0.03,3.2), SP.ul);
+// Linke Kante (Batterie) mit Lücke
+planSeg(SP.ul, new THREE.Vector3(-5,0.03,0.8));
+planSeg(new THREE.Vector3(-5,0.03,-0.8), SP.ol);
+
+/* Schaltzeichen exakt unter dem jeweiligen Bauteil */
+function planLineRaw(pts, color=0x1E2A35) {
+  const g = new THREE.BufferGeometry().setFromPoints(pts);
+  const l = new THREE.Line(g, new THREE.LineBasicMaterial({ color }));
+  boden.add(l); return l;
+}
+// Widerstand: Rechteck-Symbol (unter hinterer Kante)
+planLineRaw([
+  new THREE.Vector3(-0.85,0.03,-3.2), new THREE.Vector3(-0.85,0.03,-3.65),
+  new THREE.Vector3(0.85,0.03,-3.65), new THREE.Vector3(0.85,0.03,-2.75),
+  new THREE.Vector3(-0.85,0.03,-2.75), new THREE.Vector3(-0.85,0.03,-3.2)
+]);
+// LED-Schaltzeichen (unter rechter Kante). Stromrichtung: -Z (oben/Anode) -> +Z (unten/Kathode).
+// Dreieck zeigt in Durchlassrichtung (Spitze nach +Z), Sperrbalken quer dahinter.
+// Anschlussstriche an die Leitung
+planLineRaw([ new THREE.Vector3(5,0.03,-0.7), new THREE.Vector3(5,0.03,-0.45) ]);
+planLineRaw([ new THREE.Vector3(5,0.03,0.45), new THREE.Vector3(5,0.03,0.7) ]);
+// Dreieck: Basis bei z=-0.45 (zwei Eckpunkte in X), Spitze bei z=+0.35
+planLineRaw([
+  new THREE.Vector3(4.6,0.03,-0.45), new THREE.Vector3(5.4,0.03,-0.45),
+  new THREE.Vector3(5.0,0.03,0.35),  new THREE.Vector3(4.6,0.03,-0.45)
+]);
+// Sperrbalken (Kathode) quer hinter der Spitze
+planLineRaw([ new THREE.Vector3(4.6,0.03,0.35), new THREE.Vector3(5.4,0.03,0.35) ]);
+// Zwei Lichtpfeile, die vom Symbol nach außen (+X) zeigen — typisches LED-Zeichen
+function pfeil(x0,z0,x1,z1,col){
+  planLineRaw([ new THREE.Vector3(x0,0.03,z0), new THREE.Vector3(x1,0.03,z1) ], col);
+  // Pfeilspitze
+  const dx=x1-x0, dz=z1-z0, len=Math.hypot(dx,dz), ux=dx/len, uz=dz/len;
+  const s=0.16;
+  const sx=ux*Math.cos(2.4)-uz*Math.sin(2.4), sz=ux*Math.sin(2.4)+uz*Math.cos(2.4);
+  const tx=ux*Math.cos(-2.4)-uz*Math.sin(-2.4), tz=ux*Math.sin(-2.4)+uz*Math.cos(-2.4);
+  planLineRaw([ new THREE.Vector3(x1,0.03,z1), new THREE.Vector3(x1+sx*s,0.03,z1+sz*s) ], col);
+  planLineRaw([ new THREE.Vector3(x1,0.03,z1), new THREE.Vector3(x1+tx*s,0.03,z1+tz*s) ], col);
+}
+pfeil(5.55,-0.15, 6.05,-0.45, 0xC17B00);
+pfeil(5.75, 0.15, 6.25,-0.15, 0xC17B00);
+// Schalter: schräger Strich mit Knoten (unter vorderer Kante)
+planLineRaw([ new THREE.Vector3(0.8,0.03,3.2), new THREE.Vector3(-0.6,0.03,2.7) ]);
+// Batterie: zwei Striche lang/kurz (unter linker Kante)
+planLineRaw([ new THREE.Vector3(-5.4,0.03,-0.8), new THREE.Vector3(-4.6,0.03,-0.8) ]); // lang (+)
+planLineRaw([ new THREE.Vector3(-5.2,0.03,0.8),  new THREE.Vector3(-4.8,0.03,0.8) ]);  // kurz (-)
+
+/* Plan-Impulse (synchron, gleiche Pfadgeometrie wie 3D, nur am Boden) */
+const planPfad = pfadPunkte.map(p => new THREE.Vector3(p.x, 0.05, p.z));
+const planKurve = new THREE.CatmullRomCurve3(planPfad, false, 'catmullrom', 0.0);
+const planImpulse = [];
+for (let i = 0; i < ANZ_IMPULSE; i++) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 10), new THREE.MeshBasicMaterial({ color: 0xC17B00 }));
+  m.userData.offset = i / ANZ_IMPULSE;
+  m.visible = false;
+  boden.add(m);
+  planImpulse.push(m);
+}
+
+
+/* ============================================================
+   Zustandslogik
+   ============================================================ */
+const state = {
+  schalterAn: false,
+  ledRichtigGepolt: true,   // true = LED leuchtet bei eingeschaltet; nach Umpolen evtl. false
+  get fliesst() { return this.schalterAn && this.ledRichtigGepolt; }
+};
+
+const switchBtn   = document.getElementById('btn-switch');
+const switchLabel = document.getElementById('switch-label');
+const polBtn      = document.getElementById('btn-polung');
+const resetBtn    = document.getElementById('btn-reset');
+const statusBanner= document.getElementById('status');
+
+function updateLED() {
+  const an = state.fliesst;
+  gsap.to(ledMat, { opacity: an ? 0.95 : 0.55, duration: 0.4 });
+  gsap.to(ledMat.emissive, { r: an?1:0, g: an?0.55:0, b: an?0.15:0, duration: 0.4 });
+  gsap.to(ledLight, { intensity: an ? 2.2 : 0, duration: 0.4 });
+}
+
+function updateImpulse() {
+  const sichtbar = state.fliesst;
+  impulse.forEach(m => m.visible = sichtbar);
+  planImpulse.forEach(m => m.visible = sichtbar);
+}
+
+function updateSchalterHebel() {
+  gsap.to(schHebelPivot.rotation, { z: state.schalterAn ? -0.5 : 0.5, duration: 0.35, ease: 'back.out(2)' });
+}
+
+function updateStatus() {
+  // Banner nur zeigen, wenn eingeschaltet ABER LED falsch gepolt
+  if (state.schalterAn && !state.ledRichtigGepolt) statusBanner.classList.add('show');
+  else statusBanner.classList.remove('show');
+}
+
+function refresh() {
+  switchLabel.textContent = state.schalterAn ? 'Schalter ausschalten' : 'Schalter einschalten';
+  switchBtn.style.background = state.schalterAn ? 'var(--col-sage-dark)' : 'var(--col-rust-dark)';
+  updateLED(); updateImpulse(); updateSchalterHebel(); updateStatus();
+}
+
+switchBtn.addEventListener('click', () => {
+  state.schalterAn = !state.schalterAn;
+  refresh();
+});
+
+polBtn.addEventListener('click', () => {
+  // Batterie sichtbar um 180° drehen + LED-Polung kippt
+  gsap.to(batterieGroup.rotation, { y: batterieGroup.rotation.y + Math.PI, duration: 0.7, ease: 'power2.inOut' });
+  state.ledRichtigGepolt = !state.ledRichtigGepolt;
+  // Impulsrichtung umkehren (Vorzeichen über stromRichtung)
+  stromRichtung *= -1;
+  refresh();
+});
+
+resetBtn.addEventListener('click', () => {
+  gsap.to(camera.position, { x: CAM_START.x, y: CAM_START.y, z: CAM_START.z, duration: 0.8, ease: 'power2.inOut', onUpdate: () => controls.update() });
+  gsap.to(controls.target, { x: 0, y: 0, z: 0, duration: 0.8 });
+});
+
+/* ============================================================
+   Klick / Tap auf Bauteile -> Info-Popup
+   ============================================================ */
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let downXY = null;
+
+canvas.addEventListener('pointerdown', e => { downXY = { x: e.clientX, y: e.clientY }; });
+canvas.addEventListener('pointerup', e => {
+  if (!downXY) return;
+  const moved = Math.hypot(e.clientX - downXY.x, e.clientY - downXY.y);
+  downXY = null;
+  if (moved > 6) return; // war ein Drag, kein Klick
+  const rect = canvas.getBoundingClientRect();
+  pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(clickable, false);
+  if (hits.length) {
+    const key = hits[0].object.userData.bauteil;
+    if (key) oeffneInfo(key);
+  }
+});
+
+const overlay   = document.getElementById('overlay');
+const infoTitle = document.getElementById('info-title');
+const infoRole  = document.getElementById('info-role');
+const infoText  = document.getElementById('info-text');
+const infoSvg   = document.getElementById('info-svg');
+function oeffneInfo(key) {
+  const b = BAUTEILE[key];
+  if (!b) return;
+  infoTitle.textContent = b.titel;
+  infoRole.textContent  = b.rolle;
+  infoText.textContent  = b.text;
+  infoSvg.innerHTML     = b.svg;
+  overlay.classList.add('show');
+}
+document.getElementById('info-close').addEventListener('click', () => overlay.classList.remove('show'));
+overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('show'); });
+
+/* ============================================================
+   Animationsschleife
+   ============================================================ */
+let stromRichtung = 1;       // +1 = von Plus nach Minus entlang Pfad
+let t = 0;
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = clock.getDelta();
+  controls.update();
+
+  // sanftes Schweben des Modells
+  modell.position.y = 2.4 + Math.sin(performance.now() * 0.0006) * 0.1;
+
+  if (state.fliesst) {
+    t += dt * 0.12 * stromRichtung;
+    impulse.forEach(m => {
+      let u = (m.userData.offset + t) % 1;
+      if (u < 0) u += 1;
+      const p = pfadKurve.getPointAt(u);
+      m.position.copy(p);
+      const pulse = 0.8 + Math.sin(performance.now()*0.008 + m.userData.offset*10) * 0.2;
+      m.scale.setScalar(pulse);
+    });
+    planImpulse.forEach(m => {
+      let u = (m.userData.offset + t) % 1;
+      if (u < 0) u += 1;
+      m.position.copy(planKurve.getPointAt(u));
+    });
+  }
+  renderer.render(scene, camera);
+}
+
+/* ============================================================
+   Resize & Init
+   ============================================================ */
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+resize();
+refresh();
+animate();
+
+// Loader ausblenden
+gsap.to('#loader', { opacity: 0, duration: 0.5, delay: 0.4, onComplete: () => document.getElementById('loader').style.display = 'none' });
+</script>
+</body>
+</html>
