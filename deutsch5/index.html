@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wunschbriefe-Reihe · Input-Übersicht · HBG Dortmund</title>
+<style>
+  :root{
+    --col-slate-dark:#2C3D4C;--col-slate:#3E5668;--col-slate-mid:#6A8599;--col-slate-pale:#D0DCE6;--col-slate-ghost:#EEF3F7;
+    --col-rust-dark:#9E4E22;--col-rust:#D97A4A;--col-rust-pale:#F5DDD1;--col-rust-ghost:#FBF0EB;
+    --col-sage-dark:#4D8B3F;--col-sage:#7DBB6F;--col-sage-pale:#DDF0D8;--col-sage-ghost:#F0FAF0;
+    --col-warning:#C17B00;--col-warning-pale:#FFF3CC;--col-warning-text:#5C4400;
+    --col-bg:#F5F4F1;--col-white:#FFFFFF;--col-text:#1E2A35;--col-text-muted:#5A6A78;--col-border:#D4D0C8;--col-shadow:rgba(62,86,104,0.10);
+    --text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-md:1.15rem;--text-lg:1.4rem;--text-xl:1.7rem;--text-2xl:2.1rem;--text-3xl:2.6rem;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:var(--col-bg);color:var(--col-text);line-height:1.55;-webkit-font-smoothing:antialiased;}
+  :focus-visible{outline:3px solid var(--col-rust);outline-offset:3px;border-radius:6px;}
+  a{color:inherit;text-decoration:none;}
+
+  /* Kopfbereich */
+  .hero{background:var(--col-slate-dark);color:#fff;padding:48px 6vw 56px;}
+  .hero-inner{max-width:1080px;margin:0 auto;}
+  .hero .kicker{display:inline-block;background:var(--col-rust);color:#fff;font-weight:700;font-size:var(--text-sm);padding:5px 16px;border-radius:999px;margin-bottom:18px;letter-spacing:.02em;}
+  .hero h1{font-size:var(--text-3xl);line-height:1.1;margin-bottom:14px;}
+  .hero p{font-size:var(--text-lg);color:var(--col-slate-pale);max-width:680px;}
+  .hero .meta{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap;}
+  .chip{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:var(--text-sm);font-weight:600;padding:6px 14px;border-radius:999px;}
+
+  main{max-width:1080px;margin:0 auto;padding:44px 6vw 80px;}
+  .section-label{font-size:var(--text-sm);text-transform:uppercase;letter-spacing:.1em;color:var(--col-text-muted);font-weight:700;margin-bottom:6px;}
+  h2{font-size:var(--text-2xl);color:var(--col-slate-dark);margin-bottom:6px;}
+  .lead{color:var(--col-text-muted);font-size:var(--text-md);margin-bottom:26px;max-width:720px;}
+
+  /* Auftakt-Karte (Input 0) */
+  .kickoff{display:flex;align-items:center;gap:24px;background:var(--col-sage-ghost);border:1px solid var(--col-sage-pale);border-left:8px solid var(--col-sage-dark);border-radius:18px;padding:26px 30px;margin-bottom:40px;transition:transform .15s,box-shadow .15s;}
+  .kickoff:hover{transform:translateY(-2px);box-shadow:0 10px 28px var(--col-shadow);}
+  .kickoff .ic{font-size:3.4rem;flex-shrink:0;}
+  .kickoff .body{flex:1;}
+  .kickoff .tag{font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--col-sage-dark);margin-bottom:4px;}
+  .kickoff h3{font-size:var(--text-xl);color:var(--col-slate-dark);margin-bottom:4px;}
+  .kickoff p{color:var(--col-text-muted);font-size:var(--text-base);margin:0;}
+  .kickoff .go{flex-shrink:0;background:var(--col-sage-dark);color:#fff;font-weight:700;padding:12px 22px;border-radius:10px;font-size:var(--text-base);white-space:nowrap;transition:background .15s;}
+  .kickoff:hover .go{background:#3C6F31;}
+
+  /* Stationen-Grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;}
+  .card{background:#fff;border-radius:18px;padding:24px 26px;box-shadow:0 3px 14px var(--col-shadow);border-top:6px solid var(--clr);display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden;}
+  .card:hover{transform:translateY(-3px);box-shadow:0 14px 34px var(--col-shadow);}
+  .card .row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+  .card .animal{font-size:2.6rem;line-height:1;}
+  .card .input-no{margin-left:auto;font-size:var(--text-xs);font-weight:800;color:#fff;background:var(--clr);padding:4px 11px;border-radius:999px;letter-spacing:.04em;}
+  .card .tier{font-size:var(--text-sm);font-weight:700;color:var(--clr-text);}
+  .card h3{font-size:var(--text-lg);color:var(--col-slate-dark);margin-bottom:6px;}
+  .card .motto{color:var(--col-text-muted);font-size:var(--text-base);margin-bottom:16px;flex:1;}
+  .card .footer{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .card .week{font-size:var(--text-sm);color:var(--col-text-muted);font-weight:600;}
+  .card .open{background:var(--clr);color:#fff;font-weight:700;font-size:var(--text-sm);padding:9px 18px;border-radius:9px;transition:filter .15s;}
+  .card:hover .open{filter:brightness(.92);}
+
+  /* Materialhinweis */
+  .note{margin-top:44px;background:#fff;border:1px solid var(--col-border);border-radius:16px;padding:26px 30px;}
+  .note h3{font-size:var(--text-lg);color:var(--col-slate-dark);margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+  .note ul{list-style:none;}
+  .note li{padding:7px 0 7px 30px;position:relative;font-size:var(--text-base);color:var(--col-text);}
+  .note li::before{content:'📄';position:absolute;left:0;top:6px;font-size:1rem;}
+  .note .hint{margin-top:14px;font-size:var(--text-sm);color:var(--col-text-muted);background:var(--col-warning-pale);border-left:4px solid var(--col-warning);border-radius:0 8px 8px 0;padding:12px 16px;}
+
+  footer{background:var(--col-slate-dark);color:var(--col-slate-pale);padding:28px 6vw;text-align:center;font-size:var(--text-sm);}
+  footer .wm{font-weight:800;color:#fff;}
+  footer .wm span{color:var(--col-rust);}
+
+  @media(max-width:560px){
+    .hero h1{font-size:var(--text-2xl);}
+    .kickoff{flex-direction:column;align-items:flex-start;gap:14px;}
+    .kickoff .go{align-self:stretch;text-align:center;}
+  }
+</style>
+</head>
+<body>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <span class="kicker">🗺️ SRL-Deutschreihe · Klasse 5</span>
+      <h1>Unsere Klasse stellt sich vor – Wunschbriefe</h1>
+      <p>Alle Inputs der Reihe an einem Ort. Wähle eine Station, um die passende Präsentation
+        zu öffnen und am Beamer oder iPad zu zeigen.</p>
+      <div class="meta">
+        <span class="chip">7 Wochen</span>
+        <span class="chip">30 Arbeitsblätter</span>
+        <span class="chip">7 Inputs</span>
+        <span class="chip">HBG Dortmund</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Auftakt -->
+    <div class="section-label">Zum Start der Reihe</div>
+    <h2>Auftakt</h2>
+    <p class="lead">Vor dem ersten Arbeitsblatt: das Projekt, die Ausstellung und der Lernweg im Überblick.</p>
+
+    <a class="kickoff" href="Input_I0_Praesentation.html">
+      <div class="ic">🗺️</div>
+      <div class="body">
+        <div class="tag">Input 0 · Die Karte</div>
+        <h3>Los geht's: Unsere Klasse stellt sich vor</h3>
+        <p>Ausstellung, Lernpaket und die Reise durch die sieben Stationen.</p>
+      </div>
+      <div class="go">Öffnen →</div>
+    </a>
+
+    <!-- Stationen -->
+    <div class="section-label">Die sechs Stationen</div>
+    <h2>Inputs zu den Lernstationen</h2>
+    <p class="lead">Jede Station beginnt mit einem kurzen, gemeinsamen Input. Die Tiere begleiten die
+      Klasse durch die ganze Reihe.</p>
+
+    <div class="grid">
+
+      <a class="card" href="Input_I1_Praesentation.html" style="--clr:var(--col-slate-mid);--clr-text:var(--col-slate);">
+        <div class="row"><span class="animal">🐱</span><span class="input-no">Input 1</span></div>
+        <div class="tier">Die neugierige Katze</div>
+        <h3>Briefe und E-Mails entdecken</h3>
+        <p class="motto">Wer schreibt wem – und warum? Einführung des Symbolsystems.</p>
+        <div class="footer"><span class="week">Woche 1–2</span><span class="open">Öffnen →</span></div>
+      </a>
+
+      <a class="card" href="Input_I2_Praesentation.html" style="--clr:var(--col-warning);--clr-text:var(--col-warning-text);">
+        <div class="row"><span class="animal">🐝</span><span class="input-no">Input 2</span></div>
+        <div class="tier">Die fleißige Biene</div>
+        <h3>So ist ein Brief gebaut</h3>
+        <p class="motto">Die fünf Teile eines Briefes und der Unterschied zur E-Mail.</p>
+        <div class="footer"><span class="week">Woche 2</span><span class="open">Öffnen →</span></div>
+      </a>
+
+      <a class="card" href="Input_I3_Praesentation.html" style="--clr:var(--col-rust-dark);--clr-text:var(--col-rust-dark);">
+        <div class="row"><span class="animal">🦊</span><span class="input-no">Input 3</span></div>
+        <div class="tier">Der schlaue Fuchs</div>
+        <h3>Gründe finden und Daten nutzen</h3>
+        <p class="motto">Mit weil/deshalb/außerdem überzeugen – und mit Zahlen aus der Umfrage.</p>
+        <div class="footer"><span class="week">Woche 3</span><span class="open">Öffnen →</span></div>
+      </a>
+
+      <a class="card" href="Input_I4_Praesentation.html" style="--clr:var(--col-slate);--clr-text:var(--col-slate-dark);">
+        <div class="row"><span class="animal">🐙</span><span class="input-no">Input 4</span></div>
+        <div class="tier">Der kreative Oktopus</div>
+        <h3>Mein Wunschbrief entsteht</h3>
+        <p class="motto">Planen und schreiben – mit drei selbst gewählten Schreibwegen.</p>
+        <div class="footer"><span class="week">Woche 4</span><span class="open">Öffnen →</span></div>
+      </a>
+
+      <a class="card" href="Input_I5_Praesentation.html" style="--clr:var(--col-sage-dark);--clr-text:var(--col-sage-dark);">
+        <div class="row"><span class="animal">🦔</span><span class="input-no">Input 5</span></div>
+        <div class="tier">Der sorgfältige Igel</div>
+        <h3>Ausstellungsreif machen</h3>
+        <p class="motto">Überarbeiten, Feedback geben und die Endfassung schreiben.</p>
+        <div class="footer"><span class="week">Woche 5</span><span class="open">Öffnen →</span></div>
+      </a>
+
+      <a class="card" href="Input_I6_Praesentation.html" style="--clr:var(--col-warning);--clr-text:var(--col-warning-text);">
+        <div class="row"><span class="animal">🦁</span><span class="input-no">Input 6</span></div>
+        <div class="tier">Der mutige Löwe</div>
+        <h3>Bin ich bereit?</h3>
+        <p class="motto">Selbstcheck, Probebrief und die eigene Anmeldung zur Klassenarbeit.</p>
+        <div class="footer"><span class="week">Woche 6</span><span class="open">Öffnen →</span></div>
+      </a>
+
+    </div>
+
+    <!-- Materialhinweis -->
+    <div class="note">
+      <h3>📦 Weiteres Material der Reihe</h3>
+      <ul>
+        <li>Zu jedem Input gehört ein Lehrkraft-Überblick (Lehrkraft_Input_I0 bis I6) mit Ablauf und Hinweisen.</li>
+        <li>30 Arbeitsblätter (Blatt 1–30), nach Stationen geordnet.</li>
+        <li>Klassenarbeitspaket: vier Varianten, Bewertungsraster und Organisationsplan für Woche 7.</li>
+        <li>Schüler-Übersichten: Projektübersicht und Materialpaket.</li>
+      </ul>
+      <div class="hint">Tipp: Lege alle HTML-Dateien dieser Reihe in denselben Ordner wie diese Seite,
+        damit die Links zu den Inputs funktionieren.</div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wm">HBG <span>·</span> Dortmund</div>
+    <div style="margin-top:6px;">SRL-Deutschreihe „Unsere Klasse stellt sich vor – Wunschbriefe für unsere Lernumgebung" · Klasse 5</div>
+  </footer>
+
+</body>
+</html>
