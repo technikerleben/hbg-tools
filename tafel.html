@@ -6,54 +6,58 @@
   <title>Tafelboard</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --bg-gradient-1: radial-gradient(circle at top left, rgba(56,189,248,0.18), transparent 28%);
-      --bg-gradient-2: radial-gradient(circle at top right, rgba(34,197,94,0.16), transparent 26%);
-      --bg-gradient-3: linear-gradient(160deg, #020617 0%, #0f172a 48%, #111827 100%);
-      --panel: rgba(30, 41, 59, 0.9);
-      --panel-2: rgba(51, 65, 85, 0.72);
-      --line: rgba(255,255,255,0.14);
-      --text: #f8fafc;
-      --muted: #cbd5e1;
-      --accent: #38bdf8;
-      --accent-2: #22c55e;
-      --accent-3: #f59e0b;
-      --danger: #ef4444;
-      --shadow: 0 14px 32px rgba(0,0,0,0.24);
+      --bg: #233140;
+      --bg-gradient-1: radial-gradient(circle at top left, rgba(217,122,74,0.16), transparent 30%);
+      --bg-gradient-2: radial-gradient(circle at top right, rgba(125,187,111,0.16), transparent 28%);
+      --bg-gradient-3: linear-gradient(160deg, #1B2733 0%, #2C3D4C 48%, #3E5668 100%);
+      --panel: rgba(44, 61, 76, 0.92);
+      --panel-2: rgba(62, 86, 104, 0.72);
+      --line: rgba(245,244,241,0.14);
+      --text: #F5F4F1;
+      --muted: #C7D0D8;
+      --accent: #9BB8CC;
+      --accent-2: #7DBB6F;
+      --accent-3: #E08A55;
+      --danger: #E06A4E;
+      --shadow: 0 14px 32px rgba(0,0,0,0.30);
       --radius: 20px;
-      --field-bg: rgba(2,6,23,0.35);
-      --field-border: rgba(255,255,255,0.12);
-      --soft-box: rgba(255,255,255,0.05);
-      --soft-box-2: rgba(255,255,255,0.06);
-      --soft-box-border: rgba(255,255,255,0.08);
-      --switch-bg: rgba(255,255,255,0.14);
-      --switch-border: rgba(255,255,255,0.16);
+      --field-bg: rgba(27,39,51,0.45);
+      --field-border: rgba(245,244,241,0.14);
+      --soft-box: rgba(245,244,241,0.05);
+      --soft-box-2: rgba(245,244,241,0.07);
+      --soft-box-border: rgba(245,244,241,0.10);
+      --switch-bg: rgba(245,244,241,0.16);
+      --switch-border: rgba(245,244,241,0.18);
       --switch-thumb: #ffffff;
-      --drawing-bg: #000000;
-      --drawing-border: rgba(255,255,255,0.12);
+      --drawing-bg: #1B2733;
+      --drawing-border: rgba(245,244,241,0.14);
     }
 
     body.light-mode {
-      --bg: #eef3f8;
-      --bg-gradient-1: radial-gradient(circle at top left, rgba(59,130,246,0.10), transparent 26%);
-      --bg-gradient-2: radial-gradient(circle at top right, rgba(34,197,94,0.08), transparent 24%);
-      --bg-gradient-3: linear-gradient(160deg, #f8fbff 0%, #eef3f8 48%, #dde7f1 100%);
-      --panel: rgba(255,255,255,0.94);
-      --panel-2: rgba(241,245,249,0.96);
-      --line: rgba(15,23,42,0.10);
-      --text: #0f172a;
-      --muted: #475569;
-      --shadow: 0 14px 28px rgba(15,23,42,0.10);
-      --field-bg: rgba(255,255,255,0.88);
-      --field-border: rgba(15,23,42,0.12);
-      --soft-box: rgba(15,23,42,0.04);
-      --soft-box-2: rgba(15,23,42,0.05);
-      --soft-box-border: rgba(15,23,42,0.08);
-      --switch-bg: rgba(148,163,184,0.25);
-      --switch-border: rgba(100,116,139,0.22);
+      --bg: #F5F4F1;
+      --bg-gradient-1: radial-gradient(circle at top left, rgba(217,122,74,0.10), transparent 28%);
+      --bg-gradient-2: radial-gradient(circle at top right, rgba(125,187,111,0.12), transparent 26%);
+      --bg-gradient-3: linear-gradient(160deg, #F5F4F1 0%, #ECEAE5 48%, #E3E0D9 100%);
+      --panel: rgba(255,255,255,0.96);
+      --panel-2: rgba(245,244,241,0.96);
+      --line: rgba(44,61,76,0.14);
+      --text: #2C3D4C;
+      --muted: #3E5668;
+      --accent: #3E5668;
+      --accent-2: #7DBB6F;
+      --accent-3: #D97A4A;
+      --danger: #C0492B;
+      --shadow: 0 14px 28px rgba(44,61,76,0.12);
+      --field-bg: rgba(255,255,255,0.92);
+      --field-border: rgba(44,61,76,0.16);
+      --soft-box: rgba(44,61,76,0.04);
+      --soft-box-2: rgba(44,61,76,0.05);
+      --soft-box-border: rgba(44,61,76,0.10);
+      --switch-bg: rgba(62,86,104,0.22);
+      --switch-border: rgba(44,61,76,0.22);
       --switch-thumb: #ffffff;
       --drawing-bg: #ffffff;
-      --drawing-border: rgba(15,23,42,0.12);
+      --drawing-border: rgba(44,61,76,0.16);
     }
 
     * { box-sizing: border-box; }
@@ -94,7 +98,7 @@
     }
 
     .toggle-btn {
-      background: linear-gradient(135deg, #334155, #475569);
+      background: linear-gradient(135deg, #3E5668, #4A6478);
       box-shadow: none;
       padding: 9px 12px;
       display: inline-flex;
@@ -112,7 +116,7 @@
       background: linear-gradient(135deg, #0ea5e9, #38bdf8);
     }
 
-    body.light-mode .toggle-btn.active {
+    .toggle-btn.active {
       background: linear-gradient(135deg, #f97316, #fb923c);
       color: #fff7ed;
       border-color: rgba(194, 65, 12, 0.45);
@@ -1567,6 +1571,39 @@
       }
     }
 
+    /* Präsentationsmodus */
+    body.present-mode .toolbar { display: none; }
+    body.present-mode .panel-reorder { display: none !important; }
+    body.present-mode .app { padding-bottom: 16px; }
+    .present-exit {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: #fff;
+      background: var(--accent-3);
+      border: none;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.28);
+      z-index: 200;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body.present-mode .present-exit { display: inline-flex; }
+    .present-exit:active { transform: scale(0.96); }
+
+    /* Panel-Fokus: ein Panel kurz hervorheben */
+    .panel.panel-focused {
+      outline: 3px solid var(--accent-3);
+      outline-offset: 2px;
+      box-shadow: 0 22px 50px rgba(0,0,0,0.30);
+      z-index: 40;
+    }
   </style>
 </head>
 <body>
@@ -1622,6 +1659,7 @@ Beispiel:
               <div class="size-preview" id="brushSizePreview">5 px</div>
             </div>
             <button class="btn-danger" id="clearCanvasBtn">Zeichenfeld leeren</button>
+            <button class="btn-neutral" id="exportCanvasBtn">Als Bild speichern</button>
           </div>
           <div class="drawing-surface">
             <canvas id="drawCanvas"></canvas>
@@ -1865,15 +1903,14 @@ Beispiel:
     <button class="toggle-btn active" data-target="attentionPanel"><span class="toggle-emoji" aria-hidden="true">🚨</span><span>Signal</span></button>
     <div class="toolbar-spacer"></div>
     <button class="toggle-btn active" id="helpBtn" aria-label="Hilfe öffnen"><span class="toggle-emoji" aria-hidden="true">❓</span><span>Hilfe</span></button>
-    <label class="compact-switch theme-toggle-wrap" for="themeToggle">
-      <span class="theme-icon" aria-hidden="true">🌙</span>
-      <input type="checkbox" id="themeToggle" />
-      <span class="switch-track" aria-hidden="true"></span>
-      <span class="theme-icon" aria-hidden="true">☀️</span>
-    </label>
+    <button class="toggle-btn active" id="presentBtn" aria-label="Präsentationsmodus"><span class="toggle-emoji" aria-hidden="true">🖥️</span><span>Vollbild</span></button>
+    <button class="toggle-btn active" id="themeBtn" aria-label="Design wechseln"><span class="toggle-emoji" aria-hidden="true">🎨</span><span id="themeBtnLabel">Dunkel</span></button>
+    <button class="toggle-btn active" id="resetBtn" aria-label="Board zurücksetzen"><span class="toggle-emoji" aria-hidden="true">↺</span><span>Reset</span></button>
   </div>
 
 
+
+  <button class="present-exit" id="presentExitBtn" aria-label="Präsentationsmodus beenden"><span aria-hidden="true">🚪</span><span>Vollbild beenden</span></button>
 
   <div class="attention-overlay" id="attentionOverlay" aria-hidden="true">
     <div class="attention-card">
@@ -2003,6 +2040,16 @@ Beispiel:
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script>
     const hasGsap = typeof gsap !== 'undefined';
+
+    // Zentraler Speicher-Helfer (Präfix tafel_). Bestehende Direktzugriffe bleiben kompatibel.
+    const Store = {
+      reset() {
+        Object.keys(localStorage)
+          .filter(k => k.startsWith('tafel_'))
+          .forEach(k => localStorage.removeItem(k));
+      }
+    };
+
     const digitalTime = document.getElementById('digitalTime');
     const compactClockToggle = document.getElementById('compactClockToggle');
     const clockGrid = document.getElementById('clockGrid');
@@ -2014,9 +2061,10 @@ Beispiel:
     const clockFaceMarks = document.getElementById('clockFaceMarks');
     const clockFaceNumbers = document.getElementById('clockFaceNumbers');
 
-    const themeToggle = document.getElementById('themeToggle');
+    const themeBtn = document.getElementById('themeBtn');
+    const themeBtnLabel = document.getElementById('themeBtnLabel');
     const COLOR_PRESETS = {
-      dark: ['#ffffff', '#ff7a7a', '#7dffa1', '#7dd3ff', '#f7ff4b'],
+      dark: ['#2C3D4C', '#D97A4A', '#7DBB6F', '#3E5668', '#C0492B'],
       light: ['#111827', '#ef4444', '#16a34a', '#2563eb', '#ca8a04']
     };
 
@@ -2028,17 +2076,28 @@ Beispiel:
       return `tafel_draw_image_${getThemeKey()}`;
     }
 
-    function applyTheme(isLight) {
-      document.body.classList.toggle('light-mode', isLight);
-      themeToggle.checked = isLight;
-      localStorage.setItem('tafel_theme', isLight ? 'light' : 'dark');
+    const THEME_ORDER = ['dark', 'light'];
+    const THEME_META = {
+      dark:  { icon: '🎨', label: 'Dunkel' },
+      light: { icon: '☀️', label: 'Hell' }
+    };
+
+    function applyTheme(theme) {
+      if (!THEME_ORDER.includes(theme)) theme = 'dark';
+      document.body.classList.toggle('light-mode', theme === 'light');
+      const meta = THEME_META[theme];
+      if (themeBtn) themeBtn.querySelector('.toggle-emoji').textContent = meta.icon;
+      if (themeBtnLabel) themeBtnLabel.textContent = meta.label;
+      localStorage.setItem('tafel_theme', theme);
     }
 
     const savedTheme = localStorage.getItem('tafel_theme') || 'dark';
-    applyTheme(savedTheme === 'light');
+    applyTheme(savedTheme);
 
-    themeToggle.addEventListener('change', () => {
-      applyTheme(themeToggle.checked);
+    themeBtn.addEventListener('click', () => {
+      const current = getThemeKey();
+      const next = THEME_ORDER[(THEME_ORDER.indexOf(current) + 1) % THEME_ORDER.length];
+      applyTheme(next);
       brushColor = localStorage.getItem('tafel_draw_color_' + getThemeKey()) || getDefaultBrushColor();
       updateBrushUi();
       updateColorButtons();
@@ -2330,6 +2389,19 @@ Beispiel:
     clearCanvasBtn.addEventListener('click', () => {
       fillCanvasBackground();
       localStorage.setItem(getCanvasStorageKey(), drawCanvas.toDataURL('image/png'));
+    });
+
+    const exportCanvasBtn = document.getElementById('exportCanvasBtn');
+    exportCanvasBtn.addEventListener('click', () => {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const stamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
+      const link = document.createElement('a');
+      link.download = `tafelbild_${stamp}.png`;
+      link.href = drawCanvas.toDataURL('image/png');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     });
 
     drawCanvas.addEventListener('pointerdown', startDrawing);
@@ -2823,8 +2895,13 @@ Beispiel:
       noiseStatus.textContent = 'Manuell. Mit Mikrofon reagiert die Ampel automatisch auf die Lautstärke.';
     }
 
-    function monitorNoise() {
+    let lastNoiseTick = 0;
+    function monitorNoise(timestamp) {
       if (!noiseAnalyser || !noiseDataArray || !noiseAutoEnabled) return;
+      noiseAnimationFrame = requestAnimationFrame(monitorNoise);
+      // auf ca. 15 Auswertungen pro Sekunde drosseln (reicht für eine ruhige Ampel, spart Energie)
+      if (timestamp && timestamp - lastNoiseTick < 66) return;
+      lastNoiseTick = timestamp || 0;
       noiseAnalyser.getByteTimeDomainData(noiseDataArray);
       let sumSquares = 0;
       for (let i = 0; i < noiseDataArray.length; i++) {
@@ -2839,7 +2916,6 @@ Beispiel:
       noiseCurrentValue.textContent = `Pegel: ${level}`;
       noiseStatus.textContent = `Automatik aktiv. Gelb ab ${noiseYellowThreshold}, Rot ab ${noiseRedThreshold}.`;
       setNoiseLevelFromValue(level);
-      noiseAnimationFrame = requestAnimationFrame(monitorNoise);
     }
 
     async function startNoiseMonitoring() {
@@ -3144,6 +3220,43 @@ Beispiel:
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && helpOverlay.classList.contains('show')) hideHelpOverlay();
     });
+
+    /* Board zurücksetzen */
+    const resetBtn = document.getElementById('resetBtn');
+    resetBtn.addEventListener('click', () => {
+      const ok = window.confirm('Wirklich alle Einstellungen, Texte und Zeichnungen dieses Boards zurücksetzen? Das lässt sich nicht rückgängig machen.');
+      if (!ok) return;
+      Store.reset();
+      window.location.reload();
+    });
+
+    /* Präsentationsmodus: blendet Steuerung aus, zeigt nur Inhalte */
+    const presentBtn = document.getElementById('presentBtn');
+    const presentExitBtn = document.getElementById('presentExitBtn');
+    function togglePresentMode(force) {
+      const on = typeof force === 'boolean' ? force : !document.body.classList.contains('present-mode');
+      document.body.classList.toggle('present-mode', on);
+      setTimeout(() => resizeCanvas(false), 60);
+    }
+    presentBtn.addEventListener('click', () => togglePresentMode(true));
+    presentExitBtn.addEventListener('click', () => togglePresentMode(false));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && document.body.classList.contains('present-mode')) togglePresentMode(false);
+      if ((event.key === 'f' || event.key === 'F') && !/input|textarea/i.test(document.activeElement.tagName)) togglePresentMode();
+    });
+
+    /* Panel-Fokus: Doppeltipp hebt ein Panel kurz hervor (nicht auf Bedienelementen) */
+    let focusTimer = null;
+    document.querySelectorAll('.panel').forEach(panel => {
+      panel.addEventListener('dblclick', (event) => {
+        if (event.target.closest('input, textarea, button, canvas, select, .panel-reorder')) return;
+        document.querySelectorAll('.panel-focused').forEach(p => p.classList.remove('panel-focused'));
+        panel.classList.add('panel-focused');
+        clearTimeout(focusTimer);
+        focusTimer = setTimeout(() => panel.classList.remove('panel-focused'), 2500);
+      });
+    });
+
   </script>
 </body>
 </html>
