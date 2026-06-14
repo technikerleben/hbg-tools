@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Input I5 – Gute Texte entstehen nicht sofort – HBG</title>
+<style>
+  :root{
+    --col-slate-dark:#2C3D4C;--col-slate:#3E5668;--col-slate-mid:#6A8599;--col-slate-pale:#D0DCE6;--col-slate-ghost:#EEF3F7;
+    --col-rust-dark:#9E4E22;--col-rust:#D97A4A;--col-rust-pale:#F5DDD1;--col-rust-ghost:#FBF0EB;
+    --col-sage-dark:#4D8B3F;--col-sage:#7DBB6F;--col-sage-pale:#DDF0D8;--col-sage-ghost:#F0FAF0;
+    --col-warning:#C17B00;--col-warning-pale:#FFF3CC;--col-warning-text:#5C4400;
+    --col-error:#C0392B;--col-error-pale:#FDECEA;--col-error-text:#7A1B14;
+    --col-bg:#F5F4F1;--col-white:#FFFFFF;--col-text:#1E2A35;--col-text-muted:#5A6A78;--col-border:#D4D0C8;--col-shadow:rgba(62,86,104,0.10);
+    --text-xs:0.694rem;--text-sm:0.833rem;--text-base:1rem;--text-md:1.2rem;--text-lg:1.44rem;--text-xl:1.728rem;--text-2xl:2.074rem;--text-3xl:2.49rem;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:var(--col-slate-dark);color:var(--col-text);font-size:var(--text-base);line-height:1.55;overflow:hidden;}
+  :focus-visible{outline:3px solid var(--col-rust);outline-offset:3px;border-radius:4px;}
+  .deck{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;}
+  .slide{display:none;width:100%;height:100%;padding:3vh 4vw 9vh;flex-direction:column;animation:fadein .35s ease;}
+  .slide.active{display:flex;}
+  @keyframes fadein{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  .slide-inner{background:var(--col-bg);border-radius:20px;flex:1;width:100%;max-width:1180px;margin:0 auto;padding:38px 48px;box-shadow:0 12px 40px rgba(0,0,0,.3);overflow-y:auto;display:flex;flex-direction:column;}
+  .slide-inner.type-info{border-top:8px solid var(--col-slate);}
+  .slide-inner.type-revise{border-top:8px solid var(--col-rust);}
+  .slide-inner.type-feedback{border-top:8px solid var(--col-warning);}
+  .slide-inner.type-title{border-top:8px solid var(--col-sage-dark);}
+  .eyebrow{font-size:var(--text-sm);text-transform:uppercase;letter-spacing:.1em;color:var(--col-text-muted);font-weight:700;margin-bottom:8px;}
+  h1{font-size:var(--text-3xl);color:var(--col-slate-dark);line-height:1.1;margin-bottom:14px;}
+  h2{font-size:var(--text-2xl);color:var(--col-slate-dark);line-height:1.15;margin-bottom:18px;}
+  h3{font-size:var(--text-lg);color:var(--col-slate-dark);margin-bottom:8px;}
+  p{font-size:var(--text-md);margin-bottom:12px;}
+  .big{font-size:var(--text-lg);}
+  .title-slide{justify-content:center;align-items:flex-start;}
+  .title-slide .kicker{display:inline-block;background:var(--col-sage-dark);color:#fff;font-weight:700;font-size:var(--text-base);padding:6px 16px;border-radius:999px;margin-bottom:22px;}
+  .title-slide h1{font-size:3.2rem;}
+  .title-slide .sub{font-size:var(--text-xl);color:var(--col-text-muted);}
+  .hbg-wordmark{display:inline-flex;align-items:flex-end;gap:5px;margin-top:auto;}
+  .hbg-wordmark__main{font-size:var(--text-lg);font-weight:800;color:var(--col-slate);}
+  .hbg-wordmark__sub{font-size:var(--text-sm);color:var(--col-rust);margin-bottom:3px;}
+  .talk{background:var(--col-slate-pale);border-radius:14px;padding:18px 24px;margin-top:auto;border-left:6px solid var(--col-slate);}
+  .talk .talk-label{font-weight:700;font-size:var(--text-sm);text-transform:uppercase;letter-spacing:.06em;color:var(--col-slate-dark);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+  .talk p{margin-bottom:0;font-size:var(--text-md);}
+  .goal{background:var(--col-sage-ghost);border-left:6px solid var(--col-sage-dark);border-radius:0 12px 12px 0;padding:16px 22px;margin-top:16px;}
+  .goal strong{color:var(--col-sage-dark);}
+  ul.clean{list-style:none;}
+  ul.clean li{padding:8px 0 8px 34px;position:relative;font-size:var(--text-md);}
+  ul.clean li .ic{position:absolute;left:0;top:5px;font-size:1.4rem;}
+
+  /* Vorher-Nachher */
+  .ba{display:flex;gap:20px;flex-wrap:wrap;}
+  .ba-col{flex:1;min-width:280px;background:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 3px 12px var(--col-shadow);}
+  .ba-col.before{border-top:5px solid var(--col-slate-mid);}
+  .ba-col.after{border-top:5px solid var(--col-sage-dark);}
+  .ba-col .tag{font-size:var(--text-sm);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;}
+  .ba-col.before .tag{color:var(--col-slate-mid);}
+  .ba-col.after .tag{color:var(--col-sage-dark);}
+  .ba-col p{font-size:var(--text-base);line-height:1.6;margin-bottom:0;}
+  .ba-col .add{background:var(--col-sage-pale);border-radius:4px;padding:0 4px;font-weight:600;}
+
+  /* Feedback-Regel */
+  .fbrule{display:flex;align-items:center;gap:18px;background:#fff;border-radius:14px;padding:18px 24px;box-shadow:0 2px 8px var(--col-shadow);margin-bottom:14px;border-left:7px solid var(--clr);}
+  .fbrule .num{font-size:2rem;font-weight:800;color:var(--clr);flex-shrink:0;width:48px;text-align:center;}
+  .fbrule p{margin:0;font-size:var(--text-md);}
+
+  .controls{position:fixed;bottom:0;left:0;right:0;height:7vh;min-height:52px;background:var(--col-slate-dark);display:flex;align-items:center;justify-content:space-between;padding:0 22px;gap:16px;z-index:50;}
+  .nav-btn{background:var(--col-rust-dark);color:#fff;border:none;width:46px;height:46px;border-radius:10px;font-size:1.5rem;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .1s;}
+  .nav-btn:hover{background:#B55E2A;}.nav-btn:active{transform:translateY(1px);}.nav-btn:disabled{background:#55636E;cursor:not-allowed;}
+  .progress-wrap{flex:1;display:flex;align-items:center;gap:14px;}
+  .dots{display:flex;gap:7px;flex-wrap:wrap;}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--col-slate-mid);cursor:pointer;border:none;padding:0;transition:background .2s,transform .2s;}
+  .dot.active{background:var(--col-rust);transform:scale(1.3);}
+  .slide-count{color:var(--col-slate-pale);font-size:var(--text-sm);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .deck-title{color:#fff;font-weight:700;font-size:var(--text-sm);white-space:nowrap;}
+  .deck-title .ph{color:var(--col-rust);}
+  @media(max-width:640px){.slide-inner{padding:24px 22px;}h1{font-size:var(--text-2xl);}.title-slide h1{font-size:2.3rem;}.deck-title{display:none;}}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- 1 Titel -->
+  <section class="slide active">
+    <div class="slide-inner type-title title-slide">
+      <span class="kicker">Input I5 · 🦔 Der sorgfältige Igel</span>
+      <h1>Gute Texte entstehen<br>nicht sofort</h1>
+      <p class="sub">Überarbeiten, Feedback und die Endfassung</p>
+      <div class="goal"><p><strong>Heute lernt ihr:</strong> euren Brief noch besser zu machen –
+        mit einer Checkliste, mit Feedback von eurer Lernpartnerin oder eurem Lernpartner und mit einer
+        sauberen Endfassung für die Ausstellung.</p></div>
+      <div class="hbg-wordmark"><span class="hbg-wordmark__main">HBG</span><span class="hbg-wordmark__sub">SRL</span></div>
+    </div>
+  </section>
+
+  <!-- 2 Profis überarbeiten -->
+  <section class="slide">
+    <div class="slide-inner type-info">
+      <div class="eyebrow">Eine wichtige Wahrheit</div>
+      <h2>Niemand schreibt sofort perfekt ✍️</h2>
+      <p class="big">Auch Schriftstellerinnen und Schriftsteller schreiben einen Text immer wieder um.
+        Der erste Versuch ist ein <strong>Entwurf</strong> – kein fertiger Text.</p>
+      <p class="big">Überarbeiten ist also kein Zeichen, dass etwas schlecht war. Es ist genau das,
+        was gute Texte gut macht.</p>
+      <div class="goal"><p><strong>Merke:</strong> Ein Fehler ist ein Hinweis darauf, woran du
+        weiterlernen kannst.</p></div>
+    </div>
+  </section>
+
+  <!-- 3 Checkliste -->
+  <section class="slide">
+    <div class="slide-inner type-revise">
+      <div class="eyebrow">Werkzeug 1</div>
+      <h2>Die Checkliste 📋</h2>
+      <p class="big">Mit einer Checkliste prüfst du selbst, ob dein Brief vollständig ist:</p>
+      <ul class="clean">
+        <li><span class="ic">☑️</span> Sind alle Teile da (Datum, Anrede, Text, Gruß, Unterschrift)?</li>
+        <li><span class="ic">☑️</span> Ist mein Wunsch klar?</li>
+        <li><span class="ic">☑️</span> Habe ich zwei Gründe und eine Zahl?</li>
+        <li><span class="ic">☑️</span> Bin ich höflich geblieben?</li>
+      </ul>
+      <div class="talk"><div class="talk-label">💬 Selbst prüfen</div>
+        <p>Was noch fehlt, ergänzt ihr. Das ist eure Kontrollstrategie.</p></div>
+    </div>
+  </section>
+
+  <!-- 4 Vorher-Nachher -->
+  <section class="slide">
+    <div class="slide-inner type-revise">
+      <div class="eyebrow">Überarbeiten wirkt</div>
+      <h2>Vorher – Nachher</h2>
+      <div class="ba">
+        <div class="ba-col before">
+          <div class="tag">Vorher (Entwurf)</div>
+          <p>„Wir wollen eine Leseecke. Bitte gebt sie uns."</p>
+        </div>
+        <div class="ba-col after">
+          <div class="tag">Nachher (überarbeitet)</div>
+          <p>„Wir wünschen uns eine Leseecke, <span class="add">weil wir gerne lesen</span>.
+            <span class="add">18 von 27 Kindern</span> haben dafür gestimmt. <span class="add">Über
+            eine Antwort würden wir uns freuen.</span>"</p>
+        </div>
+      </div>
+      <div class="talk"><div class="talk-label">💬 Vergleicht</div>
+        <p>Was wurde besser? Was hat die zweite Fassung, das der ersten fehlt?</p></div>
+    </div>
+  </section>
+
+  <!-- 5 Feedback-Regeln -->
+  <section class="slide">
+    <div class="slide-inner type-feedback">
+      <div class="eyebrow">Werkzeug 2</div>
+      <h2>Gutes Feedback geben 🤝</h2>
+      <div class="fbrule" style="--clr:var(--col-sage-dark);">
+        <div class="num">1</div>
+        <p>Sage zuerst, <strong>was dir gefällt</strong>. (Zwei Sterne ⭐⭐)</p>
+      </div>
+      <div class="fbrule" style="--clr:var(--col-warning);">
+        <div class="num">2</div>
+        <p>Gib dann <strong>einen freundlichen Tipp</strong> – wie einen Wunsch. (💡)</p>
+      </div>
+      <div class="fbrule" style="--clr:var(--col-rust-dark);">
+        <div class="num">3</div>
+        <p>Bleibe immer <strong>freundlich und ehrlich</strong>.</p>
+      </div>
+      <div class="goal"><p><strong>Zwei Sterne und ein Wunsch</strong> – so merkt ihr euch gutes Feedback.</p></div>
+    </div>
+  </section>
+
+  <!-- 6 Helferkette -->
+  <section class="slide">
+    <div class="slide-inner type-info">
+      <div class="eyebrow">Neu: ein Zeichen für Zusammenarbeit</div>
+      <h2>Die Helferkette ⛓️</h2>
+      <p class="big">Wenn du nicht weiterkommst, gibt es eine feste Reihenfolge – die Helferkette:</p>
+      <ul class="clean">
+        <li><span class="ic">1️⃣</span> Frag zuerst deine <strong>Lernpartnerin / deinen Lernpartner</strong>.</li>
+        <li><span class="ic">2️⃣</span> Hilft das nicht, fragt ihr zu zweit eine <strong>andere Gruppe</strong>.</li>
+        <li><span class="ic">3️⃣</span> Erst danach kommt die <strong>Lehrkraft</strong>.</li>
+      </ul>
+      <p class="big" style="margin-top:10px;">Dieses Zeichen ⛓️ seht ihr ab jetzt, wenn Zusammenarbeit gefragt ist.</p>
+    </div>
+  </section>
+
+  <!-- 7 Übergang -->
+  <section class="slide">
+    <div class="slide-inner type-title title-slide">
+      <span class="kicker">Jetzt seid ihr dran</span>
+      <h1>Macht euren Brief<br>ausstellungsreif! 🦔</h1>
+      <div class="goal"><p><strong>Eure Blätter beim Igel:</strong></p>
+        <ul class="clean" style="margin-top:6px;">
+          <li><span class="ic">📋</span> <strong>Blatt 22</strong> – Checkliste Wunschbrief</li>
+          <li><span class="ic">🤝</span> <strong>Blatt 23</strong> – Partnerfeedback</li>
+          <li><span class="ic">🎨</span> <strong>Blatt 24</strong> – Meine Endfassung (Ausstellungsstück!)</li>
+        </ul></div>
+      <p style="margin-top:12px;color:var(--col-text-muted);">Für Entdecker: ⭐ Blatt 25 – Feedback wie ein Profi</p>
+      <div class="hbg-wordmark"><span class="hbg-wordmark__main">HBG</span><span class="hbg-wordmark__sub">SRL</span></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="controls">
+  <button class="nav-btn" id="prev" aria-label="Vorherige Folie">‹</button>
+  <div class="progress-wrap">
+    <span class="deck-title">Input I5 · <span class="ph">Gute Texte entstehen nicht sofort</span></span>
+    <div class="dots" id="dots" role="tablist" aria-label="Folienauswahl"></div>
+  </div>
+  <span class="slide-count" id="count">1 / 7</span>
+  <button class="nav-btn" id="next" aria-label="Nächste Folie">›</button>
+</div>
+
+<script>
+  const slides=Array.from(document.querySelectorAll('.slide'));
+  const dotsWrap=document.getElementById('dots');
+  const count=document.getElementById('count');
+  const prevBtn=document.getElementById('prev');
+  const nextBtn=document.getElementById('next');
+  let cur=0;
+  slides.forEach((_,i)=>{const d=document.createElement('button');d.className='dot'+(i===0?' active':'');d.setAttribute('role','tab');d.setAttribute('aria-label','Folie '+(i+1));d.addEventListener('click',()=>go(i));dotsWrap.appendChild(d);});
+  const dots=Array.from(dotsWrap.children);
+  function go(n){cur=Math.max(0,Math.min(slides.length-1,n));slides.forEach((s,i)=>s.classList.toggle('active',i===cur));dots.forEach((d,i)=>d.classList.toggle('active',i===cur));count.textContent=(cur+1)+' / '+slides.length;prevBtn.disabled=cur===0;nextBtn.disabled=cur===slides.length-1;}
+  prevBtn.addEventListener('click',()=>go(cur-1));
+  nextBtn.addEventListener('click',()=>go(cur+1));
+  document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(cur+1);}if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1);}if(e.key==='Home'){e.preventDefault();go(0);}if(e.key==='End'){e.preventDefault();go(slides.length-1);}});
+  let startX=null;
+  document.getElementById('deck').addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
+  document.getElementById('deck').addEventListener('touchend',e=>{if(startX===null)return;const dx=e.changedTouches[0].clientX-startX;if(Math.abs(dx)>50){dx<0?go(cur+1):go(cur-1);}startX=null;},{passive:true});
+  go(0);
+</script>
+</body>
+</html>

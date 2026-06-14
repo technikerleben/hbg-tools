@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Input I0 – Los geht's: Unsere Klasse stellt sich vor – HBG</title>
+<style>
+  :root{
+    --col-slate-dark:#2C3D4C;--col-slate:#3E5668;--col-slate-mid:#6A8599;--col-slate-pale:#D0DCE6;--col-slate-ghost:#EEF3F7;
+    --col-rust-dark:#9E4E22;--col-rust:#D97A4A;--col-rust-pale:#F5DDD1;--col-rust-ghost:#FBF0EB;
+    --col-sage-dark:#4D8B3F;--col-sage:#7DBB6F;--col-sage-pale:#DDF0D8;--col-sage-ghost:#F0FAF0;
+    --col-warning:#C17B00;--col-warning-pale:#FFF3CC;--col-warning-text:#5C4400;
+    --col-error:#C0392B;--col-error-pale:#FDECEA;--col-error-text:#7A1B14;
+    --col-bg:#F5F4F1;--col-white:#FFFFFF;--col-text:#1E2A35;--col-text-muted:#5A6A78;--col-border:#D4D0C8;--col-shadow:rgba(62,86,104,0.10);
+    --text-xs:0.694rem;--text-sm:0.833rem;--text-base:1rem;--text-md:1.2rem;--text-lg:1.44rem;--text-xl:1.728rem;--text-2xl:2.074rem;--text-3xl:2.49rem;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:var(--col-slate-dark);color:var(--col-text);font-size:var(--text-base);line-height:1.55;overflow:hidden;}
+  :focus-visible{outline:3px solid var(--col-rust);outline-offset:3px;border-radius:4px;}
+  .deck{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;}
+  .slide{display:none;width:100%;height:100%;padding:3vh 4vw 9vh;flex-direction:column;animation:fadein .35s ease;}
+  .slide.active{display:flex;}
+  @keyframes fadein{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  .slide-inner{background:var(--col-bg);border-radius:20px;flex:1;width:100%;max-width:1180px;margin:0 auto;padding:38px 48px;box-shadow:0 12px 40px rgba(0,0,0,.3);overflow-y:auto;display:flex;flex-direction:column;}
+  .slide-inner.type-info{border-top:8px solid var(--col-slate);}
+  .slide-inner.type-map{border-top:8px solid var(--col-rust);}
+  .slide-inner.type-learn{border-top:8px solid var(--col-warning);}
+  .slide-inner.type-title{border-top:8px solid var(--col-sage-dark);}
+  .eyebrow{font-size:var(--text-sm);text-transform:uppercase;letter-spacing:.1em;color:var(--col-text-muted);font-weight:700;margin-bottom:8px;}
+  h1{font-size:var(--text-3xl);color:var(--col-slate-dark);line-height:1.1;margin-bottom:14px;}
+  h2{font-size:var(--text-2xl);color:var(--col-slate-dark);line-height:1.15;margin-bottom:18px;}
+  h3{font-size:var(--text-lg);color:var(--col-slate-dark);margin-bottom:8px;}
+  p{font-size:var(--text-md);margin-bottom:12px;}
+  .big{font-size:var(--text-lg);}
+  .title-slide{justify-content:center;align-items:flex-start;}
+  .title-slide .kicker{display:inline-block;background:var(--col-sage-dark);color:#fff;font-weight:700;font-size:var(--text-base);padding:6px 16px;border-radius:999px;margin-bottom:22px;}
+  .title-slide h1{font-size:3.2rem;}
+  .title-slide .sub{font-size:var(--text-xl);color:var(--col-text-muted);}
+  .hbg-wordmark{display:inline-flex;align-items:flex-end;gap:5px;margin-top:auto;}
+  .hbg-wordmark__main{font-size:var(--text-lg);font-weight:800;color:var(--col-slate);}
+  .hbg-wordmark__sub{font-size:var(--text-sm);color:var(--col-rust);margin-bottom:3px;}
+  .talk{background:var(--col-slate-pale);border-radius:14px;padding:18px 24px;margin-top:auto;border-left:6px solid var(--col-slate);}
+  .talk .talk-label{font-weight:700;font-size:var(--text-sm);text-transform:uppercase;letter-spacing:.06em;color:var(--col-slate-dark);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+  .talk p{margin-bottom:0;font-size:var(--text-md);}
+  .goal{background:var(--col-sage-ghost);border-left:6px solid var(--col-sage-dark);border-radius:0 12px 12px 0;padding:16px 22px;margin-top:16px;}
+  .goal strong{color:var(--col-sage-dark);}
+  ul.clean{list-style:none;}
+  ul.clean li{padding:8px 0 8px 38px;position:relative;font-size:var(--text-md);}
+  ul.clean li .ic{position:absolute;left:0;top:4px;font-size:1.5rem;}
+
+  /* Fächer-Karten der Ausstellung */
+  .subjects{display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;}
+  .subj{flex:1;min-width:200px;background:#fff;border-radius:14px;padding:18px 20px;box-shadow:0 3px 12px var(--col-shadow);border-top:5px solid var(--clr);}
+  .subj .emoji{font-size:2rem;}
+  .subj h3{margin:6px 0 4px;color:var(--clr-text);}
+  .subj p{margin:0;font-size:var(--text-base);}
+  .subj.highlight{background:var(--col-sage-ghost);}
+
+  /* Stationen-Pfad */
+  .path{display:flex;flex-direction:column;gap:10px;}
+  .station{display:flex;align-items:center;gap:18px;background:#fff;border-radius:14px;padding:14px 20px;box-shadow:0 2px 8px var(--col-shadow);border-left:7px solid var(--clr);}
+  .station .animal{font-size:2.2rem;flex-shrink:0;width:48px;text-align:center;}
+  .station h3{margin:0 0 1px;font-size:var(--text-md);}
+  .station p{margin:0;font-size:var(--text-sm);color:var(--col-text-muted);}
+  .station .wk{margin-left:auto;font-size:var(--text-sm);color:var(--col-text-muted);font-weight:700;flex-shrink:0;}
+
+  /* Lernpaket-Bausteine */
+  .pieces{display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;}
+  .piece{flex:1;min-width:200px;background:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 3px 12px var(--col-shadow);text-align:center;}
+  .piece .big-emoji{font-size:2.6rem;}
+  .piece h3{margin:8px 0 6px;}
+  .piece p{margin:0;font-size:var(--text-base);}
+
+  .controls{position:fixed;bottom:0;left:0;right:0;height:7vh;min-height:52px;background:var(--col-slate-dark);display:flex;align-items:center;justify-content:space-between;padding:0 22px;gap:16px;z-index:50;}
+  .nav-btn{background:var(--col-rust-dark);color:#fff;border:none;width:46px;height:46px;border-radius:10px;font-size:1.5rem;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .1s;}
+  .nav-btn:hover{background:#B55E2A;}.nav-btn:active{transform:translateY(1px);}.nav-btn:disabled{background:#55636E;cursor:not-allowed;}
+  .progress-wrap{flex:1;display:flex;align-items:center;gap:14px;}
+  .dots{display:flex;gap:7px;flex-wrap:wrap;}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--col-slate-mid);cursor:pointer;border:none;padding:0;transition:background .2s,transform .2s;}
+  .dot.active{background:var(--col-rust);transform:scale(1.3);}
+  .slide-count{color:var(--col-slate-pale);font-size:var(--text-sm);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .deck-title{color:#fff;font-weight:700;font-size:var(--text-sm);white-space:nowrap;}
+  .deck-title .ph{color:var(--col-rust);}
+  @media(max-width:640px){.slide-inner{padding:24px 22px;}h1{font-size:var(--text-2xl);}.title-slide h1{font-size:2.3rem;}.deck-title{display:none;}.station .wk{display:none;}}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- 1 Titel -->
+  <section class="slide active">
+    <div class="slide-inner type-title title-slide">
+      <span class="kicker">Input 0 · 🗺️ Die Karte · Start der Reihe</span>
+      <h1>Los geht's!<br>Unsere Klasse stellt sich vor</h1>
+      <p class="sub">Ein großes Projekt – und ihr seid mittendrin</p>
+      <div class="goal"><p><strong>Heute erfahrt ihr:</strong> Was wir in den nächsten Wochen vorhaben,
+        warum wir eine Ausstellung machen und wie unser Lernweg aussieht. Am Ende wisst ihr genau, was
+        auf euch zukommt.</p></div>
+      <div class="hbg-wordmark"><span class="hbg-wordmark__main">HBG</span><span class="hbg-wordmark__sub">SRL</span></div>
+    </div>
+  </section>
+
+  <!-- 2 Die große Idee: Ausstellung -->
+  <section class="slide">
+    <div class="slide-inner type-info">
+      <div class="eyebrow">Die große Idee</div>
+      <h2>Wir machen eine Ausstellung 🎉</h2>
+      <p class="big">Am Ende unserer Reihe zeigen wir, wer wir sind. Das Motto lautet:</p>
+      <div class="goal"><p style="font-size:var(--text-xl);"><strong>„So sind wir, so lernen wir,
+        so wollen wir lernen."</strong></p></div>
+      <p class="big" style="margin-top:16px;">Eltern, Lehrkräfte und andere Klassen kommen zu Besuch
+        und schauen sich an, was wir gemacht haben.</p>
+      <div class="talk"><div class="talk-label">💬 Stellt euch vor</div>
+        <p>Was würdet ihr gern über eure Klasse zeigen?</p></div>
+    </div>
+  </section>
+
+  <!-- 3 Alle Fächer machen mit -->
+  <section class="slide">
+    <div class="slide-inner type-info">
+      <div class="eyebrow">Ein Projekt über mehrere Fächer</div>
+      <h2>Jedes Fach bringt etwas mit</h2>
+      <div class="subjects">
+        <div class="subj" style="--clr:var(--col-slate);--clr-text:var(--col-slate-dark);">
+          <div class="emoji">📊</div><h3>Mathe</h3><p>Diagramme über unsere Klasse – aus echten Umfragen.</p>
+        </div>
+        <div class="subj" style="--clr:var(--col-rust-dark);--clr-text:var(--col-rust-dark);">
+          <div class="emoji">🎵</div><h3>Musik</h3><p>Unser eigener Klassen-Sound.</p>
+        </div>
+        <div class="subj" style="--clr:var(--col-warning);--clr-text:var(--col-warning-text);">
+          <div class="emoji">🇬🇧</div><h3>Englisch</h3><p>Unsere Lieblingsorte auf Englisch.</p>
+        </div>
+        <div class="subj highlight" style="--clr:var(--col-sage-dark);--clr-text:var(--col-sage-dark);">
+          <div class="emoji">✉️</div><h3>Deutsch</h3><p><strong>Unsere Wunschbriefe</strong> – daran arbeiten wir!</p>
+        </div>
+      </div>
+      <div class="goal" style="margin-top:18px;"><p>Im Deutschunterricht ist unser Beitrag etwas Besonderes.</p></div>
+    </div>
+  </section>
+
+  <!-- 4 Unser Beitrag: Wunschbriefe -->
+  <section class="slide">
+    <div class="slide-inner type-info">
+      <div class="eyebrow">Unser Deutsch-Beitrag</div>
+      <h2>Wir schreiben Wunschbriefe ✉️</h2>
+      <p class="big">Wir gestalten unseren Klassenraum mit – mit echten, höflichen Wünschen für unsere
+        Lernumgebung. Zum Beispiel:</p>
+      <ul class="clean">
+        <li><span class="ic">📚</span> eine gemütliche Leseecke</li>
+        <li><span class="ic">🪴</span> Pflanzen für die Fensterbänke</li>
+        <li><span class="ic">🎲</span> Spiele für die Regenpause</li>
+      </ul>
+      <p class="big" style="margin-top:10px;">Und das Beste: Die Zahlen aus unserer Mathe-Umfrage
+        helfen uns, richtig überzeugend zu schreiben!</p>
+    </div>
+  </section>
+
+  <!-- 5 Die Reise / Stationen -->
+  <section class="slide">
+    <div class="slide-inner type-map">
+      <div class="eyebrow">Unsere Reise – 7 Wochen</div>
+      <h2>Von Station zu Station 🗺️</h2>
+      <div class="path">
+        <div class="station" style="--clr:var(--col-slate-mid);"><div class="animal">🐱</div><div><h3>Die neugierige Katze</h3><p>Briefe und E-Mails entdecken</p></div><div class="wk">Woche 1–2</div></div>
+        <div class="station" style="--clr:var(--col-warning);"><div class="animal">🐝</div><div><h3>Die fleißige Biene</h3><p>So ist ein Brief gebaut</p></div><div class="wk">Woche 2</div></div>
+        <div class="station" style="--clr:var(--col-rust-dark);"><div class="animal">🦊</div><div><h3>Der schlaue Fuchs</h3><p>Gründe finden und Daten nutzen</p></div><div class="wk">Woche 3</div></div>
+        <div class="station" style="--clr:var(--col-slate);"><div class="animal">🐙</div><div><h3>Der kreative Oktopus</h3><p>Mein Wunschbrief entsteht</p></div><div class="wk">Woche 4</div></div>
+        <div class="station" style="--clr:var(--col-sage-dark);"><div class="animal">🦔</div><div><h3>Der sorgfältige Igel</h3><p>Ausstellungsreif machen</p></div><div class="wk">Woche 5</div></div>
+        <div class="station" style="--clr:var(--col-warning);"><div class="animal">🦁</div><div><h3>Der mutige Löwe</h3><p>Bin ich bereit?</p></div><div class="wk">Woche 6</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 Das Lernpaket -->
+  <section class="slide">
+    <div class="slide-inner type-learn">
+      <div class="eyebrow">So lernen wir</div>
+      <h2>Euer Lernpaket 🎒</h2>
+      <div class="pieces">
+        <div class="piece"><div class="big-emoji">📄</div><h3>Arbeitsblätter</h3><p>Eure Blätter sind einfach durchnummeriert: Blatt 1 bis 30.</p></div>
+        <div class="piece"><div class="big-emoji">🖥️</div><h3>Gemeinsame Inputs</h3><p>Zu jeder Station gibt es einen kurzen Input wie diesen hier.</p></div>
+        <div class="piece"><div class="big-emoji">✅</div><h3>Selbst einschätzen</h3><p>Ihr prüft selbst, was ihr schon könnt – ganz ohne Note.</p></div>
+      </div>
+      <div class="goal" style="margin-top:18px;"><p><strong>Wichtig:</strong> Manche Blätter haben ein Abzeichen
+        (🔼 oder ⭐). Das sind freiwillige Zusatzangebote für alle, die mehr wollen. Mehr dazu lernt ihr
+        bei der Katze.</p></div>
+    </div>
+  </section>
+
+  <!-- 7 Das Ziel: Ausstellung + Arbeit -->
+  <section class="slide">
+    <div class="slide-inner type-info">
+      <div class="eyebrow">Worauf wir hinarbeiten</div>
+      <h2>Am Ende: Ausstellung + Klassenarbeit</h2>
+      <ul class="clean">
+        <li><span class="ic">🏆</span> Unsere <strong>Ausstellung</strong> öffnet – euer Wunschbrief wird ausgestellt.</li>
+        <li><span class="ic">📝</span> Ihr schreibt eine <strong>Klassenarbeit</strong>: einen Wunschbrief zu einer neuen Situation.</li>
+        <li><span class="ic">📅</span> Ihr wählt euren <strong>Prüfungstag</strong> in der Woche sogar selbst.</li>
+      </ul>
+      <div class="goal"><p>Keine Sorge: In der Klassenarbeit kommt nur das dran, was ihr vorher geübt habt.
+        Schritt für Schritt werdet ihr bereit.</p></div>
+    </div>
+  </section>
+
+  <!-- 8 Übergang -->
+  <section class="slide">
+    <div class="slide-inner type-title title-slide">
+      <span class="kicker">Jetzt geht's los</span>
+      <h1>Auf zur ersten<br>Station! 🐱</h1>
+      <div class="goal"><p>Wir starten bei der <strong>neugierigen Katze</strong>. Dort entdeckt ihr,
+        was Briefe und E-Mails sind – und lernt die Zeichen kennen, die euch auf jedem Blatt begleiten.</p></div>
+      <p style="margin-top:14px;color:var(--col-text-muted);">Eure ersten Blätter sind <strong>Blatt 1</strong>
+        (Unsere Klasse stellt sich vor) und <strong>Blatt 2</strong> (Mein Lernweg).</p>
+      <div class="hbg-wordmark"><span class="hbg-wordmark__main">HBG</span><span class="hbg-wordmark__sub">SRL</span></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="controls">
+  <button class="nav-btn" id="prev" aria-label="Vorherige Folie">‹</button>
+  <div class="progress-wrap">
+    <span class="deck-title">Input 0 · <span class="ph">Unsere Klasse stellt sich vor</span></span>
+    <div class="dots" id="dots" role="tablist" aria-label="Folienauswahl"></div>
+  </div>
+  <span class="slide-count" id="count">1 / 8</span>
+  <button class="nav-btn" id="next" aria-label="Nächste Folie">›</button>
+</div>
+
+<script>
+  const slides=Array.from(document.querySelectorAll('.slide'));
+  const dotsWrap=document.getElementById('dots');
+  const count=document.getElementById('count');
+  const prevBtn=document.getElementById('prev');
+  const nextBtn=document.getElementById('next');
+  let cur=0;
+  slides.forEach((_,i)=>{const d=document.createElement('button');d.className='dot'+(i===0?' active':'');d.setAttribute('role','tab');d.setAttribute('aria-label','Folie '+(i+1));d.addEventListener('click',()=>go(i));dotsWrap.appendChild(d);});
+  const dots=Array.from(dotsWrap.children);
+  function go(n){cur=Math.max(0,Math.min(slides.length-1,n));slides.forEach((s,i)=>s.classList.toggle('active',i===cur));dots.forEach((d,i)=>d.classList.toggle('active',i===cur));count.textContent=(cur+1)+' / '+slides.length;prevBtn.disabled=cur===0;nextBtn.disabled=cur===slides.length-1;}
+  prevBtn.addEventListener('click',()=>go(cur-1));
+  nextBtn.addEventListener('click',()=>go(cur+1));
+  document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(cur+1);}if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1);}if(e.key==='Home'){e.preventDefault();go(0);}if(e.key==='End'){e.preventDefault();go(slides.length-1);}});
+  let startX=null;
+  document.getElementById('deck').addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
+  document.getElementById('deck').addEventListener('touchend',e=>{if(startX===null)return;const dx=e.changedTouches[0].clientX-startX;if(Math.abs(dx)>50){dx<0?go(cur+1):go(cur-1);}startX=null;},{passive:true});
+  go(0);
+</script>
+</body>
+</html>

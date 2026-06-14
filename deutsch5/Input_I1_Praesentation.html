@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Input I1 – Briefe und E-Mails entdecken – HBG</title>
+<style>
+  :root {
+    --col-slate-dark:  #2C3D4C;
+    --col-slate:       #3E5668;
+    --col-slate-mid:   #6A8599;
+    --col-slate-pale:  #D0DCE6;
+    --col-slate-ghost: #EEF3F7;
+    --col-rust-dark:   #9E4E22;
+    --col-rust:        #D97A4A;
+    --col-rust-pale:   #F5DDD1;
+    --col-rust-ghost:  #FBF0EB;
+    --col-sage-dark:   #4D8B3F;
+    --col-sage:        #7DBB6F;
+    --col-sage-pale:   #DDF0D8;
+    --col-sage-ghost:  #F0FAF0;
+    --col-warning:      #C17B00;
+    --col-warning-pale: #FFF3CC;
+    --col-warning-text: #5C4400;
+    --col-error:        #C0392B;
+    --col-error-pale:   #FDECEA;
+    --col-error-text:   #7A1B14;
+    --col-bg:           #F5F4F1;
+    --col-white:        #FFFFFF;
+    --col-text:         #1E2A35;
+    --col-text-muted:   #5A6A78;
+    --col-border:       #D4D0C8;
+    --col-shadow:       rgba(62,86,104,0.10);
+    --text-xs:   0.694rem;
+    --text-sm:   0.833rem;
+    --text-base: 1rem;
+    --text-md:   1.2rem;
+    --text-lg:   1.44rem;
+    --text-xl:   1.728rem;
+    --text-2xl:  2.074rem;
+    --text-3xl:  2.49rem;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--col-slate-dark);
+    color: var(--col-text);
+    font-size: var(--text-base);
+    line-height: 1.55;
+    overflow: hidden;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--col-rust);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* ───── Slide-Deck-Gerüst ───── */
+  .deck {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .slide {
+    display: none;
+    width: 100%;
+    height: 100%;
+    padding: 3vh 4vw 9vh;
+    flex-direction: column;
+    animation: fadein 0.35s ease;
+  }
+  .slide.active { display: flex; }
+
+  @keyframes fadein {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .slide-inner {
+    background: var(--col-bg);
+    border-radius: 20px;
+    flex: 1;
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 38px 48px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Kennfarbe je Slide-Typ (oberer Balken) */
+  .slide-inner.type-info   { border-top: 8px solid var(--col-slate); }
+  .slide-inner.type-example { border-top: 8px solid var(--col-warning); }
+  .slide-inner.type-symbol  { border-top: 8px solid var(--col-rust); }
+  .slide-inner.type-title   { border-top: 8px solid var(--col-sage-dark); }
+
+  /* ───── Typo ───── */
+  .eyebrow {
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--col-text-muted);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  h1 { font-size: var(--text-3xl); color: var(--col-slate-dark); line-height: 1.1; margin-bottom: 14px; }
+  h2 { font-size: var(--text-2xl); color: var(--col-slate-dark); line-height: 1.15; margin-bottom: 18px; }
+  h3 { font-size: var(--text-lg); color: var(--col-slate-dark); margin-bottom: 8px; }
+  p  { font-size: var(--text-md); margin-bottom: 12px; }
+  .big { font-size: var(--text-lg); }
+
+  /* ───── Titel-Slide ───── */
+  .title-slide { justify-content: center; align-items: flex-start; }
+  .title-slide .kicker {
+    display: inline-block;
+    background: var(--col-sage-dark);
+    color: #fff;
+    font-weight: 700;
+    font-size: var(--text-base);
+    padding: 6px 16px;
+    border-radius: 999px;
+    margin-bottom: 22px;
+  }
+  .title-slide h1 { font-size: 3.2rem; }
+  .title-slide .sub { font-size: var(--text-xl); color: var(--col-text-muted); }
+
+  .hbg-wordmark { display: inline-flex; align-items: flex-end; gap: 5px; margin-top: auto; }
+  .hbg-wordmark__main { font-size: var(--text-lg); font-weight: 800; color: var(--col-slate); }
+  .hbg-wordmark__sub  { font-size: var(--text-sm); color: var(--col-rust); margin-bottom: 3px; }
+
+  /* ───── E-Mail / Brief Visuals ───── */
+  .doc-row { display: flex; gap: 28px; align-items: stretch; flex-wrap: wrap; }
+  .doc-col { flex: 1; min-width: 280px; }
+  .doc-label {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-weight: 700; font-size: var(--text-md);
+    margin-bottom: 10px; color: var(--col-slate-dark);
+  }
+  .doc-label .pill {
+    font-size: var(--text-xs);
+    padding: 3px 10px; border-radius: 999px;
+    color: #fff; font-weight: 700; letter-spacing: 0.04em;
+  }
+  .pill-brief { background: var(--col-rust-dark); }
+  .pill-mail  { background: var(--col-slate); }
+
+  .paper {
+    background: #fff;
+    border: 1px solid var(--col-border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    box-shadow: 0 3px 12px var(--col-shadow);
+    font-size: var(--text-base);
+    line-height: 1.7;
+  }
+  .paper .meta { color: var(--col-text-muted); font-size: var(--text-sm); }
+  .paper .hl {
+    background: var(--col-warning-pale);
+    border-radius: 4px;
+    padding: 0 4px;
+    font-weight: 600;
+  }
+  .paper .hl-rust { background: var(--col-rust-pale); }
+  .paper .hl-sage { background: var(--col-sage-pale); }
+
+  .email-head {
+    border-bottom: 2px dashed var(--col-border);
+    padding-bottom: 10px; margin-bottom: 12px;
+    font-size: var(--text-sm);
+  }
+  .email-head span { color: var(--col-text-muted); display: inline-block; min-width: 64px; font-weight: 700; }
+
+  /* Aufbau-Teile (Biene-Vorschau / Brief-Anatomie) */
+  .anat { display: flex; flex-direction: column; gap: 0; }
+  .anat-part {
+    display: flex; align-items: baseline; gap: 14px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--col-border);
+  }
+  .anat-part:last-child { border-bottom: none; }
+  .anat-tag {
+    flex-shrink: 0;
+    width: 132px;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--col-rust-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .anat-text { font-size: var(--text-md); }
+
+  /* ───── Symbol-Erklärung ───── */
+  .symbol-grid { display: flex; flex-direction: column; gap: 16px; margin-top: 6px; }
+  .symbol-card {
+    display: flex; align-items: flex-start; gap: 20px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px 22px;
+    box-shadow: 0 2px 8px var(--col-shadow);
+    border-left: 7px solid var(--clr);
+  }
+  .symbol-emoji {
+    font-size: 2.6rem; line-height: 1; flex-shrink: 0;
+    width: 56px; text-align: center;
+  }
+  .symbol-card h3 { margin-bottom: 3px; color: var(--clr-text); }
+  .symbol-card p  { margin-bottom: 0; font-size: var(--text-base); color: var(--col-text); }
+  .symbol-card .ex { font-size: var(--text-sm); color: var(--col-text-muted); font-style: italic; margin-top: 4px; }
+
+  /* ───── Zwei-Spalten Unterschiede ───── */
+  .compare { display: flex; gap: 24px; flex-wrap: wrap; }
+  .compare-col {
+    flex: 1; min-width: 280px;
+    background: #fff; border-radius: 14px; padding: 20px 24px;
+    box-shadow: 0 2px 8px var(--col-shadow);
+  }
+  .compare-col.brief { border-top: 5px solid var(--col-rust-dark); }
+  .compare-col.mail  { border-top: 5px solid var(--col-slate); }
+  .compare-col h3 { display: flex; align-items: center; gap: 10px; }
+  .compare-col ul { list-style: none; margin-top: 10px; }
+  .compare-col li { padding: 7px 0 7px 28px; position: relative; font-size: var(--text-base); }
+  .compare-col li::before {
+    content: '→'; position: absolute; left: 0; top: 7px;
+    color: var(--col-slate-mid); font-weight: 700;
+  }
+
+  /* ───── Diskussions-Box ───── */
+  .talk {
+    background: var(--col-slate-pale);
+    border-radius: 14px;
+    padding: 18px 24px;
+    margin-top: auto;
+    border-left: 6px solid var(--col-slate);
+  }
+  .talk .talk-label {
+    font-weight: 700; font-size: var(--text-sm);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--col-slate-dark); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .talk p { margin-bottom: 0; font-size: var(--text-md); }
+
+  /* ───── Lernziel-Banner ───── */
+  .goal {
+    background: var(--col-sage-ghost);
+    border-left: 6px solid var(--col-sage-dark);
+    border-radius: 0 12px 12px 0;
+    padding: 16px 22px; margin-top: 16px;
+  }
+  .goal strong { color: var(--col-sage-dark); }
+
+  ul.clean { list-style: none; }
+  ul.clean li { padding: 8px 0 8px 34px; position: relative; font-size: var(--text-md); }
+  ul.clean li .ic { position: absolute; left: 0; top: 6px; font-size: 1.4rem; }
+
+  /* ───── Steuerung ───── */
+  .controls {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 7vh; min-height: 52px;
+    background: var(--col-slate-dark);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 22px;
+    gap: 16px;
+    z-index: 50;
+  }
+  .nav-btn {
+    background: var(--col-rust-dark); color: #fff; border: none;
+    width: 46px; height: 46px; border-radius: 10px;
+    font-size: 1.5rem; cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .nav-btn:hover { background: #B55E2A; }
+  .nav-btn:active { transform: translateY(1px); }
+  .nav-btn:disabled { background: #55636E; cursor: not-allowed; }
+
+  .progress-wrap { flex: 1; display: flex; align-items: center; gap: 14px; }
+  .dots { display: flex; gap: 7px; flex-wrap: wrap; }
+  .dot {
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--col-slate-mid); cursor: pointer;
+    border: none; padding: 0; transition: background 0.2s, transform 0.2s;
+  }
+  .dot.active { background: var(--col-rust); transform: scale(1.3); }
+  .slide-count {
+    color: var(--col-slate-pale); font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .deck-title {
+    color: #fff; font-weight: 700; font-size: var(--text-sm);
+    white-space: nowrap;
+  }
+  .deck-title .ph { color: var(--col-rust); }
+
+  @media (max-width: 640px) {
+    .slide-inner { padding: 24px 22px; }
+    h1 { font-size: var(--text-2xl); }
+    .title-slide h1 { font-size: 2.3rem; }
+    .deck-title { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1 — Titel -->
+  <section class="slide active">
+    <div class="slide-inner type-title title-slide">
+      <span class="kicker">Input I1 · 🐱 Die neugierige Katze</span>
+      <h1>Briefe und E-Mails<br>entdecken</h1>
+      <p class="sub">Wer schreibt wem – und warum?</p>
+      <div class="goal">
+        <p><strong>Worum geht es heute?</strong> Wir schauen uns echte Briefe und E-Mails an,
+        finden heraus, wie sie sich unterscheiden, und lernen die Zeichen kennen,
+        die euch auf jedem Arbeitsblatt begegnen.</p>
+      </div>
+      <div class="hbg-wordmark">
+        <span class="hbg-wordmark__main">HBG</span>
+        <span class="hbg-wordmark__sub">SRL</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 2 — Projektbezug -->
+  <section class="slide">
+    <div class="slide-inner type-info">
+      <div class="eyebrow">Unser Projekt</div>
+      <h2>Warum schreiben wir überhaupt Briefe?</h2>
+      <p class="big">Unsere Klasse plant eine Ausstellung: <strong>„So sind wir, so lernen wir,
+        so wollen wir lernen."</strong></p>
+      <p class="big">Im Fach Deutsch ist unser Beitrag etwas Besonderes: Wir schreiben
+        <strong>Wunschbriefe für unsere Lernumgebung</strong> – echte, höfliche Bitten
+        rund um unseren Klassenraum.</p>
+      <ul class="clean" style="margin-top:8px;">
+        <li><span class="ic">📚</span> Eine Leseecke zum Wohlfühlen?</li>
+        <li><span class="ic">🪴</span> Pflanzen auf den Fensterbänken?</li>
+        <li><span class="ic">🎨</span> Eine Wand für unsere Ergebnisse?</li>
+      </ul>
+      <div class="talk">
+        <div class="talk-label">💬 Gemeinsam überlegen</div>
+        <p>Was würdet ihr euch für unseren Klassenraum wünschen?</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3 — Beispiel: Der Brief -->
+  <section class="slide">
+    <div class="slide-inner type-example">
+      <div class="eyebrow">Beispiel A</div>
+      <h2>Das ist ein Brief 📨</h2>
+      <div class="doc-col" style="max-width:680px;">
+        <div class="paper">
+          <p class="meta">Dortmund, 3. September</p>
+          <p style="margin-top:8px;"><strong>Liebe Frau Direktorin,</strong></p>
+          <p>wir sind die <span class="hl-sage hl">Klasse 5c</span>. Wir lernen jeden Tag viel
+            und lesen gerne. Leider haben wir keine ruhige Ecke zum Lesen.</p>
+          <p>Wir <span class="hl">wünschen uns eine kleine Leseecke</span> mit Kissen und
+            einem Regal für Bücher.</p>
+          <p style="margin-top:8px;">Viele Grüße<br><strong>die Klasse 5c</strong></p>
+        </div>
+      </div>
+      <div class="talk">
+        <div class="talk-label">💬 Schaut genau hin</div>
+        <p>Wer schreibt? An wen? Was ist der Wunsch? (Tipp: Die Farben helfen euch.)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4 — Beispiel: Die E-Mail -->
+  <section class="slide">
+    <div class="slide-inner type-example">
+      <div class="eyebrow">Beispiel B</div>
+      <h2>Das ist eine E-Mail 💻</h2>
+      <div class="doc-col" style="max-width:680px;">
+        <div class="paper">
+          <div class="email-head">
+            <div><span>Von:</span> klasse5a@hbg-dortmund.de</div>
+            <div><span>An:</span> hausmeister@hbg-dortmund.de</div>
+            <div><span>Betreff:</span> Pflanzen für unseren Klassenraum</div>
+          </div>
+          <p><strong>Hallo Herr Meyer,</strong></p>
+          <p>wir sind die <span class="hl-sage hl">Klasse 5a</span>. Wir möchten unseren
+            Klassenraum gemütlicher machen. <span class="hl">Könnten wir ein paar Pflanzen</span>
+            für die Fensterbänke bekommen?</p>
+          <p style="margin-top:8px;">Viele Grüße<br><strong>die Klasse 5a</strong></p>
+        </div>
+      </div>
+      <div class="talk">
+        <div class="talk-label">💬 Fällt euch etwas auf?</div>
+        <p>Was hat die E-Mail, das der Brief nicht hat? (Schaut ganz oben.)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5 — Unterschiede -->
+  <section class="slide">
+    <div class="slide-inner type-info">
+      <div class="eyebrow">Der Vergleich</div>
+      <h2>Brief oder E-Mail – was ist anders?</h2>
+      <div class="compare">
+        <div class="compare-col brief">
+          <h3>📨 Der Brief</h3>
+          <ul>
+            <li>beginnt mit dem <strong>Ort und Datum</strong></li>
+            <li>wird auf <strong>Papier</strong> geschrieben</li>
+            <li>wirkt <strong>persönlich und feierlich</strong></li>
+            <li>braucht etwas <strong>länger</strong> bis er ankommt</li>
+          </ul>
+        </div>
+        <div class="compare-col mail">
+          <h3>💻 Die E-Mail</h3>
+          <ul>
+            <li>hat <strong>Von, An und Betreff</strong></li>
+            <li>wird am <strong>Computer</strong> geschrieben</li>
+            <li>ist <strong>schnell und praktisch</strong></li>
+            <li>kommt <strong>sofort</strong> an</li>
+          </ul>
+        </div>
+      </div>
+      <div class="goal">
+        <p><strong>Gemeinsam:</strong> Beide haben eine Anrede („Liebe…"/„Hallo…"), einen Text
+          mit einem Anliegen und einen Gruß am Ende.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6 — Vorschau Briefaufbau -->
+  <section class="slide">
+    <div class="slide-inner type-info">
+      <div class="eyebrow">Kleiner Ausblick · 🐝 kommt bald</div>
+      <h2>Woraus besteht ein Brief?</h2>
+      <p>Diese Teile schauen wir uns bei der <strong>fleißigen Biene</strong> noch genauer an –
+        heute reicht ein erster Blick:</p>
+      <div class="paper" style="max-width:760px;">
+        <div class="anat">
+          <div class="anat-part"><div class="anat-tag">Ort & Datum</div><div class="anat-text">Dortmund, 3. September</div></div>
+          <div class="anat-part"><div class="anat-tag">Anrede</div><div class="anat-text">Liebe Frau Direktorin,</div></div>
+          <div class="anat-part"><div class="anat-tag">Brieftext</div><div class="anat-text">wir wünschen uns eine Leseecke …</div></div>
+          <div class="anat-part"><div class="anat-tag">Grußformel</div><div class="anat-text">Viele Grüße</div></div>
+          <div class="anat-part"><div class="anat-tag">Unterschrift</div><div class="anat-text">die Klasse 5c</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7 — Symbol-System Einführung -->
+  <section class="slide">
+    <div class="slide-inner type-symbol">
+      <div class="eyebrow">Unser Lernweg</div>
+      <h2>Diese Zeichen begleiten euch 🧭</h2>
+      <p style="margin-bottom:18px;">Auf jedem Arbeitsblatt findet ihr dieselben Zeichen.
+        Wenn ihr sie kennt, wisst ihr sofort, was zu tun ist:</p>
+      <div class="symbol-grid">
+        <div class="symbol-card" style="--clr:var(--col-rust-dark); --clr-text:var(--col-rust-dark);">
+          <div class="symbol-emoji">✏️</div>
+          <div>
+            <h3>Aufgabe</h3>
+            <p>Das machst du jetzt: ankreuzen, schreiben, ordnen …</p>
+            <p class="ex">z. B. „Kreuze an …" oder „Schreibe …"</p>
+          </div>
+        </div>
+        <div class="symbol-card" style="--clr:var(--col-sage-dark); --clr-text:var(--col-sage-dark);">
+          <div class="symbol-emoji">💡</div>
+          <div>
+            <h3>Tipp</h3>
+            <p>Das hilft dir bei der Aufgabe – zum Beispiel ein Satzstarter.</p>
+            <p class="ex">z. B. „Satzstarter: Die Klasse 5c wünscht sich …"</p>
+          </div>
+        </div>
+        <div class="symbol-card" style="--clr:var(--col-warning); --clr-text:var(--col-warning-text);">
+          <div class="symbol-emoji">👀</div>
+          <div>
+            <h3>Beispiel</h3>
+            <p>So könnte das Ergebnis aussehen. Schau es dir an, bevor du startest.</p>
+            <p class="ex">z. B. ein Beispielbrief wie eben</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8 — Weitere Zeichen (Ausblick) -->
+  <section class="slide">
+    <div class="slide-inner type-symbol">
+      <div class="eyebrow">Kommt später dazu · ab 🐝 der Biene</div>
+      <h2>Noch ein paar Zeichen für später</h2>
+      <p style="margin-bottom:18px;">Diese lernt ihr erst kennen, wenn ihr die ersten drei
+        sicher beherrscht – kein Stress!</p>
+      <div class="symbol-grid">
+        <div class="symbol-card" style="--clr:var(--col-slate); --clr-text:var(--col-slate-dark);">
+          <div class="symbol-emoji">ℹ️</div>
+          <div>
+            <h3>Information</h3>
+            <p>Das solltest du wissen, bevor du startest.</p>
+          </div>
+        </div>
+        <div class="symbol-card" style="--clr:var(--col-slate); --clr-text:var(--col-slate-dark);">
+          <div class="symbol-emoji">✅</div>
+          <div>
+            <h3>Erfolgskriterium</h3>
+            <p>Daran prüfst du selbst, ob dein Ergebnis gut ist.</p>
+          </div>
+        </div>
+        <div class="symbol-card" style="--clr:var(--col-sage-dark); --clr-text:var(--col-sage-dark);">
+          <div class="symbol-emoji">🔄</div>
+          <div>
+            <h3>Reflexion</h3>
+            <p>Schau zurück: Was hat gut geklappt? Was übe ich noch?</p>
+          </div>
+        </div>
+        <div class="symbol-card" style="--clr:var(--col-rust-dark); --clr-text:var(--col-rust-dark);">
+          <div class="symbol-emoji">⛓️</div>
+          <div>
+            <h3>Helferkette</h3>
+            <p>Erst die Lernpartnerin/den Lernpartner fragen, dann eine andere Gruppe,
+              erst dann die Lehrkraft.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 9 — Badges erklären -->
+  <section class="slide">
+    <div class="slide-inner type-symbol">
+      <div class="eyebrow">Zusatzangebote</div>
+      <h2>Manche Blätter haben ein Abzeichen</h2>
+      <p style="margin-bottom:18px;">Die meisten Blätter sind für alle. Manche tragen oben ein
+        Zeichen – das sind <strong>freiwillige Zusatzangebote</strong>:</p>
+      <div class="symbol-grid">
+        <div class="symbol-card" style="--clr:var(--col-rust-dark); --clr-text:var(--col-rust-dark);">
+          <div class="symbol-emoji">🔼</div>
+          <div>
+            <h3>Noch einen Schritt</h3>
+            <p>Diese Blätter gehen einen Schritt tiefer. Nimm sie dir, wenn du mehr willst.</p>
+          </div>
+        </div>
+        <div class="symbol-card" style="--clr:var(--col-slate-dark); --clr-text:var(--col-slate-dark);">
+          <div class="symbol-emoji">⭐</div>
+          <div>
+            <h3>Für Entdecker</h3>
+            <p>Diese Blätter sind besonders knifflig. Hier zeigst du, was in dir steckt.</p>
+          </div>
+        </div>
+      </div>
+      <div class="goal">
+        <p><strong>Wichtig:</strong> Ein Blatt ohne Zeichen ist nichts Schlechteres – es ist genau
+          das, was alle können sollen. Die Abzeichen sind eine Einladung, kein Muss.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 10 — Abschluss / Übergang -->
+  <section class="slide">
+    <div class="slide-inner type-title title-slide">
+      <span class="kicker">Jetzt seid ihr dran</span>
+      <h1>Auf zu den<br>Arbeitsblättern! ✏️</h1>
+      <div class="goal">
+        <p><strong>Eure ersten Blätter:</strong></p>
+        <ul class="clean" style="margin-top:6px;">
+          <li><span class="ic">📨</span> <strong>Blatt 3</strong> – Post für unsere Klasse</li>
+          <li><span class="ic">🔍</span> <strong>Blatt 4</strong> – Wer schreibt wem – und warum?</li>
+        </ul>
+      </div>
+      <p style="margin-top:14px; color:var(--col-text-muted);">Denkt an die Zeichen: ✏️ Aufgabe · 💡 Tipp · 👀 Beispiel</p>
+      <div class="hbg-wordmark">
+        <span class="hbg-wordmark__main">HBG</span>
+        <span class="hbg-wordmark__sub">SRL</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ───── Steuerleiste ───── -->
+<div class="controls">
+  <button class="nav-btn" id="prev" aria-label="Vorherige Folie">‹</button>
+  <div class="progress-wrap">
+    <span class="deck-title">Input I1 · <span class="ph">Briefe &amp; E-Mails entdecken</span></span>
+    <div class="dots" id="dots" role="tablist" aria-label="Folienauswahl"></div>
+  </div>
+  <span class="slide-count" id="count">1 / 10</span>
+  <button class="nav-btn" id="next" aria-label="Nächste Folie">›</button>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const dotsWrap = document.getElementById('dots');
+  const count = document.getElementById('count');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+  let cur = 0;
+
+  // Dots erzeugen
+  slides.forEach((_, i) => {
+    const d = document.createElement('button');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.setAttribute('role', 'tab');
+    d.setAttribute('aria-label', 'Folie ' + (i + 1));
+    d.addEventListener('click', () => go(i));
+    dotsWrap.appendChild(d);
+  });
+  const dots = Array.from(dotsWrap.children);
+
+  function go(n) {
+    cur = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, i) => s.classList.toggle('active', i === cur));
+    dots.forEach((d, i) => d.classList.toggle('active', i === cur));
+    count.textContent = (cur + 1) + ' / ' + slides.length;
+    prevBtn.disabled = cur === 0;
+    nextBtn.disabled = cur === slides.length - 1;
+  }
+
+  prevBtn.addEventListener('click', () => go(cur - 1));
+  nextBtn.addEventListener('click', () => go(cur + 1));
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); go(cur + 1); }
+    if (e.key === 'ArrowLeft'  || e.key === 'PageUp')                    { e.preventDefault(); go(cur - 1); }
+    if (e.key === 'Home') { e.preventDefault(); go(0); }
+    if (e.key === 'End')  { e.preventDefault(); go(slides.length - 1); }
+  });
+
+  // Touch-Swipe
+  let startX = null;
+  document.getElementById('deck').addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
+  document.getElementById('deck').addEventListener('touchend', e => {
+    if (startX === null) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) { dx < 0 ? go(cur + 1) : go(cur - 1); }
+    startX = null;
+  }, {passive:true});
+
+  go(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Input I2 – So ist ein Brief gebaut – HBG</title>
+<style>
+  :root{
+    --col-slate-dark:#2C3D4C;--col-slate:#3E5668;--col-slate-mid:#6A8599;--col-slate-pale:#D0DCE6;--col-slate-ghost:#EEF3F7;
+    --col-rust-dark:#9E4E22;--col-rust:#D97A4A;--col-rust-pale:#F5DDD1;--col-rust-ghost:#FBF0EB;
+    --col-sage-dark:#4D8B3F;--col-sage:#7DBB6F;--col-sage-pale:#DDF0D8;--col-sage-ghost:#F0FAF0;
+    --col-warning:#C17B00;--col-warning-pale:#FFF3CC;--col-warning-text:#5C4400;
+    --col-error:#C0392B;--col-error-pale:#FDECEA;--col-error-text:#7A1B14;
+    --col-bg:#F5F4F1;--col-white:#FFFFFF;--col-text:#1E2A35;--col-text-muted:#5A6A78;--col-border:#D4D0C8;--col-shadow:rgba(62,86,104,0.10);
+    --text-xs:0.694rem;--text-sm:0.833rem;--text-base:1rem;--text-md:1.2rem;--text-lg:1.44rem;--text-xl:1.728rem;--text-2xl:2.074rem;--text-3xl:2.49rem;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:var(--col-slate-dark);color:var(--col-text);font-size:var(--text-base);line-height:1.55;overflow:hidden;}
+  :focus-visible{outline:3px solid var(--col-rust);outline-offset:3px;border-radius:4px;}
+
+  .deck{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;}
+  .slide{display:none;width:100%;height:100%;padding:3vh 4vw 9vh;flex-direction:column;animation:fadein .35s ease;}
+  .slide.active{display:flex;}
+  @keyframes fadein{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  .slide-inner{background:var(--col-bg);border-radius:20px;flex:1;width:100%;max-width:1180px;margin:0 auto;padding:38px 48px;box-shadow:0 12px 40px rgba(0,0,0,.3);overflow-y:auto;display:flex;flex-direction:column;}
+  .slide-inner.type-info{border-top:8px solid var(--col-slate);}
+  .slide-inner.type-example{border-top:8px solid var(--col-warning);}
+  .slide-inner.type-build{border-top:8px solid var(--col-rust);}
+  .slide-inner.type-title{border-top:8px solid var(--col-sage-dark);}
+
+  .eyebrow{font-size:var(--text-sm);text-transform:uppercase;letter-spacing:.1em;color:var(--col-text-muted);font-weight:700;margin-bottom:8px;}
+  h1{font-size:var(--text-3xl);color:var(--col-slate-dark);line-height:1.1;margin-bottom:14px;}
+  h2{font-size:var(--text-2xl);color:var(--col-slate-dark);line-height:1.15;margin-bottom:18px;}
+  h3{font-size:var(--text-lg);color:var(--col-slate-dark);margin-bottom:8px;}
+  p{font-size:var(--text-md);margin-bottom:12px;}
+  .big{font-size:var(--text-lg);}
+
+  .title-slide{justify-content:center;align-items:flex-start;}
+  .title-slide .kicker{display:inline-block;background:var(--col-sage-dark);color:#fff;font-weight:700;font-size:var(--text-base);padding:6px 16px;border-radius:999px;margin-bottom:22px;}
+  .title-slide h1{font-size:3.2rem;}
+  .title-slide .sub{font-size:var(--text-xl);color:var(--col-text-muted);}
+  .hbg-wordmark{display:inline-flex;align-items:flex-end;gap:5px;margin-top:auto;}
+  .hbg-wordmark__main{font-size:var(--text-lg);font-weight:800;color:var(--col-slate);}
+  .hbg-wordmark__sub{font-size:var(--text-sm);color:var(--col-rust);margin-bottom:3px;}
+
+  .paper{background:#fff;border:1px solid var(--col-border);border-radius:12px;padding:22px 26px;box-shadow:0 3px 12px var(--col-shadow);font-size:var(--text-base);line-height:1.7;max-width:720px;}
+  .paper .meta{color:var(--col-text-muted);font-size:var(--text-sm);}
+
+  /* Brief-Anatomie mit farbigen Labels */
+  .anat-line{display:flex;align-items:baseline;gap:16px;padding:8px 0;}
+  .anat-tag{flex-shrink:0;width:150px;font-size:var(--text-sm);font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+  .anat-text{font-size:var(--text-md);}
+  .t-datum{color:var(--col-slate);}
+  .t-anrede{color:var(--col-rust-dark);}
+  .t-text{color:var(--col-sage-dark);}
+  .t-gruss{color:var(--col-warning);}
+  .t-sign{color:var(--col-slate-mid);}
+  .anat-highlight{border-left:5px solid var(--clr);background:#fff;border-radius:0 10px 10px 0;padding:10px 18px;margin:6px 0;box-shadow:0 2px 8px var(--col-shadow);}
+
+  .talk{background:var(--col-slate-pale);border-radius:14px;padding:18px 24px;margin-top:auto;border-left:6px solid var(--col-slate);}
+  .talk .talk-label{font-weight:700;font-size:var(--text-sm);text-transform:uppercase;letter-spacing:.06em;color:var(--col-slate-dark);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+  .talk p{margin-bottom:0;font-size:var(--text-md);}
+
+  .goal{background:var(--col-sage-ghost);border-left:6px solid var(--col-sage-dark);border-radius:0 12px 12px 0;padding:16px 22px;margin-top:16px;}
+  .goal strong{color:var(--col-sage-dark);}
+
+  .warnbox{background:var(--col-warning-pale);border-left:6px solid var(--col-warning);border-radius:0 12px 12px 0;padding:16px 22px;margin-top:14px;color:var(--col-warning-text);}
+
+  ul.clean{list-style:none;}
+  ul.clean li{padding:8px 0 8px 34px;position:relative;font-size:var(--text-md);}
+  ul.clean li .ic{position:absolute;left:0;top:5px;font-size:1.4rem;}
+
+  .symbol-card{display:flex;align-items:flex-start;gap:20px;background:#fff;border-radius:14px;padding:16px 22px;box-shadow:0 2px 8px var(--col-shadow);border-left:7px solid var(--clr);margin-bottom:14px;}
+  .symbol-emoji{font-size:2.4rem;line-height:1;flex-shrink:0;width:52px;text-align:center;}
+  .symbol-card h3{margin-bottom:2px;color:var(--clr-text);}
+  .symbol-card p{margin-bottom:0;font-size:var(--text-base);}
+
+  .controls{position:fixed;bottom:0;left:0;right:0;height:7vh;min-height:52px;background:var(--col-slate-dark);display:flex;align-items:center;justify-content:space-between;padding:0 22px;gap:16px;z-index:50;}
+  .nav-btn{background:var(--col-rust-dark);color:#fff;border:none;width:46px;height:46px;border-radius:10px;font-size:1.5rem;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .1s;}
+  .nav-btn:hover{background:#B55E2A;}.nav-btn:active{transform:translateY(1px);}.nav-btn:disabled{background:#55636E;cursor:not-allowed;}
+  .progress-wrap{flex:1;display:flex;align-items:center;gap:14px;}
+  .dots{display:flex;gap:7px;flex-wrap:wrap;}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--col-slate-mid);cursor:pointer;border:none;padding:0;transition:background .2s,transform .2s;}
+  .dot.active{background:var(--col-rust);transform:scale(1.3);}
+  .slide-count{color:var(--col-slate-pale);font-size:var(--text-sm);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .deck-title{color:#fff;font-weight:700;font-size:var(--text-sm);white-space:nowrap;}
+  .deck-title .ph{color:var(--col-rust);}
+  @media(max-width:640px){.slide-inner{padding:24px 22px;}h1{font-size:var(--text-2xl);}.title-slide h1{font-size:2.3rem;}.deck-title{display:none;}}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- 1 Titel -->
+  <section class="slide active">
+    <div class="slide-inner type-title title-slide">
+      <span class="kicker">Input I2 · 🐝 Die fleißige Biene</span>
+      <h1>So ist ein Brief<br>gebaut</h1>
+      <p class="sub">Aus welchen Teilen besteht ein Brief?</p>
+      <div class="goal"><p><strong>Heute lernt ihr:</strong> die fünf Teile eines Briefes kennen –
+        und warum jeder davon seinen festen Platz hat. Wie eine Biene ihre Wabe bauen wir den Brief
+        Stück für Stück auf.</p></div>
+      <div class="hbg-wordmark"><span class="hbg-wordmark__main">HBG</span><span class="hbg-wordmark__sub">SRL</span></div>
+    </div>
+  </section>
+
+  <!-- 2 Rückblick -->
+  <section class="slide">
+    <div class="slide-inner type-info">
+      <div class="eyebrow">Kurzer Rückblick</div>
+      <h2>Was wir schon können 🐱</h2>
+      <p class="big">Bei der neugierigen Katze habt ihr gelernt:</p>
+      <ul class="clean">
+        <li><span class="ic">📨</span> Ein Brief und eine E-Mail sind nicht dasselbe.</li>
+        <li><span class="ic">🔍</span> Jeder Brief hat einen Absender, einen Empfänger und einen Grund.</li>
+      </ul>
+      <p class="big" style="margin-top:10px;">Jetzt schauen wir <strong>genauer hin</strong>:
+        Woraus besteht so ein Brief eigentlich?</p>
+      <div class="talk"><div class="talk-label">💬 Sammeln</div>
+        <p>Welche Teile eines Briefes fallen euch schon ein?</p></div>
+    </div>
+  </section>
+
+  <!-- 3 Der ganze Brief -->
+  <section class="slide">
+    <div class="slide-inner type-example">
+      <div class="eyebrow">Unser bekannter Brief</div>
+      <h2>Schauen wir genau hin 👀</h2>
+      <div class="paper">
+        <p class="meta">Dortmund, 3. September</p>
+        <p style="margin-top:8px;"><strong>Liebe Frau Direktorin,</strong></p>
+        <p>wir sind die Klasse 5c. Wir lernen jeden Tag viel und lesen gerne. Leider haben wir keine
+          ruhige Ecke zum Lesen in unserem Klassenraum.</p>
+        <p>Wir wünschen uns eine kleine Leseecke mit Kissen und einem Regal für Bücher.</p>
+        <p style="margin-top:8px;">Viele Grüße<br><strong>die Klasse 5c</strong></p>
+      </div>
+      <div class="talk"><div class="talk-label">💬 Gemeinsam</div>
+        <p>Dieser Brief besteht aus fünf Teilen. Findet ihr sie?</p></div>
+    </div>
+  </section>
+
+  <!-- 4 Die fünf Teile benannt -->
+  <section class="slide">
+    <div class="slide-inner type-build">
+      <div class="eyebrow">Die Bauteile</div>
+      <h2>Ein Brief hat fünf Teile 🧱</h2>
+      <div class="anat-highlight" style="--clr:var(--col-slate);">
+        <div class="anat-line"><div class="anat-tag t-datum">1 · Ort & Datum</div><div class="anat-text">Dortmund, 3. September</div></div>
+      </div>
+      <div class="anat-highlight" style="--clr:var(--col-rust-dark);">
+        <div class="anat-line"><div class="anat-tag t-anrede">2 · Anrede</div><div class="anat-text">Liebe Frau Direktorin,</div></div>
+      </div>
+      <div class="anat-highlight" style="--clr:var(--col-sage-dark);">
+        <div class="anat-line"><div class="anat-tag t-text">3 · Brieftext</div><div class="anat-text">Wir wünschen uns eine Leseecke …</div></div>
+      </div>
+      <div class="anat-highlight" style="--clr:var(--col-warning);">
+        <div class="anat-line"><div class="anat-tag t-gruss">4 · Grußformel</div><div class="anat-text">Viele Grüße</div></div>
+      </div>
+      <div class="anat-highlight" style="--clr:var(--col-slate-mid);">
+        <div class="anat-line"><div class="anat-tag t-sign">5 · Unterschrift</div><div class="anat-text">die Klasse 5c</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 Funktion jedes Teils -->
+  <section class="slide">
+    <div class="slide-inner type-info">
+      <div class="eyebrow">Wozu ist das gut?</div>
+      <h2>Jeder Teil hat eine Aufgabe</h2>
+      <ul class="clean">
+        <li><span class="ic">📅</span> <strong>Ort & Datum</strong> – sagt, wann und wo der Brief geschrieben wurde.</li>
+        <li><span class="ic">👋</span> <strong>Anrede</strong> – begrüßt die Person höflich.</li>
+        <li><span class="ic">✍️</span> <strong>Brieftext</strong> – hier steht dein Anliegen und dein Wunsch.</li>
+        <li><span class="ic">🤝</span> <strong>Grußformel</strong> – verabschiedet freundlich.</li>
+        <li><span class="ic">🖊️</span> <strong>Unterschrift</strong> – zeigt, von wem der Brief ist.</li>
+      </ul>
+      <div class="warnbox">⚠ Fehlt ein Teil, wirkt der Brief unhöflich oder unvollständig –
+        zum Beispiel ohne Anrede.</div>
+    </div>
+  </section>
+
+  <!-- 6 Brief vs. E-Mail Aufbau -->
+  <section class="slide">
+    <div class="slide-inner type-info">
+      <div class="eyebrow">Kleiner Unterschied</div>
+      <h2>Und bei der E-Mail? 💻</h2>
+      <p class="big">Die E-Mail hat fast dieselben Teile – aber statt „Ort & Datum" stehen oben
+        drei Felder, die der Computer mitschickt:</p>
+      <div class="anat-highlight" style="--clr:var(--col-slate);">
+        <div class="anat-line"><div class="anat-tag t-datum">Von</div><div class="anat-text">klasse5a@hbg-dortmund.de</div></div>
+        <div class="anat-line"><div class="anat-tag t-datum">An</div><div class="anat-text">hausmeister@hbg-dortmund.de</div></div>
+        <div class="anat-line"><div class="anat-tag t-datum">Betreff</div><div class="anat-text">Pflanzen für unseren Klassenraum</div></div>
+      </div>
+      <p style="margin-top:12px;">Danach kommen genau wie beim Brief: <strong>Anrede – Text – Gruß</strong>.</p>
+    </div>
+  </section>
+
+  <!-- 7 Erinnerung Symbole (jetzt erweitert) -->
+  <section class="slide">
+    <div class="slide-inner type-build">
+      <div class="eyebrow">Neu ab jetzt</div>
+      <h2>Zwei neue Zeichen 🧭</h2>
+      <p style="margin-bottom:16px;">Ab der Biene findet ihr auf euren Blättern zwei neue Zeichen:</p>
+      <div class="symbol-card" style="--clr:var(--col-slate);--clr-text:var(--col-slate-dark);">
+        <div class="symbol-emoji">ℹ️</div>
+        <div><h3>Information</h3><p>Das solltest du wissen, bevor du startest.</p></div>
+      </div>
+      <div class="symbol-card" style="--clr:var(--col-slate);--clr-text:var(--col-slate-dark);">
+        <div class="symbol-emoji">✅</div>
+        <div><h3>Erfolgskriterium</h3><p>Daran prüfst du selbst, ob deine Arbeit gelungen ist.</p></div>
+      </div>
+      <div class="goal"><p><strong>Die alten Zeichen bleiben:</strong> ✏️ Aufgabe · 💡 Tipp · 👀 Beispiel.</p></div>
+    </div>
+  </section>
+
+  <!-- 8 Übergang -->
+  <section class="slide">
+    <div class="slide-inner type-title title-slide">
+      <span class="kicker">Jetzt seid ihr dran</span>
+      <h1>Auf zu den<br>Bauteilen! 🧱</h1>
+      <div class="goal"><p><strong>Eure Blätter bei der Biene:</strong></p>
+        <ul class="clean" style="margin-top:6px;">
+          <li><span class="ic">🧩</span> <strong>Blatt 7</strong> – Die Teile eines Briefes</li>
+          <li><span class="ic">🔀</span> <strong>Blatt 8</strong> – Briefpuzzle</li>
+          <li><span class="ic">👋</span> <strong>Blatt 9</strong> – Anrede und Gruß</li>
+        </ul></div>
+      <p style="margin-top:12px;color:var(--col-text-muted);">Wer mag, probiert danach 🔼 Blatt 10 oder ⭐ Blatt 11.</p>
+      <div class="hbg-wordmark"><span class="hbg-wordmark__main">HBG</span><span class="hbg-wordmark__sub">SRL</span></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="controls">
+  <button class="nav-btn" id="prev" aria-label="Vorherige Folie">‹</button>
+  <div class="progress-wrap">
+    <span class="deck-title">Input I2 · <span class="ph">So ist ein Brief gebaut</span></span>
+    <div class="dots" id="dots" role="tablist" aria-label="Folienauswahl"></div>
+  </div>
+  <span class="slide-count" id="count">1 / 8</span>
+  <button class="nav-btn" id="next" aria-label="Nächste Folie">›</button>
+</div>
+
+<script>
+  const slides=Array.from(document.querySelectorAll('.slide'));
+  const dotsWrap=document.getElementById('dots');
+  const count=document.getElementById('count');
+  const prevBtn=document.getElementById('prev');
+  const nextBtn=document.getElementById('next');
+  let cur=0;
+  slides.forEach((_,i)=>{const d=document.createElement('button');d.className='dot'+(i===0?' active':'');d.setAttribute('role','tab');d.setAttribute('aria-label','Folie '+(i+1));d.addEventListener('click',()=>go(i));dotsWrap.appendChild(d);});
+  const dots=Array.from(dotsWrap.children);
+  function go(n){cur=Math.max(0,Math.min(slides.length-1,n));slides.forEach((s,i)=>s.classList.toggle('active',i===cur));dots.forEach((d,i)=>d.classList.toggle('active',i===cur));count.textContent=(cur+1)+' / '+slides.length;prevBtn.disabled=cur===0;nextBtn.disabled=cur===slides.length-1;}
+  prevBtn.addEventListener('click',()=>go(cur-1));
+  nextBtn.addEventListener('click',()=>go(cur+1));
+  document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(cur+1);}if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1);}if(e.key==='Home'){e.preventDefault();go(0);}if(e.key==='End'){e.preventDefault();go(slides.length-1);}});
+  let startX=null;
+  document.getElementById('deck').addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
+  document.getElementById('deck').addEventListener('touchend',e=>{if(startX===null)return;const dx=e.changedTouches[0].clientX-startX;if(Math.abs(dx)>50){dx<0?go(cur+1):go(cur-1);}startX=null;},{passive:true});
+  go(0);
+</script>
+</body>
+</html>

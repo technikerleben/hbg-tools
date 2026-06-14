@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Input I6 – Bin ich bereit? – HBG</title>
+<style>
+  :root{
+    --col-slate-dark:#2C3D4C;--col-slate:#3E5668;--col-slate-mid:#6A8599;--col-slate-pale:#D0DCE6;--col-slate-ghost:#EEF3F7;
+    --col-rust-dark:#9E4E22;--col-rust:#D97A4A;--col-rust-pale:#F5DDD1;--col-rust-ghost:#FBF0EB;
+    --col-sage-dark:#4D8B3F;--col-sage:#7DBB6F;--col-sage-pale:#DDF0D8;--col-sage-ghost:#F0FAF0;
+    --col-warning:#C17B00;--col-warning-pale:#FFF3CC;--col-warning-text:#5C4400;
+    --col-error:#C0392B;--col-error-pale:#FDECEA;--col-error-text:#7A1B14;
+    --col-bg:#F5F4F1;--col-white:#FFFFFF;--col-text:#1E2A35;--col-text-muted:#5A6A78;--col-border:#D4D0C8;--col-shadow:rgba(62,86,104,0.10);
+    --text-xs:0.694rem;--text-sm:0.833rem;--text-base:1rem;--text-md:1.2rem;--text-lg:1.44rem;--text-xl:1.728rem;--text-2xl:2.074rem;--text-3xl:2.49rem;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:var(--col-slate-dark);color:var(--col-text);font-size:var(--text-base);line-height:1.55;overflow:hidden;}
+  :focus-visible{outline:3px solid var(--col-rust);outline-offset:3px;border-radius:4px;}
+  .deck{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;}
+  .slide{display:none;width:100%;height:100%;padding:3vh 4vw 9vh;flex-direction:column;animation:fadein .35s ease;}
+  .slide.active{display:flex;}
+  @keyframes fadein{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  .slide-inner{background:var(--col-bg);border-radius:20px;flex:1;width:100%;max-width:1180px;margin:0 auto;padding:38px 48px;box-shadow:0 12px 40px rgba(0,0,0,.3);overflow-y:auto;display:flex;flex-direction:column;}
+  .slide-inner.type-info{border-top:8px solid var(--col-slate);}
+  .slide-inner.type-check{border-top:8px solid var(--col-rust);}
+  .slide-inner.type-courage{border-top:8px solid var(--col-warning);}
+  .slide-inner.type-title{border-top:8px solid var(--col-sage-dark);}
+  .eyebrow{font-size:var(--text-sm);text-transform:uppercase;letter-spacing:.1em;color:var(--col-text-muted);font-weight:700;margin-bottom:8px;}
+  h1{font-size:var(--text-3xl);color:var(--col-slate-dark);line-height:1.1;margin-bottom:14px;}
+  h2{font-size:var(--text-2xl);color:var(--col-slate-dark);line-height:1.15;margin-bottom:18px;}
+  h3{font-size:var(--text-lg);color:var(--col-slate-dark);margin-bottom:8px;}
+  p{font-size:var(--text-md);margin-bottom:12px;}
+  .big{font-size:var(--text-lg);}
+  .title-slide{justify-content:center;align-items:flex-start;}
+  .title-slide .kicker{display:inline-block;background:var(--col-sage-dark);color:#fff;font-weight:700;font-size:var(--text-base);padding:6px 16px;border-radius:999px;margin-bottom:22px;}
+  .title-slide h1{font-size:3.2rem;}
+  .title-slide .sub{font-size:var(--text-xl);color:var(--col-text-muted);}
+  .hbg-wordmark{display:inline-flex;align-items:flex-end;gap:5px;margin-top:auto;}
+  .hbg-wordmark__main{font-size:var(--text-lg);font-weight:800;color:var(--col-slate);}
+  .hbg-wordmark__sub{font-size:var(--text-sm);color:var(--col-rust);margin-bottom:3px;}
+  .talk{background:var(--col-slate-pale);border-radius:14px;padding:18px 24px;margin-top:auto;border-left:6px solid var(--col-slate);}
+  .talk .talk-label{font-weight:700;font-size:var(--text-sm);text-transform:uppercase;letter-spacing:.06em;color:var(--col-slate-dark);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+  .talk p{margin-bottom:0;font-size:var(--text-md);}
+  .goal{background:var(--col-sage-ghost);border-left:6px solid var(--col-sage-dark);border-radius:0 12px 12px 0;padding:16px 22px;margin-top:16px;}
+  .goal strong{color:var(--col-sage-dark);}
+  .courage{background:var(--col-warning-pale);border-left:6px solid var(--col-warning);border-radius:0 12px 12px 0;padding:18px 24px;margin-top:14px;color:var(--col-warning-text);}
+  .courage strong{color:var(--col-warning-text);}
+  ul.clean{list-style:none;}
+  ul.clean li{padding:8px 0 8px 34px;position:relative;font-size:var(--text-md);}
+  ul.clean li .ic{position:absolute;left:0;top:5px;font-size:1.4rem;}
+
+  /* Stufen-Weg */
+  .steps{display:flex;flex-direction:column;gap:0;max-width:760px;}
+  .step{display:flex;align-items:center;gap:18px;background:#fff;border-radius:14px;padding:16px 22px;box-shadow:0 2px 8px var(--col-shadow);margin-bottom:12px;border-left:7px solid var(--clr);}
+  .step .n{width:42px;height:42px;flex-shrink:0;border-radius:50%;background:var(--clr);color:#fff;font-weight:800;font-size:var(--text-md);display:flex;align-items:center;justify-content:center;}
+  .step h3{margin:0 0 2px;}
+  .step p{margin:0;font-size:var(--text-base);}
+  .step .blatt{margin-left:auto;font-size:var(--text-sm);color:var(--col-text-muted);font-weight:700;flex-shrink:0;}
+
+  /* Situationskarte */
+  .card{background:#fff;border:2px solid var(--col-slate);border-radius:14px;padding:22px 26px;box-shadow:0 3px 12px var(--col-shadow);max-width:820px;}
+  .card .label{font-weight:700;color:var(--col-slate-dark);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .card .assign{margin-top:10px;color:var(--col-rust-dark);font-weight:600;}
+
+  .controls{position:fixed;bottom:0;left:0;right:0;height:7vh;min-height:52px;background:var(--col-slate-dark);display:flex;align-items:center;justify-content:space-between;padding:0 22px;gap:16px;z-index:50;}
+  .nav-btn{background:var(--col-rust-dark);color:#fff;border:none;width:46px;height:46px;border-radius:10px;font-size:1.5rem;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .1s;}
+  .nav-btn:hover{background:#B55E2A;}.nav-btn:active{transform:translateY(1px);}.nav-btn:disabled{background:#55636E;cursor:not-allowed;}
+  .progress-wrap{flex:1;display:flex;align-items:center;gap:14px;}
+  .dots{display:flex;gap:7px;flex-wrap:wrap;}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--col-slate-mid);cursor:pointer;border:none;padding:0;transition:background .2s,transform .2s;}
+  .dot.active{background:var(--col-rust);transform:scale(1.3);}
+  .slide-count{color:var(--col-slate-pale);font-size:var(--text-sm);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .deck-title{color:#fff;font-weight:700;font-size:var(--text-sm);white-space:nowrap;}
+  .deck-title .ph{color:var(--col-rust);}
+  @media(max-width:640px){.slide-inner{padding:24px 22px;}h1{font-size:var(--text-2xl);}.title-slide h1{font-size:2.3rem;}.deck-title{display:none;}.step .blatt{display:none;}}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- 1 Titel -->
+  <section class="slide active">
+    <div class="slide-inner type-title title-slide">
+      <span class="kicker">Input I6 · 🦁 Der mutige Löwe</span>
+      <h1>Bin ich bereit?</h1>
+      <p class="sub">Selbst einschätzen, üben und den eigenen Prüfungstag wählen</p>
+      <div class="goal"><p><strong>Heute lernt ihr:</strong> ehrlich einzuschätzen, was ihr schon könnt,
+        einen Probebrief zu schreiben und selbst zu entscheiden, wann ihr für die Klassenarbeit bereit
+        seid. Dafür braucht ihr Löwenmut!</p></div>
+      <div class="hbg-wordmark"><span class="hbg-wordmark__main">HBG</span><span class="hbg-wordmark__sub">SRL</span></div>
+    </div>
+  </section>
+
+  <!-- 2 Fehlerkultur -->
+  <section class="slide">
+    <div class="slide-inner type-courage">
+      <div class="eyebrow">Das Wichtigste zuerst</div>
+      <h2>Fehler sind erlaubt! 🦁</h2>
+      <p class="big">Diese Woche dreht sich ums Üben für die Klassenarbeit. Und beim Üben gilt:</p>
+      <div class="courage"><p style="margin:0;font-size:var(--text-lg);"><strong>Ein Fehler ist ein
+        Hinweis darauf, woran du weiterlernen kannst.</strong></p></div>
+      <p class="big" style="margin-top:16px;">Der Probebrief wird <strong>nicht benotet</strong>.
+        Er zeigt dir nur, was schon klappt und was du noch üben kannst. Trau dich!</p>
+    </div>
+  </section>
+
+  <!-- 3 Der Weg zur Prüfung -->
+  <section class="slide">
+    <div class="slide-inner type-check">
+      <div class="eyebrow">So wird man bereit</div>
+      <h2>Dein Weg beim Löwen 🦁</h2>
+      <div class="steps">
+        <div class="step" style="--clr:var(--col-slate);"><div class="n">1</div><div><h3>Selbstcheck</h3><p>Was kann ich schon sicher?</p></div><div class="blatt">Blatt 26</div></div>
+        <div class="step" style="--clr:var(--col-warning);"><div class="n">2</div><div><h3>Probebrief</h3><p>Eine Übung wie die echte Arbeit.</p></div><div class="blatt">Blatt 27</div></div>
+        <div class="step" style="--clr:var(--col-rust-dark);"><div class="n">3</div><div><h3>Auswerten</h3><p>Was klappt? Was übe ich noch?</p></div><div class="blatt">Blatt 28</div></div>
+        <div class="step" style="--clr:var(--col-sage-dark);"><div class="n">4</div><div><h3>Übungsplan</h3><p>Gezielt das Schwierige üben.</p></div><div class="blatt">Blatt 29</div></div>
+        <div class="step" style="--clr:var(--col-slate-dark);"><div class="n">5</div><div><h3>Anmelden</h3><p>Meinen Prüfungstag wählen.</p></div><div class="blatt">Blatt 30</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 Wie sieht die Klassenarbeit aus -->
+  <section class="slide">
+    <div class="slide-inner type-info">
+      <div class="eyebrow">Keine Überraschung</div>
+      <h2>So sieht die Klassenarbeit aus</h2>
+      <p class="big">Ihr bekommt eine <strong>Situation</strong> und schreibt dazu einen Wunschbrief –
+        genau wie beim Probebrief:</p>
+      <div class="card">
+        <div class="label">📋 Beispiel-Situation</div>
+        <p style="margin-bottom:0;">Deine Klasse wünscht sich einen Trinkwasserspender im Flur. 22 von 27
+          Kindern haben dafür gestimmt. Der Hausmeister fragt: Wer wischt auf, wenn Wasser danebengeht?</p>
+        <p class="assign">→ Schreibe an die Schulleitung: Wunsch äußern, mit der Zahl begründen, auf das Bedenken eingehen.</p>
+      </div>
+      <div class="goal"><p>Alles, was ihr dafür braucht, habt ihr geübt. Es kommt nichts Neues dran!</p></div>
+    </div>
+  </section>
+
+  <!-- 5 Selbst entscheiden -->
+  <section class="slide">
+    <div class="slide-inner type-courage">
+      <div class="eyebrow">Deine Entscheidung</div>
+      <h2>Du wählst deinen Tag 📅</h2>
+      <p class="big">In der Prüfungswoche kannst du an drei Tagen schreiben:</p>
+      <ul class="clean">
+        <li><span class="ic">📅</span> <strong>Dienstag</strong></li>
+        <li><span class="ic">📅</span> <strong>Mittwoch</strong></li>
+        <li><span class="ic">📅</span> <strong>Donnerstag</strong></li>
+      </ul>
+      <p class="big" style="margin-top:12px;">Du entscheidest selbst, wann du dich bereit fühlst.
+        Das ist deine Verantwortung – und dein gutes Recht.</p>
+      <div class="talk"><div class="talk-label">💬 Denkt nach</div>
+        <p>Woran merkst du, dass du bereit bist?</p></div>
+    </div>
+  </section>
+
+  <!-- 6 Übergang -->
+  <section class="slide">
+    <div class="slide-inner type-title title-slide">
+      <span class="kicker">Jetzt seid ihr dran</span>
+      <h1>Zeig deinen<br>Löwenmut! 🦁</h1>
+      <div class="goal"><p><strong>Eure Blätter beim Löwen – der Reihe nach:</strong></p>
+        <ul class="clean" style="margin-top:6px;">
+          <li><span class="ic">🧭</span> <strong>26</strong> Selbstcheck → <strong>27</strong> Probebrief → <strong>28</strong> Auswerten</li>
+          <li><span class="ic">📝</span> <strong>29</strong> Übungsplan → <strong>30</strong> Anmeldekarte</li>
+        </ul></div>
+      <p style="margin-top:12px;color:var(--col-text-muted);">Danach: unsere Ausstellung und deine Klassenarbeit. Du schaffst das!</p>
+      <div class="hbg-wordmark"><span class="hbg-wordmark__main">HBG</span><span class="hbg-wordmark__sub">SRL</span></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="controls">
+  <button class="nav-btn" id="prev" aria-label="Vorherige Folie">‹</button>
+  <div class="progress-wrap">
+    <span class="deck-title">Input I6 · <span class="ph">Bin ich bereit?</span></span>
+    <div class="dots" id="dots" role="tablist" aria-label="Folienauswahl"></div>
+  </div>
+  <span class="slide-count" id="count">1 / 6</span>
+  <button class="nav-btn" id="next" aria-label="Nächste Folie">›</button>
+</div>
+
+<script>
+  const slides=Array.from(document.querySelectorAll('.slide'));
+  const dotsWrap=document.getElementById('dots');
+  const count=document.getElementById('count');
+  const prevBtn=document.getElementById('prev');
+  const nextBtn=document.getElementById('next');
+  let cur=0;
+  slides.forEach((_,i)=>{const d=document.createElement('button');d.className='dot'+(i===0?' active':'');d.setAttribute('role','tab');d.setAttribute('aria-label','Folie '+(i+1));d.addEventListener('click',()=>go(i));dotsWrap.appendChild(d);});
+  const dots=Array.from(dotsWrap.children);
+  function go(n){cur=Math.max(0,Math.min(slides.length-1,n));slides.forEach((s,i)=>s.classList.toggle('active',i===cur));dots.forEach((d,i)=>d.classList.toggle('active',i===cur));count.textContent=(cur+1)+' / '+slides.length;prevBtn.disabled=cur===0;nextBtn.disabled=cur===slides.length-1;}
+  prevBtn.addEventListener('click',()=>go(cur-1));
+  nextBtn.addEventListener('click',()=>go(cur+1));
+  document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(cur+1);}if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1);}if(e.key==='Home'){e.preventDefault();go(0);}if(e.key==='End'){e.preventDefault();go(slides.length-1);}});
+  let startX=null;
+  document.getElementById('deck').addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
+  document.getElementById('deck').addEventListener('touchend',e=>{if(startX===null)return;const dx=e.changedTouches[0].clientX-startX;if(Math.abs(dx)>50){dx<0?go(cur+1):go(cur-1);}startX=null;},{passive:true});
+  go(0);
+</script>
+</body>
+</html>
