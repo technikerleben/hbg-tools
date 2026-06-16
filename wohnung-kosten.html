@@ -1,365 +1,573 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Budget-Simulator: Meine erste Wohnung</title>
+  <title>Budget-Simulator: Erste eigene Wohnung</title>
   <style>
     :root{
-      --bg:#f6f7f9;
-      --card:#ffffff;
-      --text:#1f2937;
-      --muted:#6b7280;
-      --accent:#2563eb;
-      --good:#16a34a;
-      --warn:#f59e0b;
-      --bad:#dc2626;
-      --border:#e5e7eb;
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --green: #16a34a;
+      --yellow: #eab308;
+      --red: #dc2626;
+      --border: #e5e7eb;
+      --focus: #93c5fd;
+      --input-bg: #ffffff;
     }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";line-height:1.4}
-    header{
-      padding:22px 16px 8px 16px;
-      text-align:center;
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      line-height: 1.35;
     }
-    header h1{
-      margin:0 0 6px 0;
-      font-size:clamp(1.25rem,2.8vw,1.8rem);
-      font-weight:700;
-    }
-    header p{
-      margin:0 auto;
-      max-width:900px;
-      color:var(--muted);
-      font-size:clamp(0.95rem,2vw,1rem);
-    }
+    body { margin: 0; }
     .container{
-      max-width:1000px;
-      margin:0 auto;
-      padding: 10px 16px 32px 16px;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 16px clamp(12px, 3vw, 24px) 32px;
+    }
+    header{
+      margin: 8px 0 16px;
+    }
+    h1{
+      font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+      margin: 0 0 6px;
+    }
+    .sub{
+      color: var(--muted);
+      font-size: clamp(0.95rem, 2vw, 1rem);
+    }
+    .note{
+      margin-top: 8px;
+      padding: 10px 12px;
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 0.95rem;
     }
     .grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-      gap:16px;
-      margin-top:12px;
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 880px){
+      .grid{ grid-template-columns: 1.1fr 0.9fr; }
     }
     .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:16px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.05);
-    }
-    .card h2{
-      margin:0 0 10px 0;
-      font-size:1.05rem;
-    }
-    label{
-      display:block;
-      font-weight:600;
-      margin-bottom:6px;
-      font-size:0.95rem;
-    }
-    .row{
-      display:flex;
-      gap:10px;
-      align-items:flex-end;
-      flex-wrap:wrap;
-    }
-    input[type="number"], select{
-      width:100%;
-      padding:14px 12px;
-      font-size:1.05rem;
-      border:1px solid var(--border);
-      border-radius:12px;
-      background:#fff;
-      outline:none;
-    }
-    input[type="number"]:focus, select:focus{
-      border-color:var(--accent);
-      box-shadow:0 0 0 4px rgba(37,99,235,0.12);
-    }
-    .inline-note{
-      margin-top:8px;
-      font-size:0.9rem;
-      color:var(--muted);
-    }
-    .result{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
-    .result .big{
-      font-size:1.35rem;
-      font-weight:700;
-    }
-    .kpis{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-      gap:12px;
-    }
-    .kpi{
-      border:1px dashed var(--border);
-      border-radius:12px;
-      padding:12px;
-      background:#fff;
-    }
-    .kpi .label{
-      font-size:0.9rem;
-      color:var(--muted);
-    }
-    .kpi .value{
-      font-size:1.25rem;
-      font-weight:700;
-      margin-top:6px;
-    }
-    .status{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin-top:6px;
-    }
-    .pill{
-      min-width:16px;
-      height:16px;
-      border-radius:999px;
-      display:inline-block;
-      border:2px solid rgba(0,0,0,0.06);
-    }
-    .good{ background:var(--good); }
-    .warn{ background:var(--warn); }
-    .bad{  background:var(--bad);  }
-    .footnote{
-      margin-top:8px;
-      font-size:0.9rem;
-      color:var(--muted);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: clamp(12px, 2.5vw, 18px);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
     }
     .section-title{
-      font-size:1rem;
-      font-weight:700;
-      margin:4px 0 8px 0;
-      color:var(--text);
+      margin: 2px 0 12px 0;
+      font-size: 1.05rem;
+      font-weight: 700;
     }
-    .hide{ display:none; }
-    .miete-anteil{
-      margin-top:8px;
-      background:#f9fafb;
-      border:1px solid var(--border);
-      border-radius:10px;
-      padding:10px;
-      font-size:0.95rem;
+    .field{
+      display: grid;
+      gap: 6px;
+      margin-bottom: 12px;
     }
-    .brand{
-      color:var(--accent);
-      font-weight:700;
+    label{
+      font-weight: 600;
+      font-size: 1rem;
     }
-    /* Bigger touch targets for iPad */
-    @media (pointer:coarse){
-      input[type="number"], select{ font-size:1.1rem; padding:16px 14px; }
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    input[type="number"], select{
+      width: 100%;
+      padding: 14px 12px;
+      font-size: 1.1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background: var(--input-bg);
+      color: var(--text);
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    input[type="number"]:focus, select:focus{
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--focus);
+    }
+    .inline{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .help{
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    fieldset{
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 10px 12px 8px;
+      margin: 4px 0 12px;
+    }
+    legend{
+      font-weight: 700;
+      color: var(--text);
+      padding: 0 6px;
+      font-size: 1rem;
+    }
+    .radio-row{
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 4px 0;
+    }
+    input[type="radio"]{
+      width: 20px;
+      height: 20px;
+      accent-color: var(--primary);
+    }
+    .muted-chip{
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      color: #334155;
+    }
+    .results{
+      display: grid;
+      gap: 12px;
+    }
+    .result-card{
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fafafa;
+    }
+    .result-title{
+      color: #334155;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .big{
+      font-size: clamp(1.4rem, 4vw, 1.8rem);
+      font-weight: 800;
+    }
+    .ampel{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+    }
+    .dot{
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--muted);
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 0 2px var(--border) inset;
+      flex-shrink: 0;
+    }
+    .status{
+      font-weight: 700;
+    }
+    .actions{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    button{
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1.5px solid var(--primary);
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button.secondary{
+      background: #eef2ff;
+      color: #1e40af;
+      border-color: #c7d2fe;
+    }
+    button:focus{
+      outline: none;
+      box-shadow: 0 0 0 3px var(--focus);
+    }
+    .summary{
+      display: grid;
+      gap: 6px;
+      font-size: 1rem;
+    }
+    .summary-row{
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+    .summary-row:last-child{ border-bottom: 0; }
+    .kicker{
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: 6px;
+    }
+    .sr{
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      border: 0;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Budget‑Simulator: Meine erste eigene Wohnung</h1>
-    <p>Stelle die Werte ein und sieh, ob dein Budget reicht. Die Startwerte sind grobe Orientierungen und können je nach Stadtteil, Wohnung und Lebensstil abweichen.</p>
-  </header>
-
   <div class="container">
+    <header>
+      <h1>Budget-Simulator: Erste eigene Wohnung</h1>
+      <div class="sub">Prüfe, ob dein monatliches Einkommen deine Wohn- und Lebenshaltungskosten deckt.</div>
+      <div class="note">
+        Hinweis: Die Werte sind grobe Orientierungen. Echte Kosten hängen von Stadtteil, Wohnung, Lebensstil und Ausbildungsberuf ab und können deutlich abweichen.
+      </div>
+    </header>
+
     <div class="grid">
-      <!-- Einkommen -->
-      <div class="card">
-        <h2>Einkommen</h2>
-        <label for="income">Monatliches Einkommen (€)</label>
-        <input id="income" type="number" min="0" step="10" value="1100" inputmode="decimal" />
-        <div class="inline-note">Startwert: 1.100 € pro Monat (veränderbar)</div>
-      </div>
+      <section class="card" aria-labelledby="eingaben">
+        <div class="section-title" id="eingaben">Eingaben</div>
 
-      <!-- Wohnform & Miete -->
-      <div class="card">
-        <h2>Wohnform & Miete</h2>
-        <label for="living">Wohnform</label>
-        <select id="living">
-          <option value="solo">Allein wohnen</option>
-          <option value="wg">WG (Miete wird anteilig berechnet)</option>
-        </select>
-
-        <div id="soloFields" class="mt">
-          <label for="rentSolo" style="margin-top:10px;">Miete (kalt) (€)</label>
-          <input id="rentSolo" type="number" min="0" step="10" value="420" inputmode="decimal" />
-          <div class="inline-note">Startwert: 420 €</div>
+        <div class="field">
+          <label for="income">Monatliches Einkommen</label>
+          <input type="number" id="income" min="0" step="10" value="1100" inputmode="decimal" />
+          <div class="help">Startwert 1.100 € – passe den Betrag bei Bedarf an.</div>
         </div>
 
-        <div id="wgFields" class="hide">
-          <label for="wgTotal" style="margin-top:10px;">Gesamtmiete (kalt) der WG (€)</label>
-          <input id="wgTotal" type="number" min="0" step="10" value="840" inputmode="decimal" />
-          <label for="wgPersons" style="margin-top:10px;">Anzahl Personen in der WG</label>
-          <input id="wgPersons" type="number" min="1" step="1" value="2" inputmode="numeric" />
-          <div class="miete-anteil">
-            Dein Mietanteil: <span id="rentShare">–</span>
+        <fieldset>
+          <legend>Wohnsituation</legend>
+          <div class="radio-row">
+            <label class="row">
+              <input type="radio" name="mode" value="single" checked />
+              <span>Einzelwohnung</span>
+            </label>
+            <label class="row">
+              <input type="radio" name="mode" value="wg" />
+              <span>WG (Mietanteil berechnen)</span>
+            </label>
           </div>
-        </div>
-      </div>
 
-      <!-- Lebensmittel -->
-      <div class="card">
-        <h2>Lebensmittel</h2>
-        <label for="food">Lebensmittelkosten (€)</label>
-        <input id="food" type="number" min="0" step="10" value="220" inputmode="decimal" />
-        <div class="inline-note">Startwert: 220 €</div>
-      </div>
-
-      <!-- Freizeit -->
-      <div class="card">
-        <h2>Freizeit</h2>
-        <label for="fun">Freizeitkosten (€)</label>
-        <input id="fun" type="number" min="0" step="10" value="100" inputmode="decimal" />
-        <div class="inline-note">Startwert: 100 €</div>
-      </div>
-
-      <!-- Wohnnebenkosten -->
-      <div class="card">
-        <h2>Wohnnebenkosten (pauschal)</h2>
-        <label for="utilities">Pauschale Wohnnebenkosten (€)</label>
-        <input id="utilities" type="number" min="0" step="10" value="160" inputmode="decimal" />
-        <div class="inline-note">Startwert: 160 €</div>
-      </div>
-
-      <!-- Transport -->
-      <div class="card">
-        <h2>Transport</h2>
-        <label for="transport">Transportart</label>
-        <select id="transport">
-          <option value="20">Fahrrad – 20 €</option>
-          <option value="58" selected>ÖPNV – 58 €</option>
-          <option value="90">Roller – 90 €</option>
-          <option value="250">Auto – 250 €</option>
-        </select>
-        <div class="inline-note">Wähle die passende Variante.</div>
-      </div>
-
-      <!-- Ergebnis -->
-      <div class="card">
-        <h2>Ergebnis</h2>
-        <div class="result">
-          <div class="kpis">
-            <div class="kpi">
-              <div class="label">Gesamtausgaben</div>
-              <div id="sumOut" class="value">–</div>
-            </div>
-            <div class="kpi">
-              <div class="label">Restbetrag</div>
-              <div id="rest" class="value">–</div>
+          <div id="single-fields">
+            <div class="field">
+              <label for="rent">Miete (kalt)</label>
+              <input type="number" id="rent" min="0" step="10" value="420" inputmode="decimal" />
+              <div class="help">Orientierung: 420 €</div>
             </div>
           </div>
-          <div class="status">
-            <span id="statusPill" class="pill" aria-label="Status"></span>
-            <div id="rating" class="big">–</div>
+
+          <div id="wg-fields" style="display:none;">
+            <div class="inline">
+              <div class="field">
+                <label for="wg-total">WG: Gesamtmiete</label>
+                <input type="number" id="wg-total" min="0" step="10" value="1200" inputmode="decimal" />
+              </div>
+              <div class="field">
+                <label for="wg-people">WG: Personen</label>
+                <input type="number" id="wg-people" min="1" step="1" value="3" inputmode="numeric" />
+              </div>
+            </div>
+            <div class="muted-chip" aria-live="polite">Dein Mietanteil: <strong id="wg-share">400,00 €</strong></div>
+          </div>
+        </fieldset>
+
+        <div class="inline">
+          <div class="field">
+            <label for="food">Lebensmittel</label>
+            <input type="number" id="food" min="0" step="5" value="220" inputmode="decimal" />
+            <div class="help">Orientierung: 220 €</div>
+          </div>
+          <div class="field">
+            <label for="fun">Freizeit</label>
+            <input type="number" id="fun" min="0" step="5" value="100" inputmode="decimal" />
+            <div class="help">Orientierung: 100 €</div>
           </div>
         </div>
-        <div class="footnote">Ampel-Regel: Grün = Budget reicht, Gelb = Es wird knapp, Rot = Ausgaben sind zu hoch.</div>
-      </div>
+
+        <div class="field">
+          <label for="transport">Transport</label>
+          <select id="transport" aria-describedby="transportHelp">
+            <option value="bike">Fahrrad – 20 €</option>
+            <option value="oepnv" selected>ÖPNV – 58 €</option>
+            <option value="scooter">Roller – 90 €</option>
+            <option value="car">Auto – 250 €</option>
+          </select>
+          <div class="help" id="transportHelp">Die Kosten sind monatliche Orientierungswerte.</div>
+          <div class="muted-chip">Transportkosten: <strong id="transport-cost">58,00 €</strong></div>
+        </div>
+
+        <div class="field">
+          <label>Wohnnebenkosten (pauschal)</label>
+          <div class="muted-chip" id="utilities-chip">160,00 €</div>
+          <div class="help">Pauschalbetrag für Strom, Wasser, Heizung usw. (für diese Stunde vereinfacht).</div>
+        </div>
+
+        <div class="actions">
+          <button id="reset" class="secondary" type="button">Zurücksetzen</button>
+          <button id="recalc" type="button" aria-label="Neu berechnen">Neu berechnen</button>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="ausgaben">
+        <div class="section-title" id="ausgaben">Ergebnis</div>
+
+        <div class="result-card">
+          <div class="result-title">Gesamtausgaben pro Monat</div>
+          <div class="big" id="total">—</div>
+          <div class="kicker">Summe aus Miete/Mietanteil, Lebensmittel, Freizeit, Transport und Wohnnebenkosten.</div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-title">Restbetrag</div>
+          <div class="big" id="leftover">—</div>
+        </div>
+
+        <div class="ampel" role="status" aria-live="polite">
+          <div class="dot" id="dot"></div>
+          <div>
+            <div class="status" id="status">—</div>
+            <div class="help" id="status-hint">Bewertung deines Budgets</div>
+          </div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-title">Kurze Übersicht</div>
+          <div class="summary">
+            <div class="summary-row">
+              <span>Einkommen</span>
+              <strong id="sum-income">—</strong>
+            </div>
+            <div class="summary-row">
+              <span>Miete/Mietanteil</span>
+              <strong id="sum-rent">—</strong>
+            </div>
+            <div class="summary-row">
+              <span>Lebensmittel</span>
+              <strong id="sum-food">—</strong>
+            </div>
+            <div class="summary-row">
+              <span>Freizeit</span>
+              <strong id="sum-fun">—</strong>
+            </div>
+            <div class="summary-row">
+              <span>Transport</span>
+              <strong id="sum-transport">—</strong>
+            </div>
+            <div class="summary-row">
+              <span>Wohnnebenkosten</span>
+              <strong id="sum-utilities">—</strong>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 
   <script>
-    // Hilfsfunktionen
-    const € = n => (isFinite(n) ? n : 0);
-    const fmt = v => (isFinite(v) ? v.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }) : '–');
-    const nz = v => {
-      const x = parseFloat(v);
-      return isFinite(x) && x >= 0 ? x : 0;
+    // Formatter für Euro
+    const fmt = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
+
+    // Transportkosten (Orientierungswerte)
+    const transportMap = {
+      bike: 20,
+      oepnv: 58,
+      scooter: 90,
+      car: 250
     };
 
-    // DOM-Elemente
-    const income = document.getElementById('income');
-    const living = document.getElementById('living');
-    const rentSolo = document.getElementById('rentSolo');
-    const wgTotal = document.getElementById('wgTotal');
-    const wgPersons = document.getElementById('wgPersons');
-    const rentShare = document.getElementById('rentShare');
+    // Fixe Nebenkosten
+    const UTILITIES = 160;
 
-    const food = document.getElementById('food');
-    const fun = document.getElementById('fun');
-    const utilities = document.getElementById('utilities');
-    const transport = document.getElementById('transport');
+    // Elemente
+    const incomeEl = document.getElementById('income');
+    const rentEl = document.getElementById('rent');
+    const wgTotalEl = document.getElementById('wg-total');
+    const wgPeopleEl = document.getElementById('wg-people');
+    const wgShareEl = document.getElementById('wg-share');
+    const foodEl = document.getElementById('food');
+    const funEl = document.getElementById('fun');
+    const transportEl = document.getElementById('transport');
+    const transportCostEl = document.getElementById('transport-cost');
+    const utilitiesChip = document.getElementById('utilities-chip');
 
-    const soloFields = document.getElementById('soloFields');
-    const wgFields = document.getElementById('wgFields');
+    const singleFields = document.getElementById('single-fields');
+    const wgFields = document.getElementById('wg-fields');
 
-    const sumOut = document.getElementById('sumOut');
-    const rest = document.getElementById('rest');
-    const rating = document.getElementById('rating');
-    const statusPill = document.getElementById('statusPill');
+    const totalEl = document.getElementById('total');
+    const leftoverEl = document.getElementById('leftover');
+    const dotEl = document.getElementById('dot');
+    const statusEl = document.getElementById('status');
+    const statusHintEl = document.getElementById('status-hint');
 
-    function updateVisibility(){
-      const isWG = living.value === 'wg';
-      soloFields.classList.toggle('hide', isWG);
-      wgFields.classList.toggle('hide', !isWG);
+    const sumIncomeEl = document.getElementById('sum-income');
+    const sumRentEl = document.getElementById('sum-rent');
+    const sumFoodEl = document.getElementById('sum-food');
+    const sumFunEl = document.getElementById('sum-fun');
+    const sumTransportEl = document.getElementById('sum-transport');
+    const sumUtilitiesEl = document.getElementById('sum-utilities');
+
+    const resetBtn = document.getElementById('reset');
+    const recalcBtn = document.getElementById('recalc');
+
+    // Initial set
+    utilitiesChip.textContent = fmt.format(UTILITIES);
+
+    // Modus wechseln (Einzelwohnung vs. WG)
+    const modeRadios = document.querySelectorAll('input[name="mode"]');
+    modeRadios.forEach(r => r.addEventListener('change', () => {
+      const mode = getMode();
+      if (mode === 'single') {
+        singleFields.style.display = '';
+        wgFields.style.display = 'none';
+      } else {
+        singleFields.style.display = 'none';
+        wgFields.style.display = '';
+      }
+      update();
+    }));
+
+    function getMode(){
+      return [...modeRadios].find(r => r.checked)?.value || 'single';
     }
 
-    function calc(){
-      updateVisibility();
+    function getNumber(el, fallback = 0){
+      const v = parseFloat(String(el.value).replace(',', '.'));
+      return Number.isFinite(v) ? v : fallback;
+    }
 
-      const inc = nz(income.value);
-      const foodCost = nz(food.value);
-      const funCost = nz(fun.value);
-      const utilCost = nz(utilities.value);
-      const transportCost = nz(transport.value);
+    function calcWGShare(){
+      const total = Math.max(0, getNumber(wgTotalEl, 0));
+      const people = Math.max(1, Math.floor(getNumber(wgPeopleEl, 1)));
+      return total / people;
+    }
 
-      let rentCost = 0;
+    function currentRent(){
+      if (getMode() === 'single') return Math.max(0, getNumber(rentEl, 0));
+      return calcWGShare();
+    }
 
-      if (living.value === 'wg') {
-        const total = nz(wgTotal.value);
-        let persons = parseInt(wgPersons.value, 10);
-        if (!isFinite(persons) || persons < 1) persons = 1;
-        const share = total / persons;
-        rentCost = €(share);
-        rentShare.textContent = fmt(rentCost) + " pro Monat";
+    function currentTransportCost(){
+      const key = transportEl.value;
+      return transportMap[key] ?? 0;
+    }
+
+    function rating(income, leftover){
+      // Einfache Regel:
+      // leftover < 0     -> rot (reicht nicht)
+      // 0 <= leftover < 200 -> gelb (knapp)
+      // leftover >= 200  -> grün (reicht)
+      if (leftover < 0) {
+        return { color: 'red', text: 'Budget reicht nicht – deine Ausgaben sind höher als dein Einkommen.' };
+      } else if (leftover < 200) {
+        return { color: 'yellow', text: 'Budget ist knapp – behalte deine Ausgaben im Blick.' };
       } else {
-        rentCost = nz(rentSolo.value);
-        rentShare.textContent = "–";
+        return { color: 'green', text: 'Budget reicht – du hast Luft für Rücklagen.' };
       }
+    }
 
-      const totalOut = rentCost + foodCost + funCost + utilCost + transportCost;
-      const remain = inc - totalOut;
+    function setDot(color){
+      let c = getComputedStyle(document.documentElement).getPropertyValue('--muted');
+      if (color === 'green') c = getComputedStyle(document.documentElement).getPropertyValue('--green');
+      if (color === 'yellow') c = getComputedStyle(document.documentElement).getPropertyValue('--yellow');
+      if (color === 'red') c = getComputedStyle(document.documentElement).getPropertyValue('--red');
+      dotEl.style.background = c.trim();
+    }
+
+    function update(){
+      const income = Math.max(0, getNumber(incomeEl, 0));
+      const rent = currentRent();
+      const food = Math.max(0, getNumber(foodEl, 0));
+      const fun = Math.max(0, getNumber(funEl, 0));
+      const transportCost = currentTransportCost();
+
+      // Update kleine Anzeigen
+      if (getMode() === 'wg') {
+        wgShareEl.textContent = fmt.format(rent);
+      }
+      transportCostEl.textContent = fmt.format(transportCost);
+
+      const total = rent + food + fun + transportCost + UTILITIES;
+      const leftover = income - total;
+
+      // Ergebnisse
+      totalEl.textContent = fmt.format(total);
+      leftoverEl.textContent = fmt.format(leftover);
+
+      // Übersicht
+      sumIncomeEl.textContent = fmt.format(income);
+      sumRentEl.textContent = fmt.format(rent);
+      sumFoodEl.textContent = fmt.format(food);
+      sumFunEl.textContent = fmt.format(fun);
+      sumTransportEl.textContent = fmt.format(transportCost);
+      sumUtilitiesEl.textContent = fmt.format(UTILITIES);
 
       // Bewertung
-      let label = '';
-      let cls = '';
-      if (remain < 0) {
-        label = 'Ausgaben sind zu hoch';
-        cls = 'bad';
-      } else if (remain < 100) {
-        label = 'Es wird knapp';
-        cls = 'warn';
+      const r = rating(income, leftover);
+      setDot(r.color);
+      statusEl.textContent = r.text;
+
+      // Zusatzhinweis zur Bewertung
+      if (leftover < 0) {
+        statusHintEl.textContent = 'Tipp: Prüfe Miete/Transport oder senke Freizeit-/Lebensmittelkosten.';
+      } else if (leftover < 200) {
+        statusHintEl.textContent = 'Tipp: Plane Reserven ein (z. B. für unerwartete Ausgaben).';
       } else {
-        label = 'Budget reicht';
-        cls = 'good';
+        statusHintEl.textContent = 'Tipp: Gut! Du könntest einen Teil sparen oder für Rücklagen nutzen.';
       }
-
-      sumOut.textContent = fmt(totalOut);
-      rest.textContent = fmt(remain);
-      rating.textContent = label;
-
-      statusPill.classList.remove('good','warn','bad');
-      statusPill.classList.add(cls);
-      statusPill.setAttribute('aria-label', label);
     }
 
-    // Events
-    [
-      income, living, rentSolo, wgTotal, wgPersons,
-      food, fun, utilities, transport
-    ].forEach(el => {
-      el.addEventListener('input', calc);
-      el.addEventListener('change', calc);
+    // Events: Live-Neuberechnung
+    [incomeEl, rentEl, wgTotalEl, wgPeopleEl, foodEl, funEl, transportEl].forEach(el => {
+      el.addEventListener('input', update);
+      el.addEventListener('change', update);
     });
 
-    // Initial
-    updateVisibility();
-    calc();
+    // Buttons
+    resetBtn.addEventListener('click', () => {
+      incomeEl.value = 1100;
+      rentEl.value = 420;
+      wgTotalEl.value = 1200;
+      wgPeopleEl.value = 3;
+      foodEl.value = 220;
+      funEl.value = 100;
+      transportEl.value = 'oepnv';
+      // Modus zurück auf Einzelwohnung
+      modeRadios.forEach(r => { r.checked = (r.value === 'single'); });
+      singleFields.style.display = '';
+      wgFields.style.display = 'none';
+      update();
+      recalcBtn.focus();
+    });
+
+    recalcBtn.addEventListener('click', update);
+
+    // Erste Berechnung
+    update();
   </script>
 </body>
 </html>
