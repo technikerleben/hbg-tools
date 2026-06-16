@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <title>Wohnnebenkosten-Rechner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #f0f4f8;
+      --card: #ffffff;
+      --text: #1a2332;
+      --muted: #64748b;
+      --accent: #1D6FA4;
+      --accent-light: #e8f2f9;
+      --border: #dde3ea;
+      --green: #16a34a;
+      --green-bg: #dcfce7;
+      --yellow: #d97706;
+      --yellow-bg: #fef3c7;
+      --red: #dc2626;
+      --red-bg: #fee2e2;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--accent);
+      color: #fff;
+      padding: 20px 24px 18px;
+    }
+    .header h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .header p {
+      font-size: 0.88rem;
+      opacity: 0.85;
+      margin-top: 3px;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 16px;
+      max-width: 960px;
+      margin: 20px auto;
+      padding: 0 16px 32px;
+      align-items: start;
+    }
+
+    /* ── Input column ── */
+    .inputs { display: flex; flex-direction: column; gap: 12px; }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: #fafbfc;
+    }
+    .card-head .icon {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      background: var(--accent-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .card-head h2 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .card-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      font-size: 0.95rem;
+      color: var(--text);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748b' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(29,111,164,0.12);
+    }
+
+    .hint-row {
+      background: var(--accent-light);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      color: #1a4d70;
+      line-height: 1.45;
+    }
+    .hint-row ul { padding-left: 16px; margin-top: 3px; }
+    .hint-row li { margin-bottom: 1px; }
+    .hint-row strong { font-weight: 700; }
+
+    /* ── Result column ── */
+    .result-col { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 12px; }
+
+    .result-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .result-card h2 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: #fafbfc;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .cost-list { padding: 12px 16px; }
+    .cost-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px solid #f1f3f5;
+      font-size: 0.92rem;
+    }
+    .cost-row:last-child { border-bottom: none; }
+    .cost-row .label-text { color: var(--muted); }
+    .cost-row .value { font-weight: 600; color: var(--text); }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--accent);
+      color: #fff;
+    }
+    .total-row .tl { font-size: 0.85rem; font-weight: 600; opacity: 0.9; }
+    .total-row .tv { font-size: 1.4rem; font-weight: 800; }
+
+    /* ── Ampel ── */
+    .ampel-card {
+      border-radius: var(--radius);
+      border: 2px solid transparent;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      text-align: center;
+      transition: all 0.25s ease;
+    }
+    .ampel-card.green { background: var(--green-bg); border-color: #86efac; }
+    .ampel-card.yellow { background: var(--yellow-bg); border-color: #fcd34d; }
+    .ampel-card.red { background: var(--red-bg); border-color: #fca5a5; }
+
+    .ampel-circle {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+      transition: background 0.25s;
+    }
+    .green .ampel-circle { background: var(--green); }
+    .yellow .ampel-circle { background: var(--yellow); }
+    .red .ampel-circle { background: var(--red); }
+
+    .ampel-label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .green .ampel-label { color: var(--green); }
+    .yellow .ampel-label { color: var(--yellow); }
+    .red .ampel-label { color: var(--red); }
+
+    .ampel-text {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ── Per-person ── */
+    .per-person {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow);
+    }
+    .per-person .pp-label { font-size: 0.82rem; color: var(--muted); }
+    .per-person .pp-val { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+
+    /* ── Reset ── */
+    .reset-btn {
+      width: 100%;
+      padding: 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      .layout { grid-template-columns: 1fr; }
+      .result-col { position: static; }
+      .field-row { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🏠 Wohnnebenkosten-Rechner</h1>
+    <p>Reichen 160 € Nebenkosten pro Monat – oder nicht?</p>
+  </div>
+
+  <div class="layout">
+
+    <!-- LEFT: Eingaben -->
+    <div class="inputs">
+
+      <!-- Wasser -->
+      <div class="card">
+        <div class="card-head">
+          <div class="icon">💧</div>
+          <h2>Wasser</h2>
+        </div>
+        <div class="card-body">
+          <div class="field-row">
+            <div class="field">
+              <label for="wasser-anzahl">Personen im Haushalt</label>
+              <select id="wasser-anzahl">
+                <option value="1">1 Person</option>
+                <option value="2" selected>2 Personen</option>
+                <option value="3">3 Personen</option>
+                <option value="4">4 Personen</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="wasser-kategorie">Verbrauchsverhalten</label>
+              <select id="wasser-kategorie">
+                <option value="Wenig">Wenig</option>
+                <option value="Mittel" selected>Mittel</option>
+                <option value="Viel">Viel</option>
+              </select>
+            </div>
+          </div>
+          <div class="hint-row">
+            <strong>Wenig:</strong> kurze Duschen, Waschmaschine nur bei Bedarf &nbsp;·&nbsp;
+            <strong>Mittel:</strong> normale Duschen, regelmäßige Waschmaschine &nbsp;·&nbsp;
+            <strong>Viel:</strong> tägliche Duschen aller Personen, häufige Wäsche
+          </div>
+        </div>
+      </div>
+
+      <!-- Strom -->
+      <div class="card">
+        <div class="card-head">
+          <div class="icon">⚡</div>
+          <h2>Strom</h2>
+        </div>
+        <div class="card-body">
+          <div class="field">
+            <label for="strom-kategorie">Stromverbrauch</label>
+            <select id="strom-kategorie">
+              <option value="Sparsam">Sparsam</option>
+              <option value="Normal" selected>Normal</option>
+              <option value="Hoch">Hoch</option>
+              <option value="Sehr hoch">Sehr hoch</option>
+            </select>
+          </div>
+          <div class="hint-row">
+            <strong>Sparsam:</strong> wenige Geräte, LEDs &nbsp;·&nbsp;
+            <strong>Normal:</strong> Handy, Laptop, übliche Geräte &nbsp;·&nbsp;
+            <strong>Hoch:</strong> Gaming, Streaming &nbsp;·&nbsp;
+            <strong>Sehr hoch:</strong> viele Geräte, lange Nutzung
+          </div>
+        </div>
+      </div>
+
+      <!-- Heizung -->
+      <div class="card">
+        <div class="card-head">
+          <div class="icon">🔥</div>
+          <h2>Heizung</h2>
+        </div>
+        <div class="card-body">
+          <div class="field-row">
+            <div class="field">
+              <label for="wohnflaeche">Wohnfläche</label>
+              <select id="wohnflaeche">
+                <option value="35">Klein – 35 m²</option>
+                <option value="55" selected>Mittel – 55 m²</option>
+                <option value="75">Groß – 75 m²</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="gebaeude">Gebäudetyp</label>
+              <select id="gebaeude">
+                <option value="neubau" selected>Neubau</option>
+                <option value="altbau">Altbau</option>
+              </select>
+            </div>
+          </div>
+          <div class="hint-row">
+            <strong>Neubau:</strong> gut gedämmt, ca. 1,00 €/m² &nbsp;·&nbsp;
+            <strong>Altbau:</strong> schlechte Dämmung, ca. 1,60 €/m²
+          </div>
+        </div>
+      </div>
+
+      <!-- Sonstiges -->
+      <div class="card">
+        <div class="card-head">
+          <div class="icon">📦</div>
+          <h2>Weitere Nebenkosten</h2>
+        </div>
+        <div class="card-body">
+          <div class="field">
+            <label for="nebenkosten">Internet, Müll, GEZ, Versicherung</label>
+            <select id="nebenkosten">
+              <option value="40">Gering – 40 €</option>
+              <option value="60" selected>Mittel – 60 €</option>
+              <option value="80">Hoch – 80 €</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Ergebnis -->
+    <div class="result-col">
+
+      <!-- Kostenliste -->
+      <div class="result-card">
+        <h2>Kostenübersicht</h2>
+        <div class="cost-list">
+          <div class="cost-row">
+            <span class="label-text">💧 Wasser</span>
+            <span class="value" id="wert-wasser">–</span>
+          </div>
+          <div class="cost-row">
+            <span class="label-text">⚡ Strom</span>
+            <span class="value" id="wert-strom">–</span>
+          </div>
+          <div class="cost-row">
+            <span class="label-text">🔥 Heizung</span>
+            <span class="value" id="wert-heizung">–</span>
+          </div>
+          <div class="cost-row">
+            <span class="label-text">📦 Sonstiges</span>
+            <span class="value" id="wert-sonstiges">–</span>
+          </div>
+        </div>
+        <div class="total-row">
+          <span class="tl">Gesamt / Monat</span>
+          <span class="tv" id="wert-gesamt">–</span>
+        </div>
+      </div>
+
+      <!-- Pro Person -->
+      <div class="per-person">
+        <span class="pp-label">Kosten pro Person</span>
+        <span class="pp-val" id="wert-pro-person">–</span>
+      </div>
+
+      <!-- Ampel -->
+      <div class="ampel-card green" id="ampel-card">
+        <div class="ampel-circle" id="ampel-circle">🟢</div>
+        <div class="ampel-label" id="ampel-label">Unter Richtwert</div>
+        <div class="ampel-text" id="ampel-text">Du liegst unter den 160 €.</div>
+      </div>
+
+      <!-- Reset -->
+      <button class="reset-btn" id="reset">↺ &nbsp;Zurücksetzen</button>
+
+    </div>
+  </div>
+
+  <script>
+    function toEuro(v) {
+      return v.toLocaleString('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+    }
+
+    const WASSER = { Wenig: 6, Mittel: 10, Viel: 14 };
+    const STROM  = { Sparsam: 38, Normal: 62, Hoch: 90, 'Sehr hoch': 120 };
+    const HEIZ   = { neubau: 1.00, altbau: 1.60 };
+
+    function berechne() {
+      const personen   = parseInt(document.getElementById('wasser-anzahl').value) || 1;
+      const wasserKat  = document.getElementById('wasser-kategorie').value;
+      const stromKat   = document.getElementById('strom-kategorie').value;
+      const flaeche    = parseInt(document.getElementById('wohnflaeche').value) || 55;
+      const gebaeude   = document.getElementById('gebaeude').value;
+      const sonstiges  = parseInt(document.getElementById('nebenkosten').value) || 60;
+
+      const wasser  = Math.round(WASSER[wasserKat] * personen);
+      const strom   = STROM[stromKat];
+      const heizung = Math.round(flaeche * HEIZ[gebaeude]);
+      const gesamt  = wasser + strom + heizung + sonstiges;
+      const proP    = Math.round(gesamt / personen);
+
+      document.getElementById('wert-wasser').textContent    = toEuro(wasser);
+      document.getElementById('wert-strom').textContent     = toEuro(strom);
+      document.getElementById('wert-heizung').textContent   = toEuro(heizung);
+      document.getElementById('wert-sonstiges').textContent = toEuro(sonstiges);
+      document.getElementById('wert-gesamt').textContent    = toEuro(gesamt);
+      document.getElementById('wert-pro-person').textContent = toEuro(proP);
+
+      const card   = document.getElementById('ampel-card');
+      const circle = document.getElementById('ampel-circle');
+      const label  = document.getElementById('ampel-label');
+      const text   = document.getElementById('ampel-text');
+
+      if (gesamt < 140) {
+        card.className = 'ampel-card green';
+        circle.textContent = '🟢';
+        label.textContent  = 'Deutlich unter Richtwert';
+        text.textContent   = 'Die 160 € reichen – ihr habt sogar noch Spielraum.';
+      } else if (gesamt <= 180) {
+        card.className = 'ampel-card yellow';
+        circle.textContent = '🟡';
+        label.textContent  = 'Ungefähr beim Richtwert';
+        text.textContent   = 'Ihr liegt knapp bei 160 € – je nach Monat könnte es eng werden.';
+      } else {
+        card.className = 'ampel-card red';
+        circle.textContent = '🔴';
+        label.textContent  = 'Über dem Richtwert';
+        text.textContent   = 'Die 160 € reichen nicht – die Nebenkosten übersteigen den Richtwert.';
+      }
+    }
+
+    document.querySelectorAll('select').forEach(s => s.addEventListener('change', berechne));
+
+    document.getElementById('reset').addEventListener('click', () => {
+      document.getElementById('wasser-anzahl').value    = '2';
+      document.getElementById('wasser-kategorie').value = 'Mittel';
+      document.getElementById('strom-kategorie').value  = 'Normal';
+      document.getElementById('wohnflaeche').value      = '55';
+      document.getElementById('gebaeude').value         = 'neubau';
+      document.getElementById('nebenkosten').value      = '60';
+      berechne();
+    });
+
+    berechne();
+  </script>
+</body>
+</html>
