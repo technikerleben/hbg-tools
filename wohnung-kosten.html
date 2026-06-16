@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Budget-Simulator: Meine erste Wohnung</title>
+  <style>
+    :root{
+      --bg:#f6f7f9;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --accent:#2563eb;
+      --good:#16a34a;
+      --warn:#f59e0b;
+      --bad:#dc2626;
+      --border:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";line-height:1.4}
+    header{
+      padding:22px 16px 8px 16px;
+      text-align:center;
+    }
+    header h1{
+      margin:0 0 6px 0;
+      font-size:clamp(1.25rem,2.8vw,1.8rem);
+      font-weight:700;
+    }
+    header p{
+      margin:0 auto;
+      max-width:900px;
+      color:var(--muted);
+      font-size:clamp(0.95rem,2vw,1rem);
+    }
+    .container{
+      max-width:1000px;
+      margin:0 auto;
+      padding: 10px 16px 32px 16px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:16px;
+      margin-top:12px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:16px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.05);
+    }
+    .card h2{
+      margin:0 0 10px 0;
+      font-size:1.05rem;
+    }
+    label{
+      display:block;
+      font-weight:600;
+      margin-bottom:6px;
+      font-size:0.95rem;
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:flex-end;
+      flex-wrap:wrap;
+    }
+    input[type="number"], select{
+      width:100%;
+      padding:14px 12px;
+      font-size:1.05rem;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      outline:none;
+    }
+    input[type="number"]:focus, select:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 4px rgba(37,99,235,0.12);
+    }
+    .inline-note{
+      margin-top:8px;
+      font-size:0.9rem;
+      color:var(--muted);
+    }
+    .result{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .result .big{
+      font-size:1.35rem;
+      font-weight:700;
+    }
+    .kpis{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      gap:12px;
+    }
+    .kpi{
+      border:1px dashed var(--border);
+      border-radius:12px;
+      padding:12px;
+      background:#fff;
+    }
+    .kpi .label{
+      font-size:0.9rem;
+      color:var(--muted);
+    }
+    .kpi .value{
+      font-size:1.25rem;
+      font-weight:700;
+      margin-top:6px;
+    }
+    .status{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:6px;
+    }
+    .pill{
+      min-width:16px;
+      height:16px;
+      border-radius:999px;
+      display:inline-block;
+      border:2px solid rgba(0,0,0,0.06);
+    }
+    .good{ background:var(--good); }
+    .warn{ background:var(--warn); }
+    .bad{  background:var(--bad);  }
+    .footnote{
+      margin-top:8px;
+      font-size:0.9rem;
+      color:var(--muted);
+    }
+    .section-title{
+      font-size:1rem;
+      font-weight:700;
+      margin:4px 0 8px 0;
+      color:var(--text);
+    }
+    .hide{ display:none; }
+    .miete-anteil{
+      margin-top:8px;
+      background:#f9fafb;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:10px;
+      font-size:0.95rem;
+    }
+    .brand{
+      color:var(--accent);
+      font-weight:700;
+    }
+    /* Bigger touch targets for iPad */
+    @media (pointer:coarse){
+      input[type="number"], select{ font-size:1.1rem; padding:16px 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Budget‑Simulator: Meine erste eigene Wohnung</h1>
+    <p>Stelle die Werte ein und sieh, ob dein Budget reicht. Die Startwerte sind grobe Orientierungen und können je nach Stadtteil, Wohnung und Lebensstil abweichen.</p>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <!-- Einkommen -->
+      <div class="card">
+        <h2>Einkommen</h2>
+        <label for="income">Monatliches Einkommen (€)</label>
+        <input id="income" type="number" min="0" step="10" value="1100" inputmode="decimal" />
+        <div class="inline-note">Startwert: 1.100 € pro Monat (veränderbar)</div>
+      </div>
+
+      <!-- Wohnform & Miete -->
+      <div class="card">
+        <h2>Wohnform & Miete</h2>
+        <label for="living">Wohnform</label>
+        <select id="living">
+          <option value="solo">Allein wohnen</option>
+          <option value="wg">WG (Miete wird anteilig berechnet)</option>
+        </select>
+
+        <div id="soloFields" class="mt">
+          <label for="rentSolo" style="margin-top:10px;">Miete (kalt) (€)</label>
+          <input id="rentSolo" type="number" min="0" step="10" value="420" inputmode="decimal" />
+          <div class="inline-note">Startwert: 420 €</div>
+        </div>
+
+        <div id="wgFields" class="hide">
+          <label for="wgTotal" style="margin-top:10px;">Gesamtmiete (kalt) der WG (€)</label>
+          <input id="wgTotal" type="number" min="0" step="10" value="840" inputmode="decimal" />
+          <label for="wgPersons" style="margin-top:10px;">Anzahl Personen in der WG</label>
+          <input id="wgPersons" type="number" min="1" step="1" value="2" inputmode="numeric" />
+          <div class="miete-anteil">
+            Dein Mietanteil: <span id="rentShare">–</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lebensmittel -->
+      <div class="card">
+        <h2>Lebensmittel</h2>
+        <label for="food">Lebensmittelkosten (€)</label>
+        <input id="food" type="number" min="0" step="10" value="220" inputmode="decimal" />
+        <div class="inline-note">Startwert: 220 €</div>
+      </div>
+
+      <!-- Freizeit -->
+      <div class="card">
+        <h2>Freizeit</h2>
+        <label for="fun">Freizeitkosten (€)</label>
+        <input id="fun" type="number" min="0" step="10" value="100" inputmode="decimal" />
+        <div class="inline-note">Startwert: 100 €</div>
+      </div>
+
+      <!-- Wohnnebenkosten -->
+      <div class="card">
+        <h2>Wohnnebenkosten (pauschal)</h2>
+        <label for="utilities">Pauschale Wohnnebenkosten (€)</label>
+        <input id="utilities" type="number" min="0" step="10" value="160" inputmode="decimal" />
+        <div class="inline-note">Startwert: 160 €</div>
+      </div>
+
+      <!-- Transport -->
+      <div class="card">
+        <h2>Transport</h2>
+        <label for="transport">Transportart</label>
+        <select id="transport">
+          <option value="20">Fahrrad – 20 €</option>
+          <option value="58" selected>ÖPNV – 58 €</option>
+          <option value="90">Roller – 90 €</option>
+          <option value="250">Auto – 250 €</option>
+        </select>
+        <div class="inline-note">Wähle die passende Variante.</div>
+      </div>
+
+      <!-- Ergebnis -->
+      <div class="card">
+        <h2>Ergebnis</h2>
+        <div class="result">
+          <div class="kpis">
+            <div class="kpi">
+              <div class="label">Gesamtausgaben</div>
+              <div id="sumOut" class="value">–</div>
+            </div>
+            <div class="kpi">
+              <div class="label">Restbetrag</div>
+              <div id="rest" class="value">–</div>
+            </div>
+          </div>
+          <div class="status">
+            <span id="statusPill" class="pill" aria-label="Status"></span>
+            <div id="rating" class="big">–</div>
+          </div>
+        </div>
+        <div class="footnote">Ampel-Regel: Grün = Budget reicht, Gelb = Es wird knapp, Rot = Ausgaben sind zu hoch.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Hilfsfunktionen
+    const € = n => (isFinite(n) ? n : 0);
+    const fmt = v => (isFinite(v) ? v.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }) : '–');
+    const nz = v => {
+      const x = parseFloat(v);
+      return isFinite(x) && x >= 0 ? x : 0;
+    };
+
+    // DOM-Elemente
+    const income = document.getElementById('income');
+    const living = document.getElementById('living');
+    const rentSolo = document.getElementById('rentSolo');
+    const wgTotal = document.getElementById('wgTotal');
+    const wgPersons = document.getElementById('wgPersons');
+    const rentShare = document.getElementById('rentShare');
+
+    const food = document.getElementById('food');
+    const fun = document.getElementById('fun');
+    const utilities = document.getElementById('utilities');
+    const transport = document.getElementById('transport');
+
+    const soloFields = document.getElementById('soloFields');
+    const wgFields = document.getElementById('wgFields');
+
+    const sumOut = document.getElementById('sumOut');
+    const rest = document.getElementById('rest');
+    const rating = document.getElementById('rating');
+    const statusPill = document.getElementById('statusPill');
+
+    function updateVisibility(){
+      const isWG = living.value === 'wg';
+      soloFields.classList.toggle('hide', isWG);
+      wgFields.classList.toggle('hide', !isWG);
+    }
+
+    function calc(){
+      updateVisibility();
+
+      const inc = nz(income.value);
+      const foodCost = nz(food.value);
+      const funCost = nz(fun.value);
+      const utilCost = nz(utilities.value);
+      const transportCost = nz(transport.value);
+
+      let rentCost = 0;
+
+      if (living.value === 'wg') {
+        const total = nz(wgTotal.value);
+        let persons = parseInt(wgPersons.value, 10);
+        if (!isFinite(persons) || persons < 1) persons = 1;
+        const share = total / persons;
+        rentCost = €(share);
+        rentShare.textContent = fmt(rentCost) + " pro Monat";
+      } else {
+        rentCost = nz(rentSolo.value);
+        rentShare.textContent = "–";
+      }
+
+      const totalOut = rentCost + foodCost + funCost + utilCost + transportCost;
+      const remain = inc - totalOut;
+
+      // Bewertung
+      let label = '';
+      let cls = '';
+      if (remain < 0) {
+        label = 'Ausgaben sind zu hoch';
+        cls = 'bad';
+      } else if (remain < 100) {
+        label = 'Es wird knapp';
+        cls = 'warn';
+      } else {
+        label = 'Budget reicht';
+        cls = 'good';
+      }
+
+      sumOut.textContent = fmt(totalOut);
+      rest.textContent = fmt(remain);
+      rating.textContent = label;
+
+      statusPill.classList.remove('good','warn','bad');
+      statusPill.classList.add(cls);
+      statusPill.setAttribute('aria-label', label);
+    }
+
+    // Events
+    [
+      income, living, rentSolo, wgTotal, wgPersons,
+      food, fun, utilities, transport
+    ].forEach(el => {
+      el.addEventListener('input', calc);
+      el.addEventListener('change', calc);
+    });
+
+    // Initial
+    updateVisibility();
+    calc();
+  </script>
+</body>
+</html>
