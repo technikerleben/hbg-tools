@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Abschluss-Diagnose Klasse 10 – Gesamtschule NRW</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --eesa:     #d97706;
+      --eesa-bg:  #fffbeb;
+      --eesa-brd: #fcd34d;
+      --msa:      #2563eb;
+      --msa-bg:   #eff6ff;
+      --msa-brd:  #93c5fd;
+      --msaq:     #059669;
+      --msaq-bg:  #ecfdf5;
+      --msaq-brd: #6ee7b7;
+      --kein:     #dc2626;
+      --kein-bg:  #fef2f2;
+      --kein-brd: #fca5a5;
+      --dark:     #1e293b;
+      --mid:      #475569;
+      --shadow:   0 2px 14px rgba(0,0,0,0.09);
+    }
+
+    body {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      background: #e2e8f0;
+      min-height: 100vh;
+      color: var(--dark);
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--dark);
+      color: white;
+      padding: 13px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky; top: 0; z-index: 200;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    }
+    header h1 { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; }
+    header p  { font-size: 0.72rem; color: #94a3b8; margin-top: 1px; }
+
+    .reset-btn {
+      background: #334155; color: #94a3b8;
+      border: none; border-radius: 8px;
+      padding: 8px 14px; font-size: 0.82rem; cursor: pointer;
+      white-space: nowrap; flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .reset-btn:hover { background: #475569; color: white; }
+
+    /* ── LAYOUT ── */
+    .outer { max-width: 1060px; margin: 0 auto; padding: 20px 20px 48px; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    /* ── PANEL ── */
+    .panel {
+      background: white;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .panel:last-child { margin-bottom: 0; }
+    .panel-head {
+      padding: 11px 18px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      background: #f8fafc;
+      border-bottom: 1.5px solid #e2e8f0;
+      color: var(--mid);
+    }
+    .panel-body { padding: 14px 18px; }
+
+    /* ── FACH-ZEILEN ── */
+    .gruppe-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      margin: 12px 0 5px;
+    }
+    .gruppe-label:first-child { margin-top: 0; }
+
+    .fach-zeile {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .fach-zeile:last-child { border-bottom: none; }
+
+    .fach-name {
+      flex: 1;
+      font-size: 0.87rem;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+    .fach-name small {
+      display: block;
+      font-size: 0.7rem;
+      color: #94a3b8;
+      font-weight: 400;
+      margin-top: 1px;
+    }
+
+    select.kurs-wahl {
+      font-size: 0.8rem; padding: 4px 5px;
+      border: 1.5px solid #e2e8f0; border-radius: 6px;
+      background: white; cursor: pointer; font-size: 16px;
+    }
+    select.kurs-wahl:focus { outline: none; border-color: #2563eb; }
+
+    /* Noten-Eingabe groß */
+    .note-feld {
+      width: 52px; padding: 6px 0;
+      text-align: center;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem; font-weight: 700;
+      font-size: 16px;
+    }
+    .note-feld:focus { outline: none; border-color: #2563eb; }
+    .note-feld.n1 { color: #059669; background: #ecfdf5; border-color: #6ee7b7; }
+    .note-feld.n2 { color: #059669; border-color: #6ee7b7; }
+    .note-feld.n3 { color: #2563eb; border-color: #93c5fd; }
+    .note-feld.n4 { color: #d97706; border-color: #fcd34d; }
+    .note-feld.n5 { color: #dc2626; border-color: #fca5a5; }
+    .note-feld.n6 { color: #dc2626; background: #fef2f2; border-color: #fca5a5; }
+
+    /* ZP10 Doppelfelder */
+    .zp-box { display: flex; gap: 5px; align-items: center; }
+    .zp-box span { font-size: 0.7rem; color: #94a3b8; }
+    .note-sm {
+      width: 42px; padding: 5px 0;
+      text-align: center; border: 2px solid #e2e8f0;
+      border-radius: 7px; font-size: 16px; font-weight: 600;
+    }
+    .note-sm:focus { outline: none; border-color: #7c3aed; }
+    .note-ab {
+      width: 42px; padding: 5px 0;
+      text-align: center; border: 2px solid #7c3aed;
+      border-radius: 7px; font-size: 0.95rem; font-weight: 700;
+      background: #f5f3ff; color: #5b21b6; flex-shrink: 0;
+    }
+
+    /* Rundungs-Schalter bei .5-Fällen */
+    .rund-wahl {
+      margin-top: 4px;
+      display: none;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.7rem;
+      color: var(--mid);
+    }
+    .rund-wahl.aktiv { display: flex; }
+    .rund-btn {
+      border: 1.5px solid #e2e8f0;
+      background: white;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--mid);
+      transition: all 0.15s;
+    }
+    .rund-btn.sel {
+      background: #7c3aed;
+      border-color: #7c3aed;
+      color: white;
+    }
+
+    /* Optional-Toggle */
+    .opt-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.83rem; color: var(--mid);
+      margin: 8px 0 2px; cursor: pointer;
+      user-select: none;
+    }
+    .opt-label input { width: 16px; height: 16px; cursor: pointer; accent-color: #2563eb; }
+
+    /* Status-Dot */
+    .dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      flex-shrink: 0; background: #e2e8f0;
+      transition: background 0.3s;
+    }
+    .dot.ok   { background: #10b981; }
+    .dot.warn { background: #f59e0b; }
+    .dot.bad  { background: #ef4444; }
+
+    /* ── ERGEBNIS-PANEL ── */
+    .ergebnis-sticky { position: sticky; top: 62px; }
+
+    .abschluss-banner {
+      padding: 22px 20px 16px;
+      text-align: center;
+    }
+    .ab-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; opacity: 0.65; }
+    .ab-name  { font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em; margin-top: 5px; }
+    .ab-sub   { font-size: 0.8rem; margin-top: 4px; opacity: 0.7; line-height: 1.4; }
+
+    .banner-msaq { background: var(--msaq-bg); color: var(--msaq); border-bottom: 3px solid var(--msaq-brd); }
+    .banner-msa  { background: var(--msa-bg);  color: var(--msa);  border-bottom: 3px solid var(--msa-brd); }
+    .banner-eesa { background: var(--eesa-bg); color: var(--eesa); border-bottom: 3px solid var(--eesa-brd); }
+    .banner-kein { background: var(--kein-bg); color: var(--kein); border-bottom: 3px solid var(--kein-brd); }
+    .banner-offen{ background: #f8fafc; color: #94a3b8; border-bottom: 3px solid #e2e8f0; }
+
+    /* Hinweis-Liste */
+    .hind-box { padding: 14px 16px; }
+
+    .hind-section {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #94a3b8;
+      margin: 12px 0 5px;
+    }
+    .hind-section:first-child { margin-top: 0; }
+
+    .hind-item {
+      display: flex; align-items: flex-start; gap: 9px;
+      padding: 8px 10px; border-radius: 8px; margin-bottom: 5px;
+      font-size: 0.84rem; line-height: 1.45;
+    }
+    .hind-item:last-child { margin-bottom: 0; }
+    .hi-block { background: #fef2f2; border: 1.5px solid #fca5a5; }
+    .hi-warn  { background: #fffbeb; border: 1.5px solid #fcd34d; }
+    .hi-ok    { background: #ecfdf5; border: 1.5px solid #6ee7b7; }
+    .hi-info  { background: #f0f9ff; border: 1.5px solid #7dd3fc; }
+
+    .hi-icon { font-size: 0.95rem; flex-shrink: 0; margin-top: 1px; }
+    .hi-main { font-weight: 700; }
+    .hi-detail { font-size: 0.78rem; color: #64748b; margin-top: 2px; }
+
+    /* Rechendetails */
+    .calc-box {
+      border-top: 1.5px solid #e2e8f0;
+      padding: 12px 16px;
+      font-size: 0.8rem; color: var(--mid); line-height: 1.8;
+      background: #f8fafc;
+    }
+    .calc-box code {
+      background: white; border: 1px solid #e2e8f0;
+      border-radius: 4px; padding: 1px 5px;
+      font-family: 'Menlo', monospace; font-size: 0.78rem;
+      color: #5b21b6;
+    }
+    .calc-box b { color: var(--dark); }
+
+    @media (max-width: 740px) {
+      .two-col { grid-template-columns: 1fr; }
+      .ergebnis-sticky { position: static; }
+    }
+
+    /* ── DISCLAIMER-OVERLAY ── */
+    .overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(15, 23, 42, 0.65);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(3px);
+    }
+    .overlay.weg { display: none; }
+    .modal {
+      background: white;
+      border-radius: 16px;
+      max-width: 460px; width: 100%;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+      overflow: hidden;
+    }
+    .modal-head {
+      background: #fffbeb;
+      border-bottom: 2px solid var(--eesa-brd);
+      padding: 20px 24px 16px;
+      text-align: center;
+    }
+    .modal-head .warn-icon { font-size: 2rem; }
+    .modal-head h2 {
+      font-size: 1.15rem; font-weight: 800;
+      color: #92400e; margin-top: 6px;
+    }
+    .modal-body {
+      padding: 20px 24px;
+      font-size: 0.92rem; line-height: 1.6; color: var(--mid);
+    }
+    .modal-body p { margin-bottom: 12px; }
+    .modal-body p:last-child { margin-bottom: 0; }
+    .modal-body strong { color: var(--dark); }
+    .modal-foot {
+      padding: 0 24px 22px;
+    }
+    .modal-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--eesa);
+      color: white; border: none;
+      border-radius: 10px;
+      font-size: 0.98rem; font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .modal-btn:active { opacity: 0.85; }
+  </style>
+</head>
+<body>
+
+<!-- ── DISCLAIMER ── -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="warn-icon">⚠️</div>
+      <h2>Alle Angaben ohne Gewähr</h2>
+    </div>
+    <div class="modal-body">
+      <p>Dieses Tool dient ausschließlich der <strong>groben Orientierung</strong>. Es kann die offizielle Abschlussvergabe durch die Abschlusskonferenz <strong>nicht ersetzen</strong>.</p>
+      <p>Die Berechnungen bilden die Regeln der APO-S I vereinfacht ab und <strong>können Fehler enthalten</strong> – insbesondere bei Ausgleichsregelungen, Sonderfällen und Einzelfallentscheidungen.</p>
+      <p>Verbindlich sind allein die jeweils gültige Rechtslage und die Beschlüsse der zuständigen Konferenz.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="modal-btn" onclick="overlayWeg()">Verstanden – Tool öffnen</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div>
+    <h1>🎓 Abschluss-Diagnose · Klasse 10 · Gesamtschule NRW</h1>
+    <p>Noten eintragen → Abschluss wird automatisch ermittelt · APO-S I</p>
+  </div>
+  <button class="reset-btn" onclick="resetAll()">↺ Zurücksetzen</button>
+</header>
+
+<div class="outer">
+<div class="two-col">
+
+<!-- ═══════════════════════════════════════════
+     LINKE SPALTE: Noteneingabe
+═══════════════════════════════════════════ -->
+<div>
+
+  <!-- ZP10 -->
+  <div class="panel">
+    <div class="panel-head">📝 Zentrale Prüfungen ZP10 · Vornote + Prüfungsnote → Abschlussnote</div>
+    <div class="panel-body">
+
+      <div class="gruppe-label">Deutsch</div>
+      <div class="fach-zeile">
+        <div class="fach-name">Deutsch
+          <small>Kurs: <select class="kurs-wahl" id="kD" onchange="go()"><option value="E">E-Kurs</option><option value="G">G-Kurs</option></select></small>
+          <div class="rund-wahl" id="rundD">
+            <span>Ø 0,5 →</span>
+            <button class="rund-btn" id="rundD-b" onclick="setRund('D','b')">bessere</button>
+            <button class="rund-btn" id="rundD-s" onclick="setRund('D','s')">schlechtere</button>
+          </div>
+        </div>
+        <div class="zp-box">
+          <input class="note-sm" id="vD" type="number" min="1" max="6" placeholder="V" oninput="zp('D');go()">
+          <span>+</span>
+          <input class="note-sm" id="pD" type="number" min="1" max="6" placeholder="P" oninput="zp('D');go()">
+          <span>=</span>
+          <div class="note-ab" id="aD">—</div>
+        </div>
+        <div class="dot" id="dotD"></div>
+      </div>
+
+      <div class="gruppe-label">Englisch</div>
+      <div class="fach-zeile">
+        <div class="fach-name">Englisch
+          <small>Kurs: <select class="kurs-wahl" id="kE" onchange="go()"><option value="E">E-Kurs</option><option value="G">G-Kurs</option></select></small>
+          <div class="rund-wahl" id="rundE">
+            <span>Ø 0,5 →</span>
+            <button class="rund-btn" id="rundE-b" onclick="setRund('E','b')">bessere</button>
+            <button class="rund-btn" id="rundE-s" onclick="setRund('E','s')">schlechtere</button>
+          </div>
+        </div>
+        <div class="zp-box">
+          <input class="note-sm" id="vE" type="number" min="1" max="6" placeholder="V" oninput="zp('E');go()">
+          <span>+</span>
+          <input class="note-sm" id="pE" type="number" min="1" max="6" placeholder="P" oninput="zp('E');go()">
+          <span>=</span>
+          <div class="note-ab" id="aE">—</div>
+        </div>
+        <div class="dot" id="dotE"></div>
+      </div>
+
+      <div class="gruppe-label">Mathematik</div>
+      <div class="fach-zeile">
+        <div class="fach-name">Mathematik
+          <small>Kurs: <select class="kurs-wahl" id="kM" onchange="go()"><option value="E">E-Kurs</option><option value="G">G-Kurs</option></select></small>
+          <div class="rund-wahl" id="rundM">
+            <span>Ø 0,5 →</span>
+            <button class="rund-btn" id="rundM-b" onclick="setRund('M','b')">bessere</button>
+            <button class="rund-btn" id="rundM-s" onclick="setRund('M','s')">schlechtere</button>
+          </div>
+        </div>
+        <div class="zp-box">
+          <input class="note-sm" id="vM" type="number" min="1" max="6" placeholder="V" oninput="zp('M');go()">
+          <span>+</span>
+          <input class="note-sm" id="pM" type="number" min="1" max="6" placeholder="P" oninput="zp('M');go()">
+          <span>=</span>
+          <div class="note-ab" id="aM">—</div>
+        </div>
+        <div class="dot" id="dotM"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Weitere Fächer -->
+  <div class="panel">
+    <div class="panel-head">📚 Weitere Fächer</div>
+    <div class="panel-body">
+
+      <div class="gruppe-label">Chemie (differenziert)</div>
+      <div class="fach-zeile">
+        <div class="fach-name">Chemie
+          <small>Kurs: <select class="kurs-wahl" id="kCH" onchange="go()"><option value="E">E-Kurs</option><option value="G">G-Kurs</option></select></small>
+        </div>
+        <input class="note-feld" id="nCH" type="number" min="1" max="6" placeholder="—" oninput="col(this);go()">
+        <div class="dot" id="dotCH"></div>
+      </div>
+
+      <div class="gruppe-label">Wahlpflicht</div>
+      <div class="fach-zeile">
+        <div class="fach-name">Wahlpflicht (WP)</div>
+        <input class="note-feld" id="nWP" type="number" min="1" max="6" placeholder="—" oninput="col(this);go()">
+        <div class="dot" id="dotWP"></div>
+      </div>
+
+      <div class="gruppe-label">Nebenfächer</div>
+      <div class="fach-zeile">
+        <div class="fach-name">Kunst</div>
+        <input class="note-feld" id="nKU" type="number" min="1" max="6" placeholder="—" oninput="col(this);go()">
+        <div class="dot" id="dotKU"></div>
+      </div>
+      <div class="fach-zeile">
+        <div class="fach-name">Sport</div>
+        <input class="note-feld" id="nSP" type="number" min="1" max="6" placeholder="—" oninput="col(this);go()">
+        <div class="dot" id="dotSP"></div>
+      </div>
+      <div class="fach-zeile">
+        <div class="fach-name">Gesellschaftslehre</div>
+        <input class="note-feld" id="nGL" type="number" min="1" max="6" placeholder="—" oninput="col(this);go()">
+        <div class="dot" id="dotGL"></div>
+      </div>
+      <div class="fach-zeile">
+        <div class="fach-name">Physik <small>Bildet mit Chemie die LB NW (nur beim EESA)</small></div>
+        <input class="note-feld" id="nPH" type="number" min="1" max="6" placeholder="—" oninput="col(this);go()">
+        <div class="dot" id="dotPH"></div>
+      </div>
+
+      <div class="gruppe-label">Optional – nur wenn belegt</div>
+      <label class="opt-label"><input type="checkbox" id="cbRE" onchange="toggle('RE');go()"> Religion</label>
+      <div class="fach-zeile" id="rowRE" style="display:none;">
+        <div class="fach-name">Religion</div>
+        <input class="note-feld" id="nRE" type="number" min="1" max="6" placeholder="—" oninput="col(this);go()">
+        <div class="dot" id="dotRE"></div>
+      </div>
+      <label class="opt-label"><input type="checkbox" id="cbLA" onchange="toggle('LA');go()"> Latein (2. Fremdsprache)</label>
+      <div class="fach-zeile" id="rowLA" style="display:none;">
+        <div class="fach-name">Latein <small>Minderleistung bleibt unberücksichtigt (EESA-Regel)</small></div>
+        <input class="note-feld" id="nLA" type="number" min="1" max="6" placeholder="—" oninput="col(this);go()">
+        <div class="dot" id="dotLA"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- Ende linke Spalte -->
+
+<!-- ═══════════════════════════════════════════
+     RECHTE SPALTE: Ergebnis
+═══════════════════════════════════════════ -->
+<div class="ergebnis-sticky">
+  <div class="panel">
+
+    <div class="abschluss-banner banner-offen" id="banner">
+      <div class="ab-label">Erreichter Abschluss</div>
+      <div class="ab-name" id="bannerName">– Noten eingeben –</div>
+      <div class="ab-sub"  id="bannerSub"></div>
+    </div>
+
+    <div class="hind-box" id="hindBox">
+      <div class="hind-item hi-info">
+        <span class="hi-icon">ℹ️</span>
+        <div><div class="hi-main">Bitte alle Noten eintragen.</div>
+        <div class="hi-detail">Das Ergebnis wird sofort automatisch berechnet.</div></div>
+      </div>
+    </div>
+
+    <div class="calc-box" id="calcBox" style="display:none;"></div>
+
+  </div>
+</div>
+
+</div><!-- Ende two-col -->
+</div><!-- Ende outer -->
+
+<script>
+// ═══════════════════════════════════════════════════
+//  HILFSFUNKTIONEN
+// ═══════════════════════════════════════════════════
+
+const R = id => document.getElementById(id);
+const rnd = x => Math.round(x); // kaufmännisch
+
+function overlayWeg() {
+  R('overlay').classList.add('weg');
+}
+
+function n(id) {
+  const v = parseInt(R(id)?.value);
+  return v >= 1 && v <= 6 ? v : null;
+}
+
+function col(el) {
+  const v = parseInt(el.value);
+  el.className = 'note-feld' + (v >= 1 && v <= 6 ? ' n' + v : '');
+}
+
+function dot(id, s) {
+  const el = R('dot' + id);
+  if (!el) return;
+  el.className = 'dot' + (s ? ' ' + s : '');
+}
+
+function toggle(id) {
+  R('row' + id).style.display = R('cb' + id).checked ? '' : 'none';
+}
+
+// Rundungspräferenz pro Fach: 'b' = bessere (abrunden), 's' = schlechtere (aufrunden)
+const rundPref = { D: 's', E: 's', M: 's' };
+
+function setRund(k, wahl) {
+  rundPref[k] = wahl;
+  R('rund'+k+'-b').classList.toggle('sel', wahl==='b');
+  R('rund'+k+'-s').classList.toggle('sel', wahl==='s');
+  zp(k);
+  go();
+}
+
+// ZP10 Abschlussnote
+function zp(k) {
+  const v = parseInt(R('v'+k)?.value);
+  const p = parseInt(R('p'+k)?.value);
+  const rw = R('rund'+k);
+  if (v>=1&&v<=6&&p>=1&&p<=6) {
+    const mw = (v+p)/2;
+    const istHalb = (mw % 1 !== 0); // .5-Fall
+    if (istHalb) {
+      // Schalter anzeigen, Default = schlechtere (aufrunden)
+      rw.classList.add('aktiv');
+      if (!R('rund'+k+'-b').classList.contains('sel') && !R('rund'+k+'-s').classList.contains('sel')) {
+        R('rund'+k+'-s').classList.add('sel');
+        rundPref[k] = 's';
+      }
+      const note = rundPref[k]==='b' ? Math.floor(mw) : Math.ceil(mw);
+      R('a'+k).textContent = note;
+    } else {
+      rw.classList.remove('aktiv');
+      R('rund'+k+'-b').classList.remove('sel');
+      R('rund'+k+'-s').classList.remove('sel');
+      R('a'+k).textContent = mw;
+    }
+  } else {
+    rw.classList.remove('aktiv');
+    R('a'+k).textContent = '—';
+  }
+}
+
+function getAb(k) {
+  const v = parseInt(R('a'+k)?.textContent);
+  return v>=1&&v<=6 ? v : null;
+}
+
+// ═══════════════════════════════════════════════════
+//  HAUPTLOGIK
+// ═══════════════════════════════════════════════════
+
+function go() {
+  save();
+
+  const kD  = R('kD').value,  kE  = R('kE').value;
+  const kM  = R('kM').value,  kCH = R('kCH').value;
+
+  const nD  = getAb('D'), nE = getAb('E'), nM = getAb('M');
+  const nCH = n('nCH'), nWP = n('nWP');
+  const nKU = n('nKU'), nSP = n('nSP'), nGL = n('nGL'), nPH = n('nPH');
+  const hatRE = R('cbRE').checked, nRE = hatRE ? n('nRE') : null;
+  const hatLA = R('cbLA').checked, nLA = hatLA ? n('nLA') : null;
+
+  // Vollständigkeitsprüfung
+  const pflicht = [nD, nE, nM, nCH, nWP, nKU, nSP, nGL, nPH];
+  const optOk   = (!hatRE || nRE!==null) && (!hatLA || nLA!==null);
+  if (pflicht.some(x => x===null) || !optOk) {
+    setBanner('offen','– Noten eingeben –','');
+    setHind([{t:'info',m:'Bitte alle Noten vollständig eintragen.',d:''}]);
+    R('calcBox').style.display='none';
+    resetDots();
+    return;
+  }
+
+  // Lernbereichsnote NW (EESA)
+  // EESA-Regel: E-Kurse werden als G-Kurs mit einer um eine Stufe besseren Note gewertet.
+  // Chemie-E-Note wird also vor LB-Bildung aufgewertet (Note - 1, min. 1).
+  const aufwerten = (note, kurs) => kurs==='E' ? Math.max(1, note - 1) : note;
+  const chEESA = aufwerten(nCH, kCH);
+  const lbNW  = rnd((chEESA + nPH) / 2);
+  const lbNWx = ((chEESA + nPH) / 2).toFixed(1);
+  // Anzeige-Originalwert (ungewertet) für MSA/MSA-Q:
+
+  // E-Kurse (aus D/E/M/CH)
+  const eCh = kCH==='E';
+  const eK = [];
+  if(kD==='E')  eK.push({f:'Deutsch',       n:nD});
+  if(kE==='E')  eK.push({f:'Englisch',       n:nE});
+  if(kM==='E')  eK.push({f:'Mathematik',     n:nM});
+  if(eCh)       eK.push({f:'Chemie',         n:nCH});
+
+  // G-Kurse aus D/E/M/CH
+  const gK = [];
+  if(kD==='G')  gK.push({f:'Deutsch',    n:nD});
+  if(kE==='G')  gK.push({f:'Englisch',   n:nE});
+  if(kM==='G')  gK.push({f:'Mathematik', n:nM});
+  if(!eCh)      gK.push({f:'Chemie',     n:nCH});
+
+  // FG I (MSA/MSA-Q): D, E, M, WP
+  const fg1 = [
+    {f:'Deutsch',        n:nD,  k:kD},
+    {f:'Englisch',       n:nE,  k:kE},
+    {f:'Mathematik',     n:nM,  k:kM},
+    {f:'Wahlpflicht',    n:nWP, k:'—'},
+  ];
+
+  // FG II (MSA/MSA-Q): alles andere
+  const fg2 = [
+    {f:'Chemie',           n:nCH, k:kCH},
+    {f:'Physik',           n:nPH},
+    {f:'Kunst',            n:nKU},
+    {f:'Sport',            n:nSP},
+    {f:'Gesellschaftslehre', n:nGL},
+  ];
+  if(hatRE) fg2.push({f:'Religion', n:nRE});
+  if(hatLA) fg2.push({f:'Latein',   n:nLA});
+
+  // ── EESA-Fächergruppen mit E-Kurs-Aufwertung (E-Note - 1 Stufe) ──
+  // FG I EESA: D, M, LB NW  (D und M ggf. aufgewertet)
+  const dEESA = aufwerten(nD, kD);
+  const mEESA = aufwerten(nM, kM);
+  const eEESA = aufwerten(nE, kE);  // Englisch zählt im EESA als Nebenfach (FG II)
+  const fg1E = [
+    {f:'Deutsch'+(kD==='E'?' (E→G+)':''),      n:dEESA},
+    {f:'Mathematik'+(kM==='E'?' (E→G+)':''),   n:mEESA},
+    {f:'LB NW (Ch+Ph)',                         n:lbNW},
+  ];
+  // FG II EESA: Englisch (Nebenfach!), WP, KU, SP, GL, RE; Latein: 5 ignoriert
+  const fg2E = [
+    {f:'Englisch'+(kE==='E'?' (E→G+)':''),  n:eEESA},
+    {f:'Wahlpflicht',       n:nWP},
+    {f:'Kunst',             n:nKU},
+    {f:'Sport',             n:nSP},
+    {f:'Gesellschaftslehre',n:nGL},
+  ];
+  if(hatRE) fg2E.push({f:'Religion', n:nRE});
+  // Chemie + Physik sind im EESA durch LB NW abgedeckt und tauchen hier NICHT einzeln auf
+  // Latein: Note 5 bleibt unberücksichtigt → nur eintragen wenn ≤4
+  if(hatLA && nLA!==null && nLA <= 4) fg2E.push({f:'Latein', n:nLA});
+
+  // ─────────────────────────────────────
+  //  DIAGNOSE
+  // ─────────────────────────────────────
+
+  // ── MSA-Q ──
+  const bMSAQ = [];
+
+  if(eK.length < 3)
+    bMSAQ.push({t:'block', m:`Nur ${eK.length} E-Kurs${eK.length!==1?'e':''} – MSA-Q erfordert mind. 3`, d:'Mind. 3 der Fächer D, E, M, Chemie müssen als E-Kurs belegt und bestanden sein.'});
+
+  if(nWP > 3)
+    bMSAQ.push({t:'block', m:`WP-Kurs: Note ${nWP} – MSA-Q erfordert mind. befriedigend (3)`, d:''});
+
+  // FG I MSA-Q: alle mind. 3, 1× Note 4 erlaubt mit Ausgleich durch Note ≤2 in FG I
+  const fg1Fehler_Q = fg1.filter(f => f.n > 3);
+  if(fg1Fehler_Q.length===1 && fg1Fehler_Q[0].n===4) {
+    const fg1Gut = fg1.filter(f => f.n <= 2 && f.f !== fg1Fehler_Q[0].f);
+    if(fg1Gut.length > 0)
+      bMSAQ.push({t:'warn', m:`${fg1Fehler_Q[0].f}: Note 4 – ausgeglichen durch ${fg1Gut[0].f} (Note ${fg1Gut[0].n}) ✓`, d:''});
+    else
+      bMSAQ.push({t:'block', m:`${fg1Fehler_Q[0].f}: Note 4 – kein Ausgleich in FG I vorhanden`, d:'Ausgleich wäre möglich durch Note 2 oder besser in einem anderen FG-I-Fach (D, E, M, WP).'});
+  } else if(fg1Fehler_Q.length > 1) {
+    fg1Fehler_Q.forEach(f => bMSAQ.push({t:'block', m:`${f.f}: Note ${f.n} – FG I erfordert mind. befriedigend (3)`, d:'Mehr als 1 Minderleistung in FG I nicht ausgleichbar.'}));
+  }
+
+  // G-Kurse (D/E/M/CH) MSA-Q: mind. 2
+  gK.forEach(g => {
+    if(g.n > 2) bMSAQ.push({t:'block', m:`${g.f} (G-Kurs): Note ${g.n} – MSA-Q erfordert mind. gut (2)`, d:''});
+  });
+
+  // FG II MSA-Q: alle mind. 3; Spielraum: 2× Note 4 OK, jede weitere 4 braucht 1× Note ≤2, Note 5 braucht 2× Note ≤2
+  const fg2_4  = fg2.filter(f => f.n === 4);
+  const fg2_5p = fg2.filter(f => f.n >= 5);
+  const fg2_2m = fg2.filter(f => f.n <= 2).length;
+  let noetigeGute = Math.max(0, fg2_4.length - 2) + fg2_5p.length * 2;
+  if(fg2_5p.length > 0 && fg2_4.length > 2) noetigeGute++; // konservativ
+  if(noetigeGute > fg2_2m) {
+    [...fg2_4.slice(2), ...fg2_5p].forEach(f =>
+      bMSAQ.push({t:'block', m:`${f.f}: Note ${f.n} – nicht ausreichend für MSA-Q`, d:'FG II: max. 2× Note 4 zulässig, weitere Mängel nur mit entsprechend vielen gut-Noten ausgleichbar.'})
+    );
+  } else if(fg2_4.length > 2 || fg2_5p.length > 0) {
+    bMSAQ.push({t:'warn', m:`FG II: ${[...fg2_4.slice(2),...fg2_5p].map(f=>f.f+' ('+f.n+')').join(', ')} – durch gut-Noten ausgeglichen ✓`, d:''});
+  }
+
+  const msaqOK = !bMSAQ.some(h => h.t==='block');
+
+  // ── MSA ──
+  const bMSA = [];
+
+  if(eK.length < 2)
+    bMSA.push({t:'block', m:`Nur ${eK.length} E-Kurs${eK.length!==1?'e':''} – MSA erfordert mind. 2`, d:'Mind. 2 der Fächer D, E, M, Chemie müssen als E-Kurs belegt und bestanden sein.'});
+
+  if(nWP > 4)
+    bMSA.push({t:'block', m:`WP-Kurs: Note ${nWP} – MSA erfordert mind. ausreichend (4)`, d:''});
+
+  // FG I MSA: mind. 4, 1× Ausgleich möglich
+  const fg1F_M = fg1.filter(f => f.n > 4);
+  if(fg1F_M.length===1) {
+    const fg1Besser = fg1.filter(f => f.n < fg1F_M[0].n && f.f!==fg1F_M[0].f);
+    if(fg1Besser.length>0)
+      bMSA.push({t:'warn', m:`${fg1F_M[0].f}: Note ${fg1F_M[0].n} – ausgeglichen durch ${fg1Besser[0].f} (Note ${fg1Besser[0].n}) ✓`, d:''});
+    else
+      bMSA.push({t:'block', m:`${fg1F_M[0].f}: Note ${fg1F_M[0].n} – kein Ausgleich in FG I möglich`, d:'Kein anderes FG-I-Fach (D, E, M, WP) hat eine bessere Note für Ausgleich.'});
+  } else if(fg1F_M.length>1) {
+    fg1F_M.forEach(f => bMSA.push({t:'block', m:`${f.f}: Note ${f.n} – FG I erlaubt max. 1 Minderleistung`, d:''}));
+  }
+
+  // G-Kurse MSA: mind. 3
+  gK.forEach(g => {
+    if(g.n > 3) bMSA.push({t:'block', m:`${g.f} (G-Kurs): Note ${g.n} – MSA erfordert mind. befriedigend (3)`, d:''});
+  });
+
+  // FG II MSA: mind. 2 Fächer Note ≤3; Rest mind. 4; 1× Note 5 ohne Ausgleich erlaubt
+  const fg2_mit3 = fg2.filter(f => f.n <= 3).length;
+  if(fg2_mit3 < 2)
+    bMSA.push({t:'block', m:`FG II: Zu wenig Fächer mit Note ≤3 (aktuell: ${fg2_mit3})`, d:'MSA erfordert mind. 2 Fächer in FG II mit befriedigend oder besser.'});
+
+  const fg2Mangel_M = fg2.filter(f => f.n >= 5);
+  if(fg2Mangel_M.length > 1)
+    bMSA.push({t:'block', m:`FG II: Mehr als 1 mangelhaftes Fach – ${fg2Mangel_M.map(f=>f.f+' ('+f.n+')').join(', ')}`, d:'Beim MSA ist in FG II max. 1 mangelhaftes Fach (ohne Ausgleich) erlaubt.'});
+  else if(fg2Mangel_M.length===1)
+    bMSA.push({t:'warn', m:`${fg2Mangel_M[0].f}: Note ${fg2Mangel_M[0].n} – 1× Mangelhaft in FG II erlaubt ✓`, d:''});
+
+  const msaOK = !bMSA.some(h => h.t==='block');
+
+  // ── EESA ──
+  const bEESA = [];
+  const fg1MangE = fg1E.filter(f => f.n >= 5);
+  const fg2MangE = fg2E.filter(f => f.n >= 5);
+  const varA = fg1MangE.length<=1 && fg2MangE.length<=1;
+  const varB = fg1MangE.length===0 && fg2MangE.length<=2;
+  const eesaOK = varA || varB;
+
+  if(!eesaOK) {
+    if(fg1MangE.length > 1)
+      bEESA.push({t:'block', m:`FG I: ${fg1MangE.map(f=>f.f+' ('+f.n+')').join(', ')} – mehr als 1 Mangelhaft`, d:'EESA: FG I (D, M, LB NW) darf max. 1 Mangelhaft enthalten.'});
+    if(fg2MangE.length > 2)
+      bEESA.push({t:'block', m:`FG II: ${fg2MangE.map(f=>f.f+' ('+f.n+')').join(', ')} – mehr als 2 Mangelhaft`, d:'EESA: übrige Fächer dürfen max. 2 Mangelhaft enthalten (Variante B).'});
+    if(fg1MangE.length===1 && fg2MangE.length > 1)
+      bEESA.push({t:'block', m:`Kombination nicht erlaubt: 1× FG I + ${fg2MangE.length}× FG II mangelhaft`, d:'Variante A: max. 1× FG I + 1× FG II. Variante B: 0× FG I + max. 2× FG II.'});
+  }
+
+  // ─────────────────────────────────────
+  //  AUSGABE ZUSAMMENSTELLEN
+  // ─────────────────────────────────────
+  let hinweise = [];
+  let typ, name, sub;
+
+  if(msaqOK) {
+    typ  = 'msaq'; name = 'MSA-Q'; sub = 'Mittlerer Schulabschluss + Berechtigung zur gymnasialen Oberstufe';
+    hinweise.push({t:'ok', m:'Alle Anforderungen für MSA-Q erfüllt ✓', d:''});
+    const warns = bMSAQ.filter(h=>h.t==='warn');
+    if(warns.length>0) { hinweise.push({t:'section', m:'Ausgeglichene Mängel'}); hinweise=hinweise.concat(warns); }
+
+  } else if(msaOK) {
+    typ  = 'msa'; name = 'MSA'; sub = 'Mittlerer Schulabschluss (Fachoberschulreife)';
+    hinweise.push({t:'ok', m:'MSA wird erreicht ✓', d:''});
+    const warns = bMSA.filter(h=>h.t==='warn');
+    if(warns.length>0) { hinweise.push({t:'section', m:'Ausgeglichene Mängel (MSA)'}); hinweise=hinweise.concat(warns); }
+    hinweise.push({t:'section', m:'Warum kein MSA-Q?'});
+    hinweise = hinweise.concat(bMSAQ.filter(h=>h.t==='block'));
+
+  } else if(eesaOK) {
+    typ  = 'eesa'; name = 'EESA'; sub = 'Erweiterter Erster Schulabschluss (Hauptschulabschluss nach Kl. 10)';
+    hinweise.push({t:'ok', m:'EESA wird erreicht ✓', d:''});
+    hinweise.push({t:'section', m:'Warum kein MSA?'});
+    hinweise = hinweise.concat(bMSA.filter(h=>h.t==='block'));
+    hinweise.push({t:'section', m:'Warum kein MSA-Q?'});
+    hinweise = hinweise.concat(bMSAQ.filter(h=>h.t==='block'));
+
+  } else {
+    typ  = 'kein'; name = 'Kein Abschluss'; sub = 'Keiner der drei Abschlüsse wird erreicht';
+    hinweise.push({t:'section', m:'Warum kein EESA?'});
+    hinweise = hinweise.concat(bEESA.filter(h=>h.t==='block'));
+    hinweise.push({t:'section', m:'Warum kein MSA?'});
+    hinweise = hinweise.concat(bMSA.filter(h=>h.t==='block'));
+  }
+
+  setBanner(typ, name, sub);
+  setHind(hinweise);
+
+  // Status-Dots
+  const allDots = {D:nD, E:nE, M:nM, CH:nCH, WP:nWP, KU:nKU, SP:nSP, GL:nGL, PH:nPH};
+  Object.entries(allDots).forEach(([id, note]) => {
+    if(note===null) { dot(id,''); return; }
+    dot(id, note<=3 ? 'ok' : note===4 ? 'warn' : 'bad');
+  });
+  if(hatRE && nRE!==null) dot('RE', nRE<=3?'ok':nRE===4?'warn':'bad');
+  if(hatLA && nLA!==null) dot('LA', nLA<=4?'ok':'warn'); // 5 in Latein ignoriert
+
+  // Berechnungsdetails
+  let c = '<b>Berechnungen:</b><br>';
+  ['D','E','M'].forEach(k => {
+    const vv = parseInt(R('v'+k)?.value), pp = parseInt(R('p'+k)?.value);
+    if(vv>=1&&vv<=6&&pp>=1&&pp<=6) {
+      const ab = getAb(k);
+      const fach = k==='D'?'Deutsch':k==='E'?'Englisch':'Mathematik';
+      const mwv = (vv+pp)/2;
+      const halb = (mwv % 1 !== 0) ? ` · Ø ${mwv.toFixed(1)} → ${rundPref[k]==='b'?'bessere':'schlechtere'} Note` : '';
+      c += `${fach}: (${vv} + ${pp}) ÷ 2 = ${mwv.toFixed(2)} → <code>${ab}</code>${halb}<br>`;
+    }
+  });
+  c += `<br><b>EESA-Aufwertung E-Kurse</b> (Note −1 Stufe):<br>`;
+  const aufwListe = [];
+  if(kD==='E')  aufwListe.push(`Deutsch ${nD}→${dEESA}`);
+  if(kE==='E')  aufwListe.push(`Englisch ${nE}→${eEESA}`);
+  if(kM==='E')  aufwListe.push(`Mathe ${nM}→${mEESA}`);
+  if(kCH==='E') aufwListe.push(`Chemie ${nCH}→${chEESA}`);
+  c += aufwListe.length>0 ? aufwListe.join(', ')+'<br>' : '(keine E-Kurse)<br>';
+  c += `<b>LB NW (EESA)</b>: (Chemie${kCH==='E'?' '+chEESA+'*':' '+nCH} + Physik ${nPH}) ÷ 2 = ${lbNWx} → <code>Note ${lbNW}</code>${kCH==='E'?' <span style="font-size:0.72rem;">*aufgewertet</span>':''}<br>`;
+  c += `<b>Englisch im EESA</b>: zählt als Nebenfach (Fächergruppe II)<br>`;
+  c += `<b>E-Kurse (MSA/MSA-Q)</b>: ${eK.length>0 ? eK.map(k=>k.f+' ('+k.n+')').join(', ') : '—'}`;
+  R('calcBox').innerHTML = c;
+  R('calcBox').style.display = '';
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════
+
+function setBanner(typ, name, sub) {
+  const b = R('banner');
+  b.className = 'abschluss-banner banner-' + typ;
+  R('bannerName').textContent = name;
+  R('bannerSub').textContent  = sub;
+}
+
+function setHind(liste) {
+  const icons = {block:'🔴', warn:'🟡', ok:'🟢', info:'ℹ️'};
+  const cls   = {block:'hi-block', warn:'hi-warn', ok:'hi-ok', info:'hi-info'};
+  let html = '';
+  liste.forEach(item => {
+    if(item.t==='section') {
+      html += `<div class="hind-section">${item.m}</div>`;
+      return;
+    }
+    html += `<div class="hind-item ${cls[item.t]}">
+      <span class="hi-icon">${icons[item.t]}</span>
+      <div>
+        <div class="hi-main">${item.m}</div>
+        ${item.d ? '<div class="hi-detail">'+item.d+'</div>' : ''}
+      </div>
+    </div>`;
+  });
+  R('hindBox').innerHTML = html;
+}
+
+function resetDots() {
+  ['D','E','M','CH','WP','KU','SP','GL','PH','RE','LA'].forEach(k => dot(k,''));
+}
+
+// ═══════════════════════════════════════════════════
+//  STORAGE
+// ═══════════════════════════════════════════════════
+const LS = 'abschluss_nrw_v2';
+
+function save() {
+  const d = {};
+  document.querySelectorAll('input,select').forEach(el => {
+    if(!el.id) return;
+    d[el.id] = el.type==='checkbox' ? el.checked : el.value;
+  });
+  d._rund = rundPref;
+  try { localStorage.setItem(LS, JSON.stringify(d)); } catch(e) {}
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(LS);
+    if(!raw) return;
+    const d = JSON.parse(raw);
+    Object.entries(d).forEach(([id, val]) => {
+      if(id==='_rund') return;
+      const el = R(id);
+      if(!el) return;
+      if(el.type==='checkbox') { el.checked=val; toggle(id.replace('cb','')); }
+      else { el.value=val; if(el.classList.contains('note-feld')) col(el); }
+    });
+    if(d._rund) {
+      ['D','E','M'].forEach(k => {
+        if(d._rund[k]) {
+          rundPref[k] = d._rund[k];
+          R('rund'+k+'-b').classList.toggle('sel', d._rund[k]==='b');
+          R('rund'+k+'-s').classList.toggle('sel', d._rund[k]==='s');
+        }
+      });
+    }
+    ['D','E','M'].forEach(k => zp(k));
+    go();
+  } catch(e) {}
+}
+
+function resetAll() {
+  document.querySelectorAll('input[type=number]').forEach(el => {
+    el.value=''; el.className = el.classList.contains('note-feld') ? 'note-feld' :
+                                el.classList.contains('note-sm')   ? 'note-sm'   : el.className;
+  });
+  document.querySelectorAll('.note-ab').forEach(el => el.textContent='—');
+  document.querySelectorAll('.rund-wahl').forEach(el => el.classList.remove('aktiv'));
+  document.querySelectorAll('.rund-btn').forEach(el => el.classList.remove('sel'));
+  ['D','E','M'].forEach(k => rundPref[k]='s');
+  R('cbRE').checked=false; R('cbLA').checked=false;
+  R('rowRE').style.display='none'; R('rowLA').style.display='none';
+  setBanner('offen','– Noten eingeben –','');
+  setHind([{t:'info',m:'Bitte alle Noten eintragen.',d:'Das Ergebnis wird sofort automatisch berechnet.'}]);
+  R('calcBox').style.display='none';
+  resetDots();
+  try { localStorage.removeItem(LS); } catch(e) {}
+}
+
+document.querySelectorAll('input,select').forEach(el => {
+  el.addEventListener('input', save);
+  el.addEventListener('change', save);
+});
+
+window.addEventListener('DOMContentLoaded', load);
+</script>
+</body>
+</html>
