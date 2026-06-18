@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chemische Reaktionen – Magnesium und andere Metalle</title>
+  <style>
+    :root {
+      --bg: #f4f7f8;
+      --card: #ffffff;
+      --text: #1f2933;
+      --muted: #5f6b76;
+      --blue: #2f6f8f;
+      --blue-dark: #214f67;
+      --orange: #d86f32;
+      --green: #4f8b57;
+      --red: #b64a4a;
+      --line: #d9e2e7;
+      --soft-blue: #e9f3f8;
+      --soft-orange: #fff0e7;
+      --soft-green: #edf7ef;
+      --shadow: 0 8px 24px rgba(31, 41, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #edf4f7 0%, var(--bg) 240px);
+      line-height: 1.6;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue));
+      color: white;
+      padding: 42px 20px 34px;
+    }
+
+    .wrap {
+      width: min(980px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      line-height: 1.1;
+    }
+
+    header p {
+      margin: 0;
+      max-width: 760px;
+      font-size: 1.1rem;
+      opacity: 0.95;
+    }
+
+    .progress-area {
+      margin-top: 22px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .progress-track {
+      height: 12px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #ffd3b9;
+      transition: width 0.3s ease;
+    }
+
+    main {
+      padding: 28px 0 52px;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--blue-dark);
+      background: white;
+      border: 1px solid var(--line);
+      padding: 9px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    nav a:hover,
+    nav a:focus {
+      background: var(--soft-blue);
+      outline: none;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: var(--blue-dark);
+      font-size: 1.65rem;
+    }
+
+    h3 {
+      color: var(--blue-dark);
+    }
+
+    .lead {
+      font-size: 1.08rem;
+    }
+
+    .equation {
+      background: var(--soft-blue);
+      border-left: 6px solid var(--blue);
+      padding: 16px;
+      border-radius: 12px;
+      font-size: clamp(1.05rem, 3vw, 1.35rem);
+      font-weight: 800;
+      text-align: center;
+      margin: 18px 0;
+    }
+
+    .formula {
+      font-family: "Courier New", monospace;
+      letter-spacing: 0.02em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .mini {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      background: #fbfcfd;
+    }
+
+    .mini strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--blue-dark);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .badge.orange { background: var(--soft-orange); color: #8c3f17; }
+    .badge.green { background: var(--soft-green); color: #2f6537; }
+    .badge.blue { background: var(--soft-blue); color: var(--blue-dark); }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      min-width: 620px;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--soft-blue);
+      color: var(--blue-dark);
+    }
+
+    .note {
+      background: #fff8df;
+      border-left: 6px solid #d9a928;
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin-top: 16px;
+    }
+
+    .question {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      margin: 16px 0;
+      background: #fcfdfe;
+    }
+
+    .question p {
+      margin-top: 0;
+      font-weight: 800;
+    }
+
+    label.option {
+      display: block;
+      padding: 9px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    label.option:hover {
+      background: var(--soft-blue);
+    }
+
+    input[type="radio"] {
+      margin-right: 8px;
+      transform: scale(1.1);
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      background: var(--blue);
+      color: white;
+    }
+
+    button:hover,
+    button:focus {
+      background: var(--blue-dark);
+      outline: 3px solid rgba(47,111,143,0.2);
+    }
+
+    button.secondary {
+      background: #e9eef1;
+      color: var(--text);
+    }
+
+    .feedback {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      display: none;
+      font-weight: 700;
+    }
+
+    .feedback.ok {
+      display: block;
+      background: var(--soft-green);
+      color: #245f2d;
+      border: 1px solid #b9d9be;
+    }
+
+    .feedback.no {
+      display: block;
+      background: #fdeaea;
+      color: #8a2f2f;
+      border: 1px solid #e4b9b9;
+    }
+
+    .checklist label {
+      display: block;
+      margin: 10px 0;
+      padding: 10px 12px;
+      background: #f7fafb;
+      border-radius: 10px;
+    }
+
+    .checklist input {
+      transform: scale(1.2);
+      margin-right: 8px;
+    }
+
+    .result {
+      margin-top: 18px;
+      font-size: 1.08rem;
+      font-weight: 800;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      padding: 0 20px 32px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 650px) {
+      .card {
+        padding: 18px;
+        border-radius: 16px;
+      }
+
+      header {
+        padding-top: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Chemische Reaktionen verstehen</h1>
+      <p>Wiederhole Schritt für Schritt, was bei einer chemischen Reaktion passiert. Als Beispiel dient die Verbrennung von Magnesium.</p>
+
+      <div class="progress-area" aria-label="Lernfortschritt">
+        <strong id="progressText">Fortschritt: 0 von 4 Abschnitten</strong>
+        <div class="progress-track">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <nav aria-label="Seitennavigation">
+      <a href="#grundidee">1. Grundidee</a>
+      <a href="#magnesium">2. Magnesium</a>
+      <a href="#vergleich">3. Vergleich</a>
+      <a href="#quiz">4. Selbsttest</a>
+    </nav>
+
+    <section class="card learning-section" id="grundidee">
+      <span class="badge blue">Abschnitt 1</span>
+      <h2>Was ist eine chemische Reaktion?</h2>
+
+      <p class="lead">Bei einer chemischen Reaktion entstehen aus Ausgangsstoffen neue Stoffe. Diese neuen Stoffe haben andere Eigenschaften.</p>
+
+      <div class="equation">
+        Ausgangsstoffe → Reaktionsprodukte
+      </div>
+
+      <div class="grid">
+        <div class="mini">
+          <strong>Vor der Reaktion</strong>
+          Es gibt einen oder mehrere Ausgangsstoffe.
+        </div>
+
+        <div class="mini">
+          <strong>Während der Reaktion</strong>
+          Teilchen werden neu angeordnet und verbinden sich anders.
+        </div>
+
+        <div class="mini">
+          <strong>Nach der Reaktion</strong>
+          Es sind neue Stoffe mit neuen Eigenschaften entstanden.
+        </div>
+      </div>
+
+      <h3>Woran kannst du eine chemische Reaktion erkennen?</h3>
+      <ul>
+        <li>Ein neuer Stoff entsteht.</li>
+        <li>Licht oder Wärme wird abgegeben.</li>
+        <li>Die Farbe verändert sich.</li>
+        <li>Ein Gas oder ein fester Stoff kann entstehen.</li>
+      </ul>
+
+      <button class="done-btn" data-section="grundidee">Abschnitt verstanden</button>
+    </section>
+
+    <section class="card learning-section" id="magnesium">
+      <span class="badge orange">Abschnitt 2</span>
+      <h2>Beispiel: Magnesium reagiert mit Sauerstoff</h2>
+
+      <p>Magnesium ist ein silbrig glänzendes Metall. Beim Verbrennen reagiert es mit dem Sauerstoff aus der Luft. Dabei entsteht ein weißer Stoff: Magnesiumoxid.</p>
+
+      <div class="equation">
+        Magnesium + Sauerstoff → Magnesiumoxid
+      </div>
+
+      <p class="formula"><strong>Formelgleichung:</strong> 2 Mg + O<sub>2</sub> → 2 MgO</p>
+
+      <div class="grid">
+        <div class="mini">
+          <span class="badge blue">Ausgangsstoff</span>
+          <strong>Magnesium</strong>
+          silbrig, fest, metallisch
+        </div>
+
+        <div class="mini">
+          <span class="badge blue">Ausgangsstoff</span>
+          <strong>Sauerstoff</strong>
+          farbloses Gas in der Luft
+        </div>
+
+        <div class="mini">
+          <span class="badge green">Produkt</span>
+          <strong>Magnesiumoxid</strong>
+          weißer, fester Stoff
+        </div>
+      </div>
+
+      <div class="note">
+        <strong>Merke:</strong> Eine Reaktion mit Sauerstoff nennt man Oxidation. Eine Verbrennung ist eine besonders schnelle Oxidation.
+      </div>
+
+      <h3>Warum ist das eine chemische Reaktion?</h3>
+      <p>Magnesiumoxid hat andere Eigenschaften als Magnesium. Der neue Stoff lässt sich nicht einfach wieder in Magnesium zurückverwandeln. Außerdem werden Licht und Wärme frei.</p>
+
+      <button class="done-btn" data-section="magnesium">Abschnitt verstanden</button>
+    </section>
+
+    <section class="card learning-section" id="vergleich">
+      <span class="badge green">Abschnitt 3</span>
+      <h2>Vergleich mit anderen Metallen</h2>
+
+      <p>Nicht alle Metalle reagieren gleich stark mit Sauerstoff. Manche reagieren sehr schnell, andere langsam oder erst bei hoher Temperatur.</p>
+
+      <div class="table-scroll">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Metall</th>
+              <th>Beobachtung</th>
+              <th>Produkt</th>
+              <th>Wortgleichung</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Magnesium</td>
+              <td>reagiert sehr heftig und leuchtet hell</td>
+              <td>Magnesiumoxid</td>
+              <td>Magnesium + Sauerstoff → Magnesiumoxid</td>
+            </tr>
+            <tr>
+              <td>Eisen</td>
+              <td>reagiert langsam; es kann Rost entstehen</td>
+              <td>Eisenoxid</td>
+              <td>Eisen + Sauerstoff → Eisenoxid</td>
+            </tr>
+            <tr>
+              <td>Kupfer</td>
+              <td>reagiert beim Erhitzen; die Oberfläche wird dunkel</td>
+              <td>Kupferoxid</td>
+              <td>Kupfer + Sauerstoff → Kupferoxid</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="equation">
+        Metall + Sauerstoff → Metalloxid
+      </div>
+
+      <p>Das Reaktionsschema ist ähnlich. Das genaue Metalloxid und die Stärke der Reaktion sind aber unterschiedlich.</p>
+
+      <button class="done-btn" data-section="vergleich">Abschnitt verstanden</button>
+    </section>
+
+    <section class="card learning-section" id="quiz">
+      <span class="badge blue">Abschnitt 4</span>
+      <h2>Selbsttest</h2>
+      <p>Wähle jeweils eine Antwort. Prüfe danach deine Ergebnisse.</p>
+
+      <div class="question" data-answer="b">
+        <p>1. Was entsteht, wenn Magnesium mit Sauerstoff reagiert?</p>
+        <label class="option"><input type="radio" name="q1" value="a"> Magnesiumgas</label>
+        <label class="option"><input type="radio" name="q1" value="b"> Magnesiumoxid</label>
+        <label class="option"><input type="radio" name="q1" value="c"> Sauerstoffoxid</label>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="question" data-answer="c">
+        <p>2. Woran erkennst du eine chemische Reaktion besonders sicher?</p>
+        <label class="option"><input type="radio" name="q2" value="a"> Der Stoff wird nur kleiner.</label>
+        <label class="option"><input type="radio" name="q2" value="b"> Der Stoff wird bewegt.</label>
+        <label class="option"><input type="radio" name="q2" value="c"> Ein neuer Stoff mit neuen Eigenschaften entsteht.</label>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="question" data-answer="a">
+        <p>3. Welche allgemeine Wortgleichung passt?</p>
+        <label class="option"><input type="radio" name="q3" value="a"> Metall + Sauerstoff → Metalloxid</label>
+        <label class="option"><input type="radio" name="q3" value="b"> Metalloxid → Metall + Licht</label>
+        <label class="option"><input type="radio" name="q3" value="c"> Metall + Wasser → Sauerstoff</label>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="question" data-answer="b">
+        <p>4. Wie nennt man eine Reaktion mit Sauerstoff?</p>
+        <label class="option"><input type="radio" name="q4" value="a"> Verdampfung</label>
+        <label class="option"><input type="radio" name="q4" value="b"> Oxidation</label>
+        <label class="option"><input type="radio" name="q4" value="c"> Schmelzung</label>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="question" data-answer="c">
+        <p>5. Welche Aussage stimmt?</p>
+        <label class="option"><input type="radio" name="q5" value="a"> Magnesiumoxid hat genau dieselben Eigenschaften wie Magnesium.</label>
+        <label class="option"><input type="radio" name="q5" value="b"> Bei einer chemischen Reaktion entsteht nie Energie.</label>
+        <label class="option"><input type="radio" name="q5" value="c"> Magnesium, Eisen und Kupfer können mit Sauerstoff reagieren.</label>
+        <div class="feedback"></div>
+      </div>
+
+      <button id="checkQuiz">Antworten prüfen</button>
+      <button class="secondary" id="resetQuiz">Neu starten</button>
+
+      <div class="result" id="quizResult" aria-live="polite"></div>
+
+      <div class="checklist">
+        <h3>Kannst du das schon?</h3>
+        <label><input type="checkbox"> Ich kann erklären, was eine chemische Reaktion ist.</label>
+        <label><input type="checkbox"> Ich kann die Wortgleichung für Magnesium aufschreiben.</label>
+        <label><input type="checkbox"> Ich kenne den Unterschied zwischen Ausgangsstoff und Produkt.</label>
+        <label><input type="checkbox"> Ich kann Magnesium mit Eisen und Kupfer vergleichen.</label>
+      </div>
+
+      <button class="done-btn" data-section="quiz">Abschnitt verstanden</button>
+    </section>
+  </main>
+
+  <footer>
+    Selbstlernseite Chemie – Klasse 8
+  </footer>
+
+  <script>
+    const completed = new Set();
+    const progressText = document.getElementById("progressText");
+    const progressBar = document.getElementById("progressBar");
+
+    function updateProgress() {
+      const count = completed.size;
+      progressText.textContent = `Fortschritt: ${count} von 4 Abschnitten`;
+      progressBar.style.width = `${(count / 4) * 100}%`;
+    }
+
+    document.querySelectorAll(".done-btn").forEach(button => {
+      button.addEventListener("click", () => {
+        const section = button.dataset.section;
+
+        if (completed.has(section)) {
+          completed.delete(section);
+          button.textContent = "Abschnitt verstanden";
+          button.classList.remove("secondary");
+        } else {
+          completed.add(section);
+          button.textContent = "Erledigt ✓";
+          button.classList.add("secondary");
+        }
+
+        updateProgress();
+      });
+    });
+
+    document.getElementById("checkQuiz").addEventListener("click", () => {
+      const questions = document.querySelectorAll(".question");
+      let points = 0;
+      let answered = 0;
+
+      questions.forEach(question => {
+        const selected = question.querySelector("input[type='radio']:checked");
+        const feedback = question.querySelector(".feedback");
+        const correct = question.dataset.answer;
+
+        feedback.className = "feedback";
+
+        if (!selected) {
+          feedback.textContent = "Bitte wähle eine Antwort.";
+          feedback.classList.add("no");
+          return;
+        }
+
+        answered++;
+
+        if (selected.value === correct) {
+          points++;
+          feedback.textContent = "Richtig!";
+          feedback.classList.add("ok");
+        } else {
+          feedback.textContent = "Noch nicht richtig. Lies den passenden Abschnitt noch einmal.";
+          feedback.classList.add("no");
+        }
+      });
+
+      const result = document.getElementById("quizResult");
+
+      if (answered < questions.length) {
+        result.textContent = `Du hast ${answered} von ${questions.length} Fragen beantwortet.`;
+      } else if (points === 5) {
+        result.textContent = "Stark! Du hast 5 von 5 Punkten erreicht.";
+      } else if (points >= 3) {
+        result.textContent = `Gut gemacht! Du hast ${points} von 5 Punkten erreicht.`;
+      } else {
+        result.textContent = `Du hast ${points} von 5 Punkten erreicht. Wiederhole besonders die Wortgleichungen und die Merkmale einer chemischen Reaktion.`;
+      }
+    });
+
+    document.getElementById("resetQuiz").addEventListener("click", () => {
+      document.querySelectorAll("input[type='radio']").forEach(input => input.checked = false);
+      document.querySelectorAll(".feedback").forEach(feedback => {
+        feedback.textContent = "";
+        feedback.className = "feedback";
+      });
+      document.getElementById("quizResult").textContent = "";
+    });
+  </script>
+</body>
+</html>
