@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>1:15 Modell-Umrechner – Möbel</title>
+  <style>
+    :root{
+      --bg: #2F3B52;          /* schieferblau */
+      --text: #FFFFFF;        /* weiß */
+      --card: #3A4963;        /* etwas heller für Flächen */
+      --accent: #C7643B;      /* rostorange */
+      --accent-2: #8FAF98;    /* salbeigrün */
+      --muted: #9FB0C7;
+      --shadow: 0 8px 28px rgba(0,0,0,.25);
+      --radius: 16px;
+      --pad: 20px;
+    }
+
+    *{ box-sizing: border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 24px;
+    }
+
+    .app{
+      width: 100%;
+      max-width: 720px;         /* optimal für iPad im Hochformat */
+      background: linear-gradient(180deg, var(--card), #324058);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: clamp(20px, 3.2vw, 32px);
+    }
+
+    h1{
+      margin: 0 0 8px 0;
+      font-size: clamp(22px, 3.2vw, 28px);
+      letter-spacing: .2px;
+    }
+    .sub{
+      color: var(--muted);
+      margin: 0 0 20px 0;
+      font-size: clamp(14px, 2.2vw, 16px);
+    }
+
+    .row{
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1fr;
+    }
+
+    .field{
+      display:flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label{
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    input[type="number"], select{
+      width: 100%;
+      appearance: none;
+      background: #263246;
+      color: var(--text);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      padding: 16px 14px;
+      font-size: 18px;
+      outline: none;
+      transition: border-color .2s, background .2s;
+    }
+    input[type="number"]:focus, select:focus{
+      border-color: var(--accent-2);
+      background: #223046;
+    }
+
+    .scale-pill{
+      display:inline-block;
+      background: #223046;
+      color: var(--accent-2);
+      border: 1px solid rgba(255,255,255,.08);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      margin-bottom: 8px;
+    }
+
+    .result{
+      margin-top: 8px;
+      background: #223046;
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 14px;
+      padding: 16px;
+      display:flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .result .value{
+      font-size: clamp(28px, 5vw, 40px);
+      font-weight: 800;
+      color: var(--accent);
+      text-shadow: 0 2px 0 rgba(0,0,0,.15);
+      letter-spacing: .4px;
+    }
+    .result .hint{
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .btn{
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      cursor: pointer;
+      transition: transform .05s ease, filter .2s;
+      min-width: 140px;
+      text-align: center;
+    }
+    .btn:active{ transform: scale(.98); }
+    .btn.secondary{
+      background: transparent;
+      color: var(--accent-2);
+      border: 2px solid var(--accent-2);
+    }
+
+    .chips{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .chip{
+      background: rgba(255,255,255,.06);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+    .chip:hover{ background: rgba(255,255,255,.12); }
+
+    .footer{
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      display:flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .badge{
+      background: rgba(255,255,255,.08);
+      color: var(--accent-2);
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: .3px;
+    }
+
+    @media (hover: none) and (pointer: coarse){
+      .btn, input, select { padding: 18px; font-size: 18px; }
+      .chip{ padding: 12px 14px; font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" role="application" aria-label="1:15 Modell-Umrechner">
+    <div class="scale-pill">Maßstab 1&nbsp;:&nbsp;15</div>
+    <h1>Modell‑Umrechner für Möbel</h1>
+    <p class="sub">Gib ein Realmaß in Zentimetern ein (z. B. Länge). Die Ausgabe erfolgt in Millimetern für das Modell im Maßstab 1:15.</p>
+
+    <div class="row">
+      <div class="field">
+        <label for="preset">Übliche Größen (Vorschlag wählen)</label>
+        <select id="preset" aria-label="Übliche Möbelgrößen">
+          <option value="">– Bitte wählen –</option>
+          <optgroup label="Bett">
+            <option value="200">Bett Länge 200 cm</option>
+            <option value="90">Bett Breite 90 cm</option>
+            <option value="160">Bett Breite 160 cm</option>
+            <option value="180">Bett Breite 180 cm</option>
+          </optgroup>
+          <optgroup label="Schrank / Kommode">
+            <option value="200">Kleiderschrank Höhe 200 cm</option>
+            <option value="120">Kommode Breite 120 cm</option>
+            <option value="60">Hängeschrank Tiefe 60 cm</option>
+          </optgroup>
+          <optgroup label="Tisch">
+            <option value="120">Esstisch Länge 120 cm</option>
+            <option value="160">Esstisch Länge 160 cm</option>
+            <option value="200">Esstisch Länge 200 cm</option>
+            <option value="140">Schreibtisch Länge 140 cm</option>
+          </optgroup>
+          <optgroup label="Sitzmöbel">
+            <option value="45">Stuhl Sitzhöhe 45 cm</option>
+            <option value="45">Hocker Höhe 45 cm</option>
+            <option value="200">Sofa Länge 200 cm</option>
+            <option value="85">Sofa Höhe 85 cm</option>
+          </optgroup>
+          <optgroup label="Regal / Sonstiges">
+            <option value="30">Regalbrett Tiefe 30 cm</option>
+            <option value="180">Regal Höhe 180 cm</option>
+            <option value="60">Nachttisch Höhe 60 cm</option>
+            <option value="90">Küchenarbeitsplatte Höhe 90 cm</option>
+          </optgroup>
+        </select>
+        <div class="chips" id="quickChips" aria-label="Schnellauswahl">
+          <!-- wird per JS gefüllt: 50cm, 100cm, 150cm, 200cm -->
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="realValue">Realmaß (cm)</label>
+        <input id="realValue" type="number" inputmode="decimal" step="0.1" min="0" placeholder="z. B. 160"
+               aria-describedby="help" />
+      </div>
+
+      <div class="result" aria-live="polite">
+        <div>
+          <div class="hint">Modellmaß (1:15) in Millimetern</div>
+          <div class="value" id="result">–</div>
+        </div>
+        <button class="btn" id="copyBtn" disabled>Kopieren</button>
+      </div>
+
+      <div class="footer">
+        <span class="badge">Formel: (cm × 10) ÷ 15</span>
+        <span>Hinweis: Werte werden auf eine Nachkommastelle gerundet.</span>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function(){
+      const preset = document.getElementById('preset');
+      const realInput = document.getElementById('realValue');
+      const result = document.getElementById('result');
+      const copyBtn = document.getElementById('copyBtn');
+      const chips = document.getElementById('quickChips');
+
+      const quickValues = [50, 100, 150, 200];
+      quickValues.forEach(v=>{
+        const c = document.createElement('button');
+        c.className = 'chip';
+        c.type = 'button';
+        c.textContent = v + ' cm';
+        c.addEventListener('click', ()=>{
+          realInput.value = v;
+          update();
+        });
+        chips.appendChild(c);
+      });
+
+      // Zahleneingabe: Komma zulassen
+      realInput.addEventListener('input', (e)=>{
+        if (e.target.value.includes(',')){
+          e.target.value = e.target.value.replace(',', '.');
+        }
+        update();
+      });
+
+      preset.addEventListener('change', ()=>{
+        if (preset.value){
+          realInput.value = preset.value;
+          update();
+        }
+      });
+
+      copyBtn.addEventListener('click', async ()=>{
+        const text = result.textContent;
+        try{
+          await navigator.clipboard.writeText(text.replace(' mm',''));
+          copyBtn.textContent = 'Kopiert!';
+          setTimeout(()=> copyBtn.textContent = 'Kopieren', 1200);
+        }catch{
+          copyBtn.textContent = 'Fehlgeschlagen';
+          setTimeout(()=> copyBtn.textContent = 'Kopieren', 1200);
+        }
+      });
+
+      function update(){
+        const cm = parseFloat(realInput.value);
+        if (Number.isFinite(cm) && cm >= 0){
+          const mm = (cm * 10) / 15;     // 1:15 -> cm in mm, dann teilen durch 15
+          const mmRound = Math.round(mm * 10) / 10; // 1 Nachkommastelle
+          result.textContent = mmRound.toLocaleString('de-DE') + ' mm';
+          copyBtn.disabled = false;
+        } else {
+          result.textContent = '–';
+          copyBtn.disabled = true;
+        }
+      }
+
+      // Initial
+      update();
+    })();
+  </script>
+</body>
+</html>
