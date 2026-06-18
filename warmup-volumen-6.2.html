@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warmup – Volumen Klasse 6</title>
+<style>
+:root {
+  --bg: #f0f7ff;
+  --card: #ffffff;
+  --primary: #2563eb;
+  --primary-d: #1d4ed8;
+  --accent: #0ea5e9;
+  --success: #16a34a;
+  --error: #dc2626;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #cbd5e1;
+  --radius: 12px;
+  --shadow: 0 2px 14px rgba(0,0,0,0.09);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 70px;}
+header{text-align:center;margin-bottom:22px;}
+header h1{font-size:1.85rem;font-weight:800;color:var(--primary);letter-spacing:-0.4px;}
+header p{color:var(--muted);font-size:0.92rem;margin-top:4px;}
+
+/* Progress */
+.prog-wrap{width:100%;max-width:660px;margin-bottom:18px;}
+.step-dots{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-bottom:7px;}
+.step-dot{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700;background:var(--border);color:var(--muted);transition:all .3s;flex-shrink:0;}
+.step-dot.done{background:var(--success);color:#fff;}
+.step-dot.active{background:var(--primary);color:#fff;transform:scale(1.18);}
+.prog-track{height:5px;background:var(--border);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:99px;transition:width .4s ease;}
+
+/* Card */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:26px 26px 22px;width:100%;max-width:660px;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:translateY(0);}}
+.card-tag{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--primary);margin-bottom:5px;}
+.card h2{font-size:1.1rem;font-weight:700;margin-bottom:14px;line-height:1.38;}
+
+/* Figure */
+.fig{display:flex;justify-content:center;margin:14px 0;}
+.fig svg{max-width:100%;}
+
+/* MCQ */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0;}
+.opts.col1{grid-template-columns:1fr;}
+.opt{background:var(--bg);border:2px solid var(--border);border-radius:9px;padding:9px 13px;font-size:.91rem;font-family:inherit;cursor:pointer;text-align:left;transition:all .17s;line-height:1.4;}
+.opt:hover{border-color:var(--primary);background:#eff6ff;}
+.opt.sel{border-color:var(--primary);background:#eff6ff;font-weight:600;}
+.opt.ok{border-color:var(--success)!important;background:#dcfce7!important;}
+.opt.bad{border-color:var(--error)!important;background:#fee2e2!important;}
+.opt:disabled{cursor:default;opacity:.85;}
+
+/* Merksatz */
+.merke{background:#eff6ff;border-left:4px solid var(--primary);border-radius:0 10px 10px 0;padding:13px 16px;font-size:.93rem;line-height:1.75;margin:14px 0;}
+.merke strong{color:var(--primary-d);}
+
+/* Feedback */
+.fb{border-radius:9px;padding:11px 15px;font-size:.88rem;margin-top:11px;display:none;line-height:1.5;}
+.fb.show{display:block;}
+.fb.ok{background:#dcfce7;color:#15803d;border:1.5px solid #86efac;}
+.fb.err{background:#fee2e2;color:#b91c1c;border:1.5px solid #fca5a5;}
+.fb.tip{background:#fef9c3;color:#a16207;border:1.5px solid #fde047;}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:8px;border:none;font-size:.93rem;font-family:inherit;font-weight:600;cursor:pointer;transition:all .17s;margin-top:13px;}
+.btn-p{background:var(--primary);color:#fff;} .btn-p:hover{background:var(--primary-d);} .btn-p:disabled{background:var(--border);color:var(--muted);cursor:default;}
+.btn-s{background:var(--success);color:#fff;} .btn-s:hover{background:#15803d;}
+.btn-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center;}
+
+/* ── DRAG & DROP ── */
+.word-bank{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 6px;min-height:38px;padding:6px 8px;background:#f8fafc;border:2px dashed var(--border);border-radius:10px;}
+.word-chip{background:#dbeafe;color:#1e40af;border:2px solid #93c5fd;border-radius:7px;padding:5px 13px;font-size:.92rem;font-weight:600;cursor:grab;user-select:none;transition:all .15s;white-space:nowrap;}
+.word-chip:active{cursor:grabbing;transform:scale(1.06);box-shadow:0 3px 10px rgba(37,99,235,.25);}
+.word-chip.placed{opacity:.35;cursor:default;pointer-events:none;}
+
+.drag-sentence{font-size:1rem;line-height:2.6;margin:10px 0;}
+.drop-slot{display:inline-block;min-width:90px;height:34px;border:2px dashed #93c5fd;border-radius:7px;vertical-align:middle;margin:0 4px;background:#eff6ff;text-align:center;line-height:30px;font-weight:700;font-size:.92rem;color:#1e40af;position:relative;transition:all .2s;padding:0 6px;}
+.drop-slot.hover{background:#bfdbfe;border-color:var(--primary);}
+.drop-slot.filled{background:#dbeafe;border-color:#3b82f6;border-style:solid;}
+.drop-slot.ok{background:#dcfce7!important;border-color:var(--success)!important;color:var(--success)!important;border-style:solid!important;}
+.drop-slot.bad{background:#fee2e2!important;border-color:var(--error)!important;color:var(--error)!important;border-style:solid!important;}
+
+/* Number input */
+.num-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.num-row label{font-size:.9rem;font-weight:500;min-width:110px;}
+input[type=number]{border:2px solid var(--border);border-radius:8px;padding:7px 11px;font-size:.93rem;font-family:inherit;outline:none;transition:border-color .2s;width:130px;}
+input[type=number]:focus{border-color:var(--primary);}
+input.ok{border-color:var(--success)!important;background:#f0fdf4;}
+input.bad{border-color:var(--error)!important;background:#fef2f2;}
+
+/* Result */
+.result{text-align:center;padding:36px 24px;}
+.result .emo{font-size:3.2rem;}
+.result h2{font-size:1.45rem;margin:10px 0 7px;color:var(--success);}
+.result p{color:var(--muted);font-size:.93rem;}
+.checklist{list-style:none;margin:18px auto;max-width:360px;text-align:left;}
+.checklist li{padding:5px 0;font-size:.9rem;display:flex;gap:7px;align-items:center;}
+.checklist li::before{content:"✅";}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📦 Warmup – Volumen</h1>
+  <p>Klasse 6 · Schritt für Schritt</p>
+</header>
+
+<div class="prog-wrap">
+  <div class="step-dots" id="stepDots"></div>
+  <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+</div>
+
+<div id="stage"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let cur = 0;
+let att = {};   // attempts per stage index
+const TOTAL = 11;
+
+function getAtt(i){ return att[i]||0; }
+function incAtt(i){ att[i]=(att[i]||0)+1; }
+
+// ══════════════════════════════════════════════
+//  SVG ASSETS
+// ══════════════════════════════════════════════
+
+// Rechteck mit a und b (wie Bild 1)
+const SVG_RECT = `<svg width="220" height="120" viewBox="0 0 220 120">
+  <rect x="20" y="15" width="160" height="70" fill="#bfdbfe" stroke="#2563eb" stroke-width="2.5" rx="2"/>
+  <!-- Pfeil a (unten) -->
+  <line x1="20" y1="98" x2="180" y2="98" stroke="#2563eb" stroke-width="1.8"/>
+  <polygon points="18,94 18,102 10,98" fill="#2563eb"/>
+  <polygon points="182,94 182,102 190,98" fill="#2563eb"/>
+  <text x="95" y="113" text-anchor="middle" font-size="14" font-weight="700" fill="#1d4ed8" font-family="Segoe UI,sans-serif">a</text>
+  <!-- Pfeil b (rechts) -->
+  <line x1="193" y1="15" x2="193" y2="85" stroke="#2563eb" stroke-width="1.8"/>
+  <polygon points="189,17 197,17 193,9" fill="#2563eb"/>
+  <polygon points="189,83 197,83 193,91" fill="#2563eb"/>
+  <text x="210" y="55" text-anchor="middle" font-size="14" font-weight="700" fill="#1d4ed8" font-family="Segoe UI,sans-serif">b</text>
+</svg>`;
+
+// Quadrat mit a
+const SVG_QUAD = `<svg width="160" height="120" viewBox="0 0 160 120">
+  <rect x="20" y="10" width="90" height="90" fill="#bbf7d0" stroke="#16a34a" stroke-width="2.5" rx="2"/>
+  <!-- a unten -->
+  <line x1="20" y1="108" x2="110" y2="108" stroke="#16a34a" stroke-width="1.8"/>
+  <polygon points="18,104 18,112 10,108" fill="#16a34a"/>
+  <polygon points="112,104 112,112 120,108" fill="#16a34a"/>
+  <text x="65" y="120" text-anchor="middle" font-size="14" font-weight="700" fill="#15803d" font-family="Segoe UI,sans-serif">a</text>
+  <!-- a rechts -->
+  <line x1="118" y1="10" x2="118" y2="100" stroke="#16a34a" stroke-width="1.8"/>
+  <polygon points="114,12 122,12 118,4" fill="#16a34a"/>
+  <polygon points="114,98 122,98 118,106" fill="#16a34a"/>
+  <text x="138" y="60" text-anchor="middle" font-size="14" font-weight="700" fill="#15803d" font-family="Segoe UI,sans-serif">a</text>
+</svg>`;
+
+// Würfel isometrisch wie kleiner grauer Würfel – sauber, einfach, mit sichtbaren Flächen
+const SVG_CUBE_ISO = `<svg width="200" height="170" viewBox="0 0 200 170">
+  <!-- Isometrischer Würfel: 3 sichtbare Flächen -->
+  <!-- Deckel (oben) -->
+  <polygon points="100,20 168,58 100,96 32,58" fill="#dbeafe" stroke="#2563eb" stroke-width="2.2"/>
+  <!-- Rechte Fläche (vorne rechts) -->
+  <polygon points="168,58 168,118 100,156 100,96" fill="#93c5fd" stroke="#2563eb" stroke-width="2.2"/>
+  <!-- Linke Fläche (vorne links) -->
+  <polygon points="32,58 100,96 100,156 32,118" fill="#bfdbfe" stroke="#2563eb" stroke-width="2.2"/>
+  <!-- Flächen-Labels -->
+  <text x="100" y="65" text-anchor="middle" font-size="11" fill="#1e3a8a" font-family="Segoe UI,sans-serif" font-weight="600">Oben</text>
+  <text x="142" y="115" text-anchor="middle" font-size="11" fill="#1e40af" font-family="Segoe UI,sans-serif" font-weight="600">Rechts</text>
+  <text x="58" y="115" text-anchor="middle" font-size="11" fill="#1e40af" font-family="Segoe UI,sans-serif" font-weight="600">Links</text>
+  <!-- Hinweis auf versteckte Flächen -->
+  <text x="100" y="163" text-anchor="middle" font-size="10" fill="#64748b" font-family="Segoe UI,sans-serif">+ 3 versteckte Flächen</text>
+</svg>`;
+
+// Würfel 1×1×1 mit Maßen
+const SVG_CUBE_1 = `<svg width="210" height="185" viewBox="0 0 210 185">
+  <!-- Deckel -->
+  <polygon points="105,22 175,60 105,98 35,60" fill="#dbeafe" stroke="#2563eb" stroke-width="2.2"/>
+  <!-- Rechts -->
+  <polygon points="175,60 175,122 105,160 105,98" fill="#93c5fd" stroke="#2563eb" stroke-width="2.2"/>
+  <!-- Links -->
+  <polygon points="35,60 105,98 105,160 35,122" fill="#bfdbfe" stroke="#2563eb" stroke-width="2.2"/>
+  <!-- Maße -->
+  <!-- 1 cm oben -->
+  <text x="136" y="43" text-anchor="middle" font-size="12" fill="#1d4ed8" font-family="Segoe UI,sans-serif" font-weight="700">1 cm</text>
+  <!-- 1 cm rechte Kante -->
+  <text x="188" y="96" text-anchor="start" font-size="12" fill="#1d4ed8" font-family="Segoe UI,sans-serif" font-weight="700">1 cm</text>
+  <!-- 1 cm linke Kante -->
+  <text x="4" y="96" text-anchor="start" font-size="12" fill="#1d4ed8" font-family="Segoe UI,sans-serif" font-weight="700">1 cm</text>
+</svg>`;
+
+// Quader mit a, b, c (wie Schulbuch Bild 3)
+const SVG_QUADER_ABC = `<svg width="230" height="165" viewBox="0 0 230 165">
+  <!-- Quader isometrisch: breiter als hoch -->
+  <!-- Deckel -->
+  <polygon points="40,45 150,45 190,20 80,20" fill="#d1fae5" stroke="#16a34a" stroke-width="2"/>
+  <!-- Vorderseite -->
+  <polygon points="40,45 40,120 150,120 150,45" fill="#bbf7d0" stroke="#16a34a" stroke-width="2"/>
+  <!-- Rechte Seite -->
+  <polygon points="150,45 190,20 190,95 150,120" fill="#6ee7b7" stroke="#16a34a" stroke-width="2"/>
+  <!-- Maße -->
+  <!-- a = Länge (unten) -->
+  <line x1="40" y1="133" x2="150" y2="133" stroke="#16a34a" stroke-width="1.6"/>
+  <polygon points="38,129 38,137 30,133" fill="#16a34a"/>
+  <polygon points="152,129 152,137 160,133" fill="#16a34a"/>
+  <text x="95" y="148" text-anchor="middle" font-size="13" font-weight="700" fill="#15803d" font-family="Segoe UI,sans-serif">a (Länge)</text>
+  <!-- b = Breite (untere diagonale Kante, 45°, von 150,120 nach 190,95) -->
+  <line x1="150" y1="120" x2="190" y2="95" stroke="#059669" stroke-width="1.8" stroke-dasharray="4,2"/>
+  <polygon points="151,116 147,123 155,124" fill="#059669"/>
+  <polygon points="187,92 193,90 191,98" fill="#059669"/>
+  <text x="178" y="118" text-anchor="middle" font-size="13" font-weight="700" fill="#059669" font-family="Segoe UI,sans-serif" transform="rotate(-32,178,118)">b (Breite)</text>
+  <!-- c = Höhe (rechte Kante) -->
+  <line x1="198" y1="22" x2="198" y2="92" stroke="#2563eb" stroke-width="1.6"/>
+  <polygon points="194,24 202,24 198,16" fill="#2563eb"/>
+  <polygon points="194,90 202,90 198,98" fill="#2563eb"/>
+  <text x="208" y="62" font-size="12" font-weight="700" fill="#1d4ed8" font-family="Segoe UI,sans-serif">c</text>
+  <text x="205" y="75" font-size="10" fill="#1d4ed8" font-family="Segoe UI,sans-serif">(Höhe)</text>
+</svg>`;
+
+// ══════════════════════════════════════════════
+//  STAGES
+// ══════════════════════════════════════════════
+const stages = [
+  // 0 – Quadratfläche
+  { id:0, tag:"Wiederholung Fläche", type:"mcq",
+    title:"Wie berechnet man die Fläche eines Quadrats mit der Seitenlänge a?",
+    figure: SVG_QUAD,
+    options:["A = a + a", "A = 4 · a", "A = a · a", "A = a · a · a"],
+    correct:2,
+    tips:["Das Quadrat hat vier gleich lange Seiten. Die Fläche entsteht durch Multiplizieren der Seite mit sich selbst – nicht durch Addieren!",
+          "Stell dir 8×8 Kästchen auf einem Schachbrett vor: 8·8 = 64. Das ist a·a, nicht a+a oder 4·a!"] },
+
+  // 1 – Rechteckfläche
+  { id:1, tag:"Wiederholung Fläche", type:"mcq",
+    title:"Wie berechnet man die Fläche eines Rechtecks mit den Seiten a und b?",
+    figure: SVG_RECT,
+    options:["A = a + b", "A = 2·(a + b)", "A = a · b", "A = a · b · b"],
+    correct:2,
+    tips:["2·(a+b) ist der Umfang – nicht die Fläche! Fläche = Länge mal Breite.",
+          "Denk an ein Raster: a Spalten, b Zeilen → a·b kleine Einheitsquadrate."] },
+
+  // 2 – Flächen Würfel (isometrisch)
+  { id:2, tag:"Auf dem Weg zum Würfel", type:"mcq",
+    title:"Wie viele Flächen hat ein Würfel?",
+    figure: SVG_CUBE_ISO,
+    options:["4","5","6","8"],
+    correct:2,
+    tips:["Schau dir den Würfel an: du siehst 3 Flächen – aber dahinter verstecken sich noch 3 weitere. Zähle: Oben + Unten + Vorne + Hinten + Links + Rechts.",
+          "Oben + Unten = 2, Links + Rechts = 2, Vorne + Hinten = 2 → Zusammen: 6"] },
+
+  // 3 – Flächeneinheit Multi
+  { id:3, tag:"Einheiten", type:"mcq-multi",
+    title:"Welche Einheiten passen zu einer Fläche? Wähle alle richtigen aus!",
+    options:["cm²","m³","m²","cm","mm²","km"],
+    correct:[0,2,4],
+    tips:["Eine Fläche ist 2-dimensional. Die Einheit hat immer eine hochgestellte 2 (= Quadrat).",
+          "cm² = Quadratzentimeter, m² = Quadratmeter, mm² = Quadratmillimeter – alles mit ²."] },
+
+  // 4 – Volumeneinheit Multi
+  { id:4, tag:"Einheiten", type:"mcq-multi",
+    title:"Welche Einheiten passen zu einem Volumen? Wähle alle richtigen aus!",
+    options:["cm³","m²","dm³","m³","km²","mm"],
+    correct:[0,2,3],
+    tips:["Ein Volumen ist 3-dimensional. Die Einheit hat immer eine hochgestellte 3 (= Kubik).",
+          "cm³ = Kubikzentimeter, dm³ = Dezimeter³ (= 1 Liter!), m³ = Kubikmeter."] },
+
+  // 5 – Einheitswürfel
+  { id:5, tag:"Einheitswürfel", type:"mcq",
+    title:"Ein Würfel hat alle Seiten = 1 cm. Wie groß ist sein Volumen?",
+    figure: SVG_CUBE_1,
+    options:["3 cm³","6 cm³","1 cm³","1 cm²"],
+    correct:2,
+    tips:["Volumen = Länge × Breite × Höhe. Alle Seiten = 1 cm → 1 × 1 × 1 = ?",
+          "1 · 1 · 1 = 1 – und das Ergebnis hat die Einheit cm³, nicht cm²!"] },
+
+  // 6 – Drag & Drop Merksatz mit Wörtern (Länge/Breite/Höhe)
+  { id:6, tag:"Merksatz – Wörter", type:"drag",
+    title:"Ziehe die Begriffe in die richtigen Lücken!",
+    subtitle:"Das Volumen eines Quaders:",
+    sentenceParts:["V = ", "SLOT:Länge", " × ", "SLOT:Breite", " × ", "SLOT:Höhe"],
+    answers:["Länge","Breite","Höhe"],
+    chips:["Breite","Höhe","Länge"],
+    tips:["Die drei Dimensionen eines Quaders: erst die Länge (wie lang?), dann die Breite (wie breit?), dann die Höhe (wie hoch?).",
+          "L × B × H – wie die drei Raumrichtungen: Länge, Breite, Höhe."] },
+
+  // 7 – Drag & Drop Merksatz mit a, b, c (Abbildung mit Quader)
+  { id:7, tag:"Merksatz – Variablen", type:"drag",
+    title:"Und jetzt mit den Variablen a, b und c. Ziehe die Begriffe richtig ein!",
+    subtitle:"V =",
+    figure: SVG_QUADER_ABC,
+    sentenceParts:["V = ", "SLOT:a", " × ", "SLOT:b", " × ", "SLOT:c"],
+    answers:["a","b","c"],
+    chips:["b","c","a"],
+    tips:["Im Schulbuch steht: V = a · b · c. Dabei steht a für die Länge, b für die Breite und c für die Höhe.",
+          "V = a · b · c – alle drei Kantenlängen werden multipliziert!"] },
+
+  // 8 – Alle richtigen Aussagen auswählen (Multi-MCQ)
+  { id:8, tag:"Merksatz – Alles richtig?", type:"mcq-multi",
+    title:"Welche Aussagen zur Volumenberechnung eines Quaders sind richtig? Wähle alle aus!",
+    options:[
+      "V = Länge × Breite × Höhe",
+      "V = Länge + Breite + Höhe",
+      "V = a · b · c",
+      "Das Ergebnis hat die Einheit cm³",
+      "Das Ergebnis hat die Einheit cm²",
+      "Man multipliziert alle drei Kantenlängen"
+    ],
+    correct:[0,2,3,5],
+    tips:["Volumen = Multiplizieren aller drei Kanten. Das Ergebnis ist immer in einer Kubik-Einheit (³).",
+          "V = a·b·c = Länge·Breite·Höhe – alle drei richtig. Einheit = cm³, nie cm²."] },
+
+  // 9 – Aufgabe 1: Aquarium
+  { id:9, tag:"Aufgabe 1", type:"num",
+    title:"Ein Aquarium ist 40 cm lang, 20 cm breit und 30 cm hoch. Berechne das Volumen!",
+    hint:"V = Länge × Breite × Höhe",
+    unit:"cm³", correct:24000,
+    tips:["Setze die Werte ein: V = 40 × 20 × 30. Rechne zuerst 40 × 20, dann mal 30.",
+          "40 × 20 = 800 → 800 × 30 = 24 000 cm³"] },
+
+  // 10 – Aufgabe 2: Würfel 5 cm
+  { id:10, tag:"Aufgabe 2", type:"num",
+    title:"Ein Würfel hat eine Seitenlänge von 5 cm. Wie groß ist sein Volumen?",
+    hint:"Beim Würfel gilt: a = b = c",
+    unit:"cm³", correct:125,
+    tips:["Beim Würfel sind alle Seiten gleich: V = a · a · a = 5 · 5 · 5.",
+          "5 × 5 = 25 → 25 × 5 = 125 cm³"] },
+];
+
+// ══════════════════════════════════════════════
+//  PROGRESS
+// ══════════════════════════════════════════════
+function updateProg(){
+  const dots = document.getElementById("stepDots");
+  dots.innerHTML = "";
+  for(let i=0;i<TOTAL;i++){
+    const d=document.createElement("div");
+    d.className="step-dot"+(i<cur?" done":i===cur?" active":"");
+    d.textContent=i<cur?"✓":(i+1)+"";
+    dots.appendChild(d);
+  }
+  document.getElementById("progFill").style.width=(cur/TOTAL*100)+"%";
+}
+
+// ══════════════════════════════════════════════
+//  RENDER DISPATCHER
+// ══════════════════════════════════════════════
+function renderStage(idx){
+  if(idx>=TOTAL){renderResult();return;}
+  updateProg();
+  const s=stages[idx];
+  const c=document.getElementById("stage");
+  if(s.type==="mcq") renderMCQ(c,s,idx);
+  else if(s.type==="mcq-multi") renderMCQMulti(c,s,idx);
+  else if(s.type==="drag") renderDrag(c,s,idx);
+  else if(s.type==="num") renderNum(c,s,idx);
+}
+
+// ══════════════════════════════════════════════
+//  MCQ (single)
+// ══════════════════════════════════════════════
+function renderMCQ(c,s,idx){
+  c.innerHTML=`<div class="card">
+    <div class="card-tag">📌 ${s.tag} · Schritt ${idx+1} von ${TOTAL}</div>
+    <h2>${s.title}</h2>
+    ${s.figure?`<div class="fig">${s.figure}</div>`:""}
+    <div class="opts col1" id="opts"></div>
+    <div class="fb" id="fb"></div>
+    <div class="btn-row">
+      <button class="btn btn-p" id="chk" onclick="checkMCQ(${idx})" disabled>Prüfen ✓</button>
+      <button class="btn btn-s" id="nxt" onclick="next()" style="display:none">Weiter →</button>
+    </div>
+  </div>`;
+  const opts=document.getElementById("opts");
+  s.options.forEach((o,i)=>{
+    const b=document.createElement("button");
+    b.className="opt"; b.textContent=o;
+    b.onclick=()=>{
+      document.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel"));
+      b.classList.add("sel");
+      document.getElementById("chk").disabled=false;
+    };
+    opts.appendChild(b);
+  });
+}
+function checkMCQ(idx){
+  const s=stages[idx];
+  const all=[...document.querySelectorAll(".opt")];
+  const sel=all.findIndex(b=>b.classList.contains("sel"));
+  const fb=document.getElementById("fb");
+  incAtt(idx); const a=getAtt(idx);
+  if(sel===s.correct){
+    all[sel].classList.add("ok"); all.forEach(b=>b.disabled=true);
+    fb.textContent="✅ Richtig! Sehr gut!"; fb.className="fb show ok";
+    document.getElementById("chk").disabled=true;
+    document.getElementById("nxt").style.display="inline-flex";
+  } else {
+    all[sel].classList.add("bad"); all[sel].classList.remove("sel");
+    if(a<3){
+      fb.textContent="❌ Noch nicht richtig – versuch es nochmal!"; fb.className="fb show err";
+      document.getElementById("chk").disabled=true;
+      all.forEach(b=>{if(!b.classList.contains("bad"))b.onclick=()=>{
+        document.querySelectorAll(".opt:not(.bad)").forEach(x=>x.classList.remove("sel"));
+        b.classList.add("sel"); document.getElementById("chk").disabled=false;
+      };});
+    } else {
+      const tip=s.tips[Math.min(a-3,s.tips.length-1)];
+      all.forEach(b=>b.disabled=true);
+      fb.innerHTML=`💡 <strong>Tipp:</strong> ${tip}<br><br>Richtige Antwort: <strong>${s.options[s.correct]}</strong>`;
+      fb.className="fb show tip";
+      document.getElementById("chk").disabled=true;
+      document.getElementById("nxt").style.display="inline-flex";
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+//  MCQ MULTI
+// ══════════════════════════════════════════════
+function renderMCQMulti(c,s,idx){
+  c.innerHTML=`<div class="card">
+    <div class="card-tag">📌 ${s.tag} · Schritt ${idx+1} von ${TOTAL}</div>
+    <h2>${s.title}</h2>
+    <p style="font-size:.84rem;color:var(--muted);margin-bottom:8px;">Mehrere Antworten möglich – wähle alle richtigen!</p>
+    <div class="opts" id="opts"></div>
+    <div class="fb" id="fb"></div>
+    <div class="btn-row">
+      <button class="btn btn-p" id="chk" onclick="checkMCQMulti(${idx})" disabled>Prüfen ✓</button>
+      <button class="btn btn-s" id="nxt" onclick="next()" style="display:none">Weiter →</button>
+    </div>
+  </div>`;
+  const opts=document.getElementById("opts");
+  s.options.forEach((o,i)=>{
+    const b=document.createElement("button");
+    b.className="opt"; b.innerHTML=o;
+    b.onclick=()=>{
+      b.classList.toggle("sel");
+      document.getElementById("chk").disabled=document.querySelectorAll(".opt.sel").length===0;
+    };
+    opts.appendChild(b);
+  });
+}
+function checkMCQMulti(idx){
+  const s=stages[idx];
+  const all=[...document.querySelectorAll(".opt")];
+  const sel=all.map((b,i)=>b.classList.contains("sel")?i:-1).filter(i=>i>=0);
+  const fb=document.getElementById("fb");
+  incAtt(idx); const a=getAtt(idx);
+  const cSet=new Set(s.correct), sSet=new Set(sel);
+  const ok=s.correct.every(i=>sSet.has(i))&&sel.every(i=>cSet.has(i));
+  if(ok){
+    all.forEach((b,i)=>{b.disabled=true;if(cSet.has(i))b.classList.add("ok");});
+    fb.textContent="✅ Alle richtigen Antworten gefunden! Super!"; fb.className="fb show ok";
+    document.getElementById("chk").disabled=true;
+    document.getElementById("nxt").style.display="inline-flex";
+  } else {
+    if(a<3){
+      all.forEach(b=>b.classList.remove("sel"));
+      fb.textContent="❌ Nicht alle richtig – versuch es nochmal!"; fb.className="fb show err";
+      document.getElementById("chk").disabled=true;
+      all.forEach(b=>{b.onclick=()=>{b.classList.toggle("sel");document.getElementById("chk").disabled=document.querySelectorAll(".opt.sel").length===0;};});
+    } else {
+      all.forEach((b,i)=>{b.disabled=true;if(cSet.has(i))b.classList.add("ok");else if(sSet.has(i))b.classList.add("bad");});
+      const tip=s.tips[Math.min(a-3,s.tips.length-1)];
+      const labs=s.correct.map(i=>s.options[i]).join(", ");
+      fb.innerHTML=`💡 <strong>Tipp:</strong> ${tip}<br><br>Richtige Antworten: <strong>${labs}</strong>`;
+      fb.className="fb show tip";
+      document.getElementById("chk").disabled=true;
+      document.getElementById("nxt").style.display="inline-flex";
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+//  DRAG & DROP
+// ══════════════════════════════════════════════
+let dragState = { chip:null, chipIdx:null };
+
+function renderDrag(c,s,idx){
+  // Build sentence HTML
+  let sent = "";
+  s.sentenceParts.forEach((p,i)=>{
+    if(p.startsWith("SLOT:")){
+      const key=p.replace("SLOT:","");
+      sent+=`<span class="drop-slot" data-answer="${key}" data-slot="${i}" id="slot_${i}" 
+        ondragover="slotOver(event)" ondragleave="slotLeave(event)" ondrop="slotDrop(event,${idx})"
+        ontouchend="touchDrop(event,${idx})">&nbsp;</span>`;
+    } else {
+      sent+=`<span>${p}</span>`;
+    }
+  });
+
+  // Build chips (shuffled order already in s.chips)
+  let chipsHTML = s.chips.map((ch,i)=>
+    `<span class="word-chip" draggable="true" id="chip_${i}" data-chip="${ch}" data-idx="${i}"
+      ondragstart="chipDrag(event,${i})"
+      ontouchstart="touchStart(event,${i})"
+      ontouchmove="touchMove(event)">${ch}</span>`
+  ).join("");
+
+  c.innerHTML=`<div class="card">
+    <div class="card-tag">📌 ${s.tag} · Schritt ${idx+1} von ${TOTAL}</div>
+    <h2>${s.title}</h2>
+    ${s.figure?`<div class="fig">${s.figure}</div>`:""}
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:6px;">Ziehe die Begriffe in die Lücken:</p>
+    <div class="word-bank" id="wordBank">${chipsHTML}</div>
+    <div class="drag-sentence" id="dragSent">${sent}</div>
+    <div class="fb" id="fb"></div>
+    <div class="btn-row">
+      <button class="btn btn-p" id="chk" onclick="checkDrag(${idx})">Prüfen ✓</button>
+      <button class="btn btn-s" id="nxt" onclick="next()" style="display:none">Weiter →</button>
+    </div>
+  </div>`;
+}
+
+function chipDrag(e,i){
+  dragState.chip=e.target.dataset.chip;
+  dragState.chipEl=e.target;
+  e.dataTransfer.effectAllowed="move";
+}
+function slotOver(e){
+  e.preventDefault();
+  e.currentTarget.classList.add("hover");
+}
+function slotLeave(e){ e.currentTarget.classList.remove("hover"); }
+function slotDrop(e,idx){
+  e.preventDefault();
+  const slot=e.currentTarget;
+  slot.classList.remove("hover");
+  placeChip(slot, idx);
+}
+
+// Touch support
+let _touchChip=null, _touchEl=null;
+function touchStart(e,i){
+  _touchChip=e.currentTarget.dataset.chip;
+  _touchEl=e.currentTarget;
+}
+function touchMove(e){ e.preventDefault(); }
+function touchDrop(e,idx){
+  const slot=e.currentTarget;
+  if(!_touchChip) return;
+  dragState.chip=_touchChip; dragState.chipEl=_touchEl;
+  placeChip(slot,idx);
+  _touchChip=null; _touchEl=null;
+}
+
+function placeChip(slot, idx){
+  const chip=dragState.chip, el=dragState.chipEl;
+  if(!chip||!el) return;
+  // If slot already has a chip, return old chip to bank
+  if(slot.dataset.placed){
+    const old=slot.dataset.placed;
+    const oldEl=document.querySelector(`.word-chip[data-chip="${old}"]`);
+    if(oldEl){ oldEl.classList.remove("placed"); }
+  }
+  // If this chip was already in another slot, clear that slot
+  document.querySelectorAll(".drop-slot").forEach(sl=>{
+    if(sl.dataset.placed===chip && sl!==slot){
+      sl.textContent="\u00a0"; sl.classList.remove("filled","ok","bad");
+      delete sl.dataset.placed;
+    }
+  });
+  slot.textContent=chip;
+  slot.dataset.placed=chip;
+  slot.classList.add("filled");
+  el.classList.add("placed");
+  dragState={chip:null,chipEl:null};
+}
+
+function checkDrag(idx){
+  const s=stages[idx];
+  const slots=[...document.querySelectorAll(".drop-slot")];
+  const fb=document.getElementById("fb");
+  incAtt(idx); const a=getAtt(idx);
+
+  let allOk=true;
+  slots.forEach(sl=>{
+    const placed=sl.dataset.placed||"";
+    const ans=sl.dataset.answer;
+    if(placed===ans){ sl.classList.add("ok"); sl.classList.remove("bad"); }
+    else { sl.classList.add("bad"); sl.classList.remove("ok"); allOk=false; }
+  });
+
+  if(allOk){
+    fb.textContent="✅ Perfekt! Du hast den Merksatz richtig zusammengesetzt!"; fb.className="fb show ok";
+    document.getElementById("chk").disabled=true;
+    document.getElementById("nxt").style.display="inline-flex";
+  } else {
+    if(a<3){
+      fb.textContent="❌ Nicht ganz – ein oder mehrere Begriffe sind falsch. Versuch es nochmal!"; fb.className="fb show err";
+      // Reset wrong slots
+      slots.forEach(sl=>{
+        if(!sl.classList.contains("ok")){
+          const placedChip=sl.dataset.placed;
+          if(placedChip){
+            const el=document.querySelector(`.word-chip[data-chip="${placedChip}"]`);
+            if(el) el.classList.remove("placed");
+          }
+          sl.textContent="\u00a0"; sl.classList.remove("filled","bad","ok");
+          delete sl.dataset.placed;
+        }
+      });
+    } else {
+      const tip=s.tips[Math.min(a-3,s.tips.length-1)];
+      // Fill all slots correctly
+      slots.forEach(sl=>{
+        sl.textContent=sl.dataset.answer;
+        sl.classList.add("ok"); sl.classList.remove("bad","filled");
+      });
+      document.querySelectorAll(".word-chip").forEach(ch=>ch.classList.add("placed"));
+      fb.innerHTML=`💡 <strong>Tipp:</strong> ${tip}<br><br>Die Reihenfolge lautet: <strong>${s.answers.join(" × ")}</strong>`;
+      fb.className="fb show tip";
+      document.getElementById("chk").disabled=true;
+      document.getElementById("nxt").style.display="inline-flex";
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+//  NUMBER INPUT
+// ══════════════════════════════════════════════
+function renderNum(c,s,idx){
+  c.innerHTML=`<div class="card">
+    <div class="card-tag">📌 ${s.tag} · Schritt ${idx+1} von ${TOTAL}</div>
+    <h2>${s.title}</h2>
+    <div class="merke"><strong>Formel:</strong> ${s.hint}<br>V = a · b · c</div>
+    <div class="num-row">
+      <label>Dein Ergebnis:</label>
+      <input type="number" id="numIn" placeholder="Ergebnis …">
+      <span style="font-weight:700;">${s.unit}</span>
+    </div>
+    <div class="fb" id="fb"></div>
+    <div class="btn-row">
+      <button class="btn btn-p" id="chk" onclick="checkNum(${idx})">Prüfen ✓</button>
+      <button class="btn btn-s" id="nxt" onclick="next()" style="display:none">${idx===TOTAL-1?"Abschluss 🏁":"Weiter →"}</button>
+    </div>
+  </div>`;
+  document.getElementById("numIn").addEventListener("keydown",e=>{if(e.key==="Enter")checkNum(idx);});
+}
+function checkNum(idx){
+  const s=stages[idx];
+  const val=parseFloat(document.getElementById("numIn").value);
+  const fb=document.getElementById("fb");
+  incAtt(idx); const a=getAtt(idx);
+  const inp=document.getElementById("numIn");
+  if(val===s.correct){
+    inp.classList.add("ok"); inp.disabled=true;
+    fb.innerHTML=`✅ Richtig! V = <strong>${s.correct} ${s.unit}</strong>`; fb.className="fb show ok";
+    document.getElementById("chk").disabled=true;
+    document.getElementById("nxt").style.display="inline-flex";
+  } else {
+    inp.classList.remove("ok"); inp.classList.add("bad");
+    if(a<3){
+      fb.textContent="❌ Noch nicht richtig – versuch es nochmal!"; fb.className="fb show err";
+    } else {
+      const tip=s.tips[Math.min(a-3,s.tips.length-1)];
+      inp.value=s.correct; inp.classList.remove("bad"); inp.classList.add("ok"); inp.disabled=true;
+      fb.innerHTML=`💡 <strong>Tipp:</strong> ${tip}<br><br>Richtige Antwort: <strong>${s.correct} ${s.unit}</strong>`;
+      fb.className="fb show tip";
+      document.getElementById("chk").disabled=true;
+      document.getElementById("nxt").style.display="inline-flex";
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+//  NEXT / RESULT
+// ══════════════════════════════════════════════
+function next(){ cur++; renderStage(cur); window.scrollTo({top:0,behavior:"smooth"}); }
+
+function renderResult(){
+  updateProg();
+  document.getElementById("stage").innerHTML=`<div class="card result">
+    <div class="emo">🎉</div>
+    <h2>Warmup geschafft!</h2>
+    <p>Du hast alle Schritte zum Thema Volumen durchgearbeitet. Top Vorbereitung!</p>
+    <ul class="checklist">
+      <li>Quadrat- und Rechteckfläche (a, b) wiederholt</li>
+      <li>Flächen eines Würfels erkannt (6 Stück)</li>
+      <li>Einheiten für Fläche (²) und Volumen (³) unterschieden</li>
+      <li>Einheitswürfel 1 cm³ verstanden</li>
+      <li>Merksatz mit Wörtern per Drag &amp; Drop</li>
+      <li>Merksatz mit a, b, c per Drag &amp; Drop</li>
+      <li>Alle richtigen Aussagen identifiziert</li>
+      <li>Zwei Rechenaufgaben gelöst</li>
+    </ul>
+    <p style="margin-top:14px;font-weight:700;color:var(--primary);">V = Länge × Breite × Höhe = a · b · c 📦</p>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+renderStage(0);
+</script>
+</body>
+</html>
