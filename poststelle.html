@@ -229,6 +229,7 @@ button{font-family:inherit;}
 .sort-card .sc-betreff{font-size:var(--text-md); font-weight:800; color:var(--col-slate-dark); margin:7px 0 4px;}
 .sort-card .sc-betreff span{color:var(--col-text-muted); font-weight:600; font-size:var(--text-sm);}
 .sort-card .sc-text{font-size:var(--text-sm); color:var(--col-text-muted); line-height:1.5;}
+.sort-card .sc-from{font-weight:700; color:var(--col-slate); display:inline-block; margin-bottom:3px;}
 .basket-row{display:grid; grid-template-columns:repeat(5,1fr); gap:10px;}
 /* Ablagefach-Optik: vorne offen, leicht gekippt wie eine Postschale */
 .basket{position:relative; cursor:pointer; border:none; border-radius:12px 12px 10px 10px;
@@ -766,7 +767,7 @@ function renderSortKarte(s){
   area.innerHTML=`<div class="sort-card" id="sortCard" role="group" aria-label="Sendung: ${escapeHtml(s.betreff)}">
     <span class="sc-type">${TYP_LABEL[s.typ]||'✉️ Sendung'}</span>
     <div class="sc-betreff">Betreff: ${escapeHtml(s.betreff)}</div>
-    <div class="sc-text"><span>von ${escapeHtml(s.absender)}</span> · ${escapeHtml(s.text)}</div>
+    <div class="sc-text"><span class="sc-from">Absender: ${escapeHtml(s.absender)}</span><br>${escapeHtml(s.text)}</div>
   </div>`;
   const card=$('#sortCard');
   // hereinfliegen von rechts oben
