@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Die Poststelle – HBG</title>
+
+<!--
+  ============================================================================
+  LERNSPIEL „DIE POSTSTELLE"  ·  HBG Dortmund · Deutsch · Klasse 5
+  ----------------------------------------------------------------------------
+  Single-File HTML. three.js + GSAP per CDN.
+  → Beim ersten Öffnen ist eine Internetverbindung nötig.
+  Highscores werden lokal im Browser gespeichert (localStorage),
+  es werden KEINE persönlichen Daten erhoben.
+
+  GRAFIK: Im Hintergrund liegt ein 3D-Schreibtisch (three.js) mit Holzplatte,
+  Stifthalter, Kaffeetasse und Briefstapel. Davor liegt der aktive Brief als
+  leicht gekippte Karte. Bei Modus 1 markiert ein gelber Textmarker den
+  ABSENDER und ein türkiser den EMPFÄNGER – automatisch, wenn du richtig tippst.
+
+  NEUE SENDUNGEN ERGÄNZEN:
+  Im <script> unten das Array SENDUNGEN. Eintrag kopieren, Werte anpassen.
+  ============================================================================
+-->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<style>
+:root{
+  --col-slate-dark:#2C3D4C; --col-slate:#3E5668; --col-slate-mid:#6A8599;
+  --col-slate-pale:#D0DCE6; --col-slate-ghost:#EEF3F7;
+  --col-rust-dark:#9E4E22; --col-rust:#D97A4A; --col-rust-pale:#F5DDD1; --col-rust-ghost:#FBF0EB;
+  --col-sage-dark:#4D8B3F; --col-sage:#7DBB6F; --col-sage-pale:#DDF0D8; --col-sage-ghost:#F0FAF0;
+  --col-gold:#C17B00; --col-warning:#C17B00; --col-warning-pale:#FFF3CC; --col-warning-text:#5C4400;
+  --col-error:#C0392B; --col-error-pale:#FDECEA; --col-error-text:#7A1B14;
+  --col-bg:#F5F4F1; --col-white:#FFFFFF; --col-text:#1E2A35; --col-text-muted:#5A6A78;
+  --col-border:#D4D0C8; --col-focus:#3E5668; --col-shadow:rgba(62,86,104,0.10);
+  /* Textmarker-Farben */
+  --marker-absender:#FFD54A;   /* warmes Gelb – Absender */
+  --marker-empfaenger:#5BD6C8; /* Türkis      – Empfänger */
+  --text-xs:0.694rem; --text-sm:0.833rem; --text-base:1rem; --text-md:1.2rem;
+  --text-lg:1.44rem; --text-xl:1.728rem; --text-2xl:2.074rem;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;
+  background:var(--col-bg); color:var(--col-text);
+  font-size:var(--text-base); line-height:1.55;
+  display:flex; flex-direction:column; min-height:100vh;
+  -webkit-tap-highlight-color:transparent; overflow:hidden;
+}
+:focus-visible{outline:3px solid var(--col-focus); outline-offset:3px; border-radius:6px;}
+
+/* ===== 3D-Hintergrund-Canvas ===== */
+#bg3d{position:fixed; inset:0; z-index:0; display:none;}
+#bg3d.show{display:block;}
+
+/* ===== HEADER ===== */
+header{
+  position:relative; z-index:3; background:var(--col-slate); color:#fff;
+  padding:10px 28px; flex:0 0 auto; display:flex; justify-content:space-between;
+  align-items:center; gap:16px; box-shadow:0 2px 10px rgba(0,0,0,.15);
+}
+header h1{font-size:var(--text-lg); font-weight:800; line-height:1.1;}
+.header-meta{font-size:var(--text-xs); color:var(--col-slate-pale);
+  text-transform:uppercase; letter-spacing:.06em; margin-top:1px;}
+.header-right{display:flex; align-items:center; gap:16px;}
+.hbg-wordmark{display:inline-flex; align-items:flex-end; gap:5px;}
+.hbg-wordmark__main{font-size:var(--text-lg); font-weight:800; color:#fff;}
+.hbg-wordmark__sub{font-size:var(--text-sm); color:#EBA882; margin-bottom:3px;}
+.hud{display:none; gap:10px; align-items:center;}
+.hud.show{display:flex;}
+.hud-chip{background:rgba(255,255,255,.12); border-radius:999px; padding:5px 14px;
+  font-size:var(--text-sm); font-weight:700; display:inline-flex; align-items:center; gap:7px;
+  font-variant-numeric:tabular-nums;}
+.hud-chip small{font-weight:600; opacity:.8; font-size:var(--text-xs);}
+
+/* ===== LAYOUT ===== */
+main{position:relative; z-index:2; flex:1 1 auto; display:flex; flex-direction:column;
+  min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+.stage{flex:1 1 auto; width:100%; max-width:1040px; margin:0 auto;
+  padding:18px 28px 24px; display:flex; flex-direction:column; min-height:0;}
+.screen{display:none; flex-direction:column; flex:1 1 auto; min-height:0;}
+.screen.active{display:flex; animation:fadeIn .35s ease;}
+/* Menü darf bei wenig Höhe wachsen und mitscrollen, statt gestaucht zu werden */
+#scr-menu{justify-content:flex-start; flex:0 0 auto;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;}}
+
+/* ===== BUTTONS ===== */
+button{font-family:inherit;}
+.btn-primary{background:var(--col-rust-dark); color:#fff; border:none; padding:12px 26px;
+  border-radius:10px; font-size:var(--text-base); font-weight:700; min-height:48px; cursor:pointer;
+  transition:background .2s, transform .1s;}
+.btn-primary:hover{background:#B55E2A;}
+.btn-primary:active{background:#7D3C18; transform:translateY(1px);}
+.btn-secondary{background:rgba(255,255,255,.85); color:var(--col-slate); border:2px solid var(--col-slate);
+  padding:10px 22px; border-radius:10px; font-weight:700; min-height:46px; cursor:pointer;
+  transition:background .2s; display:inline-flex; align-items:center; gap:8px; backdrop-filter:blur(4px);}
+.btn-secondary:hover{background:#fff;}
+
+/* ===== START-MENÜ ===== */
+.intro{text-align:center; margin-bottom:18px;}
+.intro h2{font-size:var(--text-2xl); color:var(--col-slate-dark); font-weight:800;}
+.intro p{color:var(--col-text-muted); max-width:620px; margin:6px auto 0; font-size:var(--text-md);}
+.mode-grid{display:grid; grid-template-columns:1fr 1fr; gap:20px; max-width:880px; margin:8px auto 0; width:100%;}
+.mode-card{background:var(--col-white); border-radius:18px; padding:24px 26px;
+  box-shadow:0 4px 16px var(--col-shadow); border:2px solid transparent; cursor:pointer;
+  text-align:left; transition:transform .15s, box-shadow .2s, border-color .2s;
+  display:flex; flex-direction:column; gap:10px;}
+.mode-card:hover{transform:translateY(-4px); box-shadow:0 10px 26px var(--col-shadow); border-color:var(--col-rust);}
+.mode-card .mode-icon{width:60px; height:60px; border-radius:14px; display:flex; align-items:center;
+  justify-content:center; font-size:32px;}
+.mode-card.m1 .mode-icon{background:var(--col-slate-pale);}
+.mode-card.m2 .mode-icon{background:var(--col-rust-pale);}
+.mode-card h3{font-size:var(--text-lg); color:var(--col-slate-dark); font-weight:800;}
+.mode-card p{color:var(--col-text-muted); font-size:var(--text-sm); line-height:1.5;}
+.mode-foot{display:flex; justify-content:space-between; align-items:center; margin-top:6px;}
+.mode-hi{font-size:var(--text-sm); font-weight:700; color:var(--col-sage-dark);}
+.mode-go{font-size:var(--text-sm); font-weight:800; color:var(--col-rust-dark);}
+
+/* ===== INPUT-BOXEN ===== */
+.input-box{background:rgba(238,243,247,.92); border-left:5px solid var(--col-slate-mid);
+  border-radius:0 12px 12px 0; padding:14px 18px; margin:0 0 14px; backdrop-filter:blur(3px);}
+.input-box .input-label{display:inline-flex; align-items:center; gap:7px; font-size:var(--text-xs);
+  font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:var(--col-slate); margin-bottom:5px;}
+.input-box .input-label::before{content:"ℹ"; font-size:var(--text-md); line-height:1;}
+.input-box p{font-size:var(--text-sm); color:var(--col-text); line-height:1.55;}
+.input-box b{color:var(--col-slate-dark);}
+.marker-legend{display:flex; gap:18px; margin-top:9px; flex-wrap:wrap;}
+.marker-legend span{display:inline-flex; align-items:center; gap:7px; font-size:var(--text-sm); font-weight:700;}
+.marker-swatch{width:22px; height:13px; border-radius:3px; display:inline-block; box-shadow:0 1px 2px rgba(0,0,0,.18);}
+.swatch-abs{background:var(--marker-absender);}
+.swatch-emp{background:var(--marker-empfaenger);}
+
+/* ===== PROGRESS ===== */
+.play-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; gap:14px;}
+.progress-label{font-size:var(--text-sm); color:var(--col-slate-dark); font-weight:700;
+  background:rgba(255,255,255,.8); padding:4px 12px; border-radius:999px;}
+.progress-bar{height:9px; background:rgba(208,220,230,.85); border-radius:5px; overflow:hidden; margin:0 0 16px;}
+.progress-bar__fill{height:100%; background:var(--col-rust); border-radius:5px; transition:width .4s ease; width:0%;}
+
+/* ===== MODUS 1 — Brief auf dem Tisch ===== */
+.task-q{font-size:var(--text-md); font-weight:700; color:var(--col-slate-dark); text-align:center;
+  margin-bottom:10px; min-height:1.6em; text-shadow:0 1px 2px rgba(255,255,255,.6);}
+.task-q .q-target{padding:1px 8px; border-radius:6px;}
+.task-q .q-target.abs{background:var(--marker-absender);}
+.task-q .q-target.emp{background:var(--marker-empfaenger);}
+
+.mail-stage{flex:1 1 auto; display:flex; align-items:center; justify-content:center; min-height:0;
+  padding:6px 0; perspective:1400px;}
+.doc{position:relative; width:100%; max-width:600px; transform:rotateX(8deg) rotateZ(-1.2deg);
+  transform-style:preserve-3d; will-change:transform;}
+
+.paper{background:linear-gradient(180deg,#fffefb 0%, #fbf8f1 100%); border-radius:6px;
+  box-shadow:0 18px 40px rgba(40,30,15,.32), 0 3px 8px rgba(0,0,0,.15); overflow:hidden; position:relative;}
+.paper::after{content:""; position:absolute; inset:0; border-radius:6px;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.05); pointer-events:none;}
+
+.hotspot{position:relative; cursor:pointer; border-radius:5px; outline-offset:3px;
+  transition:background .15s; z-index:1;}
+.hotspot:hover{background:rgba(0,0,0,.035);}
+.hotspot .marker-stroke{position:absolute; left:-3px; right:-3px; top:8%; bottom:8%; border-radius:4px;
+  transform:scaleX(0); transform-origin:left center; z-index:-1; mix-blend-mode:multiply; opacity:.85;
+  filter:url(#rough);}
+.hotspot.mark-abs .marker-stroke{background:var(--marker-absender);}
+.hotspot.mark-emp .marker-stroke{background:var(--marker-empfaenger);}
+
+/* Umschlag */
+.env-inner{padding:26px 30px; min-height:280px; display:flex; flex-direction:column;}
+.env .hs-absender{align-self:flex-start; padding:8px 12px; max-width:64%;
+  font-size:var(--text-sm); color:var(--col-text); line-height:1.45;}
+.env .stamp{align-self:flex-end; margin-top:-46px; width:54px; height:66px;
+  border:2px dashed var(--col-rust); border-radius:6px; display:flex; align-items:center;
+  justify-content:center; font-size:24px;
+  background:repeating-linear-gradient(45deg,#fff,#fff 5px,#fbeee6 5px,#fbeee6 10px); color:var(--col-rust-dark);}
+.env .hs-empfaenger{margin:auto auto 14px; padding:14px 20px; text-align:center;
+  font-size:var(--text-md); line-height:1.5; max-width:80%;}
+.env .hs-empfaenger b{font-size:var(--text-lg); color:var(--col-slate-dark);}
+
+/* Brief */
+.letter-inner{padding:24px 30px; min-height:280px; display:flex; flex-direction:column; gap:11px;}
+.letter .l-ort{align-self:flex-end; font-size:var(--text-sm); color:var(--col-text-muted);}
+.letter .hs-absender{align-self:flex-start; padding:6px 10px; font-size:var(--text-sm);
+  color:var(--col-text); line-height:1.45;}
+.letter .l-anrede{font-weight:700; color:var(--col-slate-dark);}
+.letter .hs-empfaenger{padding:4px 9px; display:inline-block; font-weight:700; color:var(--col-slate-dark);}
+.letter .l-body{font-size:var(--text-sm); color:var(--col-text); line-height:1.6;}
+.letter .l-gruss{margin-top:4px; font-size:var(--text-sm);}
+.letter .l-sign{font-weight:700; color:var(--col-slate-dark);}
+
+/* E-Mail */
+.email .email-bar{background:var(--col-slate-dark); color:#fff; padding:8px 16px; font-size:var(--text-sm);
+  font-weight:700; display:flex; align-items:center; gap:8px;}
+.email .email-fields{padding:6px 20px 0;}
+.email .email-row{display:flex; align-items:flex-start; gap:10px; padding:9px 0;
+  border-bottom:1px solid rgba(62,86,104,.10);}
+.email .email-row .e-key{flex:0 0 64px; font-weight:700; color:var(--col-text-muted);
+  font-size:var(--text-sm); padding-top:3px;}
+.email .email-row .e-val{flex:1; font-size:var(--text-sm); color:var(--col-text); line-height:1.45;}
+.email .hs-absender, .email .hs-empfaenger{display:inline-block; padding:3px 8px;}
+.email .email-body{padding:14px 20px 22px; font-size:var(--text-sm); color:var(--col-text); line-height:1.6;}
+
+.hotspot.done::after{content:"✓"; position:absolute; top:-11px; right:-11px; width:26px; height:26px;
+  background:var(--col-sage-dark); color:#fff; border-radius:50%; display:flex; align-items:center;
+  justify-content:center; font-size:15px; font-weight:800; z-index:5;}
+
+/* ===== FEEDBACK ===== */
+.feedback-line{min-height:46px; margin-top:10px; border-radius:10px; padding:10px 16px;
+  font-size:var(--text-sm); font-weight:600; display:none; align-items:center; gap:8px;
+  background:rgba(255,255,255,.92); backdrop-filter:blur(3px);}
+.feedback-line.show{display:flex;}
+.fb-tipp{border-left:4px solid var(--col-slate-mid); color:var(--col-text);}
+.fb-tipp::before{content:"ℹ"; font-weight:800; color:var(--col-slate);}
+.fb-good{border-left:4px solid var(--col-sage-dark); color:#2D5C25;}
+.fb-good::before{content:"✓"; font-weight:800; color:var(--col-sage-dark);}
+
+/* ===== MODUS 2 — Sortieren ===== */
+.sort-wrap{flex:1 1 auto; display:flex; flex-direction:column; min-height:0; gap:14px;}
+.sort-card-area{display:flex; justify-content:center; align-items:center; min-height:150px; perspective:1200px;}
+.sort-card{background:linear-gradient(180deg,#fffefb,#fbf8f1); border-radius:10px;
+  box-shadow:0 14px 32px rgba(40,30,15,.30); width:100%; max-width:560px; padding:18px 22px;
+  user-select:none; border-left:6px solid var(--col-gold);
+  will-change:transform; transform:rotateX(6deg);}
+.sort-card .sc-type{font-size:var(--text-xs); font-weight:800; text-transform:uppercase;
+  letter-spacing:.07em; color:var(--col-rust-dark); display:inline-flex; align-items:center; gap:6px;}
+.sort-card .sc-betreff{font-size:var(--text-md); font-weight:800; color:var(--col-slate-dark); margin:7px 0 4px;}
+.sort-card .sc-betreff span{color:var(--col-text-muted); font-weight:600; font-size:var(--text-sm);}
+.sort-card .sc-text{font-size:var(--text-sm); color:var(--col-text-muted); line-height:1.5;}
+.basket-row{display:grid; grid-template-columns:repeat(5,1fr); gap:10px;}
+/* Ablagefach-Optik: vorne offen, leicht gekippt wie eine Postschale */
+.basket{position:relative; cursor:pointer; border:none; border-radius:12px 12px 10px 10px;
+  padding:14px 8px 12px; text-align:center; min-height:120px;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:5px;
+  background:linear-gradient(180deg, rgba(255,255,255,.96) 0%, rgba(238,243,247,.96) 100%);
+  box-shadow:0 8px 18px rgba(40,30,15,.18), inset 0 -10px 14px -8px rgba(62,86,104,.35);
+  transition:transform .15s, box-shadow .2s; transform:perspective(600px) rotateX(8deg);
+  border-bottom:5px solid var(--col-slate-mid);}
+.basket::before{content:""; position:absolute; left:8px; right:8px; top:9px; height:9px; border-radius:6px;
+  background:linear-gradient(180deg, rgba(62,86,104,.18), transparent);} /* Schlitz-Schatten oben */
+.basket .b-emoji{font-size:28px; line-height:1;}
+.basket .b-title{font-size:var(--text-sm); font-weight:800; color:var(--col-slate-dark); line-height:1.2;}
+.basket .b-sub{font-size:var(--text-xs); color:var(--col-text-muted); line-height:1.3;}
+.basket .b-count{position:absolute; top:-9px; right:-7px; min-width:22px; height:22px; padding:0 5px;
+  background:var(--col-rust-dark); color:#fff; border-radius:999px; font-size:var(--text-xs);
+  font-weight:800; display:none; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(0,0,0,.2);}
+.basket .b-count.show{display:flex;}
+.basket:hover{transform:perspective(600px) rotateX(8deg) translateY(-3px);
+  box-shadow:0 12px 24px rgba(40,30,15,.24), inset 0 -10px 14px -8px rgba(62,86,104,.35);}
+.basket.glow{border-bottom-color:var(--col-sage-dark);
+  box-shadow:0 12px 26px rgba(77,139,63,.35), inset 0 -10px 14px -8px rgba(77,139,63,.4);}
+.basket.shake-wrong{border-bottom-color:var(--col-error);}
+.basket.disabled{pointer-events:none; opacity:.85;}
+
+/* Fliegender Klon (Brief, der durch die Luft segelt) */
+.fly-letter{position:fixed; z-index:40; pointer-events:none; will-change:transform;
+  background:linear-gradient(180deg,#fffefb,#fbf8f1); border-radius:8px;
+  box-shadow:0 18px 36px rgba(40,30,15,.4); border-left:6px solid var(--col-gold);
+  padding:14px 18px; max-width:360px;}
+.fly-letter .fl-type{font-size:var(--text-xs); font-weight:800; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--col-rust-dark);}
+.fly-letter .fl-betreff{font-size:var(--text-sm); font-weight:800; color:var(--col-slate-dark); margin-top:4px;}
+
+/* ===== ERGEBNIS ===== */
+.result-card{background:var(--col-white); border-radius:18px; box-shadow:0 10px 30px rgba(40,30,15,.28);
+  padding:34px 38px; text-align:center; max-width:540px; margin:auto; display:flex; flex-direction:column;
+  gap:14px; align-items:center;}
+.result-stars{font-size:48px; line-height:1;}
+.result-card h2{font-size:var(--text-xl); color:var(--col-slate-dark); font-weight:800;}
+.result-score{font-size:var(--text-2xl); font-weight:800; color:var(--col-rust-dark); font-variant-numeric:tabular-nums;}
+.result-sub{color:var(--col-text-muted); font-size:var(--text-md);}
+.result-newhi{display:inline-flex; align-items:center; gap:7px; background:var(--col-sage-pale);
+  color:#2D5C25; font-weight:800; padding:7px 16px; border-radius:999px; font-size:var(--text-sm);}
+.result-btns{display:flex; gap:14px; margin-top:8px;}
+
+@media (max-width:760px){
+  .mode-grid{grid-template-columns:1fr;}
+  .basket-row{grid-template-columns:repeat(3,1fr);}
+  header{padding:9px 16px;} .stage{padding:14px 16px 18px;}
+  /* Spiel-Screens (nicht das Menü) brauchen genug Platz, damit die Bühne nicht kollabiert */
+  #scr-m1, #scr-m2, #scr-result{min-height:560px;}
+  /* etwas Luft unter den gestapelten Modus-Karten, damit die letzte bequem scrollbar ist */
+  #scr-menu.active{padding-bottom:24px;}
+}
+@media (max-height:560px){
+  .intro h2{font-size:var(--text-xl);} .doc{max-width:540px;}
+  .env-inner,.letter-inner{min-height:auto;}
+}
+</style>
+</head>
+<body>
+
+<!-- SVG-Filter für die „raue" Textmarker-Optik -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="rough">
+    <feTurbulence type="fractalNoise" baseFrequency="0.012 0.4" numOctaves="2" seed="7" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<canvas id="bg3d"></canvas>
+
+<header>
+  <div>
+    <h1>Die Poststelle</h1>
+    <div class="header-meta">HBG Dortmund · Deutsch · Klasse 5</div>
+  </div>
+  <div class="header-right">
+    <div class="hud" id="hud">
+      <span class="hud-chip"><small>Punkte</small><span id="hudPunkte">0</span></span>
+      <span class="hud-chip">🔥<span id="hudStreak">0</span></span>
+    </div>
+    <div class="hbg-wordmark"><span class="hbg-wordmark__main">HBG</span><span class="hbg-wordmark__sub">SRL</span></div>
+  </div>
+</header>
+
+<main>
+<div class="stage">
+
+  <!-- ============ START-MENÜ ============ -->
+  <section class="screen active" id="scr-menu" aria-labelledby="menu-title">
+    <div class="intro">
+      <h2 id="menu-title">Willkommen in der Poststelle!</h2>
+      <p>Auf deinem Schreibtisch landet die Post. Finde heraus, von wem sie kommt und an wen sie geht –
+         oder sortiere sie nach dem Thema. Wähle einen Modus:</p>
+    </div>
+
+    <div class="input-box">
+      <span class="input-label">Input</span>
+      <p>Post gibt es in <b>drei Formen</b>: als <b>Briefumschlag</b>, als <b>aufgeklappten Brief</b>
+         oder als <b>E-Mail</b>. Überall findest du einen <b>Absender</b> (von wem) und einen
+         <b>Empfänger</b> (an wen).</p>
+      <div class="marker-legend" aria-hidden="true">
+        <span><span class="marker-swatch swatch-abs"></span>Gelb = Absender</span>
+        <span><span class="marker-swatch swatch-emp"></span>Türkis = Empfänger</span>
+      </div>
+    </div>
+
+    <div class="mode-grid">
+      <button class="mode-card m1" id="card-m1" aria-label="Modus 1: Adressen finden starten">
+        <div class="mode-icon" aria-hidden="true">🖍️</div>
+        <h3>Adressen finden</h3>
+        <p>Tippe auf den Absender und dann auf den Empfänger. Der Textmarker malt automatisch mit.</p>
+        <div class="mode-foot">
+          <span class="mode-hi" id="hi-m1">Bester Wert: –</span>
+          <span class="mode-go">Los geht's →</span>
+        </div>
+      </button>
+      <button class="mode-card m2" id="card-m2" aria-label="Modus 2: Expertenmodus Sortieren starten">
+        <div class="mode-icon" aria-hidden="true">🗂️</div>
+        <h3>Experten-Modus: Sortieren</h3>
+        <p>Lies den Betreff und ziehe die Sendung in den passenden Postkorb. Worum geht es?</p>
+        <div class="mode-foot">
+          <span class="mode-hi" id="hi-m2">Bester Wert: –</span>
+          <span class="mode-go">Los geht's →</span>
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ MODUS 1 ============ -->
+  <section class="screen" id="scr-m1" aria-labelledby="m1-title">
+    <h2 id="m1-title" style="position:absolute;left:-9999px;">Adressen finden</h2>
+    <div class="play-head">
+      <button class="btn-secondary" data-back>← Menü</button>
+      <span class="progress-label">Sendung <span id="m1-cur">1</span> von <span id="m1-max">10</span></span>
+    </div>
+    <div class="progress-bar"><div class="progress-bar__fill" id="m1-bar"></div></div>
+
+    <div class="input-box" id="m1-input">
+      <span class="input-label">Input</span>
+      <p id="m1-input-text">Tippe zuerst auf den <b>Absender</b> – die Stelle zeigt, von wem die Post kommt.
+         Der <b>gelbe Textmarker</b> markiert sie dann.</p>
+    </div>
+
+    <p class="task-q" id="m1-q">Wo steht der <span class="q-target abs">Absender</span>?</p>
+
+    <div class="mail-stage">
+      <div class="doc" id="m1-doc"></div>
+    </div>
+
+    <div class="feedback-line" id="m1-fb" role="status" aria-live="polite"></div>
+  </section>
+
+  <!-- ============ MODUS 2 ============ -->
+  <section class="screen" id="scr-m2" aria-labelledby="m2-title">
+    <h2 id="m2-title" style="position:absolute;left:-9999px;">Sortieren</h2>
+    <div class="play-head">
+      <button class="btn-secondary" data-back>← Menü</button>
+      <span class="progress-label">Sendung <span id="m2-cur">1</span> von <span id="m2-max">10</span></span>
+    </div>
+    <div class="progress-bar"><div class="progress-bar__fill" id="m2-bar"></div></div>
+
+    <div class="input-box">
+      <span class="input-label">Input</span>
+      <p>Lies den <b>Betreff</b> – das ist die kurze Überschrift. Sie verrät, <b>worum es geht</b>.
+         <b>Tippe</b> dann das passende <b>Ablagefach</b> an – der Brief fliegt von selbst hinein.</p>
+    </div>
+
+    <div class="sort-wrap">
+      <div class="sort-card-area" id="m2-card-area"></div>
+      <div class="feedback-line" id="m2-fb" role="status" aria-live="polite"></div>
+      <div class="basket-row" id="m2-baskets"></div>
+    </div>
+  </section>
+
+  <!-- ============ ERGEBNIS ============ -->
+  <section class="screen" id="scr-result" aria-labelledby="res-title">
+    <div class="result-card">
+      <div class="result-stars" id="res-stars" aria-hidden="true">⭐</div>
+      <h2 id="res-title">Runde geschafft!</h2>
+      <div class="result-score"><span id="res-pkt">0</span> von <span id="res-max">10</span> richtig</div>
+      <div class="result-sub" id="res-sub">Stark gemacht!</div>
+      <div class="result-newhi" id="res-newhi" hidden>🏆 Neuer Bestwert!</div>
+      <div class="result-btns">
+        <button class="btn-primary" id="res-again">Nochmal</button>
+        <button class="btn-secondary" data-back>Zurück ins Menü</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<script>
+/* ==========================================================================
+   1) DATEN · Sendungen mit lustigen Alltags-Absendern/Empfängern (außerhalb Schule)
+   typ: 'umschlag' | 'brief' | 'email'
+   ========================================================================== */
+const SENDUNGEN = [
+  { typ:'brief', ort:'Bottrop, 3. April', absender:'Oma Helga', empfaenger:'mein Lieblingsenkel Tim', anrede:'Hallo',
+    betreff:'Sockenpaket ist unterwegs', text:'Ich habe dir wieder Wollsocken gestrickt – diesmal in Neongrün. Trag sie schön warm!', korb:'paket' },
+
+  { typ:'email', absender:'kater.mauzi@katzenpost.de', empfaenger:'frauchen@zuhause.de',
+    betreff:'Napf schon wieder leer', text:'Es ist ein Notfall. Mein Futternapf ist leer und ich verhungere fast. Bitte sofort handeln.', korb:'beschwerde' },
+
+  { typ:'umschlag', absender:'Pizzeria Don Calzone', empfaenger:'Familie Hungrig\nSchlemmerweg 7\n44137 Dortmund',
+    betreff:'Gutschein: Eine Pizza gratis', text:'Vielen Dank für Ihre Treue! Diesen Monat gibt es eine Pizza Ihrer Wahl geschenkt.', korb:'gewinn' },
+
+  { typ:'brief', ort:'Castrop, 12. Mai', absender:'dein Nachbar Herr Knöpfle', empfaenger:'Familie Wackelmann von oben', anrede:'Liebe',
+    betreff:'Bitte leiser tanzen', text:'Jeden Abend wackelt meine Lampe. Tanzt ihr da oben Polka? Ein bisschen leiser wäre nett.', korb:'beschwerde' },
+
+  { typ:'email', absender:'gewinnspiel@limonaden-fabrik.de', empfaenger:'lisa.mueller@email.de',
+    betreff:'Du hast einen Roller gewonnen!', text:'Herzlichen Glückwunsch! Bei unserem Limo-Gewinnspiel hast du einen Tretroller gewonnen.', korb:'gewinn' },
+
+  { typ:'umschlag', absender:'Zoo Wuppertal', empfaenger:'Max Abenteurer\nDschungelstraße 3\n42103 Wuppertal',
+    betreff:'Dein Pinguin-Patenausweis', text:'Du bist jetzt offiziell Pate von Pinguin „Waddel". Anbei dein Ausweis und ein Foto.', korb:'paket' },
+
+  { typ:'brief', ort:'Herne, 1. Juni', absender:'der Weihnachtsmann', empfaenger:'Emma aus dem roten Haus', anrede:'Liebe',
+    betreff:'Antwort auf deinen Wunschzettel', text:'Danke für deinen Brief! Ein Pony passt leider nicht in den Schlitten. Wie wäre es mit einem Plüschpony?', korb:'antwort' },
+
+  { typ:'email', absender:'support@gurken-online.de', empfaenger:'kunde4477@email.de',
+    betreff:'Ihre Bestellung: 200 Gurken', text:'Sie haben aus Versehen 200 Gewürzgurken bestellt. Sollen wir die Lieferung wirklich losschicken?', korb:'antwort' },
+
+  { typ:'umschlag', absender:'Fußballverein Kickers 07', empfaenger:'Trainer Theo\nElferweg 11\n44801 Bochum',
+    betreff:'Du bist Trainer des Monats', text:'Glückwunsch! Das Team hat dich zum Trainer des Monats gewählt. Den Pokal gibt es am Samstag.', korb:'gewinn' },
+
+  { typ:'brief', ort:'Dortmund, 8. März', absender:'Tante Roswita aus Spanien', empfaenger:'meine Schwester Brigitte', anrede:'Hallo',
+    betreff:'Grüße vom Strand', text:'Hier scheint die Sonne und die Eisdiele hat 30 Sorten! Wünschte, du wärst hier. Bis bald!', korb:'gruss' },
+
+  { typ:'email', absender:'roboter@haushaltshelfer.de', empfaenger:'besitzer@smarthome.de',
+    betreff:'Ich habe die Katze gestaubsaugt', text:'Kurze Meldung: Beim Putzen kam mir die Katze in die Quere. Ihr geht es gut, sie ist nur etwas zerzaust.', korb:'beschwerde' },
+
+  { typ:'umschlag', absender:'Bibliothek Eulennest', empfaenger:'Paul Vergesslich\nBücherallee 9\n44135 Dortmund',
+    betreff:'Dein Buch ist seit 2 Jahren fällig', text:'Das Buch „Wie man pünktlich abgibt" wartet seit 730 Tagen auf seine Rückkehr. Kein Druck.', korb:'beschwerde' },
+
+  { typ:'brief', ort:'Lünen, 19. Juli', absender:'dein bester Freund Jonas', empfaenger:'Ben im Ferienlager', anrede:'Hallo',
+    betreff:'Grüße aus der Heimat', text:'Hier ist es langweilig ohne dich. Dein Hamster lässt grüßen und hat schon dreimal nach dir gefragt.', korb:'gruss' },
+
+  { typ:'email', absender:'info@achterbahn-park.de', empfaenger:'familie.wagner@email.de',
+    betreff:'Frage: Sitzplatz reserviert?', text:'Möchten Sie für den „Looping-Drachen" wirklich Platz 1 ganz vorne? Bitte kurz bestätigen.', korb:'antwort' },
+
+  { typ:'umschlag', absender:'Opa Werner', empfaenger:'mein Enkel Felix\nKnusperhaus 4\n45657 Recklinghausen',
+    betreff:'Päckchen mit Keksen', text:'Deine Oma hat zu viele Kekse gebacken. Iss bitte schnell, sonst werden sie hart wie Steine.', korb:'paket' },
+];
+
+/* Postkörbe (Modus 2) – passen zu den lustigen Inhalten */
+const KOERBE = [
+  { id:'paket',     emoji:'📦', titel:'Pakete', sub:'etwas wird geschickt' },
+  { id:'gewinn',    emoji:'🎉', titel:'Gewinn & Glück', sub:'du hast gewonnen' },
+  { id:'beschwerde',emoji:'😤', titel:'Ärger & Bitte', sub:'jemand beschwert sich' },
+  { id:'gruss',     emoji:'💌', titel:'Grüße', sub:'liebe Grüße & Urlaub' },
+  { id:'antwort',   emoji:'❓', titel:'Frage & Antwort', sub:'es wird gefragt' },
+];
+const KORB_NAME = Object.fromEntries(KOERBE.map(k => [k.id, k.titel]));
+
+/* ==========================================================================
+   2) HELFER
+   ========================================================================== */
+const $  = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => [...el.querySelectorAll(s)];
+const RUNDEN = 10;
+const KEYS = { hi1:'hbg_poststelle_hi_adressen', hi2:'hbg_poststelle_hi_sortieren' };
+function loadHi(k){ try{ return parseInt(localStorage.getItem(k)) || 0; }catch(e){ return 0; } }
+function saveHi(k,v){ try{ localStorage.setItem(k, String(v)); }catch(e){} }
+function escapeHtml(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function nl2br(s){ return escapeHtml(s).replace(/\n/g,'<br>'); }
+function zieheRunde(n){
+  const pool=[...SENDUNGEN];
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  const out=[]; while(out.length<n){ out.push(...pool); } return out.slice(0,n);
+}
+function screenWechsel(id){ $$('.screen').forEach(s=>s.classList.remove('active')); $('#'+id).classList.add('active'); }
+
+/* ==========================================================================
+   3) 3D-SCHREIBTISCH (three.js) – dezenter Hintergrund
+   ========================================================================== */
+let three = { ready:false, renderer:null, scene:null, camera:null, raf:null };
+
+function init3D(){
+  if(three.ready || typeof THREE === 'undefined') return;
+  const canvas = $('#bg3d');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0xeae3d6, 26, 52);
+
+  const camera = new THREE.PerspectiveCamera(46, window.innerWidth/window.innerHeight, 0.1, 100);
+  camera.position.set(0, 13.5, 17); camera.lookAt(0, -0.6, 0.5);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.62));
+  const key = new THREE.DirectionalLight(0xfff0d8, 0.95); key.position.set(-6, 11, 6); scene.add(key);
+  const warm = new THREE.PointLight(0xffcf8a, 0.7, 44); warm.position.set(5, 6, 3); scene.add(warm);
+
+  // Holz-Tischplatte
+  const desk = new THREE.Mesh(new THREE.BoxGeometry(46, 1, 32),
+    new THREE.MeshStandardMaterial({ color:0x9c6b3f, roughness:0.85, metalness:0.05 }));
+  desk.position.y = -0.6; scene.add(desk);
+  for(let i=0;i<8;i++){
+    const grain = new THREE.Mesh(new THREE.BoxGeometry(46, 0.02, 0.18),
+      new THREE.MeshStandardMaterial({ color:0x875b34, roughness:0.9, transparent:true, opacity:0.35 }));
+    grain.position.set(0, -0.08, -13 + i*3.4 + (Math.random()-0.5)); scene.add(grain);
+  }
+
+  // Stifthalter
+  const cupMat = new THREE.MeshStandardMaterial({ color:0x3E5668, roughness:0.4, metalness:0.1 });
+  const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.9,0.75,1.6,24,1,true), cupMat);
+  cup.position.set(-9.5, 0.3, -2); scene.add(cup);
+  const cupBottom = new THREE.Mesh(new THREE.CircleGeometry(0.75,24), cupMat);
+  cupBottom.rotation.x=-Math.PI/2; cupBottom.position.set(-9.5,-0.48,-2); scene.add(cupBottom);
+  [0xD97A4A,0x4D8B3F,0xC0392B,0xC17B00].forEach((c,i)=>{
+    const pen=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,3.2,8),
+      new THREE.MeshStandardMaterial({color:c, roughness:0.5}));
+    pen.position.set(-9.5+(i-1.5)*0.22, 1.4, -2+(i%2)*0.2);
+    pen.rotation.z=(i-1.5)*0.13; pen.rotation.x=(i%2-0.5)*0.18; scene.add(pen);
+  });
+
+  // Kaffeetasse
+  const mugMat = new THREE.MeshStandardMaterial({ color:0xF5F4F1, roughness:0.3 });
+  const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.95,0.85,1.3,24), mugMat);
+  mug.position.set(9.4, 0.05, -1.5); scene.add(mug);
+  const coffee = new THREE.Mesh(new THREE.CylinderGeometry(0.85,0.85,0.1,24),
+    new THREE.MeshStandardMaterial({color:0x4b2e16, roughness:0.2}));
+  coffee.position.set(9.4, 0.66, -1.5); scene.add(coffee);
+  const handle = new THREE.Mesh(new THREE.TorusGeometry(0.42,0.1,10,24), mugMat);
+  handle.position.set(10.5, 0.1, -1.5); handle.rotation.y=Math.PI/2; scene.add(handle);
+
+  // Briefstapel
+  const stack = new THREE.Group();
+  for(let i=0;i<6;i++){
+    const env=new THREE.Mesh(new THREE.BoxGeometry(4.4,0.08,3),
+      new THREE.MeshStandardMaterial({color:i%2?0xfdfbf5:0xf3ead9, roughness:0.8}));
+    env.position.set((Math.random()-0.5)*0.5, i*0.1, (Math.random()-0.5)*0.5);
+    env.rotation.y=(Math.random()-0.5)*0.25; stack.add(env);
+  }
+  stack.position.set(8.5, 0.05, 4.6); stack.rotation.y=-0.3; scene.add(stack);
+
+  // einzelner Umschlag mit Stempel
+  const loose=new THREE.Mesh(new THREE.BoxGeometry(4.6,0.1,3.1),
+    new THREE.MeshStandardMaterial({color:0xfdfbf5, roughness:0.8}));
+  loose.position.set(-8, 0.1, 5); loose.rotation.y=0.35; scene.add(loose);
+  const stampDot=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.12,0.8),
+    new THREE.MeshStandardMaterial({color:0xD97A4A, roughness:0.6}));
+  stampDot.position.set(-9.2, 0.17, 4.2); stampDot.rotation.y=0.35; scene.add(stampDot);
+
+  three = { ready:true, renderer, scene, camera, raf:null };
+  animate3D();
+  window.addEventListener('resize', onResize3D);
+}
+function animate3D(){
+  if(!three.ready) return;
+  const t=performance.now()*0.0004;
+  three.camera.position.x=Math.sin(t)*0.7;
+  three.camera.position.y=13.5+Math.sin(t*0.7)*0.25;
+  three.camera.lookAt(0,-0.6,0.5);
+  three.renderer.render(three.scene, three.camera);
+  three.raf=requestAnimationFrame(animate3D);
+}
+function onResize3D(){
+  if(!three.ready) return;
+  three.camera.aspect=window.innerWidth/window.innerHeight;
+  three.camera.updateProjectionMatrix();
+  three.renderer.setSize(window.innerWidth, window.innerHeight);
+}
+function show3D(on){ $('#bg3d').classList.toggle('show', on); }
+
+/* ==========================================================================
+   4) SPIELZUSTAND
+   ========================================================================== */
+const Spiel = { modus:null, runde:0, punkte:0, streak:0, sendungen:[], aktuell:null };
+function startModus(modus){
+  Spiel.modus=modus; Spiel.runde=0; Spiel.punkte=0; Spiel.streak=0;
+  Spiel.sendungen=zieheRunde(RUNDEN); m2Counts={};
+  $('#hud').classList.add('show'); updateHud();
+  init3D(); show3D(true);
+  if(modus===1){ screenWechsel('scr-m1'); naechsteM1(); }
+  else         { screenWechsel('scr-m2'); naechsteM2(); }
+}
+function updateHud(){ $('#hudPunkte').textContent=Spiel.punkte; $('#hudStreak').textContent=Spiel.streak; }
+function zaehleHoch(neuerWert){
+  const el=$('#hudPunkte'); const start=parseInt(el.textContent)||0; const obj={v:start};
+  gsap.to(obj,{v:neuerWert, duration:.5, ease:'power1.out', onUpdate(){ el.textContent=Math.round(obj.v); }});
+  gsap.fromTo(el,{scale:1.4},{scale:1, duration:.4, ease:'back.out(2)'});
+}
+
+/* ==========================================================================
+   5) MODUS 1 — ADRESSEN FINDEN  (+ Auto-Textmarker)
+   ========================================================================== */
+let m1Phase='absender';
+function naechsteM1(){
+  Spiel.aktuell=Spiel.sendungen[Spiel.runde]; m1Phase='absender';
+  $('#m1-cur').textContent=Spiel.runde+1; $('#m1-max').textContent=RUNDEN;
+  $('#m1-bar').style.width=(Spiel.runde/RUNDEN*100)+'%';
+  setM1Frage(); versteckeFb('#m1-fb'); renderSendung(Spiel.aktuell);
+}
+function setM1Frage(){
+  const abs=m1Phase==='absender';
+  $('#m1-q').innerHTML = abs
+    ? 'Wo steht der <span class="q-target abs">Absender</span>?'
+    : 'Wo steht der <span class="q-target emp">Empfänger</span>?';
+  $('#m1-input-text').innerHTML = abs
+    ? 'Tippe auf den <b>Absender</b> – von wem die Post kommt. Der <b>gelbe</b> Marker malt mit.'
+    : 'Jetzt der <b>Empfänger</b> – an wen die Post geht. Der <b>türkise</b> Marker malt mit.';
+}
+function renderSendung(s){
+  const doc=$('#m1-doc'); let html='';
+  if(s.typ==='umschlag'){
+    html=`<div class="paper env"><div class="env-inner">
+      <div class="hotspot hs-absender" data-rolle="absender" tabindex="0" role="button" aria-label="Bereich Absender">
+        <span class="marker-stroke"></span>${nl2br(s.absender)}</div>
+      <div class="stamp" aria-hidden="true">★</div>
+      <div class="hotspot hs-empfaenger" data-rolle="empfaenger" tabindex="0" role="button" aria-label="Bereich Empfänger">
+        <span class="marker-stroke"></span><b>${nl2br(s.empfaenger)}</b></div>
+    </div></div>`;
+  } else if(s.typ==='brief'){
+    html=`<div class="paper letter"><div class="letter-inner">
+      <div class="hotspot hs-absender" data-rolle="absender" tabindex="0" role="button" aria-label="Bereich Absender">
+        <span class="marker-stroke"></span>${escapeHtml(s.absender)}</div>
+      <div class="l-ort">${escapeHtml(s.ort||'')}</div>
+      <div class="l-anrede">${escapeHtml(s.anrede||'Hallo')} <span class="hotspot hs-empfaenger" data-rolle="empfaenger" tabindex="0" role="button" aria-label="Bereich Empfänger"><span class="marker-stroke"></span>${escapeHtml(s.empfaenger)}</span>,</div>
+      <div class="l-body">${escapeHtml(s.text)}</div>
+      <div class="l-gruss">Viele Grüße</div>
+      <div class="l-sign hotspot hs-absender" data-rolle="absender" tabindex="0" role="button" aria-label="Bereich Absender (Unterschrift)">
+        <span class="marker-stroke"></span>${escapeHtml(s.absender)}</div>
+    </div></div>`;
+  } else {
+    html=`<div class="paper email"><div class="email-bar" aria-hidden="true">✉️ Neue E-Mail</div>
+      <div class="email-fields">
+        <div class="email-row"><div class="e-key">Von</div><div class="e-val">
+          <span class="hotspot hs-absender" data-rolle="absender" tabindex="0" role="button" aria-label="Bereich Absender"><span class="marker-stroke"></span>${escapeHtml(s.absender)}</span></div></div>
+        <div class="email-row"><div class="e-key">An</div><div class="e-val">
+          <span class="hotspot hs-empfaenger" data-rolle="empfaenger" tabindex="0" role="button" aria-label="Bereich Empfänger"><span class="marker-stroke"></span>${escapeHtml(s.empfaenger)}</span></div></div>
+        <div class="email-row"><div class="e-key">Betreff</div><div class="e-val"><b>${escapeHtml(s.betreff)}</b></div></div>
+      </div>
+      <div class="email-body">${escapeHtml(s.text)}</div></div>`;
+  }
+  doc.innerHTML=html;
+  $$('.hotspot',doc).forEach(h=>{
+    h.addEventListener('click',()=>m1Tipp(h));
+    h.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); m1Tipp(h); } });
+  });
+  // Brief segelt von rechts oben herein und landet mit kleinem Wackler
+  gsap.fromTo(doc,
+    {x:320, y:-90, rotateZ:12, rotateX:34, opacity:0, scale:.86},
+    {x:0, y:0, rotateZ:-1.2, rotateX:8, opacity:1, scale:1, duration:.75, ease:'power3.out'});
+}
+function maleMarker(el, rolle){
+  el.classList.add(rolle==='absender'?'mark-abs':'mark-emp');
+  const stroke=$('.marker-stroke', el);
+  if(stroke) gsap.fromTo(stroke,{scaleX:0},{scaleX:1, duration:.45, ease:'power2.inOut'});
+}
+function m1Tipp(el){
+  const richtig = el.dataset.rolle===m1Phase;
+  if(richtig){
+    // alle Stellen derselben Rolle markieren (z. B. Absender oben UND in der Unterschrift)
+    const gleiche = $$(`.hotspot[data-rolle="${m1Phase}"]`, $('#m1-doc'));
+    gleiche.forEach(h=>{ maleMarker(h, m1Phase); h.classList.add('done'); h.style.pointerEvents='none'; });
+    gsap.fromTo(el,{scale:1},{scale:1.04, duration:.18, yoyo:true, repeat:1, ease:'power1.inOut'});
+    const mehrfach = gleiche.length>1 && m1Phase==='absender';
+    zeigeFb('#m1-fb','good', m1Phase==='absender'
+      ? (mehrfach ? 'Richtig! Der Absender steht oben und unter dem Gruß.' : 'Richtig! Das ist der Absender.')
+      : 'Super! Das ist der Empfänger.');
+    Spiel.punkte++; Spiel.streak++; zaehleHoch(Spiel.punkte); $('#hudStreak').textContent=Spiel.streak;
+    if(m1Phase==='absender'){
+      setTimeout(()=>{ m1Phase='empfaenger'; setM1Frage(); versteckeFb('#m1-fb'); }, 850);
+    } else {
+      $$('.hotspot',$('#m1-doc')).forEach(h=>h.style.pointerEvents='none');
+      setTimeout(()=>endeSendungM1(), 950);
+    }
+  } else {
+    gsap.fromTo(el,{x:-6},{x:0, duration:.4, ease:'elastic.out(1,0.4)'});
+    Spiel.streak=0; $('#hudStreak').textContent=0;
+    zeigeFb('#m1-fb','tipp', tippText());
+  }
+}
+function tippText(){
+  const s=Spiel.aktuell;
+  if(m1Phase==='absender'){
+    if(s.typ==='umschlag') return 'Schau nochmal: Der Absender steht klein oben links auf dem Umschlag.';
+    if(s.typ==='brief')    return 'Schau nochmal: Im Brief steht der Absender oben links – und unten bei der Unterschrift.';
+    return 'Schau nochmal: Bei der E-Mail steht der Absender in der Zeile „Von".';
+  } else {
+    if(s.typ==='umschlag') return 'Schau nochmal: Der Empfänger steht groß in der Mitte des Umschlags.';
+    if(s.typ==='brief')    return 'Schau nochmal: Im Brief steht der Empfänger ganz oben in der Anrede (z. B. „Hallo …" oder „Liebe …").';
+    return 'Schau nochmal: Bei der E-Mail steht der Empfänger in der Zeile „An".';
+  }
+}
+function endeSendungM1(){
+  // erledigten Brief nach oben aus dem Bild segeln lassen
+  const doc=$('#m1-doc');
+  gsap.to(doc,{ y:-220, rotateZ:8, opacity:0, scale:.9, duration:.45, ease:'power2.in',
+    onComplete(){
+      Spiel.runde++; $('#m1-bar').style.width=(Spiel.runde/RUNDEN*100)+'%';
+      gsap.set(doc,{clearProps:'all'});
+      if(Spiel.runde>=RUNDEN) zeigeErgebnis(); else naechsteM1();
+    }
+  });
+}
+
+/* ==========================================================================
+   6) MODUS 2 — SORTIEREN (Pointer-Events: Maus + Touch)
+   ========================================================================== */
+function baueKoerbe(){
+  $('#m2-baskets').innerHTML = KOERBE.map(k=>`
+    <button class="basket" data-korb="${k.id}" aria-label="Ablagefach ${k.titel}">
+      <span class="b-count" data-count="${k.id}">0</span>
+      <div class="b-emoji" aria-hidden="true">${k.emoji}</div>
+      <div class="b-title">${k.titel}</div>
+      <div class="b-sub">${k.sub}</div>
+    </button>`).join('');
+  $$('#m2-baskets .basket').forEach(b=>{
+    b.addEventListener('click',()=>waehleKorb(b));
+  });
+  // gespeicherte Zählerstände wieder anzeigen
+  for(const id in m2Counts){ setzeCount(id, m2Counts[id]); }
+}
+let m2Counts = {};
+function setzeCount(id, n){
+  const el=$(`.b-count[data-count="${id}"]`);
+  if(el){ el.textContent=n; el.classList.toggle('show', n>0); }
+}
+
+function naechsteM2(){
+  Spiel.aktuell=Spiel.sendungen[Spiel.runde];
+  $('#m2-cur').textContent=Spiel.runde+1; $('#m2-max').textContent=RUNDEN;
+  $('#m2-bar').style.width=(Spiel.runde/RUNDEN*100)+'%';
+  versteckeFb('#m2-fb'); baueKoerbe(); renderSortKarte(Spiel.aktuell);
+}
+const TYP_LABEL={ umschlag:'📨 Brief', brief:'📄 Brief', email:'✉️ E-Mail' };
+function renderSortKarte(s){
+  const area=$('#m2-card-area');
+  area.innerHTML=`<div class="sort-card" id="sortCard" role="group" aria-label="Sendung: ${escapeHtml(s.betreff)}">
+    <span class="sc-type">${TYP_LABEL[s.typ]||'✉️ Sendung'}</span>
+    <div class="sc-betreff">Betreff: ${escapeHtml(s.betreff)}</div>
+    <div class="sc-text"><span>von ${escapeHtml(s.absender)}</span> · ${escapeHtml(s.text)}</div>
+  </div>`;
+  const card=$('#sortCard');
+  // hereinfliegen von rechts oben
+  gsap.fromTo(card,
+    {x:260, y:-120, rotateZ:14, rotateX:30, opacity:0, scale:.85},
+    {x:0, y:0, rotateZ:0, rotateX:6, opacity:1, scale:1, duration:.7, ease:'power3.out'});
+  // sanftes Wackeln beim Landen
+  gsap.fromTo(card,{},{ duration:.0 });
+}
+
+let m2Lock=false;
+function waehleKorb(korbEl){
+  if(m2Lock) return;
+  m2Lock=true;
+  const korbId=korbEl.dataset.korb;
+  const richtig=korbId===Spiel.aktuell.korb;
+  // Fächer sperren während des Flugs
+  $$('#m2-baskets .basket').forEach(b=>b.classList.add('disabled'));
+  briefFliegtInsFach($('#sortCard'), korbEl, richtig, ()=>{
+    if(richtig){
+      Spiel.punkte++; Spiel.streak++; zaehleHoch(Spiel.punkte); $('#hudStreak').textContent=Spiel.streak;
+      m2Counts[korbId]=(m2Counts[korbId]||0)+1; setzeCount(korbId, m2Counts[korbId]);
+      korbEl.classList.add('glow'); korbHuepft(korbEl);
+      zeigeFb('#m2-fb','good',`Richtig! Das gehört zu „${KORB_NAME[korbId]}".`);
+      setTimeout(()=>{ korbEl.classList.remove('glow'); m2Lock=false; endeSendungM2(); }, 700);
+    } else {
+      Spiel.streak=0; $('#hudStreak').textContent=0;
+      korbEl.classList.add('shake-wrong'); korbHuepft(korbEl, true);
+      zeigeFb('#m2-fb','tipp',`Fast! Lies den Betreff nochmal: „${Spiel.aktuell.betreff}". Worum geht es da?`);
+      setTimeout(()=>{
+        korbEl.classList.remove('shake-wrong');
+        $$('#m2-baskets .basket').forEach(b=>b.classList.remove('disabled'));
+        m2Lock=false;
+      }, 650);
+    }
+  });
+}
+
+/* Brief fliegt als Klon im Bogen vom Tisch ins angetippte Fach.
+   richtig=false → Brief dreht kurz vor dem Fach um und segelt zurück. */
+function briefFliegtInsFach(card, korbEl, richtig, done){
+  const cr=card.getBoundingClientRect();
+  const kr=korbEl.getBoundingClientRect();
+  const s=Spiel.aktuell;
+
+  // Klon bauen
+  const fly=document.createElement('div');
+  fly.className='fly-letter';
+  fly.innerHTML=`<div class="fl-type">${TYP_LABEL[s.typ]||'✉️ Sendung'}</div>
+                 <div class="fl-betreff">${escapeHtml(s.betreff)}</div>`;
+  fly.style.left=cr.left+'px'; fly.style.top=cr.top+'px';
+  fly.style.width=Math.min(cr.width,360)+'px';
+  document.body.appendChild(fly);
+  // Original-Karte ausblenden
+  gsap.to(card,{opacity:0, scale:.9, duration:.18});
+
+  const zielX=(kr.left+kr.width/2)-(cr.left+Math.min(cr.width,360)/2);
+  const zielY=(kr.top+kr.height/2)-(cr.top+cr.height/2);
+
+  if(richtig){
+    // Bogen: erst hoch & drehen, dann in den Schlitz fallen + schrumpfen
+    gsap.timeline({onComplete(){ fly.remove(); done(); }})
+      .to(fly,{ x:zielX*0.5, y:Math.min(zielY,-130), rotation:-12, duration:.34, ease:'power2.out' })
+      .to(fly,{ x:zielX, y:zielY-10, rotation:6, duration:.30, ease:'power1.inOut' })
+      .to(fly,{ y:zielY+18, scaleY:.55, scaleX:.92, rotation:2, opacity:.95, duration:.22, ease:'power2.in' })
+      .to(fly,{ opacity:0, duration:.12 });
+  } else {
+    // hinfliegen, abprallen, zurücksegeln
+    gsap.timeline({onComplete(){
+        fly.remove();
+        // Original wieder einblenden
+        gsap.fromTo(card,{opacity:0, scale:.9},{opacity:1, scale:1, rotateX:6, duration:.3});
+        done();
+      }})
+      .to(fly,{ x:zielX*0.7, y:Math.min(zielY,-110), rotation:-10, duration:.30, ease:'power2.out' })
+      .to(fly,{ x:zielX*0.78, y:Math.min(zielY,-90), rotation:-14, duration:.10, ease:'power1.out' }) // kurzes Stocken
+      .to(fly,{ x:0, y:0, rotation:0, duration:.42, ease:'back.out(1.3)' });
+  }
+}
+
+function korbHuepft(korbEl, wrong=false){
+  const amp = wrong ? 8 : -14;
+  if(wrong){
+    gsap.fromTo(korbEl,{x:-6},{x:0, duration:.4, ease:'elastic.out(1,0.35)'});
+  } else {
+    gsap.fromTo(korbEl,{y:0},{y:amp, duration:.18, yoyo:true, repeat:1, ease:'power1.out'});
+  }
+}
+function endeSendungM2(){
+  Spiel.runde++; $('#m2-bar').style.width=(Spiel.runde/RUNDEN*100)+'%';
+  if(Spiel.runde>=RUNDEN) zeigeErgebnis(); else naechsteM2();
+}
+
+/* ==========================================================================
+   7) FEEDBACK
+   ========================================================================== */
+function zeigeFb(sel,typ,text){
+  const el=$(sel); el.className='feedback-line show '+(typ==='good'?'fb-good':'fb-tipp');
+  el.setAttribute('role', typ==='good'?'status':'alert'); el.textContent=text;
+}
+function versteckeFb(sel){ const el=$(sel); el.className='feedback-line'; el.textContent=''; }
+
+/* ==========================================================================
+   8) ERGEBNIS
+   ========================================================================== */
+function bewertung(pkt,max){
+  const p=pkt/max;
+  if(p>=0.9) return {stars:'⭐⭐⭐', titel:'Ausgezeichnet!', sub:'Du bist ein echter Post-Profi!'};
+  if(p>=0.7) return {stars:'⭐⭐',   titel:'Stark gemacht!',  sub:'Das hat richtig gut geklappt.'};
+  if(p>=0.5) return {stars:'⭐',     titel:'Gut dabei!',      sub:'Weiter üben – du wirst immer besser.'};
+  return              {stars:'🔄',    titel:'Nochmal versuchen?', sub:'Kein Problem – Übung macht den Meister.'};
+}
+function zeigeErgebnis(){
+  const maxPkt=Spiel.modus===1?RUNDEN*2:RUNDEN;
+  const b=bewertung(Spiel.punkte,maxPkt);
+  $('#res-stars').textContent=b.stars; $('#res-pkt').textContent=Spiel.punkte;
+  $('#res-max').textContent=maxPkt; $('#res-sub').textContent=b.sub; $('#res-title').textContent=b.titel;
+  const key=Spiel.modus===1?KEYS.hi1:KEYS.hi2; const alt=loadHi(key); const neu=Spiel.punkte>alt;
+  if(neu) saveHi(key,Spiel.punkte); $('#res-newhi').hidden=!neu;
+  $('#hud').classList.remove('show'); show3D(false);
+  screenWechsel('scr-result'); ladeHighscores();
+  gsap.fromTo('#res-stars',{scale:0, rotation:-30},{scale:1, rotation:0, duration:.6, ease:'back.out(2)'});
+}
+
+/* ==========================================================================
+   9) MENÜ / HIGHSCORES / NAV
+   ========================================================================== */
+function ladeHighscores(){
+  const h1=loadHi(KEYS.hi1), h2=loadHi(KEYS.hi2);
+  $('#hi-m1').textContent = h1>0 ? `Bester Wert: ${h1} / ${RUNDEN*2}` : 'Bester Wert: –';
+  $('#hi-m2').textContent = h2>0 ? `Bester Wert: ${h2} / ${RUNDEN}`   : 'Bester Wert: –';
+}
+function zumMenue(){ $('#hud').classList.remove('show'); show3D(false); ladeHighscores(); screenWechsel('scr-menu'); }
+$('#card-m1').addEventListener('click',()=>startModus(1));
+$('#card-m2').addEventListener('click',()=>startModus(2));
+$$('[data-back]').forEach(b=>b.addEventListener('click', zumMenue));
+$('#res-again').addEventListener('click',()=>startModus(Spiel.modus));
+ladeHighscores();
+</script>
+</body>
+</html>
