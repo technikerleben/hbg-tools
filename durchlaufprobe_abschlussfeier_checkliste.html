@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#2C3D4C" />
+  <title>Durchlaufprobe Abschlussfeier – Organisationscheckliste</title>
+  <style>
+    :root{
+      --navy:#2C3D4C;
+      --blue:#3E5668;
+      --blue2:#6A8599;
+      --orange:#D97A4A;
+      --orange-dark:#9E4E22;
+      --green:#4D8B3F;
+      --green2:#7DBB6F;
+      --paper:#F5F4F1;
+      --white:#ffffff;
+      --ink:#24313b;
+      --muted:#64727d;
+      --line:#d7dee3;
+      --shadow:0 10px 30px rgba(44,61,76,.12);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:linear-gradient(180deg,#edf2f5 0,#f7f8f8 280px,var(--paper) 100%);
+      color:var(--ink);
+      min-height:100vh;
+    }
+    button,input,textarea{font:inherit}
+    button{touch-action:manipulation}
+    .app{max-width:1100px;margin:0 auto;padding:env(safe-area-inset-top) 18px calc(90px + env(safe-area-inset-bottom))}
+    header{
+      background:linear-gradient(135deg,var(--navy),var(--blue));
+      color:white;
+      padding:28px 24px 22px;
+      margin:0 -18px 18px;
+      border-bottom:6px solid var(--orange);
+      box-shadow:var(--shadow);
+    }
+    header h1{font-size:clamp(1.75rem,4vw,2.6rem);line-height:1.05;margin:0 0 8px}
+    header p{margin:0;opacity:.9;font-size:1rem}
+    .top-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:14px;margin:18px 0}
+    .card{
+      background:rgba(255,255,255,.96);
+      border:1px solid rgba(62,86,104,.13);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card-body{padding:18px}
+    .status-card{display:flex;align-items:center;justify-content:space-between;gap:14px}
+    .progress-wrap{flex:1}
+    .progress-label{display:flex;justify-content:space-between;font-weight:800;margin-bottom:8px}
+    .progress{height:14px;background:#e6ecef;border-radius:99px;overflow:hidden}
+    .progress > div{height:100%;width:0;background:linear-gradient(90deg,var(--orange),var(--green2));transition:width .25s ease}
+    .timer{text-align:center;min-width:175px}
+    .timer-display{font-size:2rem;font-weight:900;font-variant-numeric:tabular-nums;margin:4px 0 10px}
+    .timer-buttons{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+    .btn{
+      border:0;border-radius:12px;padding:11px 14px;font-weight:800;cursor:pointer;
+      background:#e8eef1;color:var(--navy);
+    }
+    .btn.primary{background:var(--orange);color:white}
+    .btn.green{background:var(--green);color:white}
+    .btn.dark{background:var(--navy);color:white}
+    .btn.danger{background:#9f3131;color:white}
+    .segmented{
+      display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px;background:#dfe8ed;border-radius:16px;margin:16px 0;
+      position:sticky;top:8px;z-index:20;box-shadow:0 6px 20px rgba(44,61,76,.12);
+    }
+    .tab{
+      border:0;border-radius:12px;padding:14px 10px;font-weight:900;background:transparent;color:var(--navy);cursor:pointer;
+    }
+    .tab.active{background:white;color:var(--orange-dark);box-shadow:0 4px 12px rgba(44,61,76,.14)}
+    .info-strip{
+      display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 16px;
+    }
+    .info-box{background:white;border-radius:15px;padding:14px;border-left:6px solid var(--blue2);box-shadow:0 4px 14px rgba(44,61,76,.08)}
+    .info-box strong{display:block;font-size:.82rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+    section{margin:18px 0}
+    .section-title{
+      display:flex;align-items:center;gap:10px;background:var(--blue);color:white;padding:14px 16px;
+      border-radius:15px 15px 0 0;font-size:1.08rem;font-weight:900;
+    }
+    .section-title .num{
+      display:inline-grid;place-items:center;width:32px;height:32px;border-radius:10px;background:white;color:var(--blue);font-weight:900
+    }
+    .checklist{background:white;border-radius:0 0 15px 15px;box-shadow:var(--shadow);overflow:hidden}
+    .item{
+      display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:start;
+      padding:15px 16px;border-bottom:1px solid var(--line);
+    }
+    .item:last-child{border-bottom:0}
+    .item input[type="checkbox"]{
+      appearance:none;width:28px;height:28px;border:2px solid var(--blue2);border-radius:9px;margin:0;display:grid;place-content:center;cursor:pointer;
+    }
+    .item input[type="checkbox"]::before{
+      content:"✓";font-size:20px;font-weight:1000;color:white;transform:scale(0);transition:.12s ease;
+    }
+    .item input[type="checkbox"]:checked{background:var(--green);border-color:var(--green)}
+    .item input[type="checkbox"]:checked::before{transform:scale(1)}
+    .item.done .item-text{opacity:.55;text-decoration:line-through}
+    .item-text{line-height:1.4}
+    .item-text strong{display:block;color:var(--navy)}
+    .tag{font-size:.75rem;font-weight:900;border-radius:999px;padding:5px 8px;background:#edf2f5;color:var(--blue);white-space:nowrap}
+    .tag.orange{background:#f8e4da;color:var(--orange-dark)}
+    .tag.green{background:#e5f2e2;color:var(--green)}
+    .critical{border-left:6px solid var(--orange)}
+    .critical .item-text strong{color:var(--orange-dark)}
+    textarea{
+      width:100%;min-height:150px;border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff;color:var(--ink);resize:vertical;
+    }
+    .notes-title{font-weight:900;margin-bottom:8px}
+    .actionbar{
+      position:fixed;left:0;right:0;bottom:0;background:rgba(245,244,241,.94);backdrop-filter:blur(14px);
+      border-top:1px solid var(--line);padding:10px max(12px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
+      display:flex;gap:8px;justify-content:center;z-index:50;
+    }
+    .actionbar .btn{min-width:120px}
+    .hidden{display:none!important}
+    .small{font-size:.88rem;color:var(--muted)}
+    .warning{
+      background:#fff2e9;border:1px solid #efb28e;color:#7d3818;padding:14px 16px;border-radius:14px;font-weight:750;margin:14px 0;
+    }
+    @media(max-width:760px){
+      .top-grid,.info-strip{grid-template-columns:1fr}
+      .status-card{display:block}
+      .timer{margin-top:16px}
+      .item{grid-template-columns:34px 1fr}
+      .tag{grid-column:2;justify-self:start}
+      .actionbar{overflow-x:auto;justify-content:flex-start}
+      .actionbar .btn{min-width:max-content}
+    }
+    @media print{
+      body{background:white}
+      .app{max-width:none;padding:0}
+      header{margin:0;box-shadow:none}
+      .segmented,.actionbar,.timer-buttons{display:none!important}
+      .card,.checklist{box-shadow:none}
+      .tab-panel.hidden{display:block!important}
+      textarea{min-height:100px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Durchlaufprobe Abschlussfeier</h1>
+      <p>Organisationscheckliste für die Proben und die Veranstaltungen am 10. Juli</p>
+    </header>
+
+    <div class="top-grid">
+      <div class="card">
+        <div class="card-body status-card">
+          <div class="progress-wrap">
+            <div class="progress-label">
+              <span>Fortschritt der aktiven Probe</span>
+              <span id="progressText">0 %</span>
+            </div>
+            <div class="progress"><div id="progressBar"></div></div>
+            <p class="small" id="progressCount">0 von 0 Punkten erledigt</p>
+          </div>
+          <div class="timer">
+            <strong>Zeitnahme</strong>
+            <div class="timer-display" id="timerDisplay">00:00</div>
+            <div class="timer-buttons">
+              <button class="btn green" id="timerStart">Start</button>
+              <button class="btn" id="timerPause">Pause</button>
+              <button class="btn" id="timerReset">Null</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <strong>Schnellregel Bühnenweg</strong>
+          <p style="margin:8px 0 0;font-weight:800;line-height:1.5">Gemeinsam links hoch → einzeln zur Mitte → rechts sammeln → gemeinsam zurück.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="segmented">
+      <button class="tab active" data-tab="feier1">Feier 1 · 17:00 Uhr</button>
+      <button class="tab" data-tab="feier2">Feier 2 · 19:00 Uhr</button>
+    </div>
+
+    <div id="feier1" class="tab-panel">
+      <div class="info-strip">
+        <div class="info-box"><strong>Klassenfolge</strong>10.3 → 10.2 → 10.1</div>
+        <div class="info-box"><strong>Besonderheit</strong>10.2 teilt sich am Mittelgang</div>
+        <div class="info-box"><strong>Saal geräumt</strong>spätestens 18:45 Uhr</div>
+      </div>
+    </div>
+
+    <div id="feier2" class="tab-panel hidden">
+      <div class="info-strip">
+        <div class="info-box"><strong>Klassenfolge</strong>10.6 → 10.5 → 10.4</div>
+        <div class="info-box"><strong>Besonderheit</strong>10.5 teilt sich am Mittelgang</div>
+        <div class="info-box"><strong>Gästeeinlass</strong>frühestens ab 18:45 Uhr</div>
+      </div>
+    </div>
+
+    <div id="sharedContent"></div>
+
+    <section class="card">
+      <div class="card-body">
+        <div class="notes-title">Notizen aus der Probe</div>
+        <textarea id="notes" placeholder="Beobachtungen, Änderungen, offene Aufgaben, Zuständigkeiten …"></textarea>
+      </div>
+    </section>
+  </div>
+
+  <div class="actionbar">
+    <button class="btn dark" id="exportBtn">Notizen exportieren</button>
+    <button class="btn" onclick="window.print()">Drucken / PDF</button>
+    <button class="btn danger" id="resetBtn">Aktive Probe zurücksetzen</button>
+  </div>
+
+<script>
+const sections = [
+  {
+    title:"Vor Beginn der Probe", items:[
+      ["Treffpunkt im Backstage-Bereich mit dem Komitee festlegen und allen Klassenleitungen mitteilen.","Organisation","critical"],
+      ["Klassenleitungen über die ausgeloste Reihenfolge informieren.","Klassenleitungen",""],
+      ["Abwesenheiten und voraussichtliche Verspätungen abfragen.","Anwesenheit",""],
+      ["Festlegen, wer verspätete Absolvent:innen am Eingang empfängt und nach vorne begleitet.","Wichtig","critical"],
+      ["Prüfen, ob in jeder Klassenreihe Plätze für Spätkommende frei bleiben.","Sitzordnung","critical"],
+      ["Bühnentechnik und Moderation auf das Startsignal für die Einlaufmusik abstimmen.","Technik",""]
+    ]
+  },
+  {
+    title:"Einlauf und Sitzordnung", items:[
+      ["Klassen im Backstage-Bereich in der richtigen Reihenfolge aufstellen.","Aufstellung",""],
+      ["Der geteilten Klasse erklären, wer links und wer rechts vom Mittelgang läuft.","Geteilte Klasse","critical"],
+      ["Einlaufmusik und Startsignal testen.","Technik",""],
+      ["Einlauf vollständig durchführen: gleichmäßiges Tempo, keine großen Lücken.","Proben",""],
+      ["Prüfen, ob alle direkt zu den reservierten vorderen Reihen finden.","Sitzplätze",""],
+      ["Kontrollieren, dass Gästeplätze hinter den Klassen frei bleiben.","Sitzordnung",""]
+    ]
+  },
+  {
+    title:"Verhalten im Saal kurz erklären", items:[
+      ["Handys lautlos; während Reden, Musik und Bühnenbeiträgen nicht sprechen.","Ansage",""],
+      ["Applaus ist erwünscht; Zwischenrufe und Herumlaufen vermeiden.","Ansage",""],
+      ["Auch nach der eigenen Zeugnisvergabe bis zum offiziellen Ende sitzen bleiben.","Ansage","critical"],
+      ["Verspätete Absolvent:innen setzen sich auf die freigehaltenen Plätze vorne, nicht hinten zu den Gästen.","Spätkommende","critical"]
+    ]
+  },
+  {
+    title:"Zeugnisvergabe – Bühnenweg", items:[
+      ["Gesamte Klasse steht gemeinsam auf und geht links auf die Bühne.","Schritt 1",""],
+      ["Aufstellung in alphabetischer Reihenfolge überprüfen.","Reihenfolge",""],
+      ["Beim Namensaufruf geht jeweils eine Person zur Bühnenmitte.","Schritt 2",""],
+      ["Übergabe üben: Handschlag, Zeugnis, Glückwünsche.","Schritt 3",""],
+      ["Nach der Übergabe nach rechts weitergehen und dort sammeln.","Schritt 4","critical"],
+      ["Prüfen, ob die Sammelposition rechts genug Platz bietet.","Bühne",""],
+      ["Nach dem letzten Namen geschlossener Abgang zurück zu den Sitzplätzen.","Schritt 5","critical"],
+      ["Ablauf mindestens mit mehreren Namen realistisch testen.","Zeitgefühl",""]
+    ]
+  },
+  {
+    title:"Foto- und Gästeinformationen", items:[
+      ["Hinweis geben: 2–3 Gäste pro Absolvent:in.","Gäste",""],
+      ["Gäste dürfen vom eigenen Platz aus filmen und fotografieren.","Fotos",""],
+      ["Gäste gehen bei der Zeugnisvergabe nicht zum Bühnenrand oder in die Laufwege.","Wichtig","critical"],
+      ["Offizielle Fotos werden durch eine Kollegin erstellt und später kostenlos bereitgestellt.","Fotos",""]
+    ]
+  },
+  {
+    title:"Nach der Feier", items:[
+      ["Nach der dritten Zeugnisvergabe Abmoderation abwarten.","Abschluss",""],
+      ["Gesamten Halbjahrgang gemeinsam durch das Atrium führen.","Weg",""],
+      ["Weg bis zum Schulhof C vollständig ablaufen.","Proben","critical"],
+      ["Aufstellung für das Gruppenfoto aller drei Klassen testen.","Gruppenfoto","critical"],
+      ["Erst nach dem Gruppenfoto beginnt der Sektempfang.","Ansage",""],
+      ["Gesamten Auszug inklusive Aufstellung stoppen und Zeit notieren.","Zeitnahme","critical"]
+    ]
+  },
+  {
+    title:"Abschlusskontrolle", items:[
+      ["Unklare Wege, Engstellen oder Wartepositionen direkt klären.","Nachsteuerung",""],
+      ["Änderungen mit Klassenleitungen, Moderation und Technik abstimmen.","Absprachen",""],
+      ["Offene Aufgaben mit Name und Zuständigkeit in den Notizen festhalten.","To-do",""],
+      ["Zweiten Durchlauf möglichst ohne Unterbrechung durchführen.","Generalprobe","critical"]
+    ]
+  }
+];
+
+let activeTab = localStorage.getItem("abschluss_active_tab") || "feier1";
+let timerSeconds = 0, timerInterval = null;
+const shared = document.getElementById("sharedContent");
+
+function storageKey(){ return "abschluss_checklist_" + activeTab; }
+function notesKey(){ return "abschluss_notes_" + activeTab; }
+function timerKey(){ return "abschluss_timer_" + activeTab; }
+
+function renderChecklist(){
+  const saved = JSON.parse(localStorage.getItem(storageKey()) || "{}");
+  shared.innerHTML = sections.map((section, si)=>`
+    <section>
+      <div class="section-title"><span class="num">${si+1}</span>${section.title}</div>
+      <div class="checklist">
+        ${section.items.map((item, ii)=>{
+          const id=`${activeTab}_${si}_${ii}`;
+          const checked=!!saved[id];
+          return `<label class="item ${checked?'done':''} ${item[2]==='critical'?'critical':''}">
+            <input type="checkbox" data-id="${id}" ${checked?'checked':''}>
+            <span class="item-text"><strong>${item[0]}</strong></span>
+            <span class="tag ${item[2]==='critical'?'orange':''}">${item[1]}</span>
+          </label>`;
+        }).join("")}
+      </div>
+    </section>`).join("");
+
+  shared.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+    cb.addEventListener("change",e=>{
+      const data=JSON.parse(localStorage.getItem(storageKey()) || "{}");
+      data[e.target.dataset.id]=e.target.checked;
+      localStorage.setItem(storageKey(),JSON.stringify(data));
+      e.target.closest(".item").classList.toggle("done",e.target.checked);
+      updateProgress();
+    });
+  });
+  updateProgress();
+}
+
+function updateProgress(){
+  const all=[...shared.querySelectorAll('input[type="checkbox"]')];
+  const done=all.filter(x=>x.checked).length;
+  const pct=all.length?Math.round(done/all.length*100):0;
+  document.getElementById("progressBar").style.width=pct+"%";
+  document.getElementById("progressText").textContent=pct+" %";
+  document.getElementById("progressCount").textContent=`${done} von ${all.length} Punkten erledigt`;
+}
+
+function setTab(tab){
+  activeTab=tab;
+  localStorage.setItem("abschluss_active_tab",tab);
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
+  document.querySelectorAll(".tab-panel").forEach(p=>p.classList.toggle("hidden",p.id!==tab));
+  document.getElementById("notes").value=localStorage.getItem(notesKey()) || "";
+  timerSeconds=parseInt(localStorage.getItem(timerKey())||"0",10);
+  updateTimer();
+  renderChecklist();
+}
+
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>setTab(b.dataset.tab)));
+document.getElementById("notes").addEventListener("input",e=>localStorage.setItem(notesKey(),e.target.value));
+
+function updateTimer(){
+  const m=String(Math.floor(timerSeconds/60)).padStart(2,"0");
+  const s=String(timerSeconds%60).padStart(2,"0");
+  document.getElementById("timerDisplay").textContent=`${m}:${s}`;
+  localStorage.setItem(timerKey(),String(timerSeconds));
+}
+document.getElementById("timerStart").onclick=()=>{
+  if(timerInterval) return;
+  timerInterval=setInterval(()=>{timerSeconds++;updateTimer()},1000);
+};
+document.getElementById("timerPause").onclick=()=>{clearInterval(timerInterval);timerInterval=null};
+document.getElementById("timerReset").onclick=()=>{clearInterval(timerInterval);timerInterval=null;timerSeconds=0;updateTimer()};
+
+document.getElementById("resetBtn").onclick=()=>{
+  if(confirm("Soll die aktive Probe wirklich vollständig zurückgesetzt werden?")){
+    localStorage.removeItem(storageKey());
+    localStorage.removeItem(notesKey());
+    localStorage.removeItem(timerKey());
+    timerSeconds=0; updateTimer();
+    document.getElementById("notes").value="";
+    renderChecklist();
+  }
+};
+
+document.getElementById("exportBtn").onclick=()=>{
+  const label=activeTab==="feier1"?"Feier 1 – 17:00 Uhr":"Feier 2 – 19:00 Uhr";
+  const checks=[...shared.querySelectorAll(".item")].map(item=>{
+    const checked=item.querySelector("input").checked?"[x]":"[ ]";
+    return `${checked} ${item.querySelector(".item-text strong").textContent}`;
+  }).join("\n");
+  const text=`Durchlaufprobe Abschlussfeier\n${label}\n\nZEIT: ${document.getElementById("timerDisplay").textContent}\n\nCHECKLISTE\n${checks}\n\nNOTIZEN\n${document.getElementById("notes").value}`;
+  const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`Durchlaufprobe_${activeTab}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+setTab(activeTab);
+</script>
+</body>
+</html>
