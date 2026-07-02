@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<title>Mathe-Test: Negative Zahlen – Klasse 6</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<style>
+  :root {
+    --bg:#f0f4ff; --card:#fff;
+    --primary:#3b5bdb; --pd:#2f4ac9; --pl:#dbe4ff;
+    --ok:#2f9e44; --ok-bg:#d3f9d8;
+    --err:#c92a2a; --err-bg:#ffe3e3;
+    --text:#1a1f36; --muted:#5c6378; --border:#dee2f0;
+    --r:14px; --sh:0 3px 16px rgba(59,91,219,.10);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,Arial,sans-serif;font-size:16px;line-height:1.55;min-height:100vh}
+
+  /* header */
+  .hdr{background:var(--primary);color:#fff;padding:16px 22px;display:flex;align-items:center;gap:13px}
+  .hdr .logo{width:42px;height:42px;background:rgba(255,255,255,.18);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+  .hdr h1{font-size:1.1rem;font-weight:800;letter-spacing:-.01em}
+  .hdr p{font-size:.8rem;opacity:.8;margin-top:2px}
+
+  /* progress */
+  .pw{background:#fff;border-bottom:1px solid var(--border);padding:9px 22px;display:flex;align-items:center;gap:13px}
+  .pt{flex:1;height:8px;background:var(--pl);border-radius:99px;overflow:hidden}
+  .pf{height:100%;background:var(--primary);border-radius:99px;transition:width .4s ease;width:0}
+  .pl{font-size:.8rem;color:var(--muted);white-space:nowrap;font-weight:600}
+
+  .main{max-width:700px;margin:0 auto;padding:22px 14px 48px}
+
+  /* question card */
+  .qcard{background:var(--card);border-radius:var(--r);border:1.5px solid var(--border);box-shadow:var(--sh);padding:24px 22px 20px;margin-bottom:14px;animation:fu .25s ease both}
+  @keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:.73rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--primary);background:var(--pl);padding:3px 10px;border-radius:99px;margin-bottom:11px}
+  .ctx{font-size:.87rem;color:var(--muted);background:#f8f9ff;border-left:3px solid var(--primary);padding:8px 12px;border-radius:0 8px 8px 0;margin-bottom:16px}
+  .qtxt{font-size:1.04rem;font-weight:600;margin-bottom:17px;line-height:1.5}
+
+  /* MC */
+  .opts{display:flex;flex-direction:column;gap:8px}
+  .obtn{width:100%;padding:11px 15px;border:2px solid var(--border);border-radius:10px;background:#fff;color:var(--text);font-size:.96rem;font-weight:500;text-align:left;cursor:pointer;transition:border-color .15s,background .15s,transform .1s;display:flex;align-items:center;gap:10px}
+  .oltr{width:26px;height:26px;border-radius:50%;background:var(--pl);color:var(--primary);font-size:.78rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .obtn:hover:not(:disabled){border-color:var(--primary);background:var(--pl);transform:translateX(3px)}
+  .obtn.correct{border-color:var(--ok);background:var(--ok-bg);color:var(--ok)}
+  .obtn.correct .oltr{background:var(--ok);color:#fff}
+  .obtn.wrong{border-color:var(--err);background:var(--err-bg);color:var(--err)}
+  .obtn.wrong .oltr{background:var(--err);color:#fff}
+  .obtn:disabled{cursor:default}
+
+  /* ── NUMBER LINE ── */
+  .nl-wrap{position:relative;margin:10px 0 28px;padding:0 8px;user-select:none}
+  .nl-svg{display:block;width:100%;overflow:visible;cursor:crosshair}
+
+  /* tick labels */
+  .nl-labels{display:flex;justify-content:space-between;padding:0 0;margin-top:4px}
+  .nl-labels span{font-size:.72rem;font-weight:700;color:var(--muted);text-align:center;width:0;position:relative}
+
+  /* draggable pin */
+  .nl-pin{cursor:grab;transition:filter .15s}
+  .nl-pin:active{cursor:grabbing}
+  .nl-pin circle{fill:var(--primary);stroke:#fff;stroke-width:2.5}
+  .nl-pin text{fill:#fff;font-size:11px;font-weight:800;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+  .nl-pin.correct circle{fill:var(--ok)}
+  .nl-pin.wrong circle{fill:var(--err)}
+
+  /* read task – marked dot */
+  .nl-dot circle{fill:#e67700;stroke:#fff;stroke-width:2.5}
+
+  /* tolerance band (shown after check) */
+  .nl-band{fill:rgba(47,158,68,.15);stroke:var(--ok);stroke-width:1;stroke-dasharray:4 3}
+
+  /* answer chips for read task */
+  .read-opts{display:flex;flex-wrap:wrap;gap:9px;margin-top:4px}
+  .read-chip{padding:9px 18px;border-radius:9px;border:2px solid var(--border);background:#fff;font-weight:700;font-size:1rem;cursor:pointer;transition:border-color .15s,background .15s,transform .1s;color:var(--text)}
+  .read-chip:hover:not(:disabled){border-color:var(--primary);background:var(--pl);transform:translateY(-2px)}
+  .read-chip.correct{border-color:var(--ok);background:var(--ok-bg);color:var(--ok)}
+  .read-chip.wrong{border-color:var(--err);background:var(--err-bg);color:var(--err)}
+  .read-chip:disabled{cursor:default}
+
+  /* sort */
+  .slabel{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:7px}
+  .chip-pool{display:flex;flex-wrap:wrap;gap:9px;padding:11px;border-radius:10px;background:#f4f6ff;border:1.5px dashed var(--border);min-height:52px;margin-bottom:18px;align-items:center}
+  .schip{padding:9px 17px;border-radius:9px;background:var(--primary);color:#fff;font-weight:800;font-size:.97rem;cursor:pointer;user-select:none;border:2px solid transparent;transition:transform .12s,box-shadow .12s,background .12s;box-shadow:0 2px 6px rgba(59,91,219,.22)}
+  .schip:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(59,91,219,.32)}
+  .schip.sel{background:#e67700;box-shadow:0 0 0 3px rgba(230,119,0,.3);transform:scale(1.07)}
+  .slots-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+  .slot-col{display:flex;flex-direction:column;align-items:center;gap:5px}
+  .snum{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .slot{width:82px;min-height:48px;border:2px dashed #b0b8d8;border-radius:10px;background:#fafbff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s,background .15s;font-weight:800;font-size:.95rem;color:var(--text)}
+  .slot:empty::after{content:"?";color:#c8cee0;font-size:1.1rem;font-weight:700}
+  .slot.ready{border-color:#e67700;background:#fff7ed;border-style:solid}
+  .slot.filled{border-style:solid;border-color:var(--primary);background:var(--pl)}
+  .slot.filled:hover{background:#c5d2f8}
+  .slot.cslot{border-color:var(--ok);background:var(--ok-bg);color:var(--ok);cursor:default}
+  .slot.wslot{border-color:var(--err);background:var(--err-bg);color:var(--err);cursor:default}
+  .arr-strip{display:flex;align-items:center;justify-content:center;gap:6px;font-size:.79rem;color:var(--muted);font-weight:600;margin:10px 0 16px}
+  .aline{flex:1;height:2px;background:var(--border);border-radius:99px}
+  .chkbtn{padding:10px 22px;background:var(--primary);color:#fff;border:none;border-radius:9px;font-size:.94rem;font-weight:700;cursor:pointer;transition:background .15s}
+  .chkbtn:hover{background:var(--pd)}
+  .chkbtn:disabled{opacity:.4;cursor:default}
+
+  /* feedback */
+  .fb{margin-top:13px;padding:10px 14px;border-radius:9px;font-size:.88rem;font-weight:600;display:none;align-items:flex-start;gap:8px;line-height:1.5}
+  .fb.show{display:flex}
+  .fb.ok{background:var(--ok-bg);color:var(--ok)}
+  .fb.err{background:var(--err-bg);color:var(--err)}
+
+  /* next */
+  .nxtbtn{display:none;margin-top:15px;width:100%;padding:13px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:800;cursor:pointer;transition:background .15s}
+  .nxtbtn:hover{background:var(--pd)}
+  .nxtbtn.vis{display:block;animation:fu .2s ease both}
+
+  /* results */
+  #rscreen{display:none}
+  .rcard{background:var(--card);border-radius:var(--r);border:1.5px solid var(--border);box-shadow:var(--sh);padding:30px 26px;text-align:center;animation:fu .3s ease both}
+  .sring{width:118px;height:118px;border-radius:50%;background:var(--primary);margin:0 auto 17px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
+  .sring .big{font-size:2rem;font-weight:900;line-height:1}
+  .sring .sm{font-size:.76rem;opacity:.8;margin-top:2px}
+  .rcard h2{font-size:1.2rem;font-weight:800;margin-bottom:7px}
+  .rcard .sub{font-size:.88rem;color:var(--muted);margin-bottom:22px}
+  .htitle{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:9px;text-align:left}
+  .hlist{display:flex;flex-direction:column;gap:6px;margin-bottom:22px}
+  .hrow{display:flex;justify-content:space-between;align-items:center;padding:8px 13px;background:#f8f9ff;border-radius:8px;font-size:.88rem}
+  .hrow .rl{color:var(--muted);font-weight:500}
+  .hrow .rs{font-weight:800;color:var(--primary)}
+  .hbw{flex:1;margin:0 11px;height:6px;background:var(--pl);border-radius:99px;overflow:hidden}
+  .hb{height:100%;background:var(--primary);border-radius:99px}
+  .rbtn{padding:12px 26px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:800;cursor:pointer;transition:background .15s}
+  .rbtn:hover{background:var(--pd)}
+
+  @media(max-width:520px){.main{padding:13px 9px 40px}.qcard{padding:17px 11px}.slot{width:62px}.schip{padding:8px 12px}}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="logo">🧊</div>
+  <div>
+    <h1>Negative Zahlen – Abschlusstest</h1>
+    <p>Klasse 6 &nbsp;·&nbsp; 10 Aufgaben &nbsp;·&nbsp; Lebenswelt-Mathe</p>
+  </div>
+</div>
+
+<div class="pw">
+  <div class="pt"><div class="pf" id="pfill"></div></div>
+  <div class="pl" id="plabel">0 / 10</div>
+</div>
+
+<div class="main">
+  <div id="qscreen">
+    <div class="qcard" id="qcard"></div>
+    <button class="nxtbtn" id="nxtbtn">Weiter →</button>
+  </div>
+  <div id="rscreen">
+    <div class="rcard">
+      <div class="sring"><span class="big" id="sbig">0</span><span class="sm">von 10</span></div>
+      <h2 id="rheadline"></h2>
+      <p class="sub" id="rsub"></p>
+      <div class="htitle">📊 Deine bisherigen Durchläufe</div>
+      <div class="hlist" id="hlist"></div>
+      <button class="rbtn" id="restartbtn">🔄 &nbsp;Neu starten</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// QUESTION DATA
+// ═══════════════════════════════════════════
+// Types: 'mc' | 'nlmark' (place pin on line) | 'nlread' (read value from line) | 'sort'
+// nlmark: { min, max, ticks, target, tolerance, unit }
+// nlread: { min, max, ticks, markedAt, options, correct, unit }
+
+const questions = [
+
+  // 1 – MC qualitativ
+  { type:'mc', badge:'❄️ Temperatur',
+    ctx:'Das Thermometer zeigt in Dortmund −8 °C. Am nächsten Tag sind es −3 °C.',
+    q:'Welcher Tag ist wärmer – und warum?',
+    opts:['−8 °C, weil 8 größer als 3 ist','−3 °C, weil −3 näher an 0 liegt','Beide sind gleich kalt','Das kann man nicht sagen'],
+    correct:1,
+    fb:'−3 °C ist wärmer. Je näher eine negative Zahl an 0 ist, desto wärmer. −3 > −8 auf dem Zahlenstrahl.' },
+
+  // 2 – Zahlenstrahl: MARKIEREN
+  { type:'nlmark', badge:'🌡️ Fieber-Tagebuch',
+    ctx:'Lena misst morgens ihre Körpertemperatur. Sie schreibt −2 auf (2 Grad unter Normaltemperatur).',
+    q:'Markiere die Zahl −2 auf dem Zahlenstrahl.',
+    min:-5, max:5, ticks:[-5,-4,-3,-2,-1,0,1,2,3,4,5],
+    target:-2, tolerance:0.6, unit:'',
+    fb:'−2 liegt genau 2 Schritte links von der 0. Links von 0 = negative Zahlen.' },
+
+  // 3 – MC qualitativ (Kontostand)
+  { type:'mc', badge:'🏦 Taschengeld',
+    ctx:'Jonas hat −12 € auf seinem Konto (Schulden bei Mama). Sein Bruder hat +3 €.',
+    q:'Wer ist in einer besseren finanziellen Lage?',
+    opts:['Jonas, weil −12 eine größere Zahl ist','Der Bruder, weil +3 > −12','Beide gleich, weil 12 > 3','Das ist nicht vergleichbar'],
+    correct:1,
+    fb:'Der Bruder ist besser dran. +3 > −12 – positive Zahlen sind immer größer als negative.' },
+
+  // 4 – Zahlenstrahl: ABLESEN
+  { type:'nlread', badge:'🌊 Tauchgang',
+    ctx:'Ein Taucher befindet sich unter Wasser. Der Punkt auf dem Zahlenstrahl zeigt seine aktuelle Tiefe in Metern.',
+    q:'Auf welcher Tiefe (in Metern) ist der Taucher?',
+    min:-10, max:0, ticks:[-10,-8,-6,-4,-2,0],
+    markedAt:-6, unit:' m',
+    opts:['-2 m','-4 m','-6 m','-8 m'],
+    correct:2,
+    fb:'Der Punkt liegt bei −6 m. Das bedeutet: 6 Meter unter der Wasseroberfläche (= 0 m).' },
+
+  // 5 – Zahlenstrahl: MARKIEREN
+  { type:'nlmark', badge:'🏔️ Höhenmeter',
+    ctx:'Das Tote Meer liegt auf −430 m. Auf einer vereinfachten Skala von −500 bis 500 m soll die Lage markiert werden.',
+    q:'Markiere den Wert −400 auf dem Zahlenstrahl.',
+    min:-500, max:500, ticks:[-500,-400,-300,-200,-100,0,100,200,300,400,500],
+    target:-400, tolerance:55, unit:' m',
+    fb:'−400 liegt weit links von der 0. Je größer der Betrag einer negativen Zahl, desto weiter links auf dem Strahl.' },
+
+  // 6 – MC qualitativ (Temperatur vergleichen)
+  { type:'mc', badge:'🌍 Städtevergleich',
+    ctx:'Oslo: −11 °C &nbsp;|&nbsp; Berlin: −2 °C &nbsp;|&nbsp; Moskau: −19 °C',
+    q:'Welche Stadt hat die wärmste Temperatur der drei?',
+    opts:['Oslo (−11 °C)','Berlin (−2 °C)','Moskau (−19 °C)','Alle gleich kalt'],
+    correct:1,
+    fb:'Berlin hat −2 °C, das ist am nächsten an 0 und damit am wärmsten. −2 > −11 > −19.' },
+
+  // 7 – Zahlenstrahl: ABLESEN
+  { type:'nlread', badge:'🎮 Spielstand',
+    ctx:'In einem Videospiel kann man Punkte gewinnen oder verlieren. Der Pfeil zeigt den aktuellen Punktestand.',
+    q:'Wie viele Punkte hat der Spieler gerade?',
+    min:-10, max:10, ticks:[-10,-8,-6,-4,-2,0,2,4,6,8,10],
+    markedAt:4, unit:' Punkte',
+    opts:['-4 Punkte','0 Punkte','+2 Punkte','+4 Punkte'],
+    correct:3,
+    fb:'+4 Punkte! Der Punkt liegt 4 Schritte rechts von der 0 – das sind positive Punkte (Gewinn).' },
+
+  // 8 – Zahlenstrahl: MARKIEREN
+  { type:'nlmark', badge:'💳 Kontostand',
+    ctx:'Mias Konto ist überzogen. Sie hat −7 € (7 Euro Schulden).',
+    q:'Markiere den Kontostand −7 auf dem Zahlenstrahl.',
+    min:-10, max:10, ticks:[-10,-8,-6,-4,-2,0,2,4,6,8,10],
+    target:-7, tolerance:0.7, unit:' €',
+    fb:'−7 liegt zwischen −8 und −6, etwas näher an −8. Links von 0 = Schulden.' },
+
+  // 9 – Sortieren (bleibt als Abwechslung)
+  { type:'sort', badge:'🎲 Monopoly-Abend',
+    ctx:'Beim Monopoly-Abend: Jonas +120, Lena −30, Tim 0, Sara −80, Max +45.',
+    q:'Sortiere die Punktestände von niedrig nach hoch.',
+    items:['−80','−30','0','+45','+120'],
+    correctOrder:['−80','−30','0','+45','+120'],
+    arrowLabel:'niedrig → hoch',
+    fb:'−80 ist der niedrigste Wert (größter Verlust), +120 der höchste. Negative Zahlen kommen immer vor der 0.' },
+
+  // 10 – MC qualitativ (Abschluss)
+  { type:'mc', badge:'🧠 Knobeln',
+    ctx:'In einer Quizshow stehen Team A bei −5 Punkten und Team B bei −1 Punkt.',
+    q:'Welches Team ist weiter vorne (hat mehr Punkte)?',
+    opts:['Team A, weil 5 größer als 1 ist','Team B, weil −1 > −5','Beide gleich, weil beide negativ','Das kommt auf die Spielregeln an'],
+    correct:1,
+    fb:'Team B mit −1 Punkten liegt vor Team A (−5). −1 > −5, weil −1 näher an 0 ist. Mehr = weiter rechts auf dem Zahlenstrahl.' }
+];
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let current=0, score=0, answered=false, history=[];
+let selectedChip=null, slotValues=[];
+
+// Number-line state
+let nlPinX = null;      // current x-position of pin (SVG coords)
+let nlDragging = false;
+let nlSVGEl = null;
+let nlData = null;      // holds current nlmark question data
+
+// ═══════════════════════════════════════════
+// CORE RENDER
+// ═══════════════════════════════════════════
+function renderQuestion() {
+  answered=false; selectedChip=null; slotValues=[];
+  nlPinX=null; nlDragging=false; nlSVGEl=null; nlData=null;
+  const q=questions[current];
+  document.getElementById('nxtbtn').classList.remove('vis');
+  document.getElementById('pfill').style.width=(current/questions.length*100)+'%';
+  document.getElementById('plabel').textContent=current+' / '+questions.length;
+  if(q.type==='mc')     renderMC(q);
+  else if(q.type==='nlmark') renderNLMark(q);
+  else if(q.type==='nlread') renderNLRead(q);
+  else renderSort(q);
+}
+
+// ─────────────── MC ───────────────
+function renderMC(q){
+  const L=['A','B','C','D'];
+  document.getElementById('qcard').innerHTML=`
+    <div class="badge">${q.badge}</div>
+    <div class="ctx">${q.ctx}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="opts">
+      ${q.opts.map((o,i)=>`
+        <button class="obtn" onclick="pickMC(${i})">
+          <span class="oltr">${L[i]}</span><span>${o}</span>
+        </button>`).join('')}
+    </div>
+    <div class="fb" id="fb"></div>`;
+}
+function pickMC(idx){
+  if(answered)return;
+  answered=true;
+  const q=questions[current];
+  const btns=document.querySelectorAll('.obtn');
+  btns.forEach(b=>b.disabled=true);
+  const fb=document.getElementById('fb');
+  if(idx===q.correct){score++;btns[idx].classList.add('correct');fb.className='fb show ok';fb.innerHTML='✅ &nbsp;'+q.fb;}
+  else{btns[idx].classList.add('wrong');btns[q.correct].classList.add('correct');fb.className='fb show err';fb.innerHTML='❌ &nbsp;'+q.fb;}
+  showNext();
+}
+
+// ─────────────── NUMBER LINE HELPERS ───────────────
+const NL_W=560, NL_H=56, NL_Y=32, NL_PAD=28;
+
+function valToX(val, min, max){
+  return NL_PAD + (val - min)/(max - min) * (NL_W - 2*NL_PAD);
+}
+function xToVal(x, min, max){
+  return min + (x - NL_PAD)/(NL_W - 2*NL_PAD) * (max - min);
+}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+
+function buildLineSVG(min, max, ticks, extraContent='', extraDefs=''){
+  const ticksHTML = ticks.map(t => {
+    const x = valToX(t, min, max);
+    const major = (t % (ticks.length > 8 ? 100 : 1) === 0);
+    return `<line x1="${x}" y1="${NL_Y-8}" x2="${x}" y2="${NL_Y+8}" stroke="#94a3b8" stroke-width="${t===0?2:1}"/>
+            <text x="${x}" y="${NL_Y+22}" text-anchor="middle" font-size="11" fill="${t===0?'#1a1f36':'#64748b'}" font-weight="${t===0?700:500}">${t}</text>`;
+  }).join('');
+  return `<svg id="nlsvg" viewBox="0 0 ${NL_W} ${NL_H+10}" class="nl-svg" style="touch-action:none">
+    <defs>${extraDefs}</defs>
+    <!-- axis line -->
+    <line x1="${NL_PAD}" y1="${NL_Y}" x2="${NL_W-NL_PAD}" y2="${NL_Y}" stroke="#94a3b8" stroke-width="2"/>
+    <!-- arrow right -->
+    <polygon points="${NL_W-NL_PAD},${NL_Y} ${NL_W-NL_PAD-8},${NL_Y-5} ${NL_W-NL_PAD-8},${NL_Y+5}" fill="#94a3b8"/>
+    <!-- ticks + labels -->
+    ${ticksHTML}
+    <!-- zero highlight -->
+    ${extraContent}
+  </svg>`;
+}
+
+// ─────────────── NLMARK: place pin ───────────────
+function renderNLMark(q){
+  nlData = q;
+  const startX = valToX(0, q.min, q.max); // pin starts at 0
+  nlPinX = startX;
+
+  const pinHTML = `<g class="nl-pin" id="nlpin">
+    <circle cx="${startX}" cy="${NL_Y}" r="13"/>
+    <text x="${startX}" y="${NL_Y}">?</text>
+  </g>`;
+
+  const svgHTML = buildLineSVG(q.min, q.max, q.ticks, pinHTML);
+
+  document.getElementById('qcard').innerHTML=`
+    <div class="badge">${q.badge}</div>
+    <div class="ctx">${q.ctx}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="nl-wrap" id="nlwrap">${svgHTML}</div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:14px;text-align:center">
+      🖱️ Ziehe den blauen Kreis auf die richtige Stelle &nbsp;·&nbsp; Auf Touch-Geräten einfach tippen &amp; schieben
+    </p>
+    <button class="chkbtn" id="nlchk" onclick="checkNLMark()">Position prüfen ✓</button>
+    <div class="fb" id="fb"></div>`;
+
+  // Attach drag/touch listeners after DOM insert
+  requestAnimationFrame(()=>attachNLListeners(q));
+}
+
+function attachNLListeners(q){
+  const svg = document.getElementById('nlsvg');
+  const pin = document.getElementById('nlpin');
+  if(!svg||!pin)return;
+  nlSVGEl = svg;
+
+  function getSVGX(e){
+    const rect = svg.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const ratio = NL_W / rect.width;
+    return clamp((clientX - rect.left) * ratio, NL_PAD, NL_W - NL_PAD);
+  }
+
+  function movePinTo(x){
+    nlPinX = x;
+    const val = xToVal(x, q.min, q.max);
+    pin.querySelector('circle').setAttribute('cx', x);
+    pin.querySelector('text').setAttribute('x', x);
+    // snap label to nearest 0.5
+    const label = Math.round(val*2)/2;
+    pin.querySelector('text').textContent = label % 1 === 0 ? label : label.toFixed(1);
+  }
+
+  pin.addEventListener('mousedown', e=>{if(answered)return;nlDragging=true;e.preventDefault();});
+  pin.addEventListener('touchstart', e=>{if(answered)return;nlDragging=true;e.preventDefault();},{passive:false});
+
+  svg.addEventListener('mousemove', e=>{if(!nlDragging||answered)return;movePinTo(getSVGX(e));});
+  svg.addEventListener('touchmove', e=>{if(!nlDragging||answered)return;movePinTo(getSVGX(e));e.preventDefault();},{passive:false});
+
+  // tap anywhere on SVG also moves pin (touch-friendly)
+  svg.addEventListener('click', e=>{
+    if(answered||nlDragging)return;
+    movePinTo(getSVGX(e));
+  });
+
+  document.addEventListener('mouseup', ()=>nlDragging=false);
+  document.addEventListener('touchend', ()=>nlDragging=false);
+}
+
+function checkNLMark(){
+  if(answered)return;
+  answered=true;
+  document.getElementById('nlchk').disabled=true;
+  const q=questions[current];
+  const placed = xToVal(nlPinX, q.min, q.max);
+  const ok = Math.abs(placed - q.target) <= q.tolerance;
+  const pin = document.getElementById('nlpin');
+  const fb = document.getElementById('fb');
+
+  // Show correct band on SVG
+  const svg = document.getElementById('nlsvg');
+  const bx1 = valToX(q.target - q.tolerance, q.min, q.max);
+  const bx2 = valToX(q.target + q.tolerance, q.min, q.max);
+  const band = document.createElementNS('http://www.w3.org/2000/svg','rect');
+  band.setAttribute('x', bx1); band.setAttribute('y', NL_Y-14);
+  band.setAttribute('width', bx2-bx1); band.setAttribute('height', 28);
+  band.setAttribute('class','nl-band'); band.setAttribute('rx','4');
+  svg.insertBefore(band, pin);
+
+  // Show correct pin position
+  const correctX = valToX(q.target, q.min, q.max);
+  const correctPinG = document.createElementNS('http://www.w3.org/2000/svg','g');
+  correctPinG.innerHTML = `<circle cx="${correctX}" cy="${NL_Y}" r="13" fill="var(--ok)" stroke="#fff" stroke-width="2.5"/>
+    <text x="${correctX}" y="${NL_Y}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="800" fill="#fff">${q.target}</text>`;
+  svg.appendChild(correctPinG);
+
+  pin.classList.add(ok?'correct':'wrong');
+  if(ok){
+    score++;
+    fb.className='fb show ok';
+    fb.innerHTML='✅ &nbsp;'+q.fb;
+  } else {
+    fb.className='fb show err';
+    fb.innerHTML=`❌ &nbsp;Die richtige Stelle ist bei <strong>${q.target}${q.unit}</strong> (grüner Kreis). ${q.fb}`;
+  }
+  showNext();
+}
+
+// ─────────────── NLREAD: read value ───────────────
+function renderNLRead(q){
+  const dotHTML = `<g class="nl-dot" id="nldot">
+    <circle cx="${valToX(q.markedAt, q.min, q.max)}" cy="${NL_Y}" r="12"/>
+    <text x="${valToX(q.markedAt, q.min, q.max)}" y="${NL_Y}"
+      text-anchor="middle" dominant-baseline="central"
+      font-size="13" font-weight="800" fill="#fff" pointer-events="none">●</text>
+  </g>`;
+
+  const svgHTML = buildLineSVG(q.min, q.max, q.ticks, dotHTML);
+  const L=['A','B','C','D'];
+  document.getElementById('qcard').innerHTML=`
+    <div class="badge">${q.badge}</div>
+    <div class="ctx">${q.ctx}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="nl-wrap">${svgHTML}</div>
+    <div class="read-opts">
+      ${q.opts.map((o,i)=>`
+        <button class="read-chip" onclick="pickRead(${i})">${o}</button>`).join('')}
+    </div>
+    <div class="fb" id="fb"></div>`;
+}
+
+function pickRead(idx){
+  if(answered)return;
+  answered=true;
+  const q=questions[current];
+  const chips=document.querySelectorAll('.read-chip');
+  chips.forEach(c=>c.disabled=true);
+  const fb=document.getElementById('fb');
+  if(idx===q.correct){
+    score++;
+    chips[idx].classList.add('correct');
+    fb.className='fb show ok';
+    fb.innerHTML='✅ &nbsp;'+q.fb;
+  } else {
+    chips[idx].classList.add('wrong');
+    chips[q.correct].classList.add('correct');
+    fb.className='fb show err';
+    fb.innerHTML='❌ &nbsp;'+q.fb;
+  }
+  showNext();
+}
+
+// ─────────────── SORT ───────────────
+function renderSort(q){
+  const shuffled=[...q.items].sort(()=>Math.random()-.5);
+  slotValues=new Array(q.items.length).fill(null);
+  document.getElementById('qcard').innerHTML=`
+    <div class="badge">${q.badge}</div>
+    <div class="ctx">${q.ctx}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="slabel">① Tippe auf eine Zahl:</div>
+    <div class="chip-pool" id="cpool">
+      ${shuffled.map(v=>`<div class="schip" onclick="schipClick(this)" data-val="${v}">${v}</div>`).join('')}
+    </div>
+    <div class="slabel">② Tippe auf das gewünschte Kästchen:</div>
+    <div class="slots-row" id="srow">
+      ${q.items.map((_,i)=>`
+        <div class="slot-col">
+          <div class="snum">Platz ${i+1}</div>
+          <div class="slot" id="sl-${i}" onclick="slotClick(${i})"></div>
+        </div>`).join('')}
+    </div>
+    <div class="arr-strip"><div class="aline"></div><span>${q.arrowLabel}</span><div class="aline"></div></div>
+    <button class="chkbtn" id="sortchk" onclick="checkSort()" disabled>Reihenfolge prüfen ✓</button>
+    <div class="fb" id="fb"></div>`;
+}
+function schipClick(el){
+  if(answered)return;
+  if(selectedChip){selectedChip.classList.remove('sel');clearSlotHL();}
+  if(selectedChip===el){selectedChip=null;return;}
+  selectedChip=el;el.classList.add('sel');
+  slotValues.forEach((v,i)=>{if(v===null)document.getElementById('sl-'+i).classList.add('ready');});
+}
+function clearSlotHL(){slotValues.forEach((_,i)=>document.getElementById('sl-'+i).classList.remove('ready'));}
+function slotClick(idx){
+  if(answered)return;
+  const sl=document.getElementById('sl-'+idx);
+  if(slotValues[idx]!==null){
+    const val=slotValues[idx];slotValues[idx]=null;
+    sl.textContent='';sl.classList.remove('filled','ready');
+    const pool=document.getElementById('cpool');
+    const chip=document.createElement('div');
+    chip.className='schip';chip.dataset.val=val;chip.textContent=val;
+    chip.onclick=function(){schipClick(this);};pool.appendChild(chip);
+    if(selectedChip){selectedChip.classList.remove('sel');selectedChip=null;}
+    clearSlotHL();updSortBtn();return;
+  }
+  if(!selectedChip)return;
+  const val=selectedChip.dataset.val;
+  slotValues[idx]=val;sl.textContent=val;sl.classList.add('filled');sl.classList.remove('ready');
+  selectedChip.remove();selectedChip=null;clearSlotHL();updSortBtn();
+}
+function updSortBtn(){document.getElementById('sortchk').disabled=slotValues.some(v=>v===null);}
+function checkSort(){
+  if(answered)return;answered=true;
+  const q=questions[current];
+  document.getElementById('sortchk').disabled=true;
+  const ok=JSON.stringify(slotValues)===JSON.stringify(q.correctOrder);
+  slotValues.forEach((v,i)=>{
+    const sl=document.getElementById('sl-'+i);
+    sl.classList.remove('filled','ready');sl.onclick=null;
+    sl.classList.add(v===q.correctOrder[i]?'cslot':'wslot');
+  });
+  const fb=document.getElementById('fb');
+  if(ok){score++;fb.className='fb show ok';fb.innerHTML='✅ &nbsp;'+q.fb;}
+  else{fb.className='fb show err';fb.innerHTML='❌ &nbsp;Richtige Reihenfolge: <strong>'+q.correctOrder.join(' → ')+'</strong>. '+q.fb;}
+  showNext();
+}
+
+// ─────────────── NEXT / RESULTS ───────────────
+function showNext(){
+  const b=document.getElementById('nxtbtn');
+  b.textContent=current<questions.length-1?'Weiter →':'Auswertung ansehen 🏁';
+  b.classList.add('vis');
+}
+document.getElementById('nxtbtn').addEventListener('click',()=>{
+  current++;
+  if(current<questions.length)renderQuestion();
+  else showResults();
+});
+
+function showResults(){
+  document.getElementById('pfill').style.width='100%';
+  document.getElementById('plabel').textContent='10 / 10';
+  document.getElementById('qscreen').style.display='none';
+  document.getElementById('rscreen').style.display='block';
+  history.push(score);
+  document.getElementById('sbig').textContent=score;
+  let h,s;
+  if(score>=9){h='🏆 Ausgezeichnet!';s='Du kennst dich mit negativen Zahlen richtig gut aus!';}
+  else if(score>=7){h='🎉 Sehr gut!';s='Fast alles richtig – prima Leistung!';}
+  else if(score>=5){h='👍 Gut gemacht!';s="Über die Hälfte geschafft. Noch ein bisschen üben, dann wird's noch besser!";}
+  else{h='💪 Nicht aufgeben!';s='Negative Zahlen sind am Anfang tricky – ein neuer Versuch hilft!';}
+  document.getElementById('rheadline').textContent=h;
+  document.getElementById('rsub').textContent=s;
+  document.getElementById('hlist').innerHTML=history.map((sc,i)=>`
+    <div class="hrow">
+      <span class="rl">Durchlauf ${i+1}</span>
+      <div class="hbw"><div class="hb" style="width:${Math.round(sc/10*100)}%"></div></div>
+      <span class="rs">${sc} / 10</span>
+    </div>`).join('');
+}
+document.getElementById('restartbtn').addEventListener('click',()=>{
+  current=0;score=0;answered=false;selectedChip=null;slotValues=[];
+  document.getElementById('rscreen').style.display='none';
+  document.getElementById('qscreen').style.display='block';
+  renderQuestion();
+});
+
+renderQuestion();
+</script>
+</body>
+</html>
