@@ -923,12 +923,9 @@ setInterval(updateClock, 1000*15);
 function initQr(){
   const box = document.getElementById('qrBox');
   if(!box) return;
-  const url = location.href;
-  const isLocal = location.protocol==='file:';
-  if(isLocal || window._qrFailed || typeof QRCode==='undefined'){
-    box.innerHTML = '<div class="qr-fallback">'+(isLocal
-      ? 'Datei wird per AirDrop / IServ geteilt'
-      : escapeHtml(url))+'</div>';
+  const url = 'https://hbg-tools.vercel.app/neue5-digitales.html';
+  if(window._qrFailed || typeof QRCode==='undefined'){
+    box.innerHTML = '<div class="qr-fallback">'+escapeHtml(url)+'</div>';
     return;
   }
   new QRCode(box, {text:url, width:150, height:150, colorDark:'#1E2A35', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M});
