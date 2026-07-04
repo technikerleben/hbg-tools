@@ -62,9 +62,38 @@
     }
 
     main {
-      max-width: 860px;
+      max-width: 1040px;
       margin: 0 auto;
       padding: 32px 24px;
+    }
+
+    .archive-note {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 24px;
+      padding: 16px 18px;
+      background: var(--col-sage-pale);
+      border: 1px solid var(--col-sage);
+      border-radius: 12px;
+      color: var(--col-slate-dark);
+    }
+
+    .archive-note strong {
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .archive-date {
+      flex-shrink: 0;
+      padding: 4px 10px;
+      border-radius: 99px;
+      background: var(--col-white);
+      color: var(--col-sage-dark);
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
     }
 
     .tools-grid {
@@ -133,6 +162,12 @@
       font-size: 0.8rem;
       color: var(--col-text-muted);
     }
+
+    @media (max-width: 620px) {
+      header { padding: 18px 20px; }
+      main { padding: 24px 16px; }
+      .archive-note { flex-direction: column; gap: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -143,12 +178,20 @@
   </header>
 
   <main>
+    <aside class="archive-note" aria-label="Hinweis zum Archivstand">
+      <div>
+        <strong>Das Archiv wird laufend ergänzt.</strong>
+        <span>Hier sammeln wir kleine digitale Werkzeuge, Simulationen und Unterrichtsanwendungen.</span>
+      </div>
+      <span class="archive-date">Stand: 4. Juli 2026</span>
+    </aside>
+
     <div class="tools-grid">
 
       <a href="qr.html" class="tool-card">
         <div class="tool-icon">⬛</div>
         <div class="tool-name">QR-Code-Generator</div>
-        <div class="tool-desc">Links, Texte oder URLs sofort als QR-Code erzeugen und herunterladen.</div>
+        <div class="tool-desc">Links, Texte oder URLs sofort als QR-Code erzeugen, gestalten und herunterladen.</div>
         <span class="tool-badge">qr.html</span>
       </a>
 
@@ -159,10 +202,66 @@
         <span class="tool-badge">code.html</span>
       </a>
 
+      <a href="gluecksrad.html" class="tool-card">
+        <div class="tool-icon">🎡</div>
+        <div class="tool-name">Glücksrad</div>
+        <div class="tool-desc">Namen oder Begriffe eingeben und per Zufall auf einem animierten Glücksrad auswählen.</div>
+        <span class="tool-badge">gluecksrad.html</span>
+      </a>
+
+      <a href="tafel.html" class="tool-card">
+        <div class="tool-icon">🖥️</div>
+        <div class="tool-name">Tafelboard</div>
+        <div class="tool-desc">Digitaler Klassenbildschirm mit flexibel einsetzbaren Werkzeugen für den Unterricht.</div>
+        <span class="tool-badge">tafel.html</span>
+      </a>
+
+      <a href="bohrmaschine-3d.html" class="tool-card">
+        <div class="tool-icon">🛠️</div>
+        <div class="tool-name">Bohrmaschinen-Trainer 3D</div>
+        <div class="tool-desc">Die Tischbohrmaschine interaktiv erkunden und wichtige Arbeitsschritte trainieren.</div>
+        <span class="tool-badge">bohrmaschine-3d.html</span>
+      </a>
+
+      <a href="stromkreis-simulator.html" class="tool-card">
+        <div class="tool-icon">🔋</div>
+        <div class="tool-name">Stromkreis-Simulator</div>
+        <div class="tool-desc">Den Stromkreis einer Taschenlampe untersuchen, verbinden und ausprobieren.</div>
+        <span class="tool-badge">stromkreis-simulator.html</span>
+      </a>
+
+      <a href="stromnetz-3d.html" class="tool-card">
+        <div class="tool-icon">⚡</div>
+        <div class="tool-name">Das Stromnetz in 3D</div>
+        <div class="tool-desc">Erzeugung, Übertragung und Verteilung elektrischer Energie räumlich erkunden.</div>
+        <span class="tool-badge">stromnetz-3d.html</span>
+      </a>
+
+      <a href="turbinen-simulator.html" class="tool-card">
+        <div class="tool-icon">🌀</div>
+        <div class="tool-name">Turbinen-Simulator</div>
+        <div class="tool-desc">Aufbau und Funktionsweise verschiedener Turbinen interaktiv untersuchen.</div>
+        <span class="tool-badge">turbinen-simulator.html</span>
+      </a>
+
+      <a href="viertaktmotor.html" class="tool-card">
+        <div class="tool-icon">🚗</div>
+        <div class="tool-name">Der Viertaktmotor</div>
+        <div class="tool-desc">Die vier Takte eines Verbrennungsmotors schrittweise betrachten und simulieren.</div>
+        <span class="tool-badge">viertaktmotor.html</span>
+      </a>
+
+      <a href="technik-schaetzspiel.html" class="tool-card">
+        <div class="tool-icon">⏳</div>
+        <div class="tool-name">Wann war das nochmal?</div>
+        <div class="tool-desc">Im Team die Jahreszahlen bekannter Meilensteine der Technik schätzen.</div>
+        <span class="tool-badge">technik-schaetzspiel.html</span>
+      </a>
+
     </div>
   </main>
 
-  <footer>HBG Dortmund · Interne Tools</footer>
+  <footer>HBG Dortmund · Interne Tools · Stand: 4. Juli 2026</footer>
 
 </body>
 </html>
