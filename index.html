@@ -37,6 +37,8 @@
       min-height: 100vh;
     }
 
+    button, input { font: inherit; }
+
     :focus-visible {
       outline: 3px solid var(--col-slate);
       outline-offset: 3px;
@@ -96,6 +98,135 @@
       white-space: nowrap;
     }
 
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .tool-controls {
+      margin-bottom: 24px;
+      padding: 18px;
+      background: var(--col-white);
+      border: 1px solid var(--col-border);
+      border-radius: 14px;
+      box-shadow: 0 1px 4px var(--col-shadow);
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--col-text-muted);
+      pointer-events: none;
+    }
+
+    #tool-search {
+      width: 100%;
+      min-height: 48px;
+      padding: 11px 46px 11px 42px;
+      border: 2px solid var(--col-slate-pale);
+      border-radius: 10px;
+      background: var(--col-slate-ghost);
+      color: var(--col-text);
+    }
+
+    #tool-search:focus {
+      border-color: var(--col-slate);
+      background: var(--col-white);
+      outline: none;
+    }
+
+    .clear-search {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--col-text-muted);
+      cursor: pointer;
+    }
+
+    .clear-search:hover {
+      background: var(--col-slate-pale);
+      color: var(--col-slate-dark);
+    }
+
+    .clear-search[hidden] {
+      display: none;
+    }
+
+    .result-count {
+      min-width: 82px;
+      text-align: right;
+      color: var(--col-text-muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .filter-label {
+      display: block;
+      margin: 16px 0 8px;
+      color: var(--col-text-muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .filter-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .filter-button {
+      min-height: 40px;
+      padding: 7px 13px;
+      border: 1px solid var(--col-slate-pale);
+      border-radius: 999px;
+      background: var(--col-slate-ghost);
+      color: var(--col-slate-dark);
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .filter-button:hover {
+      border-color: var(--col-slate-mid);
+      background: var(--col-slate-pale);
+    }
+
+    .filter-button.active {
+      border-color: var(--col-slate);
+      background: var(--col-slate);
+      color: white;
+    }
+
     .tools-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -126,6 +257,10 @@
       transform: translateY(0);
     }
 
+    .tool-card[hidden] {
+      display: none;
+    }
+
     .tool-icon {
       font-size: 2rem;
       line-height: 1;
@@ -143,17 +278,49 @@
       flex: 1;
     }
 
-    .tool-badge {
+    .tool-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .tool-badge,
+    .category-badge {
       display: inline-block;
-      font-size: 0.72rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: 2px 8px;
+      font-size: 0.69rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      padding: 3px 8px;
       border-radius: 99px;
+    }
+
+    .tool-badge {
+      text-transform: uppercase;
       background: var(--col-slate-pale);
       color: var(--col-slate-dark);
-      align-self: flex-start;
+    }
+
+    .category-badge {
+      background: var(--col-rust-ghost);
+      color: var(--col-rust-dark);
+      border: 1px solid var(--col-rust-pale);
+    }
+
+    .empty-state {
+      margin-top: 16px;
+      padding: 28px 20px;
+      text-align: center;
+      background: var(--col-white);
+      border: 1px dashed var(--col-slate-mid);
+      border-radius: 12px;
+      color: var(--col-text-muted);
+    }
+
+    .empty-state strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--col-slate-dark);
     }
 
     footer {
@@ -167,6 +334,8 @@
       header { padding: 18px 20px; }
       main { padding: 24px 16px; }
       .archive-note { flex-direction: column; gap: 10px; }
+      .search-row { grid-template-columns: 1fr; }
+      .result-count { text-align: left; }
     }
   </style>
 </head>
@@ -186,82 +355,210 @@
       <span class="archive-date">Stand: 4. Juli 2026</span>
     </aside>
 
-    <div class="tools-grid">
+    <section class="tool-controls" aria-label="Tools suchen und filtern">
+      <div class="search-row">
+        <div class="search-wrap">
+          <span class="search-icon" aria-hidden="true">🔎</span>
+          <label for="tool-search" class="visually-hidden">Tools durchsuchen</label>
+          <input
+            type="search"
+            id="tool-search"
+            placeholder="Tool, Thema oder Dateiname suchen …"
+            autocomplete="off"
+          >
+          <button class="clear-search" id="clear-search" type="button" aria-label="Suche löschen" hidden>✕</button>
+        </div>
+        <div class="result-count" id="result-count" aria-live="polite">10 Tools</div>
+      </div>
 
-      <a href="qr.html" class="tool-card">
+      <span class="filter-label">Kategorie</span>
+      <div class="filter-list" role="group" aria-label="Nach Kategorie filtern">
+        <button class="filter-button active" type="button" data-filter="all" aria-pressed="true">Alle</button>
+        <button class="filter-button" type="button" data-filter="werkzeuge" aria-pressed="false">Allgemeine Werkzeuge</button>
+        <button class="filter-button" type="button" data-filter="organisation" aria-pressed="false">Unterrichtsorganisation</button>
+        <button class="filter-button" type="button" data-filter="technik" aria-pressed="false">Technik &amp; Simulationen</button>
+        <button class="filter-button" type="button" data-filter="spiele" aria-pressed="false">Spiele &amp; Aktivierung</button>
+      </div>
+    </section>
+
+    <div class="tools-grid" id="tools-grid">
+
+      <a href="qr.html" class="tool-card" data-categories="werkzeuge">
         <div class="tool-icon">⬛</div>
         <div class="tool-name">QR-Code-Generator</div>
         <div class="tool-desc">Links, Texte oder URLs sofort als QR-Code erzeugen, gestalten und herunterladen.</div>
-        <span class="tool-badge">qr.html</span>
+        <div class="tool-meta">
+          <span class="category-badge">Allgemeines Werkzeug</span>
+          <span class="tool-badge">qr.html</span>
+        </div>
       </a>
 
-      <a href="code.html" class="tool-card">
+      <a href="code.html" class="tool-card" data-categories="werkzeuge">
         <div class="tool-icon">📄</div>
         <div class="tool-name">Code → HTML-Datei</div>
         <div class="tool-desc">HTML-Code einfügen und direkt als fertige .html-Datei herunterladen.</div>
-        <span class="tool-badge">code.html</span>
+        <div class="tool-meta">
+          <span class="category-badge">Allgemeines Werkzeug</span>
+          <span class="tool-badge">code.html</span>
+        </div>
       </a>
 
-      <a href="gluecksrad.html" class="tool-card">
+      <a href="gluecksrad.html" class="tool-card" data-categories="spiele">
         <div class="tool-icon">🎡</div>
         <div class="tool-name">Glücksrad</div>
         <div class="tool-desc">Namen oder Begriffe eingeben und per Zufall auf einem animierten Glücksrad auswählen.</div>
-        <span class="tool-badge">gluecksrad.html</span>
+        <div class="tool-meta">
+          <span class="category-badge">Spiel &amp; Aktivierung</span>
+          <span class="tool-badge">gluecksrad.html</span>
+        </div>
       </a>
 
-      <a href="tafel.html" class="tool-card">
+      <a href="tafel.html" class="tool-card" data-categories="organisation">
         <div class="tool-icon">🖥️</div>
         <div class="tool-name">Tafelboard</div>
         <div class="tool-desc">Digitaler Klassenbildschirm mit flexibel einsetzbaren Werkzeugen für den Unterricht.</div>
-        <span class="tool-badge">tafel.html</span>
+        <div class="tool-meta">
+          <span class="category-badge">Unterrichtsorganisation</span>
+          <span class="tool-badge">tafel.html</span>
+        </div>
       </a>
 
-      <a href="bohrmaschine-3d.html" class="tool-card">
+      <a href="bohrmaschine-3d.html" class="tool-card" data-categories="technik">
         <div class="tool-icon">🛠️</div>
         <div class="tool-name">Bohrmaschinen-Trainer 3D</div>
         <div class="tool-desc">Die Tischbohrmaschine interaktiv erkunden und wichtige Arbeitsschritte trainieren.</div>
-        <span class="tool-badge">bohrmaschine-3d.html</span>
+        <div class="tool-meta">
+          <span class="category-badge">Technik &amp; Simulation</span>
+          <span class="tool-badge">bohrmaschine-3d.html</span>
+        </div>
       </a>
 
-      <a href="stromkreis-simulator.html" class="tool-card">
+      <a href="stromkreis-simulator.html" class="tool-card" data-categories="technik">
         <div class="tool-icon">🔋</div>
         <div class="tool-name">Stromkreis-Simulator</div>
         <div class="tool-desc">Den Stromkreis einer Taschenlampe untersuchen, verbinden und ausprobieren.</div>
-        <span class="tool-badge">stromkreis-simulator.html</span>
+        <div class="tool-meta">
+          <span class="category-badge">Technik &amp; Simulation</span>
+          <span class="tool-badge">stromkreis-simulator.html</span>
+        </div>
       </a>
 
-      <a href="stromnetz-3d.html" class="tool-card">
+      <a href="stromnetz-3d.html" class="tool-card" data-categories="technik">
         <div class="tool-icon">⚡</div>
         <div class="tool-name">Das Stromnetz in 3D</div>
         <div class="tool-desc">Erzeugung, Übertragung und Verteilung elektrischer Energie räumlich erkunden.</div>
-        <span class="tool-badge">stromnetz-3d.html</span>
+        <div class="tool-meta">
+          <span class="category-badge">Technik &amp; Simulation</span>
+          <span class="tool-badge">stromnetz-3d.html</span>
+        </div>
       </a>
 
-      <a href="turbinen-simulator.html" class="tool-card">
+      <a href="turbinen-simulator.html" class="tool-card" data-categories="technik">
         <div class="tool-icon">🌀</div>
         <div class="tool-name">Turbinen-Simulator</div>
         <div class="tool-desc">Aufbau und Funktionsweise verschiedener Turbinen interaktiv untersuchen.</div>
-        <span class="tool-badge">turbinen-simulator.html</span>
+        <div class="tool-meta">
+          <span class="category-badge">Technik &amp; Simulation</span>
+          <span class="tool-badge">turbinen-simulator.html</span>
+        </div>
       </a>
 
-      <a href="viertaktmotor.html" class="tool-card">
+      <a href="viertaktmotor.html" class="tool-card" data-categories="technik">
         <div class="tool-icon">🚗</div>
         <div class="tool-name">Der Viertaktmotor</div>
         <div class="tool-desc">Die vier Takte eines Verbrennungsmotors schrittweise betrachten und simulieren.</div>
-        <span class="tool-badge">viertaktmotor.html</span>
+        <div class="tool-meta">
+          <span class="category-badge">Technik &amp; Simulation</span>
+          <span class="tool-badge">viertaktmotor.html</span>
+        </div>
       </a>
 
-      <a href="technik-schaetzspiel.html" class="tool-card">
+      <a href="technik-schaetzspiel.html" class="tool-card" data-categories="technik spiele">
         <div class="tool-icon">⏳</div>
         <div class="tool-name">Wann war das nochmal?</div>
         <div class="tool-desc">Im Team die Jahreszahlen bekannter Meilensteine der Technik schätzen.</div>
-        <span class="tool-badge">technik-schaetzspiel.html</span>
+        <div class="tool-meta">
+          <span class="category-badge">Technik</span>
+          <span class="category-badge">Spiel &amp; Aktivierung</span>
+          <span class="tool-badge">technik-schaetzspiel.html</span>
+        </div>
       </a>
 
+    </div>
+
+    <div class="empty-state" id="empty-state" hidden>
+      <strong>Keine passenden Tools gefunden.</strong>
+      <span>Ändere den Suchbegriff oder wähle eine andere Kategorie.</span>
     </div>
   </main>
 
   <footer>HBG Dortmund · Interne Tools · Stand: 4. Juli 2026</footer>
+
+  <script>
+    const searchInput = document.getElementById('tool-search');
+    const clearButton = document.getElementById('clear-search');
+    const filterButtons = [...document.querySelectorAll('.filter-button')];
+    const toolCards = [...document.querySelectorAll('.tool-card')];
+    const resultCount = document.getElementById('result-count');
+    const emptyState = document.getElementById('empty-state');
+
+    let activeFilter = 'all';
+
+    function normalizeText(value) {
+      return value
+        .toLocaleLowerCase('de-DE')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/ß/g, 'ss');
+    }
+
+    function updateTools() {
+      const query = normalizeText(searchInput.value.trim());
+      let visibleCount = 0;
+
+      toolCards.forEach(card => {
+        const categories = card.dataset.categories.split(' ');
+        const searchableText = normalizeText(
+          card.textContent + ' ' + card.getAttribute('href') + ' ' + categories.join(' ')
+        );
+
+        const matchesSearch = !query || searchableText.includes(query);
+        const matchesFilter = activeFilter === 'all' || categories.includes(activeFilter);
+        const visible = matchesSearch && matchesFilter;
+
+        card.hidden = !visible;
+        if (visible) visibleCount += 1;
+      });
+
+      resultCount.textContent = `${visibleCount} ${visibleCount === 1 ? 'Tool' : 'Tools'}`;
+      emptyState.hidden = visibleCount !== 0;
+      clearButton.hidden = searchInput.value.length === 0;
+    }
+
+    searchInput.addEventListener('input', updateTools);
+
+    clearButton.addEventListener('click', () => {
+      searchInput.value = '';
+      searchInput.focus();
+      updateTools();
+    });
+
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        activeFilter = button.dataset.filter;
+
+        filterButtons.forEach(item => {
+          const isActive = item === button;
+          item.classList.toggle('active', isActive);
+          item.setAttribute('aria-pressed', String(isActive));
+        });
+
+        updateTools();
+      });
+    });
+
+    updateTools();
+  </script>
 
 </body>
 </html>
