@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 
+// Einmaliger, wiederholbar sicherer Patch für die Abschlussfolie des Workshops.
 const file = 'neue5-digitales.html';
 const html = fs.readFileSync(file, 'utf8');
 const markerStart = '<script id="slideData" type="application/json">';
