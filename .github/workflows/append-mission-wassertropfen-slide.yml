@@ -1,0 +1,38 @@
+name: Abschlussfolie Mission Wassertropfen ergänzen
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/append-mission-wassertropfen-slide.mjs'
+      - '.github/workflows/append-mission-wassertropfen-slide.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Abschlussfolie ergänzen
+        run: node scripts/append-mission-wassertropfen-slide.mjs
+
+      - name: Änderung committen
+        run: |
+          if git diff --quiet -- neue5-digitales.html; then
+            echo "Keine Änderung notwendig."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add neue5-digitales.html
+          git commit -m "Ergänze Abschlussbeispiel Mission Wassertropfen [skip ci]"
+          git push
