@@ -1,0 +1,68 @@
+name: Embed fonts into ablauf10
+
+on:
+  push:
+    paths:
+      - '.github/workflows/embed-ablauf10-fonts.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  embed-fonts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Embed fonts and repair JavaScript
+        shell: python
+        run: |
+          import re
+          from pathlib import Path
+
+          source_path = Path('neue5-digitales.html')
+          target_path = Path('ablauf10.html')
+
+          source = source_path.read_text(encoding='utf-8')
+          target = target_path.read_text(encoding='utf-8')
+
+          font_faces = re.findall(r"@font-face\s*\{.*?\}", source, flags=re.S)
+          wanted = []
+          for face in font_faces:
+              if "font-family:'Gagalin'" in face or 'font-family: \'Gagalin\'' in face:
+                  wanted.append(face)
+              elif "font-family:'Glacial Indifference'" in face or 'font-family: \'Glacial Indifference\'' in face:
+                  wanted.append(face)
+
+          if len(wanted) < 2:
+              raise RuntimeError(f'Nicht beide eingebetteten Schriften gefunden: {len(wanted)}')
+
+          embedded = ''.join(wanted[:2])
+          target, count = re.subn(
+              r"@font-face\{font-family:'Gagalin'.*?font-display:swap\}@font-face\{font-family:'Glacial Indifference'.*?font-display:swap\}",
+              embedded,
+              target,
+              count=1,
+              flags=re.S,
+          )
+          if count != 1:
+              raise RuntimeError('Bestehende Font-Definitionen in ablauf10.html nicht gefunden')
+
+          target = target.replace(
+              'Struktur von Durchgang 1 auf Durchgang 2 übertragen?\nPassende Elemente werden gemappt, nicht verfügbare ignoriert.',
+              'Struktur von Durchgang 1 auf Durchgang 2 übertragen?\\nPassende Elemente werden gemappt, nicht verfügbare ignoriert.'
+          )
+
+          target_path.write_text(target, encoding='utf-8')
+
+      - name: Commit updated single-file build
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ablauf10.html
+          git diff --cached --quiet && exit 0
+          git commit -m "HBG-Schriften fest in ablauf10.html einbetten"
+          git push
