@@ -1,8 +1,10 @@
-/* HBG-Schriften: Nutzung lokal installierter Originalschriften.
-   Die Fontdateien selbst werden nicht im öffentlichen Repository veröffentlicht. */
+/* HBG-Schriften: bevorzugt aus dem Repository, alternativ lokal installiert. */
 @font-face {
   font-family: 'Gagalin';
-  src: local('Gagalin'), local('Gagalin Regular');
+  src:
+    local('Gagalin'),
+    local('Gagalin Regular'),
+    url('./fonts/Gagalin-Regular.otf') format('opentype');
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -10,7 +12,10 @@
 
 @font-face {
   font-family: 'Glacial Indifference';
-  src: local('Glacial Indifference'), local('GlacialIndifference-Regular');
+  src:
+    local('Glacial Indifference'),
+    local('GlacialIndifference-Regular'),
+    url('./fonts/GlacialIndifference-Regular.otf') format('opentype');
   font-style: normal;
   font-weight: 400;
   font-display: swap;
