@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schüler:in A – Die gestohlene Klassenfahrt-Kasse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cork1:#2b1d14; --cork2:#3e2b1e; --cork3:#4a3423;
+    --paper:#f6ecd8; --paper-dark:#ece0c6;
+    --ink:#2b1d14; --ink-soft:#5a4a38;
+    --gold:#c9a227; --gold-dark:#8f7218;
+    --twine:#a13d3d; --twine-dark:#7c2e2e;
+    --ok:#4c7a4c; --ok-bg:#dcead9;
+    --bad:#a13d3d; --bad-bg:#f3dede;
+    --role:#3f7d4a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;font-family:'Work Sans',sans-serif;color:var(--ink);
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.03), transparent 40%),
+      radial-gradient(circle at 80% 60%, rgba(255,255,255,0.03), transparent 40%),
+      repeating-linear-gradient(0deg, var(--cork1) 0px, var(--cork2) 2px, var(--cork1) 4px),
+      var(--cork2);
+    padding:24px 14px 60px;
+  }
+
+  .board{max-width:700px;margin:0 auto 20px;background:rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:14px 14px 10px;}
+  .board-title{text-align:center;font-family:'Special Elite',cursive;font-size:15px;letter-spacing:1px;margin:0 0 4px;color:var(--role);}
+  .board-sub{text-align:center;color:#cbb891;font-size:12px;margin:0 0 10px;}
+  .locks{display:flex;justify-content:space-between;gap:6px;position:relative;}
+  .locks::before{content:"";position:absolute;top:19px;left:5%;right:5%;height:2px;background:repeating-linear-gradient(90deg, var(--twine), var(--twine) 6px, transparent 6px, transparent 11px);opacity:0.8;z-index:0;}
+  .lock{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;z-index:1;}
+  .lock .badge{width:36px;height:36px;border-radius:50%;background:var(--cork3);border:2px solid var(--gold-dark);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--paper-dark);font-size:14px;transition:all .3s;}
+  .lock.done .badge{background:var(--gold);border-color:var(--gold);color:var(--ink);box-shadow:0 0 0 4px rgba(201,162,39,0.25);}
+  .lock .lbl{font-size:9.5px;color:#cbb891;}
+
+  .wrap{max-width:700px;margin:0 auto;}
+  .screen{display:none;}
+  .screen.active{display:block;animation:fadeUp .35s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+  .card{background:var(--paper);border-radius:4px;padding:24px 24px 22px;box-shadow:0 14px 30px rgba(0,0,0,0.35), 0 2px 0 rgba(0,0,0,0.05) inset;position:relative;border:1px solid rgba(0,0,0,0.06);border-top:6px solid var(--role);}
+  .kicker{font-family:'Special Elite',cursive;color:var(--twine-dark);font-size:12.5px;letter-spacing:2px;text-transform:uppercase;margin:0 0 4px;}
+  h1.title{font-family:'Special Elite',cursive;font-size:24px;margin:0 0 10px;color:var(--ink);text-align:center;}
+  h2.card-title{font-family:'Special Elite',cursive;font-size:21px;margin:0 0 12px;color:var(--ink);}
+  p{line-height:1.55;margin:0 0 12px;}
+  .stamp{display:inline-block;border:3px solid var(--twine);color:var(--twine);font-family:'Special Elite',cursive;font-size:11px;letter-spacing:2px;padding:4px 10px;border-radius:6px;transform:rotate(-3deg);text-transform:uppercase;margin-bottom:10px;opacity:0.85;}
+  .hint-box{background:var(--paper-dark);border-left:4px solid var(--gold-dark);padding:12px 14px;border-radius:6px;font-size:13.5px;margin:12px 0;color:var(--ink-soft);}
+  .hint-box .ex{margin-top:6px;padding-top:6px;border-top:1px dashed #cbb891;font-style:italic;}
+  table.datatable{width:100%;border-collapse:collapse;margin:10px 0;font-size:13.5px;}
+  table.datatable th,table.datatable td{border:1px solid #d8cbaa;padding:6px 8px;text-align:center;}
+  table.datatable th{background:var(--paper-dark);}
+
+  label{display:block;font-weight:600;font-size:13.5px;margin:10px 0 5px;}
+  input[type=text], input[type=number]{width:100%;padding:9px 10px;font-size:15px;border-radius:8px;border:2px solid #d8cbaa;background:#fff;font-family:'Work Sans',sans-serif;}
+  input:focus{outline:none;border-color:var(--gold-dark);}
+  button{font-family:'Work Sans',sans-serif;font-weight:700;font-size:14.5px;border:none;border-radius:9px;padding:11px 18px;cursor:pointer;}
+  .btn-primary{background:var(--twine);color:#fff;}
+  .btn-primary:hover{background:var(--twine-dark);}
+  .btn-next{background:var(--gold);color:var(--ink);}
+  .btn-next:hover{background:var(--gold-dark);color:#fff;}
+  .actions{display:flex;gap:12px;align-items:center;margin-top:14px;flex-wrap:wrap;}
+
+  .feedback{margin-top:10px;padding:10px 12px;border-radius:8px;font-weight:600;display:none;font-size:13.5px;}
+  .feedback.ok{display:block;background:var(--ok-bg);color:var(--ok);}
+  .feedback.bad{display:block;background:var(--bad-bg);color:var(--bad);}
+  .digit-reveal{display:none;margin-top:16px;padding:14px;border-radius:10px;background:var(--ink);color:var(--gold);text-align:center;font-family:'Special Elite',cursive;}
+  .digit-reveal .num{font-size:32px;display:block;margin-top:4px;}
+  .digit-reveal .note{font-size:12px;color:#e8dcc0;margin-top:6px;}
+
+  .coordwrap{display:flex;justify-content:center;margin:10px 0;}
+  svg.coordgrid{background:#fff;border-radius:8px;border:2px solid var(--ink);touch-action:manipulation;}
+  .gridpoint{cursor:pointer;}
+  .gridpoint circle{fill:#c9c1a8;transition:fill .15s;}
+  .gridpoint.found circle{fill:var(--ok);}
+  .gridpoint.wrong circle{fill:var(--bad);}
+  .seg{stroke:var(--twine);stroke-width:3.5;stroke-linecap:round;opacity:0;transition:opacity .3s;}
+  .seg.on{opacity:1;}
+
+  .pyramid{display:flex;flex-direction:column;align-items:center;gap:5px;margin:14px 0;}
+  .prow{display:flex;gap:5px;}
+  .pbox{width:50px;height:44px;border:2px solid var(--ink);border-radius:5px;display:flex;align-items:center;justify-content:center;background:#fbfaf6;font-weight:700;font-size:14px;}
+  .pbox input{width:100%;height:100%;text-align:center;border:none;background:transparent;font-weight:700;font-size:14px;padding:0;}
+  .pbox.given{background:var(--paper-dark);}
+  .pbox.top{background:var(--gold);border-color:var(--gold-dark);}
+
+  .frac-row{display:flex;align-items:center;gap:10px;margin:10px 0;}
+  .frac-row input{width:70px;text-align:center;font-size:18px;font-weight:700;}
+  .frac-slash{font-size:22px;font-weight:700;color:var(--ink-soft);}
+  .step-block{display:none;margin-top:16px;padding-top:16px;border-top:2px dashed #cbb891;}
+  .step-block.show{display:block;}
+  .square-grid{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap;}
+  .square{width:42px;height:42px;border:2px solid var(--ink);border-radius:7px;cursor:pointer;background:#fff;transition:background .15s;}
+  .square.filled{background:var(--gold);border-color:var(--gold-dark);}
+
+  .vault-boxes{display:flex;gap:8px;justify-content:center;margin:18px 0;}
+  .vault-boxes input{width:42px;height:54px;text-align:center;font-size:24px;font-weight:800;border-radius:8px;border:2px solid #d8cbaa;}
+  .success{display:none;text-align:center;margin-top:16px;}
+  .success.active{display:block;}
+  .success .big{font-size:56px;margin:6px 0;}
+</style>
+</head>
+<body>
+
+<div class="board">
+  <p class="board-title">🅰️ Schüler:in A – Fortschritt</p>
+  <p class="board-sub">Die gestohlene Klassenfahrt-Kasse</p>
+  <div class="locks" id="locks"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- INTRO -->
+  <div class="screen active" id="screen-intro">
+    <div class="card">
+      <p class="stamp">Dein Teil der Ermittlung</p>
+      <h1 class="title">Willkommen, Ermittler:in A! 🕵️</h1>
+      <p>Du bekommst gleich <strong>6 Spuren</strong>, eine nach der anderen. Löse jede Aufgabe für dich allein.</p>
+      <div class="hint-box">
+        <strong>So geht's:</strong> Löse die Aufgabe → drücke „Prüfen" → wenn's stimmt, siehst du deine <strong>Ziffer</strong>. Schreib sie auf euren <strong>Laufzettel</strong>. Am Ende vergleicht ihr eure Ziffern mit Schüler:in B!
+        <div class="ex">Beispiel: Deine Ziffer bei Spur 1 ist 7 und die von Schüler:in B ist 6? Dann schreibt ihr auf: 7 + 6 = 13 → Codeziffer 3.</div>
+      </div>
+      <div class="hint-box">
+        <strong>Kleiner Trick:</strong> Ist dein Ergebnis zweistellig (also größer als 9), zählt nur die <strong>letzte Ziffer</strong> (die Einerziffer).
+        <div class="ex">Beispiel: Dein Ergebnis ist 32 → deine Ziffer ist die 2 (die letzte Ziffer von 32).</div>
+      </div>
+      <div class="actions"><button class="btn-primary" onclick="goTo('lvl1')">Los geht's! →</button></div>
+    </div>
+  </div>
+
+  <!-- SPUR 1 -->
+  <div class="screen" id="screen-lvl1">
+    <div class="card">
+      <p class="kicker">Spur 1 / 6</p>
+      <h2 class="card-title">🧱 Die Zahlenmauer – addieren</h2>
+      <p>In jedem Stein steht die <strong>Summe</strong> der zwei Steine, die direkt darunter liegen. Fülle alle leeren Steine aus!</p>
+      <div class="hint-box">
+        <strong>So geht's:</strong> Schau dir immer nur die zwei Steine direkt unter einem leeren Stein an und addiere sie.
+        <div class="ex">Beispiel: Wenn unten 2 und 5 liegen, dann steht im Stein darüber 2 + 5 = 7.</div>
+      </div>
+      <div class="pyramid">
+        <div class="prow"><div class="pbox top"><input type="number" id="top"></div></div>
+        <div class="prow"><div class="pbox"><input type="number" id="i1"></div><div class="pbox"><input type="number" id="i2"></div></div>
+        <div class="prow"><div class="pbox"><input type="number" id="j1"></div><div class="pbox"><input type="number" id="j2"></div><div class="pbox"><input type="number" id="j3"></div></div>
+        <div class="prow"><div class="pbox"><input type="number" id="k1"></div><div class="pbox"><input type="number" id="k2"></div><div class="pbox"><input type="number" id="k3"></div><div class="pbox"><input type="number" id="k4"></div></div>
+        <div class="prow"><div class="pbox given">3</div><div class="pbox given">5</div><div class="pbox given">2</div><div class="pbox given">4</div><div class="pbox given">6</div></div>
+      </div>
+      <div class="actions"><button class="btn-primary" onclick="check1()">Prüfen</button></div>
+      <div class="feedback" id="fb1"></div>
+      <div class="digit-reveal" id="digit1">Deine Ziffer:<span class="num" id="digit1-val"></span><span class="note">Trage sie auf dem Laufzettel ein!</span></div>
+      <div class="actions" id="next1" style="display:none;"><button class="btn-next" onclick="goTo('lvl2')">Weiter zu Spur 2 →</button></div>
+    </div>
+  </div>
+
+  <!-- SPUR 2 -->
+  <div class="screen" id="screen-lvl2">
+    <div class="card">
+      <p class="kicker">Spur 2 / 6</p>
+      <h2 class="card-title">🏴‍☠️ Der Pirat und die Wachposten</h2>
+      <p>Ein Pirat muss durch 5 Wachposten. Bei jedem Wachposten muss er genau <strong>die Hälfte</strong> seiner Goldmünzen abgeben. Nach dem 5. Wachposten hat er nur noch <strong>1 Münze</strong>. Wie viele Münzen hatte er am Anfang?</p>
+      <div class="hint-box">
+        <strong>Trick: Rechne rückwärts!</strong> Du weißt, wie viele Münzen am Ende übrig sind. Rückwärts wird aus „die Hälfte abgeben" ein „verdoppeln" (× 2).
+        <div class="ex">Beispiel: Hatte der Pirat nach dem letzten Posten noch 3 Münzen übrig, dann hatte er einen Schritt vorher 3 × 2 = 6 Münzen.</div>
+      </div>
+      <label>Anzahl der Münzen am Anfang:</label>
+      <input type="number" id="a2">
+      <div class="actions"><button class="btn-primary" onclick="check2()">Prüfen</button></div>
+      <div class="feedback" id="fb2"></div>
+      <div class="digit-reveal" id="digit2">Deine Ziffer:<span class="num" id="digit2-val"></span><span class="note">Trage sie auf dem Laufzettel ein!</span></div>
+      <div class="actions" id="next2" style="display:none;"><button class="btn-next" onclick="goTo('lvl3')">Weiter zu Spur 3 →</button></div>
+    </div>
+  </div>
+
+  <!-- SPUR 3 -->
+  <div class="screen" id="screen-lvl3">
+    <div class="card">
+      <p class="kicker">Spur 3 / 6</p>
+      <h2 class="card-title">🔄 Ich denke mir eine Zahl …</h2>
+      <p><strong>a)</strong> Ich denke mir eine Zahl. Mal 3, plus 5, minus 2 ergibt 24. Welche Zahl habe ich mir gedacht?</p>
+      <div class="hint-box">
+        <strong>Trick: Rechne die Kette rückwärts</strong> – mit der Umkehroperation, und in umgekehrter Reihenfolge!
+        <div class="ex">Beispiel: „Ich denke mir eine Zahl. Mal 2, plus 3 ergibt 11." Rückwärts: Zuerst die 3 wegrechnen (11 − 3 = 8), dann durch 2 teilen (8 : 2 = 4). Die gedachte Zahl war also 4.</div>
+      </div>
+      <label>Deine Zahl (a):</label>
+      <input type="number" id="a3">
+
+      <p style="margin-top:18px;"><strong>b)</strong> Ich denke mir eine Zahl. Plus 9, mal 2, minus 4 ergibt 20. Welche Zahl habe ich mir gedacht?</p>
+      <label>Deine Zahl (b):</label>
+      <input type="number" id="a3b">
+
+      <p style="margin-top:18px;"><strong>c)</strong> Ich denke mir eine Zahl. Minus 4, mal 6, plus 8 ergibt 32. Welche Zahl habe ich mir gedacht?</p>
+      <label>Deine Zahl (c):</label>
+      <input type="number" id="a3c">
+
+      <div class="actions"><button class="btn-primary" onclick="check3()">Prüfen</button></div>
+      <div class="feedback" id="fb3"></div>
+      <div class="digit-reveal" id="digit3">Deine Ziffer:<span class="num" id="digit3-val"></span><span class="note">Trage sie auf dem Laufzettel ein!</span></div>
+      <div class="actions" id="next3" style="display:none;"><button class="btn-next" onclick="goTo('lvl4')">Weiter zu Spur 4 →</button></div>
+    </div>
+  </div>
+
+  <!-- SPUR 4 -->
+  <div class="screen" id="screen-lvl4">
+    <div class="card">
+      <p class="kicker">Spur 4 / 6</p>
+      <h2 class="card-title">📍 Der Koordinatenschatz</h2>
+      <p>Tippt der Reihe nach auf diese Punkte: <strong>(2|10) → (5|10) → (5|6) → (5|2)</strong></p>
+      <div class="hint-box">
+        <strong>So liest du einen Punkt:</strong> Die erste Zahl ist die Schritte nach rechts (x-Achse), die zweite Zahl ist die Schritte nach oben (y-Achse).
+        <div class="ex">Beispiel: Der Punkt (2|10) heißt: 2 Schritte nach rechts, dann 10 Schritte nach oben.</div>
+      </div>
+      <div class="coordwrap"><svg class="coordgrid" id="coordgrid" width="260" height="400" viewBox="0 0 260 400"></svg></div>
+      <div id="guess4" style="display:none;">
+        <label>Welche Ziffer erkennst du?</label>
+        <input type="text" id="a4" maxlength="2">
+        <div class="actions"><button class="btn-primary" onclick="check4()">Prüfen</button></div>
+      </div>
+      <div class="feedback" id="fb4"></div>
+      <div class="digit-reveal" id="digit4">Deine Ziffer:<span class="num" id="digit4-val"></span><span class="note">Trage sie auf dem Laufzettel ein!</span></div>
+      <div class="actions" id="next4" style="display:none;"><button class="btn-next" onclick="goTo('lvl5')">Weiter zu Spur 5 →</button></div>
+    </div>
+  </div>
+
+  <!-- SPUR 5 -->
+  <div class="screen" id="screen-lvl5">
+    <div class="card">
+      <p class="kicker">Spur 5 / 6</p>
+      <h2 class="card-title">📱 Bildschirmzeit im Durchschnitt</h2>
+      <div class="hint-box">
+        <strong>So berechnest du den Durchschnitt (das arithmetische Mittel):</strong><br>
+        1) Zähle, wie viele Werte es gibt (die <strong>Anzahl</strong>).<br>
+        2) Addiere alle Werte zusammen (die Summe).<br>
+        3) Teile die Summe durch die Anzahl der Werte.
+        <div class="ex">Beispiel: Handyzeiten Mo–Fr: 5 h, 2 h, 3 h, 4 h, 1 h → das sind 5 Werte (Anzahl = 5) → Summe = 15 h, 15 : 5 = <strong>3 h im Durchschnitt</strong>.</div>
+        <div style="margin-top:8px;">Wir teilen durch die <strong>Anzahl</strong> der Werte, weil wir die Gesamtsumme gleichmäßig auf jeden einzelnen Wert verteilen wollen – so bekommt jeder Wert seinen „fairen Anteil".</div>
+      </div>
+
+      <p style="font-weight:700;margin-bottom:4px;">Aufgabe 1 – Bildschirmzeit</p>
+      <table class="datatable"><tr><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th></tr><tr><td>3 h</td><td>2 h</td><td>7 h</td><td>2 h</td><td>1 h</td></tr></table>
+      <label>Durchschnittliche Bildschirmzeit (h):</label>
+      <input type="number" id="a5">
+
+      <p style="font-weight:700;margin:18px 0 4px;">Aufgabe 2 – Das Zeugnis von Lena</p>
+      <table class="datatable">
+        <tr><th>Fach</th><th>Note</th></tr>
+        <tr><td>Mathe</td><td>gut (2)</td></tr>
+        <tr><td>Deutsch</td><td>befriedigend (3)</td></tr>
+        <tr><td>Englisch</td><td>sehr gut (1)</td></tr>
+        <tr><td>Sport</td><td>gut (2)</td></tr>
+        <tr><td>Kunst</td><td>ausreichend (4)</td></tr>
+        <tr><td>Musik</td><td>ungenügend (6)</td></tr>
+      </table>
+      <label>Notendurchschnitt von Lena:</label>
+      <input type="number" id="a5b" step="0.1">
+
+      <div class="actions"><button class="btn-primary" onclick="check5()">Prüfen</button></div>
+      <div class="feedback" id="fb5"></div>
+      <div class="digit-reveal" id="digit5">Deine Ziffer:<span class="num" id="digit5-val"></span><span class="note">Trage sie auf dem Laufzettel ein!</span></div>
+      <div class="actions" id="next5" style="display:none;"><button class="btn-next" onclick="goTo('lvl6')">Weiter zu Spur 6 →</button></div>
+    </div>
+  </div>
+
+  <!-- SPUR 6 -->
+  <div class="screen" id="screen-lvl6">
+    <div class="card">
+      <p class="kicker">Spur 6 / 6 – letzte Spur!</p>
+      <h2 class="card-title">📊 Relative Häufigkeit</h2>
+      <div class="hint-box">
+        <strong>Die relative Häufigkeit</strong> sagt dir, wie groß ein Anteil im Vergleich zum Ganzen ist – in Prozent. Der Trick: Erst als Bruch aufschreiben, dann kürzen, dann in Prozent umrechnen!
+        <div class="ex">Beispiel: 2 von 8 Kindern haben eine Brille → Bruch 2/8 → gekürzt 1/4 → das sind 25 %.</div>
+      </div>
+      <p>In einer Klasse haben 6 von 24 Kindern blaue Augen. Wie groß ist die relative Häufigkeit in %?</p>
+
+      <!-- Schritt A: Bruch aufschreiben -->
+      <p style="font-weight:700;margin-bottom:4px;">Schritt 1 – Schreibe es als Bruch:</p>
+      <div class="frac-row">
+        <input type="number" id="a6_z1" placeholder="Zähler">
+        <span class="frac-slash">/</span>
+        <input type="number" id="a6_n1" placeholder="Nenner">
+      </div>
+      <div class="actions"><button class="btn-primary" onclick="check6_step1()">Prüfen</button></div>
+      <div class="feedback" id="fb6_1"></div>
+
+      <!-- Schritt B: Kürzen -->
+      <div class="step-block" id="step6b">
+        <p style="font-weight:700;margin-bottom:4px;">Schritt 2 – Kürze den Bruch so weit wie möglich:</p>
+        <div class="frac-row">
+          <input type="number" id="a6_z2" placeholder="Zähler">
+          <span class="frac-slash">/</span>
+          <input type="number" id="a6_n2" placeholder="Nenner">
+        </div>
+        <div class="actions"><button class="btn-primary" onclick="check6_step2()">Prüfen</button></div>
+        <div class="feedback" id="fb6_2"></div>
+      </div>
+
+      <!-- Schritt C: Visualisieren -->
+      <div class="step-block" id="step6c">
+        <p style="font-weight:700;margin-bottom:4px;">Schritt 3 – Stelle den gekürzten Bruch dar:</p>
+        <p style="font-size:13.5px;">Färbe so viele Kästchen ein, wie der <strong>Zähler</strong> deines gekürzten Bruchs sagt (von insgesamt so vielen Kästchen, wie der <strong>Nenner</strong> sagt). Tippe die Kästchen an und drücke danach auf „Prüfen".</p>
+        <div class="square-grid" id="squareGrid6"></div>
+        <div class="actions"><button class="btn-primary" onclick="check6_step3()">Prüfen</button></div>
+        <div class="feedback" id="fb6_3"></div>
+      </div>
+
+      <!-- Schritt D: Prozent -->
+      <div class="step-block" id="step6d">
+        <p style="font-weight:700;margin-bottom:4px;">Schritt 4 – Wie viel Prozent sind das?</p>
+        <label>Relative Häufigkeit (%):</label>
+        <input type="number" id="a6">
+        <div class="actions"><button class="btn-primary" onclick="check6()">Prüfen</button></div>
+        <div class="feedback" id="fb6"></div>
+      </div>
+
+      <div class="digit-reveal" id="digit6">Deine Ziffer:<span class="num" id="digit6-val"></span><span class="note">Trage sie auf dem Laufzettel ein!</span></div>
+      <div class="actions" id="next6" style="display:none;"><button class="btn-next" onclick="goTo('done')">Fertig! →</button></div>
+    </div>
+  </div>
+
+  <!-- DONE -->
+  <div class="screen" id="screen-done">
+    <div class="card">
+      <p class="stamp">Geschafft!</p>
+      <h1 class="title">Super gemacht! 🎉</h1>
+      <p>Du hast alle 6 Spuren gelöst. Stelle sicher, dass alle deine Ziffern auf dem <strong>Laufzettel</strong> stehen. Vergleicht sie jetzt mit Schüler:in B und addiert sie Spur für Spur – so bekommt ihr euren Gesamtcode für die Kasse!</p>
+      <div class="hint-box">Tragt hier auf <strong>einem</strong> der beiden Geräte euren gemeinsamen 6-stelligen Gruppencode ein und öffnet damit die Kasse!</div>
+      <div class="vault-boxes">
+        <input type="text" maxlength="1" class="vaultDigit">
+        <input type="text" maxlength="1" class="vaultDigit">
+        <input type="text" maxlength="1" class="vaultDigit">
+        <input type="text" maxlength="1" class="vaultDigit">
+        <input type="text" maxlength="1" class="vaultDigit">
+        <input type="text" maxlength="1" class="vaultDigit">
+      </div>
+      <div class="actions" style="justify-content:center;"><button class="btn-primary" onclick="checkGroupCode()">Kasse öffnen</button></div>
+      <div class="feedback" id="fb-group"></div>
+      <div class="success" id="successBox">
+        <div class="big">🎉💰🎉</div>
+        <h2 class="title" style="margin-top:6px;">Die Klassenfahrt-Kasse ist gerettet!</h2>
+        <p style="text-align:center;">Starke Teamarbeit, Ermittler-Team!</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function lastDigit(n){ n = Math.abs(Math.round(n)); return n % 10; }
+function showFb(id,ok,msg){ const el=document.getElementById(id); el.className='feedback '+(ok?'ok':'bad'); el.textContent=msg; }
+
+const levelOrder=['lvl1','lvl2','lvl3','lvl4','lvl5','lvl6'];
+let solved={lvl1:false,lvl2:false,lvl3:false,lvl4:false,lvl5:false,lvl6:false};
+let digits={};
+
+function renderLocks(){
+  const box=document.getElementById('locks');
+  box.innerHTML='';
+  levelOrder.forEach((lv,i)=>{
+    const d=document.createElement('div');
+    d.className='lock'+(solved[lv]?' done':'');
+    d.innerHTML=`<div class="badge">${solved[lv]?digits[lv]:'?'}</div><div class="lbl">Spur ${i+1}</div>`;
+    box.appendChild(d);
+  });
+}
+renderLocks();
+
+function reveal(level, num, digit){
+  digits[level]=digit;
+  solved[level]=true;
+  document.getElementById('digit'+num+'-val').textContent=digit;
+  document.getElementById('digit'+num).style.display='block';
+  document.getElementById('next'+num).style.display='flex';
+  renderLocks();
+}
+
+function check1(){
+  const k1=parseInt(document.getElementById('k1').value);
+  const k2=parseInt(document.getElementById('k2').value);
+  const k3=parseInt(document.getElementById('k3').value);
+  const k4=parseInt(document.getElementById('k4').value);
+  const j1=parseInt(document.getElementById('j1').value);
+  const j2=parseInt(document.getElementById('j2').value);
+  const j3=parseInt(document.getElementById('j3').value);
+  const i1=parseInt(document.getElementById('i1').value);
+  const i2=parseInt(document.getElementById('i2').value);
+  const top=parseInt(document.getElementById('top').value);
+  const ok = k1===8 && k2===7 && k3===6 && k4===10 &&
+             j1===15 && j2===13 && j3===16 &&
+             i1===28 && i2===29 && top===57;
+  if(ok){
+    showFb('fb1',true,'Richtig! 3,5,2,4,6 → 8,7,6,10 → 15,13,16 → 28,29 → 57.');
+    reveal('lvl1','1', lastDigit(57));
+  } else { showFb('fb1',false,'Noch nicht ganz richtig. Jeder Stein = Summe der zwei Steine direkt darunter.'); }
+}
+function check2(){
+  const v=parseInt(document.getElementById('a2').value);
+  if(v===32){ showFb('fb2',true,'Richtig! 1 → 2 → 4 → 8 → 16 → 32.'); reveal('lvl2','2', lastDigit(32)); }
+  else { showFb('fb2',false,'Noch nicht richtig. Rechnet vom Ende (1 Münze) jeden Schritt mal 2.'); }
+}
+function check3(){
+  const v=parseInt(document.getElementById('a3').value);
+  const vb=parseInt(document.getElementById('a3b').value);
+  const vc=parseInt(document.getElementById('a3c').value);
+  if(v===7 && vb===3 && vc===8){
+    showFb('fb3',true,'Alle drei richtig! a) 7 · 3 + 5 − 2 = 24. b) (3+9) · 2 − 4 = 20. c) (8−4) · 6 + 8 = 32.');
+    reveal('lvl3','3', lastDigit(7));
+  } else { showFb('fb3',false,'Noch nicht alle richtig. Rechnet jede Kette einzeln von hinten nach vorne.'); }
+}
+function check5(){
+  const v=parseInt(document.getElementById('a5').value);
+  const vb=parseFloat(document.getElementById('a5b').value);
+  if(v===3 && vb===3){
+    showFb('fb5',true,'Beide richtig! Aufgabe 1: (3+2+7+2+1):5 = 3. Aufgabe 2 (Lena): (2+3+1+2+4+6):6 = 18:6 = 3,0.');
+    reveal('lvl5','5', lastDigit(3));
+  } else { showFb('fb5',false,'Noch nicht alles richtig. Addiert jeweils alle Werte und teilt durch die Anzahl der Werte.'); }
+}
+function check6_step1(){
+  const z=parseInt(document.getElementById('a6_z1').value);
+  const n=parseInt(document.getElementById('a6_n1').value);
+  if(z===6 && n===24){
+    showFb('fb6_1',true,'Richtig! 6 von 24 = der Bruch 6/24.');
+    document.getElementById('step6b').classList.add('show');
+  } else { showFb('fb6_1',false,'Noch nicht richtig. Zähler = Anzahl mit blauen Augen, Nenner = Gesamtanzahl.'); }
+}
+function check6_step2(){
+  const z=parseInt(document.getElementById('a6_z2').value);
+  const n=parseInt(document.getElementById('a6_n2').value);
+  if(z===1 && n===4){
+    showFb('fb6_2',true,'Richtig gekürzt! 6/24 = 1/4.');
+    document.getElementById('step6c').classList.add('show');
+    buildSquareGrid6(4,1);
+  } else { showFb('fb6_2',false,'Noch nicht ganz gekürzt. Teile Zähler und Nenner so oft wie möglich durch dieselbe Zahl.'); }
+}
+function buildSquareGrid6(total, need){
+  const grid=document.getElementById('squareGrid6');
+  grid.innerHTML='';
+  window._grid6Need = need;
+  for(let i=0;i<total;i++){
+    const sq=document.createElement('div');
+    sq.className='square';
+    sq.addEventListener('click',()=>{ sq.classList.toggle('filled'); });
+    grid.appendChild(sq);
+  }
+}
+function check6_step3(){
+  const grid=document.getElementById('squareGrid6');
+  const filled = grid.querySelectorAll('.square.filled').length;
+  if(filled===window._grid6Need){
+    showFb('fb6_3',true,'Genau richtig eingefärbt!');
+    document.getElementById('step6d').classList.add('show');
+  } else {
+    showFb('fb6_3',false,'Noch nicht genau richtig – schau dir den Zähler nochmal an und zähle deine eingefärbten Kästchen.');
+  }
+}
+function check6(){
+  const v=parseFloat(document.getElementById('a6').value);
+  if(v===25){ showFb('fb6',true,'Richtig! 1/4 = 25 %.'); reveal('lvl6','6', lastDigit(25)); }
+  else { showFb('fb6',false,'Noch nicht richtig. Tipp: 1/4 kannst du auch als 100 : 4 = 25 rechnen.'); }
+}
+
+/* coordinate grid */
+(function(){
+  const svg=document.getElementById('coordgrid');
+  const cell=34, ox=34, oy=400-34, maxX=7, maxY=10;
+  const toSvg=(x,y)=>({sx: ox + x*cell, sy: oy - y*cell});
+  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+  defs.innerHTML='<marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><polygon points="0 0, 8 4, 0 8" fill="#2b1d14"/></marker>';
+  svg.appendChild(defs);
+  for(let x=0;x<=maxX;x++){ const l=document.createElementNS('http://www.w3.org/2000/svg','line'); const p1=toSvg(x,0),p2=toSvg(x,maxY); l.setAttribute('x1',p1.sx);l.setAttribute('y1',p1.sy);l.setAttribute('x2',p2.sx);l.setAttribute('y2',p2.sy);l.setAttribute('stroke','#e6ddc6');l.setAttribute('stroke-width','1');svg.appendChild(l); }
+  for(let y=0;y<=maxY;y++){ const l=document.createElementNS('http://www.w3.org/2000/svg','line'); const p1=toSvg(0,y),p2=toSvg(maxX,y); l.setAttribute('x1',p1.sx);l.setAttribute('y1',p1.sy);l.setAttribute('x2',p2.sx);l.setAttribute('y2',p2.sy);l.setAttribute('stroke','#e6ddc6');l.setAttribute('stroke-width','1');svg.appendChild(l); }
+  const o=toSvg(0,0), xEnd=toSvg(maxX,0), yEnd=toSvg(0,maxY);
+  const xAxis=document.createElementNS('http://www.w3.org/2000/svg','line');
+  xAxis.setAttribute('x1',o.sx);xAxis.setAttribute('y1',o.sy);xAxis.setAttribute('x2',xEnd.sx+12);xAxis.setAttribute('y2',xEnd.sy);
+  xAxis.setAttribute('stroke','#2b1d14');xAxis.setAttribute('stroke-width','2');xAxis.setAttribute('marker-end','url(#arrow)');
+  svg.appendChild(xAxis);
+  const yAxis=document.createElementNS('http://www.w3.org/2000/svg','line');
+  yAxis.setAttribute('x1',o.sx);yAxis.setAttribute('y1',o.sy);yAxis.setAttribute('x2',yEnd.sx);yAxis.setAttribute('y2',yEnd.sy-12);
+  yAxis.setAttribute('stroke','#2b1d14');yAxis.setAttribute('stroke-width','2');yAxis.setAttribute('marker-end','url(#arrow)');
+  svg.appendChild(yAxis);
+  function addText(x,y,str,anchor){ const t=document.createElementNS('http://www.w3.org/2000/svg','text'); t.setAttribute('x',x);t.setAttribute('y',y);t.setAttribute('font-size','10');t.setAttribute('fill','#5a4a38');t.setAttribute('text-anchor',anchor||'middle');t.textContent=str;svg.appendChild(t); }
+  addText(xEnd.sx+22,xEnd.sy+4,'x','middle'); addText(yEnd.sx,yEnd.sy-18,'y','middle'); addText(o.sx-9,o.sy+14,'0','end');
+  for(let x=1;x<=maxX;x++){ const p=toSvg(x,0); addText(p.sx,p.sy+14,x,'middle'); }
+  for(let y=1;y<=maxY;y++){ const p=toSvg(0,y); addText(p.sx-9,p.sy+3,y,'end'); }
+
+  const points={TL:[2,10],TR:[5,10],MR:[5,6],BR:[5,2]};
+  const segs=[['TL','TR'],['TR','MR'],['MR','BR']];
+  const found=new Set(); const segEls={};
+  segs.forEach(([p1,p2])=>{ const a=toSvg(...points[p1]), b=toSvg(...points[p2]); const line=document.createElementNS('http://www.w3.org/2000/svg','line'); line.setAttribute('x1',a.sx);line.setAttribute('y1',a.sy);line.setAttribute('x2',b.sx);line.setAttribute('y2',b.sy);line.setAttribute('class','seg'); svg.appendChild(line); segEls[p1+p2]=line; });
+  const names=Object.keys(points);
+  for(let x=0;x<=maxX;x++){ for(let y=0;y<=maxY;y++){
+    const {sx,sy}=toSvg(x,y);
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g'); g.setAttribute('class','gridpoint');
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',sx);c.setAttribute('cy',sy);c.setAttribute('r',6); g.appendChild(c);
+    g.addEventListener('click',()=>{
+      let match=null;
+      for(const k of names){ if(points[k][0]===x && points[k][1]===y){ match=k; break; } }
+      if(match && !found.has(match)){
+        found.add(match); g.classList.add('found');
+        for(const sk in segEls){ const p1=sk[0],p2=sk.slice(1); if(found.has(p1)&&found.has(p2)) segEls[sk].classList.add('on'); }
+        if(found.size===names.length) document.getElementById('guess4').style.display='block';
+      } else if(!match){ g.classList.add('wrong'); setTimeout(()=>g.classList.remove('wrong'),400); }
+    });
+    svg.appendChild(g);
+  }}
+})();
+function check4(){
+  const ans=document.getElementById('a4').value.trim();
+  if(ans==='7'){ showFb('fb4',true,'Genau, eine 7!'); reveal('lvl4','4', 7); }
+  else { showFb('fb4',false,'Schaut euch die verbundenen Linien nochmal an.'); }
+}
+
+/* GROUP CODE VAULT */
+document.addEventListener('input',(e)=>{
+  if(e.target.classList.contains('vaultDigit')){
+    const boxes=[...document.querySelectorAll('.vaultDigit')];
+    const idx=boxes.indexOf(e.target);
+    if(e.target.value && idx<boxes.length-1) boxes[idx+1].focus();
+  }
+});
+function checkGroupCode(){
+  const boxes=[...document.querySelectorAll('.vaultDigit')].map(i=>i.value.trim()).join('');
+  if(boxes==='389175'){
+    document.getElementById('fb-group').style.display='none';
+    document.getElementById('successBox').classList.add('active');
+  } else {
+    showFb('fb-group', false, 'Das ist noch nicht der richtige Code. Prüft eure Ziffern auf dem Laufzettel noch einmal Spur für Spur.');
+  }
+}
+</script>
+</body>
+</html>
