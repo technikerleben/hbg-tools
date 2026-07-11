@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Taschenlampe 3D – Technik 5 – HBG</title>
+<style>
+  :root {
+    --col-slate-dark:  #2C3D4C;
+    --col-slate:       #3E5668;
+    --col-slate-mid:   #6A8599;
+    --col-slate-pale:  #D0DCE6;
+    --col-slate-ghost: #EEF3F7;
+    --col-rust-dark:   #9E4E22;
+    --col-rust:        #D97A4A;
+    --col-rust-pale:   #F5DDD1;
+    --col-sage-dark:   #4D8B3F;
+    --col-sage:        #7DBB6F;
+    --col-sage-pale:   #DDF0D8;
+    --col-warning:      #C17B00;
+    --col-warning-pale: #FFF3CC;
+    --col-warning-text: #5C4400;
+    --col-bg:           #F5F4F1;
+    --col-white:        #FFFFFF;
+    --col-text:         #1E2A35;
+    --col-text-muted:   #5A6A78;
+    --col-border:       #D4D0C8;
+    --col-focus:        #3E5668;
+    --col-shadow:       rgba(62,86,104,0.10);
+    --text-xs:   0.694rem;
+    --text-sm:   0.833rem;
+    --text-base: 1rem;
+    --text-md:   1.2rem;
+    --text-lg:   1.44rem;
+    --text-xl:   1.728rem;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--col-bg);
+    color: var(--col-text);
+    font-size: var(--text-base);
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  :focus-visible { outline: 3px solid var(--col-focus); outline-offset: 3px; border-radius: 4px; }
+
+  header {
+    background: var(--col-slate);
+    color: #fff;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  header h1 { font-size: var(--text-lg); font-weight: 700; line-height: 1.2; }
+  .badge {
+    background: var(--col-rust-dark);
+    color: #fff;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    letter-spacing: 0.03em;
+  }
+  .header-hint { margin-left: auto; font-size: var(--text-xs); color: var(--col-slate-pale); }
+
+  .toolbar {
+    background: var(--col-white);
+    border-bottom: 1px solid var(--col-border);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 240px;
+    min-width: 200px;
+  }
+  .slider-wrap label { font-size: var(--text-sm); font-weight: 600; color: var(--col-slate); white-space: nowrap; }
+  input[type=range] { flex: 1; height: 44px; accent-color: var(--col-rust-dark); cursor: pointer; }
+  input[type=range]:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn {
+    min-height: 44px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .1s, background .15s;
+    touch-action: manipulation;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-primary { background: var(--col-rust-dark); color: #fff; }
+  .btn-secondary { background: var(--col-white); color: var(--col-slate); border-color: var(--col-slate-pale); }
+  .btn-secondary:hover { background: var(--col-slate-ghost); }
+  .btn.pressed { background: var(--col-sage-dark); color: #fff; }
+  .btn.aktiv { background: var(--col-slate); color: #fff; }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--col-slate-ghost);
+    color: var(--col-slate);
+    white-space: nowrap;
+  }
+  .status.an { background: var(--col-sage-pale); color: #2D5C25; }
+
+  #stage { position: relative; flex: 1; min-height: 0; }
+  #c3d { width: 100%; height: 100%; display: block; touch-action: none; }
+
+  .hint-overlay {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    background: rgba(255,255,255,0.88);
+    border: 1px solid var(--col-border);
+    border-radius: 10px;
+    padding: 6px 12px;
+    font-size: var(--text-xs);
+    color: var(--col-text-muted);
+    pointer-events: none;
+    max-width: 70%;
+  }
+
+  /* Kontextmenü / Bauteil-Karte */
+  #menu {
+    position: absolute;
+    width: 290px;
+    max-width: calc(100% - 24px);
+    background: var(--col-white);
+    border: 1px solid var(--col-border);
+    border-top: 5px solid var(--col-rust);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px var(--col-shadow), 0 2px 8px rgba(0,0,0,0.12);
+    padding: 14px 16px;
+    display: none;
+    z-index: 10;
+  }
+  #menu.open { display: block; }
+  #menu h2 {
+    font-size: var(--text-md);
+    color: var(--col-slate-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    padding-right: 34px;
+  }
+  #menu .beschreibung { font-size: var(--text-sm); margin-bottom: 8px; }
+  #menu .rolle {
+    font-size: var(--text-xs);
+    background: var(--col-slate-ghost);
+    border-left: 4px solid var(--col-slate-mid);
+    border-radius: 0 8px 8px 0;
+    padding: 6px 10px;
+    color: var(--col-slate-dark);
+    margin-bottom: 10px;
+  }
+  #menu .menu-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  #menu-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 34px;
+    height: 34px;
+    min-height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: var(--col-slate-ghost);
+    color: var(--col-slate);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  #menu-taster-btn { display: none; }
+  #menu.taster #menu-taster-btn { display: inline-block; }
+
+  /* Fertigungsschritte-Panel */
+  #fertigung {
+    position: absolute;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    width: 560px;
+    max-width: calc(100% - 20px);
+    background: var(--col-white);
+    border: 1px solid var(--col-border);
+    border-left: 6px solid var(--col-rust-dark);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px var(--col-shadow), 0 4px 10px rgba(0,0,0,0.14);
+    padding: 12px 16px;
+    display: none;
+    z-index: 9;
+  }
+  #fertigung.open { display: block; }
+  .f-kopf {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--col-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .f-zaehler {
+    background: var(--col-rust-pale);
+    color: var(--col-rust-dark);
+    border-radius: 999px;
+    padding: 2px 10px;
+  }
+  #f-titel { font-size: var(--text-md); color: var(--col-slate-dark); margin-bottom: 4px; }
+  #f-text { font-size: var(--text-sm); margin-bottom: 10px; min-height: 2.4em; }
+  #f-text .achtung {
+    display: inline-block;
+    background: var(--col-warning-pale);
+    color: var(--col-warning-text);
+    border-radius: 6px;
+    padding: 1px 8px;
+    font-weight: 700;
+  }
+  .f-aktionen { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .f-fortschritt {
+    height: 6px;
+    background: var(--col-slate-ghost);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .f-fortschritt > div {
+    height: 100%;
+    background: var(--col-sage-dark);
+    border-radius: 999px;
+    transition: width .25s;
+  }
+
+  @media (max-width: 700px) {
+    header h1 { font-size: var(--text-md); }
+    .header-hint { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔦 Unsere Taschenlampe in 3D</h1>
+  <span class="badge">WP&nbsp;Technik&nbsp;5</span>
+  <span class="header-hint">Ziehen = Drehen · Zwei Finger / Mausrad = Zoom · Tippe ein Bauteil an!</span>
+</header>
+
+<div class="toolbar">
+  <div class="slider-wrap">
+    <label for="explode">🧩 Auseinanderziehen</label>
+    <input type="range" id="explode" min="0" max="100" value="0"
+           aria-label="Explosionsansicht: Bauteile auseinanderziehen">
+  </div>
+  <button class="btn btn-secondary" id="btn-fertigung">🔧 Fertigungsschritte</button>
+  <button class="btn btn-primary" id="btn-taster" aria-pressed="false">🔘 Taster drücken</button>
+  <span class="status" id="status" role="status">⚫ Stromkreis: offen</span>
+  <button class="btn btn-secondary" id="btn-reset">🎥 Ansicht</button>
+</div>
+
+<div id="stage">
+  <canvas id="c3d"></canvas>
+  <div class="hint-overlay" id="hint">Tippe ein Bauteil an, um zu erfahren, was es macht.</div>
+
+  <div id="menu" role="dialog" aria-modal="false" aria-labelledby="menu-titel">
+    <button id="menu-close" aria-label="Schließen">✕</button>
+    <h2 id="menu-titel"></h2>
+    <p class="beschreibung" id="menu-text"></p>
+    <p class="rolle" id="menu-rolle"></p>
+    <div class="menu-actions">
+      <button class="btn btn-primary" id="menu-taster-btn">🔘 Taster drücken</button>
+    </div>
+  </div>
+
+  <div id="fertigung" role="region" aria-label="Fertigungsschritte">
+    <div class="f-kopf">🔧 Fertigungsschritte <span class="f-zaehler" id="f-zaehler">1 / 9</span></div>
+    <div class="f-fortschritt"><div id="f-balken" style="width:11%"></div></div>
+    <h3 id="f-titel"></h3>
+    <p id="f-text"></p>
+    <div class="f-aktionen">
+      <button class="btn btn-secondary" id="f-zurueck">◀ Zurück</button>
+      <button class="btn btn-primary" id="f-weiter">Weiter ▶</button>
+      <button class="btn btn-secondary" id="f-ende" style="margin-left:auto;">✕ Beenden</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ======================= Grund-Setup =======================
+  const stage    = document.getElementById('stage');
+  const canvas   = document.getElementById('c3d');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xdfe7ee);
+  scene.fog = new THREE.Fog(0xdfe7ee, 60, 120);
+
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 300);
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a97a8, 0.85));
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
+  dirLight.position.set(12, 22, 10);
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.set(2048, 2048);
+  dirLight.shadow.camera.left = -25;
+  dirLight.shadow.camera.right = 25;
+  dirLight.shadow.camera.top = 25;
+  dirLight.shadow.camera.bottom = -25;
+  scene.add(dirLight);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.15));
+
+  // ======================= Hilfsfunktionen =======================
+  function std(opts) { return new THREE.MeshStandardMaterial(opts); }
+  function v3(x, y, z) { return new THREE.Vector3(x, y, z); }
+
+  const MAT = {
+    plastik:  () => std({ color: 0x1c1c20, roughness: 0.55, metalness: 0.1 }),
+    messing:  () => std({ color: 0xb08d3e, roughness: 0.35, metalness: 0.9 }),
+    stahl:    () => std({ color: 0xb9bcc0, roughness: 0.3,  metalness: 0.9 }),
+    loetzinn: () => std({ color: 0x9aa0a6, roughness: 0.45, metalness: 0.8 }),
+    chrom:    () => std({ color: 0xe3e7ea, roughness: 0.12, metalness: 1.0, side: THREE.DoubleSide }),
+  };
+
+  function tube(points, radius, material) {
+    const curve = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.4);
+    const m = new THREE.Mesh(new THREE.TubeGeometry(curve, 48, radius, 10, false), material);
+    m.castShadow = true;
+    return m;
+  }
+
+  function woodTexture(grooves) {
+    const cv = document.createElement('canvas');
+    cv.width = 512; cv.height = 256;
+    const g = cv.getContext('2d');
+    g.fillStyle = '#b28a55';
+    g.fillRect(0, 0, 512, 256);
+    for (let i = 0; i < 40; i++) {
+      g.strokeStyle = 'rgba(85,55,22,' + (0.08 + Math.random() * 0.12) + ')';
+      g.lineWidth = 1 + Math.random() * 2;
+      g.beginPath();
+      const y = Math.random() * 256;
+      g.moveTo(0, y);
+      g.bezierCurveTo(170, y + (Math.random() * 20 - 10), 340, y + (Math.random() * 20 - 10), 512, y);
+      g.stroke();
+    }
+    if (grooves) {
+      for (let y = 16; y < 256; y += 32) {
+        const grad = g.createLinearGradient(0, y - 6, 0, y + 6);
+        grad.addColorStop(0, 'rgba(60,38,14,0)');
+        grad.addColorStop(0.5, 'rgba(60,38,14,0.5)');
+        grad.addColorStop(1, 'rgba(210,170,110,0.3)');
+        g.fillStyle = grad;
+        g.fillRect(0, y - 6, 512, 12);
+      }
+    }
+    const tex = new THREE.CanvasTexture(cv);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    return tex;
+  }
+
+  // ======================= Maße & Positionen =======================
+  // Holzleiste: Länge 24, Breite 4.4, Höhe 1.6  (x: -12 … +12)
+  // Batteriehalter: Länge 12, Breite 4.2 — passt auf die Leiste (linke Hälfte)
+  // Aussparung (halbrund) vorne: x 10.2 … 12.0, Radius 1.0, Mitte oben (y = 1.6)
+  const HOLZ_L = 24, HOLZ_B = 4.4, HOLZ_H = 1.6;
+  const AUSSP_X0 = 10.2, AUSSP_L = 1.8, AUSSP_R = 1.0;
+  const TACK = {
+    A: { x: 1.6, z: -1.25 },  // Taster-Fuß  (schwarze Litze)
+    D: { x: 6.6, z: -1.25 },  // Taster-Ausgang
+    B: { x: 2.1, z:  1.25 },  // Widerstand links (rote Litze)
+    C: { x: 7.6, z:  1.25 }   // Widerstand rechts
+  };
+  const TACK_Y = HOLZ_H + 0.02;
+  const LED_POS = v3(10.55, HOLZ_H, 0);
+
+  // ======================= Bauteile =======================
+  const parts = {};       // id -> { group, base, exp, animY, info }
+  const model = new THREE.Group();
+  scene.add(model);
+
+  function registerPart(id, group, expVec, info) {
+    group.traverse(o => { o.userData.partId = id; });
+    group.userData.partId = id;
+    parts[id] = { group, base: group.position.clone(), exp: expVec, animY: 0, info };
+    model.add(group);
+  }
+
+  // ---- 1. Holzleiste (mit halbrunder Aussparung vorne) ----
+  (function () {
+    const grp = new THREE.Group();
+    const matTop  = std({ map: woodTexture(true),  roughness: 0.8 });
+    const matSide = std({ map: woodTexture(false), roughness: 0.8, side: THREE.DoubleSide });
+    const mats = [matSide, matSide, matTop, matSide, matSide, matSide];
+
+    // Hauptteil bis zur Aussparung
+    const hauptL = AUSSP_X0 + HOLZ_L / 2; // von -6 bis 4.5
+    const haupt = new THREE.Mesh(new THREE.BoxGeometry(hauptL, HOLZ_H, HOLZ_B), mats);
+    haupt.position.set(-HOLZ_L / 2 + hauptL / 2, HOLZ_H / 2, 0);
+    haupt.castShadow = haupt.receiveShadow = true;
+    grp.add(haupt);
+
+    // Endsegment mit Aussparung: zwei Seitenwangen + Bodenplatte + Halbschale
+    const wangenB = (HOLZ_B / 2) - AUSSP_R; // 1.2
+    [1, -1].forEach(s => {
+      const w = new THREE.Mesh(new THREE.BoxGeometry(AUSSP_L, HOLZ_H, wangenB), mats);
+      w.position.set(AUSSP_X0 + AUSSP_L / 2, HOLZ_H / 2, s * (AUSSP_R + wangenB / 2));
+      w.castShadow = w.receiveShadow = true;
+      grp.add(w);
+    });
+    const bodenH = HOLZ_H - AUSSP_R; // 0.6
+    const boden = new THREE.Mesh(new THREE.BoxGeometry(AUSSP_L, bodenH, AUSSP_R * 2), mats);
+    boden.position.set(AUSSP_X0 + AUSSP_L / 2, bodenH / 2, 0);
+    boden.receiveShadow = true;
+    grp.add(boden);
+
+    // Konkave Halbschale (die geraspelte Rinne), Achse entlang x, Öffnung nach oben
+    const rinneGeo = new THREE.CylinderGeometry(AUSSP_R, AUSSP_R, AUSSP_L, 28, 1, true, Math.PI, Math.PI);
+    rinneGeo.rotateZ(Math.PI / 2); // Achse -> x, Schale unten
+    const rinne = new THREE.Mesh(rinneGeo, std({ color: 0x8f6a3c, roughness: 0.95, side: THREE.DoubleSide }));
+    rinne.position.set(AUSSP_X0 + AUSSP_L / 2, HOLZ_H, 0);
+    grp.add(rinne);
+
+    registerPart('holz', grp, v3(0, -2.4, 0), {
+      icon: '🪵', name: 'Holzleiste mit Aussparung',
+      text: 'Die Grundplatte unserer Taschenlampe. Auf der linken Hälfte sitzt der Batteriehalter, auf der rechten die Schaltung. Vorne ist eine halbrunde Aussparung geraspelt: Dort liegt später der Reflektor. Holz leitet keinen Strom und ist eine sichere Unterlage.',
+      rolle: 'Im Stromkreis: Träger – hier fließt kein Strom hindurch.'
+    });
+  })();
+
+  // ---- 2. Batteriehalter (Breite 4.2 — passt auf die Leiste) ----
+  (function () {
+    const grp = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(12, 1.9, 4.2), MAT.plastik());
+    body.castShadow = body.receiveShadow = true;
+    grp.add(body);
+
+    const muldeMat = std({ color: 0x2c2c31, roughness: 0.6 });
+    [-1.35, 1.35].forEach(z => {
+      const mulde = new THREE.Mesh(new THREE.CylinderGeometry(0.72, 0.72, 10.4, 20, 1, false), muldeMat);
+      mulde.rotation.z = Math.PI / 2;
+      mulde.position.set(-0.3, 0.75, z);
+      grp.add(mulde);
+    });
+    const steg = new THREE.Mesh(new THREE.BoxGeometry(12, 0.5, 0.5), MAT.plastik());
+    steg.position.y = 0.95;
+    grp.add(steg);
+
+    // Federn am rechten Ende
+    function feder(z) {
+      const pts = [];
+      const turns = 6, h = 1.0, r = 0.32;
+      for (let i = 0; i <= 60; i++) {
+        const t = i / 60, a = t * turns * Math.PI * 2;
+        pts.push(v3(t * h, Math.cos(a) * r, Math.sin(a) * r));
+      }
+      const f = tube(pts, 0.05, MAT.stahl());
+      f.position.set(4.6, 0.75, z);
+      return f;
+    }
+    grp.add(feder(-1.35), feder(1.35));
+
+    // Messing-Schraubköpfe links
+    [-1.0, 1.0].forEach(z => {
+      const s = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.15, 16), MAT.messing());
+      s.position.set(-5.4, 1.0, z);
+      grp.add(s);
+    });
+
+    // ---- Die Litzen sind FEST mit dem Halter verbunden -> gleiche Gruppe ----
+    // Sie verlassen den Halter am rechten Ende und führen zu den Zwecken A und B.
+    const holderX = -6, holderY = HOLZ_H + 0.95; // Weltposition des Halters (linke Leistenhälfte)
+    function lokal(wx, wy, wz) { return v3(wx - holderX, wy - holderY, wz); }
+
+    const litzeRot = tube([
+      lokal(0.3, 2.6, -0.7),
+      lokal(0.65, 2.35, -1.0),
+      lokal(TACK.A.x - 0.25, 1.95, TACK.A.z),
+      lokal(TACK.A.x, TACK_Y + 0.15, TACK.A.z)
+    ], 0.09, std({ color: 0xd0392a, roughness: 0.6 }));
+    grp.add(litzeRot);
+
+    const litzeSchwarz = tube([
+      lokal(0.3, 2.45, 0.55),
+      lokal(0.7, 2.25, 0.95),
+      lokal(TACK.B.x - 0.25, 1.95, TACK.B.z),
+      lokal(TACK.B.x, TACK_Y + 0.15, TACK.B.z)
+    ], 0.09, std({ color: 0x232326, roughness: 0.6 }));
+    grp.add(litzeSchwarz);
+
+    grp.position.set(holderX, holderY, 0);
+    registerPart('halter', grp, v3(-3.5, 4.0, 0), {
+      icon: '🔋', name: 'Batteriehalter mit Anschlusskabeln',
+      text: 'Hier stecken zwei AA-Batterien (zusammen 3 Volt) – unsere Stromquelle. Der Halter sitzt auf der linken Hälfte der Leiste. Die rote und die schwarze Litze sind fest mit ihm verbunden: Rot ist der Pluspol, Schwarz der Minuspol. Die freien Enden werden an die Heftzwecken gelötet.',
+      rolle: 'Im Stromkreis: Stromquelle – hier beginnt und endet der Stromkreis.'
+    });
+  })();
+
+  // ---- 3. Heftzwecken (Lötpunkte) ----
+  (function () {
+    const grp = new THREE.Group();
+    Object.values(TACK).forEach(p => {
+      const kopf = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.55, 0.09, 24), MAT.stahl());
+      kopf.position.set(p.x, TACK_Y + 0.045, p.z);
+      kopf.castShadow = true;
+      grp.add(kopf);
+      const blob = new THREE.Mesh(new THREE.SphereGeometry(0.27, 16, 12), MAT.loetzinn());
+      blob.scale.set(1, 0.45, 1);
+      blob.position.set(p.x, TACK_Y + 0.11, p.z);
+      grp.add(blob);
+    });
+    registerPart('zwecken', grp, v3(0, 2.4, 0), {
+      icon: '📌', name: 'Heftzwecken (Lötpunkte)',
+      text: 'Vier Heftzwecken aus Metall – Metall leitet Strom! Sie werden in die Leiste gedrückt und verzinnt: Jeder Kopf bekommt eine dünne Schicht Lötzinn. So halten die Drähte später gut.',
+      rolle: 'Im Stromkreis: Verbindungsstellen – der Strom fließt über sie von Bauteil zu Bauteil.'
+    });
+  })();
+
+  // ---- 4. Taster (Musterbeutelklammer) ----
+  let tasterHebel = null;
+  (function () {
+    const grp = new THREE.Group();
+    grp.position.set(TACK.A.x, TACK_Y + 0.1, TACK.A.z);
+
+    tasterHebel = new THREE.Group();
+
+    const fuss = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.06, 0.8), MAT.messing());
+    fuss.position.set(0, 0.03, 0);
+    tasterHebel.add(fuss);
+
+    const kopf = new THREE.Mesh(new THREE.SphereGeometry(0.45, 20, 16), MAT.messing());
+    kopf.scale.set(1, 0.75, 1);
+    kopf.position.set(0.1, 0.4, 0);
+    kopf.castShadow = true;
+    tasterHebel.add(kopf);
+
+    const zungeLen = TACK.D.x - TACK.A.x + 0.4; // 2.8
+    const zunge = new THREE.Mesh(new THREE.BoxGeometry(zungeLen, 0.055, 0.75), MAT.messing());
+    zunge.position.set(zungeLen / 2 - 0.2, 0.34, 0);
+    zunge.rotation.z = -0.02;
+    zunge.castShadow = true;
+    tasterHebel.add(zunge);
+
+    const ende = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.055, 0.75), MAT.messing());
+    ende.position.set(zungeLen - 0.2, 0.46, 0);
+    ende.rotation.z = 0.9;
+    tasterHebel.add(ende);
+
+    grp.add(tasterHebel);
+    registerPart('taster', grp, v3(0.8, 4.6, -1.7), {
+      icon: '🔘', name: 'Taster (Musterbeutelklammer)',
+      text: 'Eine Musterbeutelklammer aus Messing, gebogen als Federzunge. Ihr Fuß ist auf die hintere Zwecke gelötet. Drückst du den runden Kopf, berührt der Streifen die zweite Zwecke – der Stromkreis ist geschlossen. Lässt du los, federt er zurück.',
+      rolle: 'Im Stromkreis: Schalter – er öffnet und schließt den Stromkreis.'
+    });
+  })();
+
+  // ---- 5. Widerstand ----
+  (function () {
+    const grp = new THREE.Group();
+    const midX = (TACK.B.x + TACK.C.x) / 2; // 2.65
+    const bodyY = TACK_Y + 0.42;
+    const drahtMat = MAT.stahl();
+
+    grp.add(tube([v3(TACK.B.x, TACK_Y + 0.12, TACK.B.z), v3(TACK.B.x + 0.9, bodyY - 0.08, TACK.B.z), v3(midX - 0.88, bodyY, TACK.B.z)], 0.045, drahtMat));
+    grp.add(tube([v3(midX + 0.88, bodyY, TACK.C.z), v3(TACK.C.x - 0.9, bodyY - 0.08, TACK.C.z), v3(TACK.C.x, TACK_Y + 0.12, TACK.C.z)], 0.045, drahtMat));
+
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 1.7, 20), std({ color: 0xd9c49a, roughness: 0.5 }));
+    body.rotation.z = Math.PI / 2;
+    body.position.set(midX, bodyY, TACK.B.z);
+    body.castShadow = true;
+    grp.add(body);
+
+    const ringe = [0x6b3f22, 0x151515, 0x6b3f22, 0xc9a227];
+    ringe.forEach((c, i) => {
+      const r = new THREE.Mesh(new THREE.CylinderGeometry(0.315, 0.315, 0.14, 20), std({ color: c, roughness: 0.4 }));
+      r.rotation.z = Math.PI / 2;
+      r.position.set(midX - 0.55 + i * 0.36, bodyY, TACK.B.z);
+      grp.add(r);
+    });
+
+    registerPart('widerstand', grp, v3(0.8, 4.0, 2.2), {
+      icon: '🟤', name: 'Widerstand',
+      text: 'Der Widerstand bremst den Strom. Ohne ihn würde zu viel Strom durch die LED fließen – sie würde sofort kaputtgehen! Er wird zwischen die beiden vorderen Zwecken gelötet. Die Farbringe verraten, wie stark er bremst.',
+      rolle: 'Im Stromkreis: Schutzbauteil – er begrenzt den Strom für die LED.'
+    });
+  })();
+
+  // ---- 6. LED ----
+  let ledDome = null, ledLicht = null, lichtKegel = null;
+  (function () {
+    const grp = new THREE.Group();
+    grp.position.copy(LED_POS);
+
+    const domeMat = std({ color: 0xeef2f5, transparent: true, opacity: 0.55, roughness: 0.15, emissive: 0x000000 });
+    const koerper = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.27, 0.45, 20), domeMat);
+    koerper.rotation.z = -Math.PI / 2;
+    koerper.position.x = 0.1;
+    grp.add(koerper);
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.27, 20, 16, 0, Math.PI * 2, 0, Math.PI / 2), domeMat);
+    dome.rotation.z = -Math.PI / 2;
+    dome.position.x = 0.33;
+    grp.add(dome);
+    ledDome = domeMat;
+    const kragen = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.08, 20), std({ color: 0xeef2f5, transparent: true, opacity: 0.55, roughness: 0.15 }));
+    kragen.rotation.z = -Math.PI / 2;
+    kragen.position.x = -0.12;
+    grp.add(kragen);
+
+    // Beinchen: langes Bein (+) nach vorn zur Zwecke C, kurzes (−) nach hinten zur Zwecke D
+    const beinMat = MAT.stahl();
+    grp.add(tube([v3(-0.15, 0, 0.1),  v3(-1.3, -0.1, 0.7),  v3(TACK.C.x - LED_POS.x, TACK_Y + 0.12 - LED_POS.y, TACK.C.z)], 0.04, beinMat));
+    grp.add(tube([v3(-0.15, 0, -0.1), v3(-1.9, -0.15, -0.8), v3(TACK.D.x - LED_POS.x, TACK_Y + 0.12 - LED_POS.y, TACK.D.z)], 0.04, beinMat));
+
+    ledLicht = new THREE.PointLight(0xfff6d8, 0, 14, 2);
+    ledLicht.position.set(0.5, 0, 0);
+    grp.add(ledLicht);
+
+    lichtKegel = new THREE.Mesh(
+      new THREE.ConeGeometry(2.2, 7, 24, 1, true),
+      new THREE.MeshBasicMaterial({ color: 0xfff3c0, transparent: true, opacity: 0.0, side: THREE.DoubleSide, depthWrite: false })
+    );
+    lichtKegel.rotation.z = Math.PI / 2;
+    lichtKegel.position.x = 4.4;
+    grp.add(lichtKegel);
+
+    registerPart('led', grp, v3(4.5, 3.2, 0), {
+      icon: '💡', name: 'Weiße LED (Leuchtdiode)',
+      text: 'Die LED ist unsere Lampe. ⚠️ Richtung beachten: Das lange Beinchen (Pluspol) muss zur Zwecke am Taster, das kurze zur Zwecke am Widerstand. Falsch herum eingebaut bleibt sie dunkel!',
+      rolle: 'Im Stromkreis: Verbraucher – hier wird der Strom in Licht verwandelt.'
+    });
+  })();
+
+  // ---- 7. Reflektor (liegt in der Aussparung) ----
+  (function () {
+    const grp = new THREE.Group();
+    const profil = [
+      new THREE.Vector2(0.28, 0.0),
+      new THREE.Vector2(0.40, 0.22),
+      new THREE.Vector2(0.62, 0.55),
+      new THREE.Vector2(0.86, 0.95),
+      new THREE.Vector2(0.97, 1.2),
+      new THREE.Vector2(0.97, 1.3)
+    ];
+    const refl = new THREE.Mesh(new THREE.LatheGeometry(profil, 32), MAT.chrom());
+    refl.rotation.z = -Math.PI / 2; // Öffnung zeigt nach +x
+    refl.castShadow = true;
+    grp.add(refl);
+    grp.position.set(LED_POS.x + 0.25, HOLZ_H, 0); // sitzt in der Rinne
+    registerPart('reflektor', grp, v3(7.5, 2.2, 0), {
+      icon: '🔦', name: 'Reflektor',
+      text: 'Ein glänzender Metalltrichter. Er wird von vorne auf die LED gesteckt und liegt in der halbrunden Aussparung der Leiste. Seine spiegelnde Innenseite bündelt das Licht zu einem Strahl – wie bei einer echten Taschenlampe.',
+      rolle: 'Im Stromkreis: kein elektrisches Bauteil – er lenkt nur das Licht.'
+    });
+  })();
+
+  // ---- 8. Heißkleber ----
+  (function () {
+    const grp = new THREE.Group();
+    const mat = std({ color: 0xf3efe4, transparent: true, opacity: 0.7, roughness: 0.35 });
+    const stellen = [
+      [-9.5, HOLZ_H + 0.06, 2.12, 1.1],
+      [-2.5, HOLZ_H + 0.06, 2.12, 1.1],
+      [-6.0, HOLZ_H + 0.06, -2.12, 1.1],
+      [AUSSP_X0 + 0.3, HOLZ_H - 0.05, 1.02, 0.8],
+      [AUSSP_X0 + 0.3, HOLZ_H - 0.05, -1.02, 0.8]
+    ];
+    stellen.forEach(([x, y, z, s]) => {
+      const b = new THREE.Mesh(new THREE.SphereGeometry(0.28, 14, 10), mat);
+      b.scale.set(s, 0.45, 0.7);
+      b.position.set(x, y, z);
+      grp.add(b);
+    });
+    registerPart('kleber', grp, v3(0, 1.6, 0), {
+      icon: '🫠', name: 'Heißkleber',
+      text: 'Mit der Heißklebepistole werden der Batteriehalter auf der Leiste und der Reflektor in der Aussparung festgeklebt. Vorsicht: Heißkleber ist wirklich heiß – nicht anfassen, bis er fest ist!',
+      rolle: 'Im Stromkreis: kein elektrisches Bauteil – er hält alles fest.'
+    });
+  })();
+
+  // ======================= Kamera-Steuerung =======================
+  const camCtl = {
+    target: v3(0, 1.8, 0),
+    theta: -0.55, phi: 1.08, radius: 28,
+    def: { theta: -0.55, phi: 1.08, radius: 28 }
+  };
+  function updateCamera() {
+    const { target, theta, phi, radius } = camCtl;
+    camera.position.set(
+      target.x + radius * Math.sin(phi) * Math.sin(theta),
+      target.y + radius * Math.cos(phi),
+      target.z + radius * Math.sin(phi) * Math.cos(theta)
+    );
+    camera.lookAt(target);
+  }
+
+  const pointers = new Map();
+  let pinchDist = 0;
+  let downPos = null, movedFar = false;
+
+  canvas.addEventListener('pointerdown', e => {
+    canvas.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.size === 1) { downPos = { x: e.clientX, y: e.clientY }; movedFar = false; }
+    if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      pinchDist = Math.hypot(a.x - b.x, a.y - b.y);
+    }
+  });
+
+  canvas.addEventListener('pointermove', e => {
+    if (!pointers.has(e.pointerId)) return;
+    const prev = pointers.get(e.pointerId);
+    const dx = e.clientX - prev.x, dy = e.clientY - prev.y;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (downPos && Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y) > 8) movedFar = true;
+
+    if (pointers.size === 1) {
+      camCtl.theta -= dx * 0.006;
+      camCtl.phi   = Math.min(1.5, Math.max(0.15, camCtl.phi - dy * 0.006));
+    } else if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinchDist > 0) camCtl.radius = Math.min(60, Math.max(8, camCtl.radius * (pinchDist / d)));
+      pinchDist = d;
+    }
+  });
+
+  function endPointer(e) {
+    const wasSingle = pointers.size === 1;
+    pointers.delete(e.pointerId);
+    if (wasSingle && !movedFar && e.type === 'pointerup') pick(e);
+    if (pointers.size < 2) pinchDist = 0;
+    if (pointers.size === 0) downPos = null;
+  }
+  canvas.addEventListener('pointerup', endPointer);
+  canvas.addEventListener('pointercancel', endPointer);
+
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    camCtl.radius = Math.min(60, Math.max(8, camCtl.radius * (1 + e.deltaY * 0.001)));
+  }, { passive: false });
+
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    Object.assign(camCtl, camCtl.def);
+  });
+
+  // ======================= Auswahl & Kontextmenü =======================
+  const raycaster = new THREE.Raycaster();
+  const menu      = document.getElementById('menu');
+  const menuTitel = document.getElementById('menu-titel');
+  const menuText  = document.getElementById('menu-text');
+  const menuRolle = document.getElementById('menu-rolle');
+  let selectedId = null;
+  const savedEmissive = new Map();
+
+  function setHighlight(id, on) {
+    const part = parts[id];
+    if (!part) return;
+    part.group.traverse(o => {
+      if (!o.isMesh) return;
+      const mats = Array.isArray(o.material) ? o.material : [o.material];
+      mats.forEach(m => {
+        if (!m || !m.emissive) return;
+        if (on) {
+          if (!savedEmissive.has(m)) savedEmissive.set(m, m.emissive.getHex());
+          m.emissive.setHex(0x8a4318);
+          m.emissiveIntensity = 0.55;
+        } else if (savedEmissive.has(m)) {
+          m.emissive.setHex(savedEmissive.get(m));
+          m.emissiveIntensity = 1;
+          savedEmissive.delete(m);
+        }
+      });
+    });
+  }
+  function clearAllHighlights() {
+    Object.keys(parts).forEach(id => setHighlight(id, false));
+  }
+
+  function closeMenu() {
+    if (selectedId) setHighlight(selectedId, false);
+    selectedId = null;
+    menu.classList.remove('open', 'taster');
+  }
+  document.getElementById('menu-close').addEventListener('click', closeMenu);
+
+  function openMenu(id, clientX, clientY) {
+    if (selectedId) setHighlight(selectedId, false);
+    selectedId = id;
+    setHighlight(id, true);
+    const info = parts[id].info;
+    menuTitel.textContent = info.icon + ' ' + info.name;
+    menuText.textContent  = info.text;
+    menuRolle.textContent = '⚡ ' + info.rolle;
+    menu.classList.toggle('taster', id === 'taster');
+    menu.classList.add('open');
+
+    const r = stage.getBoundingClientRect();
+    let x = clientX - r.left + 14;
+    let y = clientY - r.top + 14;
+    const mw = Math.min(290, r.width - 24);
+    if (x + mw > r.width - 12)  x = r.width - mw - 12;
+    if (y + 230 > r.height - 12) y = Math.max(12, r.height - 242);
+    menu.style.left = x + 'px';
+    menu.style.top  = y + 'px';
+  }
+
+  function pick(e) {
+    const r = canvas.getBoundingClientRect();
+    const ndc = new THREE.Vector2(
+      ((e.clientX - r.left) / r.width) * 2 - 1,
+      -((e.clientY - r.top) / r.height) * 2 + 1
+    );
+    raycaster.setFromCamera(ndc, camera);
+    const hits = raycaster.intersectObjects(model.children, true);
+    const hit = hits.find(h => h.object.userData.partId && h.object !== lichtKegel && h.object.visible);
+    if (hit) {
+      openMenu(hit.object.userData.partId, e.clientX, e.clientY);
+      document.getElementById('hint').style.display = 'none';
+    } else {
+      closeMenu();
+    }
+  }
+
+  // ======================= Explosionsansicht =======================
+  const explodeSlider = document.getElementById('explode');
+  let explodeT = 0;
+  explodeSlider.addEventListener('input', () => {
+    explodeT = explodeSlider.value / 100;
+    updateStromkreis();
+  });
+
+  function updatePositions() {
+    Object.values(parts).forEach(p => {
+      p.group.position.copy(p.base).addScaledVector(p.exp, explodeT);
+      if (p.animY > 0.005) {
+        p.group.position.y += p.animY;
+        p.animY *= 0.86;
+      } else {
+        p.animY = 0;
+      }
+    });
+  }
+
+  // ======================= Taster & Stromkreis =======================
+  const btnTaster = document.getElementById('btn-taster');
+  const menuTasterBtn = document.getElementById('menu-taster-btn');
+  const statusEl = document.getElementById('status');
+  let tasterGedrueckt = false;
+  let hebelZiel = 0;
+
+  function toggleTaster() {
+    tasterGedrueckt = !tasterGedrueckt;
+    btnTaster.setAttribute('aria-pressed', String(tasterGedrueckt));
+    btnTaster.classList.toggle('pressed', tasterGedrueckt);
+    btnTaster.textContent = tasterGedrueckt ? '🔘 Taster loslassen' : '🔘 Taster drücken';
+    updateStromkreis();
+  }
+  btnTaster.addEventListener('click', toggleTaster);
+  menuTasterBtn.addEventListener('click', toggleTaster);
+
+  function updateStromkreis() {
+    const zusammengebaut = explodeT < 0.04;
+    const komplett = parts.led.group.visible && parts.halter.group.visible &&
+                     parts.taster.group.visible && parts.widerstand.group.visible;
+    const geschlossen = tasterGedrueckt && zusammengebaut && komplett;
+
+    hebelZiel = tasterGedrueckt ? -0.055 : 0;
+
+    if (geschlossen) {
+      statusEl.textContent = '💡 Stromkreis: geschlossen – LED leuchtet!';
+      statusEl.classList.add('an');
+    } else if (tasterGedrueckt && !zusammengebaut) {
+      statusEl.textContent = '⚠️ Erst zusammenbauen, dann leuchtet die LED!';
+      statusEl.classList.remove('an');
+    } else if (tasterGedrueckt && !komplett) {
+      statusEl.textContent = '⚠️ Es fehlen noch Bauteile!';
+      statusEl.classList.remove('an');
+    } else {
+      statusEl.textContent = '⚫ Stromkreis: offen';
+      statusEl.classList.remove('an');
+    }
+
+    ledDome.emissive.setHex(geschlossen ? 0xfff2c4 : 0x000000);
+    ledDome.emissiveIntensity = geschlossen ? 1.9 : 1;
+    ledDome.opacity = geschlossen ? 0.98 : 0.55;
+    ledLicht.intensity = geschlossen ? 3.6 : 0;
+    lichtKegel.material.opacity = geschlossen ? 0.28 : 0;
+  }
+
+  // ======================= Fertigungsschritte =======================
+  const SCHRITTE = [
+    {
+      titel: '1. Aussparung raspeln',
+      text: 'Raspel vorne in die Holzleiste eine halbrunde Aussparung. Dort liegt später der Reflektor. Tipp: Leiste in den Schraubstock spannen!',
+      neu: ['holz']
+    },
+    {
+      titel: '2. Heftzwecken eindrücken und verzinnen',
+      text: 'Drücke die vier Heftzwecken an ihre Positionen in die Leiste. Dann verzinnen: Jeder Zweckenkopf bekommt mit dem Lötkolben eine dünne Schicht Lötzinn.',
+      neu: ['zwecken']
+    },
+    {
+      titel: '3. Widerstand einlöten',
+      text: 'Löte den Widerstand zwischen die beiden vorderen Heftzwecken. Biege die Drähte vorher passend zurecht.',
+      neu: ['widerstand']
+    },
+    {
+      titel: '4. Musterbeutelklammer biegen und anlöten',
+      text: 'Biege die Musterbeutelklammer so, dass ihr Streifen wie eine Feder knapp über der zweiten Zwecke schwebt. Löte den Fuß auf die hintere linke Zwecke.',
+      neu: ['taster']
+    },
+    {
+      titel: '5. LED anlöten – Richtung beachten!',
+      text: '<span class="achtung">⚠️ Richtung beachten!</span> Das lange Beinchen (Pluspol) kommt an die Zwecke beim Taster, das kurze an die Zwecke beim Widerstand. Falsch herum bleibt die LED dunkel.',
+      neu: ['led'],
+      html: true
+    },
+    {
+      titel: '6. Reflektor von vorne aufstecken',
+      text: 'Stecke den Reflektor von vorne auf die LED. Er liegt genau in der halbrunden Aussparung der Leiste.',
+      neu: ['reflektor']
+    },
+    {
+      titel: '7. Kabel des Batteriehalters anlöten',
+      text: 'Die rote und die schwarze Litze sind fest mit dem Batteriehalter verbunden. Löte Rot (Pluspol) an die Zwecke beim Taster und Schwarz (Minuspol) an die Zwecke beim Widerstand.',
+      neu: ['halter']
+    },
+    {
+      titel: '8. Mit Heißkleber befestigen',
+      text: 'Klebe den Batteriehalter mit Heißkleber auf die Leiste und fixiere den Reflektor in der Aussparung. Vorsicht, heiß!',
+      neu: ['kleber'],
+      hi: ['kleber', 'halter', 'reflektor']
+    },
+    {
+      titel: '9. Funktion testen',
+      text: 'Batterien einlegen und den Taster drücken: Leuchtet die LED? Dann ist deine Taschenlampe fertig! 🎉 Probiere es hier mit dem Knopf „Taster drücken“.',
+      neu: [],
+      hi: ['taster']
+    }
+  ];
+
+  const fertigungPanel = document.getElementById('fertigung');
+  const btnFertigung = document.getElementById('btn-fertigung');
+  const fTitel = document.getElementById('f-titel');
+  const fText  = document.getElementById('f-text');
+  const fZaehler = document.getElementById('f-zaehler');
+  const fBalken = document.getElementById('f-balken');
+  const fZurueck = document.getElementById('f-zurueck');
+  const fWeiter  = document.getElementById('f-weiter');
+  const hintEl = document.getElementById('hint');
+  let fertigungAktiv = false;
+  let schritt = 0;
+  let vorherSichtbar = new Set();
+
+  function sichtbareBisSchritt(idx) {
+    const s = new Set();
+    for (let i = 0; i <= idx; i++) SCHRITTE[i].neu.forEach(id => s.add(id));
+    return s;
+  }
+
+  function zeigeSchritt(idx) {
+    schritt = idx;
+    const st = SCHRITTE[idx];
+    fTitel.textContent = st.titel;
+    if (st.html) fText.innerHTML = st.text; else fText.textContent = st.text;
+    fZaehler.textContent = (idx + 1) + ' / ' + SCHRITTE.length;
+    fBalken.style.width = Math.round(((idx + 1) / SCHRITTE.length) * 100) + '%';
+    fZurueck.disabled = idx === 0;
+    fWeiter.disabled = idx === SCHRITTE.length - 1;
+
+    const sichtbar = sichtbareBisSchritt(idx);
+    Object.entries(parts).forEach(([id, p]) => {
+      const soll = sichtbar.has(id);
+      if (soll && !vorherSichtbar.has(id)) p.animY = 4; // neu: von oben einschweben
+      p.group.visible = soll;
+    });
+    vorherSichtbar = sichtbar;
+
+    clearAllHighlights();
+    closeMenu();
+    (st.hi || st.neu).forEach(id => setHighlight(id, true));
+    updateStromkreis();
+  }
+
+  function starteFertigung() {
+    fertigungAktiv = true;
+    btnFertigung.classList.add('aktiv');
+    fertigungPanel.classList.add('open');
+    hintEl.style.display = 'none';
+    explodeSlider.value = 0;
+    explodeT = 0;
+    explodeSlider.disabled = true;
+    vorherSichtbar = new Set(Object.keys(parts)); // damit Schritt 1 nicht alles „einschweben“ lässt
+    zeigeSchritt(0);
+    vorherSichtbar = sichtbareBisSchritt(0);
+  }
+
+  function beendeFertigung() {
+    fertigungAktiv = false;
+    btnFertigung.classList.remove('aktiv');
+    fertigungPanel.classList.remove('open');
+    explodeSlider.disabled = false;
+    clearAllHighlights();
+    Object.values(parts).forEach(p => { p.group.visible = true; });
+    updateStromkreis();
+  }
+
+  btnFertigung.addEventListener('click', () => {
+    if (fertigungAktiv) beendeFertigung(); else starteFertigung();
+  });
+  document.getElementById('f-ende').addEventListener('click', beendeFertigung);
+  fZurueck.addEventListener('click', () => { if (schritt > 0) zeigeSchritt(schritt - 1); });
+  fWeiter.addEventListener('click',  () => { if (schritt < SCHRITTE.length - 1) zeigeSchritt(schritt + 1); });
+
+  // ======================= Resize & Render-Loop =======================
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  updateStromkreis();
+
+  function animate() {
+    requestAnimationFrame(animate);
+    updatePositions();
+    if (tasterHebel) tasterHebel.rotation.z += (hebelZiel - tasterHebel.rotation.z) * 0.2;
+    updateCamera();
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+</script>
+</body>
+</html>
