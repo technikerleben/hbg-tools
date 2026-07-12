@@ -37,6 +37,24 @@ const frame=document.getElementById('logbuch');
 frame.addEventListener('load',()=>{
   const doc=frame.contentDocument;
   if(!doc)return;
+
+  // Aktualisierte Definitionen der Arbeitsfelder e, f und g direkt in der Original-App setzen.
+  const dataPatch=doc.createElement('script');
+  dataPatch.textContent=`
+    (()=>{
+      const replacements={
+        e:'Wir ergänzen ggf. die SRL-unterstützende Grundausstattung der Klassenräume und halten diese fest: sichtbarer großer Stundenplan, Infotafel (Termine, KA-Termine, Dienste, Lernaufgaben), UZ-in-the-box u. a.',
+        f:'Wir haben eine einheitliche Basis der Bezeichnung zentraler SRL-Begriffe im Jahrgang, damit SuS und Eltern im ganzen Jahrgang dieselbe Sprache hören. Diese gemeinsame Basis kann durch euch erweitert werden - etwa durch die Bezeichnung von Tools, die ihr im Jahrgang nutzen möchtet und muss allen Beteiligten transparent gemacht werden. <a href="https://teams.microsoft.com/l/message/19:27680b2624ad41a98b76e888c9e8de55@thread.tacv2/1783521756316?tenantId=70dadace-261a-44c3-b30c-60935d38279c&groupId=0b0783e4-f4f7-4773-b727-d26fbce92dff&parentMessageId=1783502885228&teamName=Lernen%20an%20der%20HBG&channelName=3.%20Jahrgang%205&createdTime=1783521756316" target="_blank" rel="noopener">Basis siehe Teams-Beitrag.</a>',
+        g:'Wir legen fest, wie individuelle Rückmeldegespräche mit SuS zu ihrem Lernprozess ablaufen – auf Basis des Logbuchs: Turnus, Dauer, Zuständigkeit (Klassenleitung und/oder Fachlehrkräfte), Zeitfenster im Stundenplan. Hierzu nutzen wir die bestehende Vorlage und passen diese ggf. an.'
+      };
+      DATA.ARBEITSFELDER_DEFINITIONEN=DATA.ARBEITSFELDER_DEFINITIONEN.map(([letter,text])=>[letter,replacements[letter]||text]);
+      const current=document.querySelector('.panel.active')?.dataset.panel||'start';
+      buildContent();
+      showPanel(current);
+    })();
+  `;
+  doc.body.appendChild(dataPatch);
+
   const id=todayTabId();
   if(!id)return;
   const style=doc.createElement('style');
