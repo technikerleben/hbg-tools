@@ -83,7 +83,7 @@
   const $ = s => document.querySelector(s);
   const viewer=$('#viewer'), setup=$('#setup'), setupForm=$('#setupForm'), dialog=$('#adminDialog');
   const KEY='ipad-kiosk-config-v1';
-  let holdTimer=null, config=loadConfig();
+  let holdTimer=null, config=loadConfig(), tapCount=0, tapReset=null, holdStart=null;
 
   function normalizeUrl(value){
     const u=new URL(value.trim());
@@ -116,9 +116,28 @@
       const p=await hashPin(pin); saveConfig({url,...p,createdAt:new Date().toISOString()}); launch();
     }catch(err){$('#setupError').textContent=err.message||'Einrichtung fehlgeschlagen.'}
   });
-  function startHold(e){e.preventDefault();clearTimeout(holdTimer);holdTimer=setTimeout(()=>{navigator.vibrate?.(50);openUnlock();},2500)}
-  function cancelHold(){clearTimeout(holdTimer)}
-  $('#hotspot').addEventListener('pointerdown',startHold);['pointerup','pointercancel','pointerleave'].forEach(x=>$('#hotspot').addEventListener(x,cancelHold));
+  function startHold(e){
+    e.preventDefault();
+    holdStart={x:e.clientX,y:e.clientY};
+    clearTimeout(holdTimer);
+    holdTimer=setTimeout(()=>{navigator.vibrate?.(50);openUnlock();},1600);
+  }
+  function moveHold(e){
+    if(!holdStart)return;
+    const dx=e.clientX-holdStart.x,dy=e.clientY-holdStart.y;
+    if(Math.hypot(dx,dy)>28)cancelHold();
+  }
+  function cancelHold(){clearTimeout(holdTimer);holdStart=null}
+  function registerTap(){
+    tapCount++;
+    clearTimeout(tapReset);
+    tapReset=setTimeout(()=>tapCount=0,3000);
+    if(tapCount>=5){tapCount=0;clearTimeout(tapReset);openUnlock();}
+  }
+  $('#hotspot').addEventListener('pointerdown',startHold);
+  $('#hotspot').addEventListener('pointermove',moveHold);
+  $('#hotspot').addEventListener('pointerup',()=>{cancelHold();registerTap();});
+  $('#hotspot').addEventListener('pointercancel',cancelHold);
   function openUnlock(){
     if(!config)return; $('#unlockForm').hidden=false;$('#adminForm').hidden=true;$('#unlockPin').value='';$('#unlockError').textContent='';dialog.showModal();setTimeout(()=>$('#unlockPin').focus(),100);
   }
@@ -143,6 +162,7 @@
   document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&['l','r','w'].includes(e.key.toLowerCase()))e.preventDefault()});
   viewer.addEventListener('load',()=>showStatus('Kiosk aktiv'));
   launch();
+  if(new URLSearchParams(location.search).get('admin')==='1'){setTimeout(openUnlock,250);}
 })();
 </script>
 </body>
