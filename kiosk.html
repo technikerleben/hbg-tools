@@ -25,8 +25,6 @@
     .hint{font-size:.9rem}.error{color:#fda4af;min-height:1.2em}.ok{color:#86efac}
     #hotspot{position:fixed;z-index:20;left:0;top:0;width:64px;height:64px;background:transparent;border-radius:0;padding:0}
     #status{position:fixed;z-index:15;left:50%;top:max(8px,env(safe-area-inset-top));transform:translateX(-50%);padding:8px 13px;border-radius:999px;background:#020617cc;color:#cbd5e1;font-size:13px;opacity:0;pointer-events:none;transition:.2s}
-    #toolbar{position:fixed;z-index:14;right:max(10px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));display:none;gap:8px}
-    #toolbar button{padding:10px 13px;background:#020617d9;color:white;border:1px solid #475569}
     dialog{border:1px solid var(--line);border-radius:20px;background:var(--card);color:var(--text);width:min(560px,calc(100% - 32px));padding:0}dialog::backdrop{background:#000b}.dialog-body{padding:22px}
     @media (display-mode:standalone){#installNote{display:none}}
   </style>
@@ -37,7 +35,7 @@
   <section id="setup">
     <form class="card" id="setupForm">
       <h1>Kiosk einrichten</h1>
-      <p>Lege die einzige Seite fest, die im Kiosk angezeigt werden soll. Die Einstellungen werden nur auf diesem iPad gespeichert.</p>
+      <p>Lege die einzige Seite fest, die im Kiosk angezeigt werden soll. Die Einstellungen werden nur auf diesem Gerät gespeichert.</p>
       <label>Erlaubte URL
         <input id="url" type="url" inputmode="url" autocomplete="url" placeholder="https://example.org/seite" required>
       </label>
@@ -47,14 +45,13 @@
       <label>PIN wiederholen
         <input id="pin2" type="password" inputmode="numeric" autocomplete="new-password" minlength="4" maxlength="12" pattern="[0-9]+" required>
       </label>
-      <p class="hint" id="installNote">Für Vollbild: in Safari über „Teilen“ → „Zum Home-Bildschirm“ installieren und von dort starten.</p>
+      <p class="hint" id="installNote">Für Vollbild die Seite zum Home-Bildschirm hinzufügen und von dort starten.</p>
       <div class="error" id="setupError"></div>
       <div class="row"><button class="primary" type="submit">Kiosk starten</button></div>
     </form>
   </section>
   <button id="hotspot" aria-label="Adminbereich öffnen"></button>
   <div id="status"></div>
-  <div id="toolbar"><button id="homeBtn">Startseite</button><button id="reloadBtn">Neu laden</button></div>
 </div>
 
 <dialog id="adminDialog">
@@ -71,6 +68,7 @@
       <label>Erlaubte URL<input id="adminUrl" type="url" inputmode="url" required></label>
       <label>Neue PIN (optional)<input id="adminPin" type="password" inputmode="numeric" minlength="4" maxlength="12" pattern="[0-9]+" placeholder="leer lassen = unverändert"></label>
       <div class="error" id="adminError"></div>
+      <div class="row"><button type="button" class="secondary" id="homeBtn">Startseite laden</button><button type="button" class="secondary" id="reloadBtn">Seite neu laden</button></div>
       <div class="row"><button type="button" class="secondary" id="closeAdmin">Schließen</button><button class="primary">Speichern</button></div>
       <div class="row"><button type="button" class="danger" id="resetBtn">Kiosk zurücksetzen</button></div>
     </form>
@@ -106,7 +104,6 @@
   function launch(){
     if(!config){setup.style.display='grid';viewer.style.display='none';return;}
     setup.style.display='none';viewer.style.display='block';viewer.src=config.url;
-    $('#toolbar').style.display='flex';
   }
   setupForm.addEventListener('submit',async e=>{
     e.preventDefault(); $('#setupError').textContent='';
@@ -156,8 +153,8 @@
     }catch(err){$('#adminError').textContent=err.message||'Speichern fehlgeschlagen.'}
   });
   $('#resetBtn').onclick=()=>{if(confirm('Kiosk wirklich vollständig zurücksetzen?')){localStorage.removeItem(KEY);config=null;dialog.close();viewer.src='about:blank';launch();}};
-  $('#homeBtn').onclick=()=>{viewer.src=config.url;showStatus('Startseite geladen')};
-  $('#reloadBtn').onclick=()=>{viewer.src=viewer.src;showStatus('Neu geladen')};
+  $('#homeBtn').onclick=()=>{viewer.src=config.url;dialog.close();showStatus('Startseite geladen')};
+  $('#reloadBtn').onclick=()=>{viewer.src=viewer.src;dialog.close();showStatus('Neu geladen')};
   window.addEventListener('contextmenu',e=>e.preventDefault());
   document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&['l','r','w'].includes(e.key.toLowerCase()))e.preventDefault()});
   viewer.addEventListener('load',()=>showStatus('Kiosk aktiv'));
