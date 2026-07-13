@@ -1,0 +1,1 @@
+Patch the existing Schaltplan Studio app to add five editable circuit templates.
