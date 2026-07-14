@@ -352,7 +352,7 @@
         <strong>Das Archiv wird laufend ergänzt.</strong>
         <span>Hier sammeln wir kleine digitale Werkzeuge, Simulationen und Unterrichtsanwendungen.</span>
       </div>
-      <span class="archive-date">Stand: 4. Juli 2026</span>
+      <span class="archive-date">Stand: 14. Juli 2026</span>
     </aside>
 
     <section class="tool-controls" aria-label="Tools suchen und filtern">
@@ -368,7 +368,7 @@
           >
           <button class="clear-search" id="clear-search" type="button" aria-label="Suche löschen" hidden>✕</button>
         </div>
-        <div class="result-count" id="result-count" aria-live="polite">10 Tools</div>
+        <div class="result-count" id="result-count" aria-live="polite">15 Tools</div>
       </div>
 
       <span class="filter-label">Kategorie</span>
@@ -376,6 +376,7 @@
         <button class="filter-button active" type="button" data-filter="all" aria-pressed="true">Alle</button>
         <button class="filter-button" type="button" data-filter="werkzeuge" aria-pressed="false">Allgemeine Werkzeuge</button>
         <button class="filter-button" type="button" data-filter="organisation" aria-pressed="false">Unterrichtsorganisation</button>
+        <button class="filter-button" type="button" data-filter="deutsch" aria-pressed="false">Deutsch &amp; Lernen</button>
         <button class="filter-button" type="button" data-filter="technik" aria-pressed="false">Technik &amp; Simulationen</button>
         <button class="filter-button" type="button" data-filter="spiele" aria-pressed="false">Spiele &amp; Aktivierung</button>
       </div>
@@ -443,6 +444,26 @@
         </div>
       </a>
 
+      <a href="schaltplan.html" class="tool-card" data-categories="technik">
+        <div class="tool-icon">🔌</div>
+        <div class="tool-name">Schaltplan Studio</div>
+        <div class="tool-desc">Schaltungen mit grundlegenden Bauteilen zeichnen, verbinden und als Schaltplan ausarbeiten.</div>
+        <div class="tool-meta">
+          <span class="category-badge">Technik &amp; Werkzeug</span>
+          <span class="tool-badge">schaltplan.html</span>
+        </div>
+      </a>
+
+      <a href="taschenlampe-3d.html" class="tool-card" data-categories="technik">
+        <div class="tool-icon">🔦</div>
+        <div class="tool-name">Taschenlampe 3D</div>
+        <div class="tool-desc">Aufbau, Bauteile und Stromweg einer Taschenlampe dreidimensional erkunden.</div>
+        <div class="tool-meta">
+          <span class="category-badge">Technik &amp; Simulation</span>
+          <span class="tool-badge">taschenlampe-3d.html</span>
+        </div>
+      </a>
+
       <a href="stromnetz-3d.html" class="tool-card" data-categories="technik">
         <div class="tool-icon">⚡</div>
         <div class="tool-name">Das Stromnetz in 3D</div>
@@ -484,6 +505,38 @@
         </div>
       </a>
 
+      <a href="poststelle.html" class="tool-card" data-categories="deutsch spiele">
+        <div class="tool-icon">📬</div>
+        <div class="tool-name">Die Poststelle</div>
+        <div class="tool-desc">Briefe sortieren und wichtige Merkmale in einem spielerischen 3D-Lernspiel trainieren.</div>
+        <div class="tool-meta">
+          <span class="category-badge">Deutsch &amp; Lernen</span>
+          <span class="category-badge">Spiel &amp; Aktivierung</span>
+          <span class="tool-badge">poststelle.html</span>
+        </div>
+      </a>
+
+      <a href="koenigsspiel-von-ur.html" class="tool-card" data-categories="spiele">
+        <div class="tool-icon">🎲</div>
+        <div class="tool-name">Das Königsspiel von Ur</div>
+        <div class="tool-desc">Das historische Brettspiel kennenlernen und direkt im Browser spielen.</div>
+        <div class="tool-meta">
+          <span class="category-badge">Spiel &amp; Aktivierung</span>
+          <span class="tool-badge">koenigsspiel-von-ur.html</span>
+        </div>
+      </a>
+
+      <a href="escape-3d-druck.html" class="tool-card" data-categories="technik spiele">
+        <div class="tool-icon">🧩</div>
+        <div class="tool-name">Operation Filament</div>
+        <div class="tool-desc">Im Team Rätsel rund um den 3D-Druck lösen und den letzten Druck retten.</div>
+        <div class="tool-meta">
+          <span class="category-badge">Technik</span>
+          <span class="category-badge">Spiel &amp; Aktivierung</span>
+          <span class="tool-badge">escape-3d-druck.html</span>
+        </div>
+      </a>
+
     </div>
 
     <div class="empty-state" id="empty-state" hidden>
@@ -492,7 +545,7 @@
     </div>
   </main>
 
-  <footer>HBG Dortmund · Interne Tools · Stand: 4. Juli 2026</footer>
+  <footer>HBG Dortmund · Interne Tools · Stand: 14. Juli 2026</footer>
 
   <script>
     const searchInput = document.getElementById('tool-search');
