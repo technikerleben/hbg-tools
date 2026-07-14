@@ -1,0 +1,51 @@
+name: Assemble SRL5 Eltern HTML
+
+on:
+  push:
+    paths:
+      - '.srl5-upload/part-*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: assemble-srl5-eltern
+  cancel-in-progress: false
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Assemble HTML when all parts exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=14
+          actual=$(find .srl5-upload -maxdepth 1 -type f -name 'part-*' 2>/dev/null | wc -l | tr -d ' ')
+          if [ "$actual" -ne "$expected" ]; then
+            echo "Waiting for all parts: $actual/$expected"
+            exit 0
+          fi
+
+          find .srl5-upload -maxdepth 1 -type f -name 'part-*' -print0 \
+            | sort -z \
+            | xargs -0 cat \
+            | base64 --decode > srl5-eltern.html
+
+          test -s srl5-eltern.html
+          grep -q '<!DOCTYPE html>' srl5-eltern.html
+          grep -q 'data:font/otf;base64,' srl5-eltern.html
+
+          rm -rf .srl5-upload
+          rm -f .github/workflows/assemble-srl5-eltern.yml
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add srl5-eltern.html .srl5-upload .github/workflows/assemble-srl5-eltern.yml
+          git commit -m 'Add SRL5 parent information page'
+          git push
