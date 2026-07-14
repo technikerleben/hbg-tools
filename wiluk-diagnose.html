@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#3E5668">
+  <title>WILUK Diagnose</title>
+  <style>
+    :root {
+      --blue-dark: #2C3D4C;
+      --blue: #3E5668;
+      --blue-mid: #6A8599;
+      --blue-pale: #D0DCE6;
+      --blue-ghost: #EEF3F7;
+      --orange-dark: #9E4E22;
+      --orange: #D97A4A;
+      --orange-pale: #F5DDD1;
+      --green-dark: #4D8B3F;
+      --green: #7DBB6F;
+      --green-pale: #DDF0D8;
+      --paper: #F5F4F1;
+      --white: #FFFFFF;
+      --ink: #263640;
+      --muted: #687984;
+      --line: #D9DFDF;
+      --warning: #C17B00;
+      --danger: #A84638;
+      --shadow: 0 18px 50px rgba(44, 61, 76, .10);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 5% 0%, rgba(125, 187, 111, .14), transparent 26%),
+        radial-gradient(circle at 100% 100%, rgba(217, 122, 74, .11), transparent 29%),
+        var(--paper);
+      font-family: Arial, Helvetica, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+    }
+
+    button, input, textarea { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 3px solid rgba(62, 86, 104, .24);
+      outline-offset: 2px;
+    }
+
+    .app {
+      min-height: 100svh;
+      padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+    }
+
+    .topbar {
+      width: min(1500px, 100%);
+      min-height: 76px;
+      margin: 0 auto 10px;
+      padding: 7px 8px 7px 12px;
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto minmax(360px, 1fr);
+      align-items: center;
+      gap: 16px;
+    }
+
+    .kicker {
+      margin: 0 0 4px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    .brand h1 {
+      margin-bottom: 0;
+      color: var(--blue-dark);
+      font-size: clamp(25px, 3vw, 36px);
+      line-height: 1;
+      letter-spacing: -.03em;
+    }
+
+    .overall {
+      min-width: 210px;
+      display: grid;
+      grid-template-columns: auto auto;
+      align-items: baseline;
+      column-gap: 5px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .overall strong { color: var(--blue-dark); font-size: 17px; }
+    .overall-bar { grid-column: 1 / -1; height: 5px; margin-top: 5px; overflow: hidden; border-radius: 8px; background: #DFE4E3; }
+    .overall-bar i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--orange), var(--green)); transition: width .2s ease; }
+
+    .toolbar { display: flex; justify-content: flex-end; gap: 7px; }
+    .button {
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 0 13px;
+      background: rgba(255, 255, 255, .88);
+      color: var(--blue-dark);
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .button:hover { border-color: #B8C5CA; }
+    .button:active { transform: translateY(1px); }
+    .button.primary { border-color: var(--blue); background: var(--blue); color: white; }
+    .button.danger { border-color: var(--danger); background: var(--danger); color: white; }
+    .button.icon { width: 44px; padding: 0; font-size: 20px; }
+
+    .workspace {
+      width: min(1500px, 100%);
+      height: calc(100svh - 102px);
+      min-height: 620px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(410px, .84fr) minmax(610px, 1.25fr);
+      gap: 10px;
+    }
+
+    .panel {
+      min-height: 0;
+      padding: 17px;
+      border: 1px solid rgba(62, 86, 104, .14);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .91);
+      box-shadow: var(--shadow);
+    }
+    .roster-panel { display: flex; flex-direction: column; }
+    .detail-panel { display: flex; flex-direction: column; }
+
+    .panel-head {
+      min-height: 51px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .panel-head h2 { margin-bottom: 0; color: var(--blue-dark); font-size: 23px; line-height: 1; letter-spacing: -.025em; }
+    .autosave { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 10px; white-space: nowrap; }
+    .autosave::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px rgba(125, 187, 111, .16); }
+
+    .roster-grid {
+      --rows: 10;
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-rows: repeat(var(--rows), minmax(42px, 1fr));
+      grid-auto-flow: column;
+      gap: 6px;
+    }
+    .student-card {
+      min-width: 0;
+      min-height: 42px;
+      padding: 5px 7px;
+      display: grid;
+      grid-template-columns: 23px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #E1E5E5;
+      border-radius: 11px;
+      background: #FBFBFA;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .15s ease, background .15s ease, transform .15s ease;
+    }
+    .student-card:active { transform: scale(.985); }
+    .student-card.selected { border-color: var(--blue); background: var(--blue-ghost); box-shadow: inset 3px 0 var(--blue); }
+    .student-index { display: grid; place-items: center; width: 23px; height: 23px; border-radius: 7px; background: #EDF0F0; color: var(--muted); font-size: 9px; font-weight: 800; }
+    .student-card.selected .student-index { background: var(--blue); color: white; }
+    .student-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 800; }
+    .student-count { min-width: 28px; padding: 3px 4px; border-radius: 8px; background: #E8ECEB; color: var(--muted); font-size: 8.5px; font-weight: 800; text-align: center; }
+    .student-card[data-level="1"] .student-count { background: var(--orange-pale); color: var(--orange-dark); }
+    .student-card[data-level="2"] .student-count { background: #F7E9CF; color: #866000; }
+    .student-card[data-level="3"] .student-count { background: var(--green-pale); color: var(--green-dark); }
+
+    .empty-state { flex: 1; display: grid; place-items: center; padding: 28px; text-align: center; }
+    .empty-state-inner { max-width: 340px; }
+    .empty-symbol { width: 76px; height: 76px; margin: 0 auto 16px; display: grid; place-items: center; border-radius: 24px; background: var(--blue-ghost); color: var(--blue); font-size: 34px; }
+    .empty-state h2 { margin-bottom: 8px; color: var(--blue-dark); }
+    .empty-state p { color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+    .student-nav { display: grid; grid-template-columns: 42px auto 42px; align-items: center; gap: 6px; }
+    .student-nav button { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 13px; background: white; color: var(--blue); font-size: 25px; cursor: pointer; }
+    .student-nav button:disabled { opacity: .28; cursor: default; }
+    .student-nav span { min-width: 58px; color: var(--muted); font-size: 10px; font-weight: 800; text-align: center; }
+
+    .sliders { flex: 1; min-height: 0; display: grid; grid-template-rows: repeat(6, minmax(76px, 1fr)); gap: 6px; }
+    .slider-card {
+      min-height: 0;
+      padding: 8px 11px;
+      display: grid;
+      grid-template-columns: minmax(220px, .82fr) minmax(340px, 1.18fr);
+      align-items: center;
+      gap: 14px;
+      border: 1px solid #E0E5E5;
+      border-radius: 15px;
+      background: #FBFBFA;
+    }
+    .slider-copy { min-width: 0; display: grid; grid-template-columns: 29px minmax(0, 1fr); align-items: center; gap: 9px; }
+    .category-index { display: grid; place-items: center; width: 29px; height: 29px; border: 1px solid var(--line); border-radius: 9px; color: var(--blue); font-size: 10px; font-weight: 800; }
+    .slider-copy h3 { margin-bottom: 2px; color: var(--blue-dark); font-size: 13.5px; }
+    .slider-copy p { margin-bottom: 0; color: var(--muted); font-size: 9.5px; line-height: 1.22; }
+    .slider-side { min-width: 0; }
+    .level-title { margin-bottom: 2px; color: var(--muted); font-size: 10px; font-weight: 800; text-align: center; }
+    .level-title[data-value="1"] { color: var(--orange-dark); }
+    .level-title[data-value="2"] { color: #856100; }
+    .level-title[data-value="3"] { color: var(--green-dark); }
+    input[type="range"] {
+      width: 100%;
+      height: 12px;
+      margin: 2px 0 4px;
+      border-radius: 20px;
+      background-color: #E4E8E7;
+      background-image: linear-gradient(90deg, var(--orange), #D4AE53 52%, var(--green));
+      background-repeat: no-repeat;
+      appearance: none;
+      -webkit-appearance: none;
+      touch-action: pan-y;
+    }
+    input[type="range"]::-webkit-slider-thumb { width: 31px; height: 31px; border: 4px solid white; border-radius: 50%; background: var(--blue-dark); box-shadow: 0 2px 9px rgba(44, 61, 76, .25); appearance: none; -webkit-appearance: none; }
+    input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; border: 4px solid white; border-radius: 50%; background: var(--blue-dark); box-shadow: 0 2px 9px rgba(44, 61, 76, .25); }
+    .scale-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; }
+    .scale-buttons button { min-height: 24px; border: 0; border-radius: 7px; background: transparent; color: #849198; font-size: 8px; font-weight: 800; cursor: pointer; }
+    .scale-buttons button.active { background: #E9EEEE; color: var(--blue-dark); }
+    .scale-buttons button[data-level="1"].active { background: var(--orange-pale); color: var(--orange-dark); }
+    .scale-buttons button[data-level="2"].active { background: #F7E9CF; color: #7B5900; }
+    .scale-buttons button[data-level="3"].active { background: var(--green-pale); color: var(--green-dark); }
+
+    .note-field { margin-top: 7px; display: grid; grid-template-columns: 125px 1fr; align-items: center; gap: 9px; }
+    .note-field label { font-size: 10px; font-weight: 800; }
+    .note-field label span { color: var(--muted); font-size: 8px; font-weight: 400; }
+    .note-field input { min-height: 40px; border: 1px solid var(--line); border-radius: 11px; padding: 0 12px; background: white; color: var(--ink); outline: none; }
+    .note-field input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(62, 86, 104, .10); }
+
+    .modal-backdrop { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 18px; background: rgba(30, 42, 49, .48); backdrop-filter: blur(7px); }
+    .modal-backdrop[hidden] { display: none; }
+    .modal { width: min(660px, 100%); max-height: 94svh; padding: 23px; overflow: auto; border: 1px solid rgba(255, 255, 255, .55); border-radius: 23px; background: white; box-shadow: 0 30px 85px rgba(28, 42, 49, .28); }
+    .modal h2 { margin-bottom: 7px; color: var(--blue-dark); font-size: 25px; letter-spacing: -.02em; }
+    .modal > p:not(.kicker) { margin-bottom: 12px; color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .import-count { margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 11px; }
+    .import-count strong { color: var(--blue-dark); }
+    .import-count .too-many { color: var(--danger); }
+    .modal textarea { width: 100%; height: min(480px, 57svh); resize: none; border: 1px solid var(--line); border-radius: 14px; padding: 13px 15px; color: var(--ink); font-size: 15px; line-height: 1.45; outline: none; }
+    .modal textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(62, 86, 104, .10); }
+    .modal-actions { margin-top: 13px; display: flex; justify-content: flex-end; gap: 8px; }
+    .confirm-modal { width: min(480px, 100%); }
+
+    .toast { position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); z-index: 50; max-width: min(520px, calc(100% - 30px)); padding: 11px 16px; border-radius: 13px; background: var(--blue-dark); color: white; font-size: 12px; font-weight: 700; box-shadow: 0 12px 35px rgba(30, 42, 49, .25); transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    .print-report { display: none; }
+
+    @media (max-width: 1120px) and (orientation: landscape) {
+      .app { padding: 7px; }
+      .topbar { min-height: 63px; margin-bottom: 6px; grid-template-columns: 1fr auto 1fr; }
+      .workspace { height: calc(100svh - 76px); grid-template-columns: minmax(350px, .84fr) minmax(520px, 1.25fr); gap: 7px; }
+      .panel { padding: 12px; border-radius: 18px; }
+      .panel-head { min-height: 43px; margin-bottom: 6px; }
+      .slider-card { padding: 6px 8px; grid-template-columns: minmax(190px, .75fr) minmax(280px, 1.2fr); gap: 9px; }
+      .slider-copy p { display: none; }
+      .sliders { grid-template-rows: repeat(6, minmax(67px, 1fr)); gap: 5px; }
+      .toolbar .button { padding: 0 9px; font-size: 10px; }
+      .note-field { margin-top: 5px; }
+    }
+
+    @media (orientation: portrait), (max-width: 820px) {
+      body { overscroll-behavior: auto; }
+      .app { padding: 8px; }
+      .topbar { min-height: 72px; grid-template-columns: 1fr auto; gap: 8px; }
+      .overall { display: none; }
+      .toolbar { flex-wrap: wrap; }
+      .toolbar .button { min-height: 38px; padding: 0 9px; font-size: 10px; }
+      .workspace { height: auto; min-height: 0; grid-template-columns: 1fr; }
+      .roster-panel { height: calc(100svh - 92px); min-height: 650px; }
+      .roster-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(var(--portrait-rows, 8), minmax(48px, 1fr)); grid-auto-flow: row; }
+      .student-card { grid-template-columns: 21px minmax(0, 1fr); }
+      .student-count { grid-column: 1 / -1; justify-self: stretch; padding: 2px; }
+      .detail-panel { min-height: 820px; }
+      .slider-card { grid-template-columns: 1fr; gap: 7px; padding: 11px; }
+      .slider-copy p { display: block; }
+      .sliders { grid-template-rows: repeat(6, minmax(110px, auto)); }
+      .note-field { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .topbar { display: flex; flex-wrap: wrap; }
+      .brand { flex: 1; }
+      .toolbar { width: 100%; justify-content: stretch; }
+      .toolbar .button { flex: 1; }
+      .roster-panel { height: auto; min-height: calc(100svh - 130px); }
+      .roster-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .autosave { display: none; }
+    }
+
+    @media print {
+      @page { size: A4 landscape; margin: 10mm; }
+      body { background: white !important; color: #111 !important; }
+      .app, .modal-backdrop, .toast { display: none !important; }
+      .print-report { display: block !important; font-family: Arial, Helvetica, sans-serif; }
+      .print-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5mm; padding-bottom: 2.5mm; border-bottom: 1.2pt solid #222; }
+      .print-head h1 { margin: 0 0 1mm; font-size: 17pt; }
+      .print-head p { margin: 0; font-size: 8pt; }
+      .print-meta { text-align: right; }
+      .print-legend { margin-bottom: 3mm; font-size: 7pt; }
+      .print-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+      .print-table th, .print-table td { border: .45pt solid #555; padding: 1.2mm 1mm; vertical-align: middle; }
+      .print-table th { font-size: 6.5pt; line-height: 1.12; }
+      .print-table td { height: 5.2mm; font-size: 7pt; }
+      .print-table th:nth-child(1), .print-table td:nth-child(1) { width: 5mm; text-align: center; }
+      .print-table th:nth-child(2), .print-table td:nth-child(2) { width: 31mm; }
+      .print-table th:nth-child(n+3):nth-child(-n+8), .print-table td:nth-child(n+3):nth-child(-n+8) { width: 15mm; text-align: center; }
+      .print-table th:last-child, .print-table td:last-child { width: auto; }
+      .print-footer { margin-top: 2mm; color: #555; font-size: 6.5pt; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" id="app">
+    <header class="topbar">
+      <div class="brand">
+        <p class="kicker">WILUK · Diagnose in der Durchführung</p>
+        <h1>Beobachtungen</h1>
+      </div>
+      <div class="overall" aria-live="polite">
+        <strong id="overallValue">0</strong>
+        <span id="overallLabel">von 0 Beobachtungen</span>
+        <div class="overall-bar" aria-hidden="true"><i id="overallBar"></i></div>
+      </div>
+      <nav class="toolbar" aria-label="Daten und Export">
+        <button class="button" id="importButton" type="button">Namen importieren</button>
+        <button class="button" id="csvButton" type="button">CSV exportieren</button>
+        <button class="button" id="pdfButton" type="button">PDF exportieren</button>
+        <button class="button icon" id="resetButton" type="button" title="Beobachtungen zurücksetzen" aria-label="Beobachtungen zurücksetzen">↺</button>
+      </nav>
+    </header>
+
+    <div class="workspace" id="workspace">
+      <section class="panel roster-panel" aria-labelledby="rosterTitle">
+        <div class="panel-head">
+          <div>
+            <p class="kicker" id="classCount">Klasse · noch keine Namen</p>
+            <h2 id="rosterTitle">Alle Namen</h2>
+          </div>
+          <div class="autosave">im Browser gespeichert</div>
+        </div>
+        <div class="roster-grid" id="rosterGrid"></div>
+      </section>
+
+      <section class="panel detail-panel" id="detailPanel" aria-live="polite"></section>
+    </div>
+  </main>
+
+  <div class="modal-backdrop" id="importModal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="importTitle">
+      <p class="kicker">Importmodus · maximal 30 Namen</p>
+      <h2 id="importTitle">Klassenliste einfügen</h2>
+      <p>Schreibe oder kopiere pro Zeile genau einen Namen hinein. Die Anzahl der erkannten Namen wird automatisch übernommen.</p>
+      <div class="import-count">
+        <span><strong id="recognizedCount">0</strong> Namen erkannt</span>
+        <span id="overflowNotice">maximal 30</span>
+      </div>
+      <textarea id="namesInput" aria-label="Namen, ein Name pro Zeile" placeholder="Anna Beispiel&#10;Ben Beispiel&#10;Cem Beispiel"></textarea>
+      <div class="modal-actions">
+        <button class="button" id="cancelImportButton" type="button">Abbrechen</button>
+        <button class="button primary" id="applyImportButton" type="button">Namen übernehmen</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="resetModal" hidden>
+    <section class="modal confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="resetTitle">
+      <p class="kicker">Zurücksetzen</p>
+      <h2 id="resetTitle">Beobachtungen löschen?</h2>
+      <p>Die Namen bleiben erhalten. Alle Regler und Notizen werden auf „nicht beobachtet“ zurückgesetzt.</p>
+      <div class="modal-actions">
+        <button class="button" id="cancelResetButton" type="button">Abbrechen</button>
+        <button class="button danger" id="confirmResetButton" type="button">Beobachtungen löschen</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <section class="print-report" id="printReport" aria-hidden="true"></section>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const STORAGE_KEY = "hbg-wiluk-diagnose-v1";
+      const MAX_NAMES = 30;
+      const categories = [
+        { key: "teamwork", title: "Miteinander arbeiten", csv: "Miteinander", hint: "spricht sich ab, teilt Material und nimmt Ideen an" },
+        { key: "tools", title: "Schere und Material", csv: "Schere und Material", hint: "nutzt Schere, Stift und Kleber sicher und passend" },
+        { key: "motor", title: "Feinmotorik", csv: "Feinmotorik", hint: "schneidet, greift und platziert kleine Teile kontrolliert" },
+        { key: "motivation", title: "Motivation und Start", csv: "Motivation und Start", hint: "lässt sich auf die Aufgabe ein und beginnt ohne lange Wartezeit" },
+        { key: "understanding", title: "Verstehen und Lesen", csv: "Verstehen und Lesen", hint: "entnimmt dem Auftrag Informationen und kennt die nächsten Schritte" },
+        { key: "completion", title: "Dranbleiben und Abschluss", csv: "Dranbleiben und Abschluss", hint: "arbeitet nach Schwierigkeiten weiter und führt die Aufgabe zu Ende" }
+      ];
+      const levels = [
+        { label: "Nicht beobachtet", short: "offen", print: "—" },
+        { label: "Braucht Unterstützung", short: "Hilfe", print: "U" },
+        { label: "Mit einem Impuls", short: "Impuls", print: "I" },
+        { label: "Selbstständig und sicher", short: "sicher", print: "S" }
+      ];
+
+      const elements = {
+        rosterGrid: document.getElementById("rosterGrid"),
+        detailPanel: document.getElementById("detailPanel"),
+        classCount: document.getElementById("classCount"),
+        overallValue: document.getElementById("overallValue"),
+        overallLabel: document.getElementById("overallLabel"),
+        overallBar: document.getElementById("overallBar"),
+        importButton: document.getElementById("importButton"),
+        csvButton: document.getElementById("csvButton"),
+        pdfButton: document.getElementById("pdfButton"),
+        resetButton: document.getElementById("resetButton"),
+        importModal: document.getElementById("importModal"),
+        namesInput: document.getElementById("namesInput"),
+        recognizedCount: document.getElementById("recognizedCount"),
+        overflowNotice: document.getElementById("overflowNotice"),
+        applyImportButton: document.getElementById("applyImportButton"),
+        cancelImportButton: document.getElementById("cancelImportButton"),
+        resetModal: document.getElementById("resetModal"),
+        confirmResetButton: document.getElementById("confirmResetButton"),
+        cancelResetButton: document.getElementById("cancelResetButton"),
+        toast: document.getElementById("toast"),
+        printReport: document.getElementById("printReport")
+      };
+
+      let state = loadState();
+      let toastTimer = null;
+
+      function emptyRatings() {
+        return Object.fromEntries(categories.map(category => [category.key, 0]));
+      }
+
+      function uniqueId() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+        return "s-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return { students: [], selectedId: null };
+          const parsed = JSON.parse(raw);
+          if (!parsed || !Array.isArray(parsed.students)) return { students: [], selectedId: null };
+          const students = parsed.students.slice(0, MAX_NAMES).map(student => ({
+            id: student.id || uniqueId(),
+            name: String(student.name || "").trim(),
+            ratings: { ...emptyRatings(), ...(student.ratings || {}) },
+            note: String(student.note || ""),
+            updatedAt: student.updatedAt || null
+          })).filter(student => student.name);
+          const selectedId = students.some(student => student.id === parsed.selectedId)
+            ? parsed.selectedId
+            : (students[0]?.id || null);
+          return { students, selectedId };
+        } catch (error) {
+          return { students: [], selectedId: null };
+        }
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (error) {
+          showToast("Die Daten konnten nicht im Browser gespeichert werden.");
+        }
+      }
+
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>'"]/g, character => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+        })[character]);
+      }
+
+      function getNamesFromInput() {
+        return elements.namesInput.value
+          .split(/\r?\n/)
+          .map(name => name.trim())
+          .filter(Boolean);
+      }
+
+      function progress(student) {
+        const values = categories.map(category => Number(student.ratings[category.key]) || 0);
+        const observed = values.filter(value => value > 0).length;
+        const average = observed ? values.reduce((sum, value) => sum + value, 0) / observed : 0;
+        return { observed, average };
+      }
+
+      function selectedStudent() {
+        return state.students.find(student => student.id === state.selectedId) || state.students[0] || null;
+      }
+
+      function render() {
+        renderHeader();
+        renderRoster();
+        renderDetail();
+        buildPrintReport();
+        const hasStudents = state.students.length > 0;
+        elements.csvButton.disabled = !hasStudents;
+        elements.pdfButton.disabled = !hasStudents;
+        elements.resetButton.disabled = !hasStudents;
+      }
+
+      function renderHeader() {
+        const totalPossible = state.students.length * categories.length;
+        const observed = state.students.reduce((sum, student) => sum + progress(student).observed, 0);
+        elements.overallValue.textContent = observed;
+        elements.overallLabel.textContent = `von ${totalPossible} Beobachtungen`;
+        elements.overallBar.style.width = totalPossible ? `${observed / totalPossible * 100}%` : "0%";
+        elements.classCount.textContent = state.students.length
+          ? `Klasse · ${state.students.length} ${state.students.length === 1 ? "Name" : "Namen"}`
+          : "Klasse · noch keine Namen";
+      }
+
+      function renderRoster() {
+        elements.rosterGrid.innerHTML = "";
+        if (!state.students.length) {
+          elements.rosterGrid.style.display = "block";
+          elements.rosterGrid.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-inner">
+                <div class="empty-symbol" aria-hidden="true">≡</div>
+                <h2>Noch keine Klassenliste</h2>
+                <p>Importiere die Namen deiner Klasse. Ein Name pro Zeile, maximal 30 Namen.</p>
+                <button class="button primary" type="button" data-action="open-import">Namen importieren</button>
+              </div>
+            </div>`;
+          return;
+        }
+
+        elements.rosterGrid.style.display = "grid";
+        const rows = Math.ceil(state.students.length / 3);
+        const portraitRows = Math.ceil(state.students.length / 4);
+        elements.rosterGrid.style.setProperty("--rows", String(Math.max(rows, 1)));
+        elements.rosterGrid.style.setProperty("--portrait-rows", String(Math.max(portraitRows, 1)));
+
+        state.students.forEach((student, index) => {
+          const result = progress(student);
+          const level = result.average ? Math.round(result.average) : 0;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "student-card" + (student.id === state.selectedId ? " selected" : "");
+          button.dataset.studentId = student.id;
+          button.dataset.level = String(level);
+          button.setAttribute("aria-pressed", String(student.id === state.selectedId));
+          button.setAttribute("aria-label", `${student.name}, ${result.observed} von 6 beobachtet`);
+          button.innerHTML = `
+            <span class="student-index">${index + 1}</span>
+            <span class="student-name">${escapeHtml(student.name)}</span>
+            <span class="student-count">${result.observed}/6</span>`;
+          elements.rosterGrid.appendChild(button);
+        });
+      }
+
+      function renderDetail() {
+        const student = selectedStudent();
+        if (!student) {
+          elements.detailPanel.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-inner">
+                <p class="kicker">WILUK Diagnose</p>
+                <h2>Bereit für die Beobachtung</h2>
+                <p>Nach dem Import tippst du auf einen Namen und stellst die sechs Beobachtungen mit den Reglern ein.</p>
+              </div>
+            </div>`;
+          return;
+        }
+
+        const currentIndex = state.students.findIndex(item => item.id === student.id);
+        const sliderMarkup = categories.map((category, index) => {
+          const value = Number(student.ratings[category.key]) || 0;
+          return `
+            <article class="slider-card">
+              <div class="slider-copy">
+                <span class="category-index">${index + 1}</span>
+                <div>
+                  <h3>${category.title}</h3>
+                  <p>${category.hint}</p>
+                </div>
+              </div>
+              <div class="slider-side">
+                <div class="level-title" data-value="${value}">${levels[value].label}</div>
+                <input type="range" min="0" max="3" step="1" value="${value}"
+                  data-category="${category.key}"
+                  aria-label="${category.title}: ${levels[value].label}"
+                  style="background-size:${value / 3 * 100}% 100%">
+                <div class="scale-buttons" aria-label="Schnellauswahl ${category.title}">
+                  ${levels.map((level, levelIndex) => `
+                    <button type="button" data-set-category="${category.key}" data-set-level="${levelIndex}"
+                      class="${value === levelIndex ? "active" : ""}" aria-pressed="${value === levelIndex}">${level.short}</button>
+                  `).join("")}
+                </div>
+              </div>
+            </article>`;
+        }).join("");
+
+        elements.detailPanel.innerHTML = `
+          <div class="panel-head">
+            <div>
+              <p class="kicker">Beobachtung für</p>
+              <h2>${escapeHtml(student.name)}</h2>
+            </div>
+            <div class="student-nav">
+              <button type="button" data-nav="-1" aria-label="Vorheriger Name" ${currentIndex === 0 ? "disabled" : ""}>‹</button>
+              <span>${currentIndex + 1} / ${state.students.length}</span>
+              <button type="button" data-nav="1" aria-label="Nächster Name" ${currentIndex === state.students.length - 1 ? "disabled" : ""}>›</button>
+            </div>
+          </div>
+          <div class="sliders">${sliderMarkup}</div>
+          <div class="note-field">
+            <label for="studentNote">Kurze Notiz <span>optional</span></label>
+            <input id="studentNote" type="text" maxlength="180" value="${escapeHtml(student.note)}" placeholder="z. B. braucht größere Ausschneideteile">
+          </div>`;
+      }
+
+      function updateRating(categoryKey, value, refreshDetail = true) {
+        const student = selectedStudent();
+        if (!student) return;
+        student.ratings[categoryKey] = Math.max(0, Math.min(3, Number(value) || 0));
+        student.updatedAt = new Date().toISOString();
+        saveState();
+        if (refreshDetail) {
+          render();
+        } else {
+          renderHeader();
+          renderRoster();
+          buildPrintReport();
+        }
+      }
+
+      function updateImportCount() {
+        const names = getNamesFromInput();
+        elements.recognizedCount.textContent = String(Math.min(names.length, MAX_NAMES));
+        if (names.length > MAX_NAMES) {
+          elements.overflowNotice.textContent = `${names.length - MAX_NAMES} weitere werden nicht übernommen`;
+          elements.overflowNotice.classList.add("too-many");
+        } else {
+          elements.overflowNotice.textContent = "maximal 30";
+          elements.overflowNotice.classList.remove("too-many");
+        }
+        elements.applyImportButton.disabled = names.length === 0;
+      }
+
+      function openImport() {
+        elements.namesInput.value = state.students.map(student => student.name).join("\n");
+        updateImportCount();
+        elements.importModal.hidden = false;
+        setTimeout(() => elements.namesInput.focus(), 30);
+      }
+
+      function closeImport() {
+        elements.importModal.hidden = true;
+      }
+
+      function applyImport() {
+        const names = getNamesFromInput().slice(0, MAX_NAMES);
+        if (!names.length) return;
+
+        const existingByName = new Map();
+        state.students.forEach(student => {
+          const key = student.name.trim().toLocaleLowerCase("de");
+          if (!existingByName.has(key)) existingByName.set(key, student);
+        });
+
+        const usedIds = new Set();
+        const students = names.map(name => {
+          const existing = existingByName.get(name.toLocaleLowerCase("de"));
+          if (existing && !usedIds.has(existing.id)) {
+            usedIds.add(existing.id);
+            return existing;
+          }
+          return { id: uniqueId(), name, ratings: emptyRatings(), note: "", updatedAt: null };
+        });
+
+        state.students = students;
+        state.selectedId = students.some(student => student.id === state.selectedId)
+          ? state.selectedId
+          : students[0].id;
+        saveState();
+        closeImport();
+        render();
+        showToast(`${students.length} ${students.length === 1 ? "Name wurde" : "Namen wurden"} übernommen.`);
+      }
+
+      function resetObservations() {
+        state.students.forEach(student => {
+          student.ratings = emptyRatings();
+          student.note = "";
+          student.updatedAt = null;
+        });
+        saveState();
+        elements.resetModal.hidden = true;
+        render();
+        showToast("Alle Beobachtungen wurden zurückgesetzt.");
+      }
+
+      function csvCell(value) {
+        const text = String(value ?? "");
+        return /[;"\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+      }
+
+      function exportCsv() {
+        if (!state.students.length) return;
+        const headers = ["Nr.", "Name", ...categories.map(category => category.csv), "Notiz", "Zuletzt geändert"];
+        const rows = state.students.map((student, index) => [
+          index + 1,
+          student.name,
+          ...categories.map(category => levels[Number(student.ratings[category.key]) || 0].label),
+          student.note,
+          student.updatedAt ? new Date(student.updatedAt).toLocaleString("de-DE") : ""
+        ]);
+        const csv = "\uFEFF" + [headers, ...rows].map(row => row.map(csvCell).join(";")).join("\r\n");
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+        downloadBlob(blob, `wiluk-diagnose-${dateStamp()}.csv`);
+        showToast("CSV-Datei wurde erstellt.");
+      }
+
+      function buildPrintReport() {
+        if (!state.students.length) {
+          elements.printReport.innerHTML = "";
+          return;
+        }
+        const rows = state.students.map((student, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${escapeHtml(student.name)}</td>
+            ${categories.map(category => `<td>${levels[Number(student.ratings[category.key]) || 0].print}</td>`).join("")}
+            <td>${escapeHtml(student.note)}</td>
+          </tr>`).join("");
+        elements.printReport.innerHTML = `
+          <div class="print-head">
+            <div>
+              <h1>WILUK – Diagnose während der Arbeitsphase</h1>
+              <p>${state.students.length} Kinder · sechs Beobachtungspunkte</p>
+            </div>
+            <div class="print-meta">
+              <p>Export: ${new Date().toLocaleDateString("de-DE")}</p>
+            </div>
+          </div>
+          <div class="print-legend"><strong>Legende:</strong> — nicht beobachtet · U Unterstützungsbedarf · I mit Impuls · S selbstständig und sicher</div>
+          <table class="print-table">
+            <thead><tr>
+              <th>Nr.</th><th>Name</th>
+              ${categories.map(category => `<th>${category.csv}</th>`).join("")}
+              <th>Kurze Notiz</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+          <div class="print-footer">Die Beobachtungen dienen der pädagogischen Diagnose und individuellen Förderung, nicht der Benotung.</div>`;
+      }
+
+      function exportPdf() {
+        if (!state.students.length) return;
+        buildPrintReport();
+        showToast("Im Druckdialog kannst du die Übersicht als PDF sichern.");
+        setTimeout(() => window.print(), 80);
+      }
+
+      function downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      function dateStamp() {
+        const date = new Date();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${date.getFullYear()}-${month}-${day}`;
+      }
+
+      function showToast(message) {
+        elements.toast.textContent = message;
+        elements.toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => elements.toast.classList.remove("show"), 2600);
+      }
+
+      elements.rosterGrid.addEventListener("click", event => {
+        const importTrigger = event.target.closest('[data-action="open-import"]');
+        if (importTrigger) return openImport();
+        const card = event.target.closest("[data-student-id]");
+        if (!card) return;
+        state.selectedId = card.dataset.studentId;
+        saveState();
+        render();
+      });
+
+      elements.detailPanel.addEventListener("input", event => {
+        if (event.target.matches('input[type="range"][data-category]')) {
+          const value = Number(event.target.value);
+          updateRating(event.target.dataset.category, value, false);
+          event.target.style.backgroundSize = `${value / 3 * 100}% 100%`;
+          event.target.setAttribute("aria-label", `${categories.find(category => category.key === event.target.dataset.category).title}: ${levels[value].label}`);
+          const card = event.target.closest(".slider-card");
+          const title = card.querySelector(".level-title");
+          title.textContent = levels[value].label;
+          title.dataset.value = String(value);
+          card.querySelectorAll("[data-set-level]").forEach(button => {
+            const active = Number(button.dataset.setLevel) === value;
+            button.classList.toggle("active", active);
+            button.setAttribute("aria-pressed", String(active));
+          });
+        }
+        if (event.target.id === "studentNote") {
+          const student = selectedStudent();
+          if (!student) return;
+          student.note = event.target.value;
+          student.updatedAt = new Date().toISOString();
+          saveState();
+          buildPrintReport();
+        }
+      });
+
+      elements.detailPanel.addEventListener("click", event => {
+        const scaleButton = event.target.closest("[data-set-category]");
+        if (scaleButton) return updateRating(scaleButton.dataset.setCategory, scaleButton.dataset.setLevel);
+        const navButton = event.target.closest("[data-nav]");
+        if (!navButton) return;
+        const currentIndex = state.students.findIndex(student => student.id === state.selectedId);
+        const nextIndex = Math.max(0, Math.min(state.students.length - 1, currentIndex + Number(navButton.dataset.nav)));
+        state.selectedId = state.students[nextIndex].id;
+        saveState();
+        render();
+      });
+
+      elements.importButton.addEventListener("click", openImport);
+      elements.cancelImportButton.addEventListener("click", closeImport);
+      elements.applyImportButton.addEventListener("click", applyImport);
+      elements.namesInput.addEventListener("input", updateImportCount);
+      elements.csvButton.addEventListener("click", exportCsv);
+      elements.pdfButton.addEventListener("click", exportPdf);
+      elements.resetButton.addEventListener("click", () => { elements.resetModal.hidden = false; });
+      elements.cancelResetButton.addEventListener("click", () => { elements.resetModal.hidden = true; });
+      elements.confirmResetButton.addEventListener("click", resetObservations);
+      elements.importModal.addEventListener("click", event => { if (event.target === elements.importModal && state.students.length) closeImport(); });
+      elements.resetModal.addEventListener("click", event => { if (event.target === elements.resetModal) elements.resetModal.hidden = true; });
+      document.addEventListener("keydown", event => {
+        if (event.key !== "Escape") return;
+        if (!elements.resetModal.hidden) elements.resetModal.hidden = true;
+        else if (!elements.importModal.hidden && state.students.length) closeImport();
+      });
+
+      render();
+      if (!state.students.length) openImport();
+    })();
+  </script>
+</body>
+</html>
