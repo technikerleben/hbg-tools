@@ -3,6 +3,7 @@ import fs from 'node:fs';
 const file = 'neue5-digitales.html';
 let html = fs.readFileSync(file, 'utf8');
 const title = 'KI-Anreicherung: Mission Wassertropfen';
+const missionUrl = 'https://mission-wassertropfen.vercel.app/';
 
 function replaceJsonScript(source, id, updater) {
   const markerStart = `<script id="${id}" type="application/json">`;
@@ -40,17 +41,18 @@ const newSlide = {
     <p style="margin-top:8px;"><strong>15 Minuten netto</strong> eigene Arbeitszeit<br><span style="color:var(--col-text-muted);">plus Rechenzeit von ChatGPT</span></p>
   </div>
   <div class="mini-card accent-left sage">
-    <h3>Einordnung</h3>
-    <p>KI ersetzt hier nicht das Lernen und nicht die Lehrkraft. Sie erweitert ein Lernangebot um Perspektivwechsel, Animation, Sprache, Untertitel und eine gemeinsame Gesprächsgrundlage.</p>
+    <h3>Link</h3>
+    <p><a href="${missionUrl}" target="_blank" rel="noopener" style="color:var(--col-rust);font-weight:800;text-decoration:underline;word-break:break-all;">${missionUrl}</a></p>
+    <p style="margin-top:8px;color:var(--col-text-muted);">KI ersetzt hier nicht das Lernen und nicht die Lehrkraft. Sie erweitert Zugang, Darstellung und Gesprächsanlass.</p>
   </div>
 </div>
 <div class="merksatz"><strong>Anreicherung:</strong> Der fachliche Kern bleibt erhalten, aber Zugang, Darstellung und Motivation werden erweitert.</div>
 <div style="display:flex;justify-content:center;margin-top:18px;">
-  <a href="https://mission-wassertropfen.vercel.app" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:10px;background:var(--col-rust);color:#fff;text-decoration:none;font-weight:700;box-shadow:var(--shadow);">Mission Wassertropfen öffnen ↗</a>
+  <a href="${missionUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:10px;background:var(--col-rust);color:#fff;text-decoration:none;font-weight:700;box-shadow:var(--shadow);">Mission Wassertropfen öffnen ↗</a>
 </div>`
 };
 
-const voiceOver = `Zum Abschluss sehen wir Mission Wassertropfen als Beispiel für Anreicherung durch KI. Ausgangspunkt war eine klassische Lernaufgabe zum Wasserkreislauf. Daraus wurde in mehreren kurzen Iterationen eine geführte 3D-Erfahrung: Die Schülerinnen und Schüler steigen in die Aqua Explorer ein, schrumpfen, begleiten ein Wassermolekül und erleben die Stationen des Wasserkreislaufs nacheinander. Wichtig ist: Die KI ersetzt nicht den fachlichen Kern. Sie ergänzt Zugänge, Visualisierung, Sprache und Motivation. Für die aktuelle Version wurden nach dem ersten Konzept 164 Wörter in acht kurzen Folgeprompts genutzt. Die eigene Arbeitszeit lag bei etwa 15 Minuten netto, zusätzlich kam die Rechenzeit von ChatGPT hinzu.`;
+const voiceOver = `Zum Abschluss sehen wir Mission Wassertropfen als Beispiel für Anreicherung durch KI. Ausgangspunkt war eine klassische Lernaufgabe zum Wasserkreislauf. Daraus wurde in mehreren kurzen Iterationen eine geführte 3D-Erfahrung: Die Schülerinnen und Schüler steigen in die Aqua Explorer ein, schrumpfen, begleiten ein Wassermolekül und erleben die Stationen des Wasserkreislaufs nacheinander. Der Link lautet: mission-wassertropfen.vercel.app. Wichtig ist: Die KI ersetzt nicht den fachlichen Kern. Sie ergänzt Zugänge, Visualisierung, Sprache und Motivation. Für die aktuelle Version wurden nach dem ersten Konzept 164 Wörter in acht kurzen Folgeprompts genutzt. Die eigene Arbeitszeit lag bei etwa 15 Minuten netto, zusätzlich kam die Rechenzeit von ChatGPT hinzu.`;
 
 let missionIndex = -1;
 html = replaceJsonScript(html, 'slideData', (slides) => {
@@ -72,4 +74,4 @@ html = replaceJsonScript(html, 'voData', (items) => {
 html = html.replace('audio/folie-01.mp3 ... folie-16.mp3', 'audio/folie-01.mp3 ... folie-17.mp3');
 
 fs.writeFileSync(file, html);
-console.log(`Folie "${title}" ist jetzt Folie ${missionIndex + 1}; Voice-over nutzt audio/folie-${String(missionIndex + 1).padStart(2, '0')}.mp3.`);
+console.log(`Folie "${title}" ist jetzt Folie ${missionIndex + 1}; Link: ${missionUrl}; Voice-over nutzt audio/folie-${String(missionIndex + 1).padStart(2, '0')}.mp3.`);
