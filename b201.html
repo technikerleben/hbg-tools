@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B201 SRL-Raumkonzept</title>
+<style>
+:root{--slate:#2C3D4C;--rust:#D97A4A;--pale:#D0DCE6;--bg:#F5F4F1}
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{display:grid;place-items:center;background:var(--bg);color:var(--slate);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}main{max-width:620px;padding:32px;text-align:center}.spinner{width:44px;height:44px;margin:0 auto 18px;border:4px solid var(--pale);border-top-color:var(--rust);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}h1{font-size:1.25rem;margin:0 0 8px}p{line-height:1.5}
+</style>
+</head>
+<body>
+<main id="loading"><div class="spinner" aria-hidden="true"></div><h1>Raumplaner wird geladen …</h1><p>Die interaktive B201-Konfiguration wird vorbereitet.</p></main>
+<script>
+(async()=>{
+  const parts=[1,2,3,4,5].map(n=>`b201-data/part-${String(n).padStart(2,'0')}.txt`);
+  try{
+    if(!('DecompressionStream' in window)) throw new Error('Dieser Browser unterstützt die benötigte Dekomprimierung nicht.');
+    const responses=await Promise.all(parts.map(url=>fetch(url,{cache:'no-store'})));
+    responses.forEach((response,index)=>{if(!response.ok) throw new Error(`Datenteil ${index+1} konnte nicht geladen werden.`);});
+    const encoded=(await Promise.all(responses.map(response=>response.text()))).join('').replace(/\s+/g,'');
+    const binary=atob(encoded);
+    const bytes=new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+    const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    const html=await new Response(stream).text();
+    document.open();
+    document.write(html);
+    document.close();
+  }catch(error){
+    console.error(error);
+    document.getElementById('loading').innerHTML=`<h1>Raumplaner konnte nicht geladen werden</h1><p>${String(error.message||error)}</p><p>Bitte die Seite neu laden oder einen aktuellen Browser verwenden.</p>`;
+  }
+})();
+</script>
+</body>
+</html>
