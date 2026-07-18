@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>B201 SRL-Raumkonzept</title>
-<style>
-:root{--slate:#2C3D4C;--rust:#D97A4A;--pale:#D0DCE6;--bg:#F5F4F1}
-*{box-sizing:border-box}html,body{height:100%;margin:0}body{display:grid;place-items:center;background:var(--bg);color:var(--slate);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}main{max-width:620px;padding:32px;text-align:center}.spinner{width:44px;height:44px;margin:0 auto 18px;border:4px solid var(--pale);border-top-color:var(--rust);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}h1{font-size:1.25rem;margin:0 0 8px}p{line-height:1.5}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>B201 SRL-Raumkonzept</title>
+  <style>
+    :root{--slate:#2C3D4C;--rust:#D97A4A;--pale:#D0DCE6;--bg:#F5F4F1}
+    *{box-sizing:border-box}html,body{height:100%;margin:0}body{display:grid;place-items:center;background:var(--bg);color:var(--slate);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}main{max-width:620px;padding:32px;text-align:center}.spinner{width:44px;height:44px;margin:0 auto 18px;border:4px solid var(--pale);border-top-color:var(--rust);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}h1{font-size:1.25rem;margin:0 0 8px}p{line-height:1.5}
+  </style>
 </head>
 <body>
 <main id="loading"><div class="spinner" aria-hidden="true"></div><h1>Raumplaner wird geladen …</h1><p>Die interaktive B201-Konfiguration wird vorbereitet.</p></main>
@@ -23,7 +23,19 @@
     const bytes=new Uint8Array(binary.length);
     for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
     const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-    const html=await new Response(stream).text();
+    let html=await new Response(stream).text();
+
+    /* Korrektur für ältere Lernbüro-Presets: Der später ergänzte fünfte
+       orangefarbene Tisch besitzt dort noch keinen gespeicherten item-64-
+       Eintrag. Ohne Rückfallposition behält er sonst den Ort des zuvor
+       geöffneten Layouts. */
+    if(!html.includes('const extraTableId = extraMidTable.userData.editorId;')){
+      const anchor='    useLooseChairs = looseChairs.some(chair => chair.visible !== false);';
+      const fallback=`    /* Fehlender fünfter Tisch in älteren Presets */\n    const extraTableId = extraMidTable.userData.editorId;\n    if (L.extraMt && !imported.items[extraTableId]) {\n      extraMidTable.visible = true;\n      tween(extraMidTable, L.extraMt, 0.10);\n    }\n\n`;
+      if(!html.includes(anchor)) throw new Error('Die Tischkorrektur konnte nicht eingesetzt werden.');
+      html=html.replace(anchor,fallback+anchor);
+    }
+
     document.open();
     document.write(html);
     document.close();
