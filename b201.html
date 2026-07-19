@@ -40,6 +40,21 @@
       .replace(/tableFix:\s*0x[0-9A-Fa-f]+,\s*\/\/[^\n]*/, 'tableFix:   0xB88A5A,   // Holzton')
       .replace(/tableMove:\s*0x[0-9A-Fa-f]+,\s*\/\/[^\n]*/, 'tableMove:  0xB88A5A,   // Holzton');
 
+    /* Bezeichnungen und Beschreibungen an die einheitliche Holzoptik anpassen. */
+    const textReplacements=[
+      ['<div class="leg-row"><span class="leg-dot" style="background:#8E3B40"></span> Doppeltisch 130×50 (8 Tische fest)</div>','<div class="leg-row"><span class="leg-dot" style="background:#B88A5A"></span> Doppeltische an den Wänden (fest)</div>'],
+      ['<div class="leg-row"><span class="leg-dot" style="background:#D97A4A"></span> Doppeltisch Mitte (beweglich)</div>','<div class="leg-row"><span class="leg-dot" style="background:#B88A5A"></span> Doppeltische in der Mitte (beweglich)</div>'],
+      ['<div class="leg-row"><span class="leg-dot" style="background:#7DBB6F"></span> Stapelhocker (25 + Rollstuhlplatz)</div>','<div class="leg-row"><span class="leg-dot" style="background:#B9CDBB"></span> Stühle (25 + Rollstuhlplatz)</div>'],
+      ['<div class="leg-row"><span class="leg-dot" style="background:#3E5668"></span> 2 Materialwagen / 2 Akustik-Stellwände</div>','<div class="leg-row"><span class="leg-dot" style="background:#3E5668"></span> 2 Materialwagen / 1 Akustik-Stellwand</div>'],
+      ['Roter Doppeltisch','Doppeltisch außen'],
+      ['Oranger Doppeltisch','Doppeltisch Mitte'],
+      ['Dauerhafte Grundstellung und Standardansicht: Das orangefarbene Mittelcluster besteht aus zwei geschlossenen Reihen entlang der langen Raumachse. Der zusätzliche orangefarbene Tisch steht unten an der Wand neben der Tür und ergänzt dort zwei weitere Plätze. Der höhenverstellbare Tisch steht quer davor nahe der Materialtheke.','Dauerhafte Grundstellung und Standardansicht: Die Holztische im Mittelcluster stehen in zwei geschlossenen Reihen entlang der langen Raumachse. Ein zusätzlicher Holztisch steht unten an der Wand neben der Tür und ergänzt dort zwei weitere Plätze. Der gelbe höhenverstellbare Tisch steht quer davor nahe der Materialtheke.'],
+      ['Fünf Gruppencluster. Der zusätzliche orangefarbene Tisch ergänzt den bisherigen Zweiercluster zu einem Dreiercluster. Die unteren orangenen Tische haben ihre Stühle auf der Außenseite. Der höhenverstellbare Tisch steht oben mittig am richtigen Ort und bleibt quer ausgerichtet.','Fünf Gruppencluster aus einheitlichen Holztischen. Der zusätzliche Tisch ergänzt den bisherigen Zweiercluster zu einem Dreiercluster. Bei den unteren Tischgruppen stehen die Stühle auf der Außenseite. Der gelbe höhenverstellbare Tisch steht oben mittig und bleibt quer ausgerichtet.'],
+      ['Die Input-Konfiguration zeigt die Tische genau wie im Lernbüro. Der zusätzliche orangefarbene Tisch steht unten an der Wand neben der Tür. Die Stühle stehen in vier breiten Reihen weiter entfernt von der digitalen Tafel. Der ovale Stehtisch parkt außerhalb des Halbkreises.','Die Input-Konfiguration übernimmt die Tischpositionen aus dem Lernbüro. Der zusätzliche Holztisch steht unten an der Wand neben der Tür. Die Stühle stehen in vier breiten Reihen mit Abstand zur digitalen Tafel. Der ovale Stehtisch parkt außerhalb des Halbkreises.'],
+      ['Für den Sitzkreis bleiben die roten Tische an ihren Wandpositionen. Die orangefarbenen Tische rücken vor die Materialregale an die linke Raumseite, damit in der Mitte Platz für den Kreis entsteht. Der Türbereich bleibt frei; den Kreis bilden 25 lose Stühle.','Für den Sitzkreis bleiben die wandständigen Holztische an ihren Positionen. Die beweglichen Holztische rücken vor die Materialregale an die linke Raumseite, damit in der Mitte Platz für den Kreis entsteht. Der Türbereich bleibt frei; den Kreis bilden 25 lose Stühle.']
+    ];
+    textReplacements.forEach(([from,to])=>{html=html.split(from).join(to);});
+
     document.open();
     document.write(html);
     document.close();
