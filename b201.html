@@ -441,6 +441,7 @@ body.fp-mode #fp-controls { display: block; }
 <div class="toolbar" role="toolbar" aria-label="Layout wählen">
   <button class="layout-btn active" data-layout="lernbuero">🗂️ Lernbüro</button>
   <button class="layout-btn" data-layout="gruppen">👥 Gruppeninseln</button>
+  <button class="layout-btn" data-layout="marktplatz">☕ Marktplatz / Lerncafé</button>
   <button class="layout-btn" data-layout="kino">🎬 Input / Halbkreis</button>
   <button class="layout-btn" data-layout="kreis">⭕ Kreis / Klassenrat</button>
   <span class="tool-sep" aria-hidden="true"></span>
@@ -1315,6 +1316,43 @@ const LAYOUTS = {
     extraMt: { x: -0.60, z: 1.65, ry: P },
     chairs: null
   },
+  marktplatz: {
+    name: 'Marktplatz / Lerncafé',
+    text: 'Eine offene Lernlandschaft mit bewusst unterschiedlichen Arbeitsangeboten: eine lange Gemeinschaftstafel mit angedocktem gelbem höhenverstellbarem Tisch, drei kleine Caféinseln, zwei ruhige Fensterplätze, eine abgeschirmte Arbeitsnische, ein Zweiertisch nahe der Tür, eine Stehbar und die feste Lounge. Die Mitte und der Weg von der Tür bleiben gut begehbar.',
+    seats: '25 Stuhlplätze + 1 Rollstuhlplatz; zusätzlich Stehbar und Lounge',
+    shell: [
+      /* Zwei ruhige Fensterplätze */
+      { x: -3.30, z: -3.15, ry: 0 },
+      { x: -1.90, z: -3.15, ry: 0 },
+      /* Caféinsel links oben */
+      { x: -2.30, z: -1.45, ry: -P / 2 },
+      { x: -1.80, z: -1.45, ry:  P / 2 },
+      /* Caféinsel Mitte */
+      { x: -0.25, z: -1.35, ry: -P / 2 },
+      { x:  0.25, z: -1.35, ry:  P / 2 },
+      /* Caféinsel rechts */
+      { x:  1.65, z: -0.65, ry: -P / 2 },
+      { x:  2.15, z: -0.65, ry:  P / 2 }
+    ],
+    mt: [
+      /* Drei Tische als lange Gemeinschaftstafel */
+      { x: -1.40, z: 1.65, ry: P },
+      { x: -0.10, z: 1.65, ry: 0 },
+      { x:  1.20, z: 1.65, ry: P },
+      /* Ruhige Café-Nische an der Materialtheke */
+      { x: -3.15, z: 0.35, ry: P / 2 }
+    ],
+    flexA: { x: -2.55, z: 1.65, ry: 0 },
+    wand2: { x: -2.35, z: 0.35, ry: P / 2 },
+    wand3: { x: 0.0, z: 0.0, ry: 0 },
+    rollSpot: { x: -2.55, z: 1.65 },
+    stand: { x: 3.20, z: 0.55, ry: 0 },
+    /* Kleiner Check-in- und Zweiertisch neben der Tür */
+    extraMt: { x: 0.60, z: 3.15, ry: P },
+    /* Die Nische bleibt bewusst ein Einzelarbeitsplatz. */
+    hiddenMidChairIndexes: [7],
+    chairs: null
+  },
   kino: {
     name: 'Input / Halbkreis',
     text: 'Die Input-Konfiguration übernimmt die Tischpositionen aus dem Lernbüro. Der zusätzliche Holztisch steht unten an der Wand neben der Tür. Die Stühle stehen in vier breiten Reihen mit Abstand zur digitalen Tafel. Der ovale Stehtisch parkt außerhalb des Halbkreises.',
@@ -1395,7 +1433,7 @@ function applyLayout(key, animate = true) {
   };
 
   if (imported) {
-    /* Die drei Hauptbuttons laden exakt die vom Nutzer exportierten Positionen. */
+    /* Importierte Hauptlayouts laden exakt die gespeicherten Positionen. */
     editorItems.forEach((item, i) => {
       const state = imported.items[item.id];
       if (!state) return;
@@ -1455,6 +1493,11 @@ function applyLayout(key, animate = true) {
     const chairPositions = useLooseChairs ? L.chairs() : [];
     shellChairs.forEach(entry => { entry.obj.visible = !useLooseChairs; });
     midTableChairs.forEach(ch => { ch.visible = !useLooseChairs; });
+    if (!useLooseChairs && Array.isArray(L.hiddenMidChairIndexes)) {
+      L.hiddenMidChairIndexes.forEach(index => {
+        if (midTableChairs[index]) midTableChairs[index].visible = false;
+      });
+    }
     looseChairs.forEach(ch => { ch.visible = useLooseChairs; });
     hockers.forEach(h => { h.visible = false; h.position.set(20, -5, 20); });
 
@@ -2206,7 +2249,7 @@ window.addEventListener('blur', () => {
 refreshConfigSelect();
 
 /* Automatischer Prüfmodus für die technische Abnahme im Browser:
-   file.html?audit=1 schreibt die Resultate aller vier Layouts ins DOM. */
+   file.html?audit=1 schreibt die Resultate aller Layouts ins DOM. */
 function runCollisionAudit() {
   const previous = currentLayout || 'lernbuero';
   const report = {};
