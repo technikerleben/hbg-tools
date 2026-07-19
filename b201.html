@@ -26,15 +26,19 @@
     let html=await new Response(stream).text();
 
     /* Korrektur für ältere Lernbüro-Presets: Der später ergänzte fünfte
-       orangefarbene Tisch besitzt dort noch keinen gespeicherten item-64-
-       Eintrag. Ohne Rückfallposition behält er sonst den Ort des zuvor
-       geöffneten Layouts. */
+       Tisch besitzt dort noch keinen gespeicherten item-64-Eintrag. */
     if(!html.includes('const extraTableId = extraMidTable.userData.editorId;')){
       const anchor='    useLooseChairs = looseChairs.some(chair => chair.visible !== false);';
       const fallback=`    /* Fehlender fünfter Tisch in älteren Presets */\n    const extraTableId = extraMidTable.userData.editorId;\n    if (L.extraMt && !imported.items[extraTableId]) {\n      extraMidTable.visible = true;\n      tween(extraMidTable, L.extraMt, 0.10);\n    }\n\n`;
       if(!html.includes(anchor)) throw new Error('Die Tischkorrektur konnte nicht eingesetzt werden.');
       html=html.replace(anchor,fallback+anchor);
     }
+
+    /* Einheitliche Tischplatten in Holzoptik; nur der höhenverstellbare
+       Tisch behält seinen gelben Farbwert. */
+    html=html
+      .replace(/tableFix:\s*0x[0-9A-Fa-f]+,\s*\/\/[^\n]*/, 'tableFix:   0xB88A5A,   // Holzton')
+      .replace(/tableMove:\s*0x[0-9A-Fa-f]+,\s*\/\/[^\n]*/, 'tableMove:  0xB88A5A,   // Holzton');
 
     document.open();
     document.write(html);
