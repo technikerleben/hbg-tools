@@ -502,10 +502,11 @@ body.fp-mode #fp-controls { display: block; }
    ========================================================= */
 
 const COL = {
-  floor:      0xDCECF7,
-  grid:       0xD8D4CC,
+  floor:      0xB7D88F,
+  grid:       0x88AA72,
   wall:       0xC8D2DA,
-  window:     0xAFD3E8,
+  window:     0xB9D9EC,
+  windowFrame:0x15346B,
   tableFix:   0xB88A5A,   // Holzton
   tableMove:  0xB88A5A,   // Holzton
   chair:      0xB9CDBB,
@@ -699,19 +700,19 @@ function label(text, opts = {}) {
 }
 
 /* ---------- Raumhülle ---------- */
-/* Prozedurale Linoleum-Textur: warmer Grundton mit feinen Sprenkeln und Wolken */
+/* Prozedurale Linoleum-Textur: hellgrüner Boden wie im tatsächlichen Raum */
 function makeFloorTexture() {
   const S = 512;
   const cv = document.createElement('canvas');
   cv.width = S; cv.height = S;
   const ctx = cv.getContext('2d');
-  ctx.fillStyle = '#EDEAE4';
+  ctx.fillStyle = '#B7D88F';
   ctx.fillRect(0, 0, S, S);
   /* Großflächige, weiche Wolken */
   for (let i = 0; i < 26; i++) {
     const x = Math.random() * S, y = Math.random() * S, r = 60 + Math.random() * 110;
     const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-    const tone = Math.random() < 0.5 ? '235,231,223' : '243,240,235';
+    const tone = Math.random() < 0.5 ? '171,207,132' : '198,226,166';
     g.addColorStop(0, `rgba(${tone},0.5)`);
     g.addColorStop(1, `rgba(${tone},0)`);
     ctx.fillStyle = g;
@@ -722,8 +723,8 @@ function makeFloorTexture() {
     const x = Math.random() * S, y = Math.random() * S;
     const shade = Math.random();
     ctx.fillStyle = shade < 0.55
-      ? `rgba(196,190,178,${0.10 + Math.random() * 0.18})`
-      : `rgba(255,253,248,${0.12 + Math.random() * 0.2})`;
+      ? `rgba(111,153,91,${0.08 + Math.random() * 0.14})`
+      : `rgba(236,248,218,${0.10 + Math.random() * 0.18})`;
     const s = 0.7 + Math.random() * 1.5;
     ctx.fillRect(x, y, s, s);
   }
@@ -830,11 +831,17 @@ glass.position.set(0, 0.85 + 0.8, -3.5 - WALL_T / 2);
 glass.castShadow = false;
 walls.north.g.add(glass);
 /* Fensterbank */
-const sill = box(ROOM.W, 0.035, 0.16, 0xF2F4F5, { roughness: 0.4 });
+const sill = box(ROOM.W, 0.055, 0.16, COL.windowFrame, { roughness: 0.42 });
 sill.position.set(0, 0.87, -3.5 + 0.03);
 walls.north.g.add(sill);
+const windowTopRail = box(ROOM.W, 0.09, 0.10, COL.windowFrame, { roughness: 0.38 });
+windowTopRail.position.set(0, 2.43, -3.5 - WALL_T / 2);
+walls.north.g.add(windowTopRail);
+const windowMidRail = box(ROOM.W, 0.075, 0.10, COL.windowFrame, { roughness: 0.38 });
+windowMidRail.position.set(0, 1.20, -3.5 - WALL_T / 2);
+walls.north.g.add(windowMidRail);
 for (let i = -4.5; i <= 4.5; i += 1.5) {
-  const post = box(0.07, 1.6, 0.09, 0xFFFFFF);
+  const post = box(0.09, 1.6, 0.10, COL.windowFrame, { roughness: 0.38 });
   post.position.set(Math.max(-4.46, Math.min(4.46, i)), 0.85 + 0.8, -3.5 - WALL_T / 2);
   walls.north.g.add(post);
 }
