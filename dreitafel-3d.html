@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>3D-Betrachter · Dreitafelprojektion &amp; Isometrie – HBG</title>
+<style>
+:root {
+  --col-slate-dark:  #2C3D4C;
+  --col-slate:       #3E5668;
+  --col-slate-mid:   #6A8599;
+  --col-slate-pale:  #D0DCE6;
+  --col-slate-ghost: #EEF3F7;
+  --col-rust-dark:   #9E4E22;
+  --col-rust:        #D97A4A;
+  --col-rust-pale:   #F5DDD1;
+  --col-sage-dark:   #4D8B3F;
+  --col-sage:        #7DBB6F;
+  --col-sage-pale:   #DDF0D8;
+  --col-warning:      #C17B00;
+  --col-warning-pale: #FFF3CC;
+  --col-warning-text: #5C4400;
+  --col-error:        #C0392B;
+  --col-error-pale:   #FDECEA;
+  --col-error-text:   #7A1B14;
+  --col-bg:           #F5F4F1;
+  --col-white:        #FFFFFF;
+  --col-text:         #1E2A35;
+  --col-text-muted:   #5A6A78;
+  --col-border:       #D4D0C8;
+  --col-disabled-bg:  #EBEBEA;
+  --col-disabled-text:#7A7672;
+  --col-focus:        #3E5668;
+  --col-shadow:       rgba(62,86,104,0.10);
+  --text-xs:   0.694rem;
+  --text-sm:   0.833rem;
+  --text-base: 1rem;
+  --text-md:   1.2rem;
+  --text-lg:   1.44rem;
+  --text-xl:   1.728rem;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--col-bg); color: var(--col-text);
+  font-size: var(--text-base); line-height: 1.5;
+  min-height: 100vh; display: flex; flex-direction: column;
+}
+:focus-visible { outline: 3px solid var(--col-focus); outline-offset: 3px; border-radius: 4px; }
+
+/* ---------- Header ---------- */
+header { background: var(--col-slate); color: white; padding: 9px 20px; }
+.header-inner { max-width: 1180px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+header h1 { font-size: var(--text-md); font-weight: 700; line-height: 1.2; }
+.header-meta { font-size: var(--text-xs); color: var(--col-slate-pale); text-transform: uppercase; letter-spacing: .06em; margin-top: 1px; }
+.hbg-wordmark { display: inline-flex; align-items: flex-end; gap: 5px; }
+.hbg-wordmark__main { font-size: var(--text-md); font-weight: 800; color: #fff; }
+.hbg-wordmark__sub { font-size: var(--text-sm); color: #EBA882; margin-bottom: 1px; }
+.btn-fullscreen { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.55);
+  border-radius: 8px; min-height: 40px; padding: 6px 12px; font-size: var(--text-sm); font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn-fullscreen:hover { background: rgba(255,255,255,.12); }
+
+/* ---------- Tabs ---------- */
+.tabbar { background: var(--col-slate-dark); }
+.tabbar-inner { max-width: 1180px; margin: 0 auto; display: flex; gap: 2px; padding: 0 14px; overflow-x: auto; }
+.tab { background: transparent; border: none; color: var(--col-slate-pale); font-family: inherit;
+  font-size: var(--text-sm); font-weight: 600; padding: 11px 16px; min-height: 44px; cursor: pointer;
+  border-bottom: 3px solid transparent; white-space: nowrap; }
+.tab:hover { color: #fff; }
+.tab[aria-selected="true"] { color: #fff; border-bottom-color: var(--col-rust); }
+
+main { flex: 1; }
+.container { max-width: 1180px; margin: 0 auto; padding: 14px 20px 22px; width: 100%; }
+.panel[hidden] { display: none; }
+.layout { display: grid; grid-template-columns: minmax(0,1fr) 380px; gap: 15px; align-items: start; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+.card { background: var(--col-white); border-radius: 12px; padding: 15px 18px; box-shadow: 0 2px 8px var(--col-shadow); }
+.card + .card { margin-top: 13px; }
+.card h2 { font-size: var(--text-md); color: var(--col-slate-dark); margin-bottom: 8px; }
+.card h2 .sub { font-size: var(--text-xs); font-weight: 500; color: var(--col-text-muted); text-transform: none; letter-spacing: 0; }
+
+/* ---------- Chips / Buttons ---------- */
+.chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip { background: transparent; color: var(--col-slate); border: 2px solid var(--col-slate);
+  padding: 7px 13px; border-radius: 999px; font-size: var(--text-sm); font-weight: 600;
+  min-height: 44px; cursor: pointer; font-family: inherit; transition: background .15s; }
+.chip:hover { background: var(--col-slate-ghost); }
+.chip[aria-pressed="true"] { background: var(--col-slate); color: #fff; }
+.btn-primary { background: var(--col-rust-dark); color: #fff; border: none; padding: 10px 22px;
+  border-radius: 8px; font-size: var(--text-base); font-weight: 600; min-height: 44px; cursor: pointer;
+  font-family: inherit; transition: background .2s, transform .1s; }
+.btn-primary:hover { background: #B55E2A; }
+.btn-primary:active { background: #7D3C18; transform: translateY(1px); }
+.btn-primary:disabled { background: var(--col-disabled-bg); color: var(--col-disabled-text); cursor: not-allowed; }
+.btn-secondary { background: transparent; color: var(--col-slate); border: 2px solid var(--col-slate);
+  padding: 9px 18px; border-radius: 8px; font-size: var(--text-sm); font-weight: 600; min-height: 44px;
+  cursor: pointer; font-family: inherit; transition: background .2s; }
+.btn-secondary:hover { background: var(--col-slate-ghost); }
+.btn-success { background: var(--col-sage-dark); color: #fff; border: none; padding: 10px 20px;
+  border-radius: 8px; font-weight: 600; min-height: 44px; cursor: pointer; font-family: inherit; font-size: var(--text-sm); }
+.btn-success:hover { background: #3D7032; }
+.btn-link { background: none; border: none; color: var(--col-slate); font-size: var(--text-xs);
+  font-weight: 600; text-decoration: underline; cursor: pointer; font-family: inherit; min-height: 44px; }
+
+/* ---------- 3D-Bühne ---------- */
+#stage-wrap { position: relative; }
+#stage { width: 100%; aspect-ratio: 4/3; display: block; border-radius: 10px;
+  background: linear-gradient(180deg,#FDFCFA 0%,#F0EDE7 100%);
+  border: 1.5px solid var(--col-border); touch-action: none; cursor: grab; }
+#stage.dragging { cursor: grabbing; }
+.drag-hint { position: absolute; left: 12px; bottom: 12px; pointer-events: none;
+  background: rgba(44,61,76,.82); color: #fff; font-size: var(--text-xs); padding: 5px 10px; border-radius: 999px; }
+.snap-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
+.btn-snap { background: transparent; color: var(--col-slate); border: 2px solid var(--col-slate);
+  padding: 8px 13px; border-radius: 8px; font-size: var(--text-sm); font-weight: 600; min-height: 44px;
+  cursor: pointer; font-family: inherit; transition: background .15s; }
+.btn-snap:hover { background: var(--col-slate-ghost); }
+.btn-snap--iso { border-color: var(--col-rust-dark); color: var(--col-rust-dark); }
+.btn-snap--iso:hover { background: var(--col-rust-pale); }
+.legend { display: none; flex-wrap: wrap; gap: 10px; margin-top: 9px; }
+.legend.visible { display: flex; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--col-text-muted); }
+.swatch { width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid rgba(0,0,0,.2); }
+
+/* ---------- Schalter ---------- */
+.opt-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
+.opt-row + .opt-row { border-top: 1px solid var(--col-slate-ghost); }
+.switch { position: relative; width: 52px; height: 30px; flex: none; }
+.switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.switch .track { position: absolute; inset: 0; background: var(--col-border); border-radius: 999px; transition: background .2s; }
+.switch .track::after { content:''; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px;
+  background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; }
+.switch input:checked + .track { background: var(--col-sage-dark); }
+.switch input:checked + .track::after { transform: translateX(22px); }
+.switch input:focus-visible + .track { outline: 3px solid var(--col-focus); outline-offset: 2px; }
+.opt-label { font-size: var(--text-sm); font-weight: 600; }
+.opt-sub { font-size: var(--text-xs); color: var(--col-text-muted); }
+
+/* ---------- Ansichten ---------- */
+.views-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; position: relative; }
+.view-box { text-align: center; }
+.view-box canvas { width: 100%; border-radius: 8px; background: #FDFCFA; border: 2px solid var(--col-border); display: block; }
+.view-box[data-tint="rust"] canvas { border-color: var(--col-rust); }
+.view-box[data-tint="slate"] canvas { border-color: var(--col-slate-mid); }
+.view-box[data-tint="sage"] canvas { border-color: var(--col-sage); }
+.view-label { font-size: var(--text-xs); font-weight: 700; color: var(--col-slate-dark); margin-top: 5px;
+  text-transform: uppercase; letter-spacing: .05em; }
+.view-corner { display: flex; align-items: center; justify-content: center; font-size: var(--text-xs);
+  color: var(--col-text-muted); text-align: center; padding: 6px; line-height: 1.45; }
+.edge-legend { display: flex; gap: 14px; margin-top: 9px; font-size: var(--text-xs); color: var(--col-text-muted); flex-wrap: wrap; }
+.edge-legend .line { display: inline-block; width: 28px; height: 0; border-top: 2.5px solid var(--col-text); vertical-align: middle; margin-right: 5px; }
+.edge-legend .line--dash { border-top-style: dashed; }
+.reveal-overlay { position: absolute; inset: 0; border-radius: 10px; z-index: 5;
+  background: var(--col-slate-ghost); border: 2px dashed var(--col-slate-mid);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 11px; padding: 18px; text-align: center; }
+.reveal-overlay p { font-size: var(--text-sm); max-width: 300px; }
+
+/* ---------- Feedback ---------- */
+.feedback-richtig { background: var(--col-sage-pale); border-left: 4px solid var(--col-sage-dark);
+  border-radius: 0 8px 8px 0; padding: 11px 14px; color: #2D5C25; font-size: var(--text-sm); }
+.feedback-richtig::before { content: '✓ '; font-weight: 700; color: var(--col-sage-dark); }
+.feedback-falsch { background: var(--col-error-pale); border-left: 4px solid var(--col-error);
+  border-radius: 0 8px 8px 0; padding: 11px 14px; color: var(--col-error-text); font-size: var(--text-sm); }
+.feedback-falsch::before { content: '✗ '; font-weight: 700; color: var(--col-error); }
+.feedback-tipp { background: var(--col-slate-pale); border-left: 4px solid var(--col-slate-mid);
+  border-radius: 0 8px 8px 0; padding: 11px 14px; font-size: var(--text-sm); }
+.feedback-tipp::before { content: 'ℹ '; font-weight: 700; color: var(--col-slate); }
+.mappe-hinweis { background: var(--col-warning-pale); border-left: 4px solid var(--col-warning);
+  border-radius: 0 8px 8px 0; padding: 10px 13px; color: var(--col-warning-text); font-size: var(--text-sm); margin-top: 9px; }
+.mappe-hinweis::before { content: '✏️ '; }
+
+/* ---------- Übung: Zuordnen ---------- */
+.quiz-top { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.given-box { text-align: center; }
+.given-box canvas { width: 100%; border-radius: 8px; background: #FDFCFA; border: 2px solid var(--col-slate-mid); display: block; }
+.given-label { font-size: var(--text-xs); font-weight: 700; color: var(--col-slate-dark); margin-top: 5px; text-transform: uppercase; letter-spacing: .05em; }
+.options-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px; }
+@media (max-width: 700px) { .options-grid { grid-template-columns: repeat(2,1fr); } }
+.opt-card { background: var(--col-white); border: 2.5px solid var(--col-border); border-radius: 10px;
+  padding: 8px; cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s; min-height: 44px; }
+.opt-card:hover:not(:disabled) { border-color: var(--col-slate); background: var(--col-slate-ghost); }
+.opt-card canvas { width: 100%; display: block; }
+.opt-card .mark { display: block; font-size: var(--text-sm); font-weight: 700; margin-top: 4px; min-height: 20px; }
+.opt-card.correct { border-color: var(--col-sage-dark); background: var(--col-sage-pale); }
+.opt-card.correct .mark { color: #2D5C25; }
+.opt-card.wrong { border-color: var(--col-error); background: var(--col-error-pale); }
+.opt-card.wrong .mark { color: var(--col-error-text); }
+.opt-card:disabled { cursor: default; }
+.progress-label { display: flex; justify-content: space-between; font-size: var(--text-xs); color: var(--col-text-muted); }
+.progress-bar { height: 8px; background: var(--col-slate-pale); border-radius: 4px; overflow: hidden; margin: 6px 0 12px; }
+.progress-bar__fill { height: 100%; background: var(--col-rust); border-radius: 4px; transition: width .4s ease; }
+.progress-bar__fill--done { background: var(--col-sage); }
+
+/* ---------- Selbstcheck ---------- */
+.check-list { list-style: none; }
+.check-list li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; font-size: var(--text-sm); }
+.check-list li + li { border-top: 1px solid var(--col-slate-ghost); }
+.check-list input[type=checkbox] { width: 24px; height: 24px; flex: none; margin-top: 1px; accent-color: var(--col-sage-dark); cursor: pointer; }
+.check-list label { cursor: pointer; }
+
+/* ---------- Isometrie-Tab ---------- */
+.iso-explain { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+@media (max-width: 780px) { .iso-explain { grid-template-columns: 1fr; } }
+#iso-axes { width: 100%; border-radius: 8px; background: #FDFCFA; border: 1.5px solid var(--col-border); display: block; }
+.steps { list-style: none; counter-reset: step; }
+.steps li { counter-increment: step; position: relative; padding-left: 36px; font-size: var(--text-sm); margin-bottom: 7px; }
+.steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 25px; height: 25px;
+  border-radius: 50%; background: var(--col-slate); color: #fff; font-weight: 700; font-size: var(--text-xs);
+  display: flex; align-items: center; justify-content: center; }
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px;
+  font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+.badge--pale-rust { background: var(--col-rust-pale); color: var(--col-rust-dark); }
+.badge--pale-sage { background: var(--col-sage-pale); color: var(--col-sage-dark); }
+.badge--pale-slate { background: var(--col-slate-pale); color: var(--col-slate); }
+footer { text-align: center; padding: 10px; font-size: var(--text-xs); color: var(--col-text-muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <h1>3D-Betrachter · Dreitafelprojektion &amp; Isometrie</h1>
+      <div class="header-meta">HBG Dortmund · WP Technik · Klasse 7</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:13px;">
+      <button class="btn-fullscreen" id="btn-fs" type="button">⛶ Vollbild</button>
+      <div class="hbg-wordmark" aria-hidden="true"><span class="hbg-wordmark__main">HBG</span><span class="hbg-wordmark__sub">SRL</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabbar">
+  <div class="tabbar-inner" role="tablist">
+    <button class="tab" role="tab" data-tab="entdecken" aria-selected="true">🔍 Entdecken</button>
+    <button class="tab" role="tab" data-tab="zuordnen" aria-selected="false">🎯 Übung: Ansicht zuordnen</button>
+    <button class="tab" role="tab" data-tab="skizzieren" aria-selected="false">✏️ Übung: Selbst skizzieren</button>
+    <button class="tab" role="tab" data-tab="isometrie" aria-selected="false">◆ Isometrie verstehen</button>
+  </div>
+</nav>
+
+<main>
+<div class="container">
+
+  <!-- ============ TAB 1: ENTDECKEN ============ -->
+  <section class="panel" id="panel-entdecken">
+    <div class="layout">
+      <div>
+        <div class="card">
+          <h2>Dein Körper in 3D</h2>
+          <div id="stage-wrap">
+            <canvas id="stage" aria-label="Drehbarer 3D-Körper. Ziehe mit dem Finger, um zu drehen."></canvas>
+            <div class="drag-hint" aria-hidden="true">👆 Ziehen zum Drehen</div>
+          </div>
+          <div class="snap-row" role="group" aria-label="Ansicht wählen">
+            <button class="btn-snap btn-snap--iso" data-snap="iso" type="button">◆ Isometrie</button>
+            <button class="btn-snap" data-snap="front" type="button">Vorderansicht</button>
+            <button class="btn-snap" data-snap="side" type="button">Seitenansicht von links</button>
+            <button class="btn-snap" data-snap="top" type="button">Draufsicht</button>
+          </div>
+          <div class="legend" id="color-legend" aria-hidden="true">
+            <span><span class="swatch" style="background:#EBA882"></span> vorn → Vorderansicht</span>
+            <span><span class="swatch" style="background:#A9C2D4"></span> links → Seitenansicht</span>
+            <span><span class="swatch" style="background:#A8D49D"></span> oben → Draufsicht</span>
+          </div>
+        </div>
+        <div class="card">
+          <h2>So gehst du vor</h2>
+          <ol class="steps">
+            <li>Wähle einen Körper und drehe ihn, bis du ihn dir gut vorstellen kannst.</li>
+            <li>Skizziere die drei Ansichten <strong>mit Bleistift in deiner Mappe</strong>.</li>
+            <li>Decke danach die Ansichten hier auf und vergleiche mit deiner Skizze.</li>
+          </ol>
+          <div class="mappe-hinweis">Deine Skizze gehört in die Papiermappe – der Bildschirm ist nur zum Anschauen und Vergleichen da.</div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <h2>Körper wählen</h2>
+          <div class="chips" id="body-chips" role="group" aria-label="Körper wählen"></div>
+        </div>
+        <div class="card">
+          <h2>Einstellungen</h2>
+          <div class="opt-row">
+            <label class="switch"><input type="checkbox" id="opt-colors"><span class="track"></span></label>
+            <div><div class="opt-label">Ansichts-Farben</div>
+              <div class="opt-sub">Färbt die Flächen so, wie sie in den drei Ansichten erscheinen.</div></div>
+          </div>
+          <div class="opt-row">
+            <label class="switch"><input type="checkbox" id="opt-hidden" checked><span class="track"></span></label>
+            <div><div class="opt-label">Verdeckte Kanten (gestrichelt)</div>
+              <div class="opt-sub">Zeigt in den Ansichten auch Kanten, die man nicht direkt sieht.</div></div>
+          </div>
+          <div class="opt-row">
+            <label class="switch"><input type="checkbox" id="opt-isogrid"><span class="track"></span></label>
+            <div><div class="opt-label">Isometrie-Gitter einblenden</div>
+              <div class="opt-sub">Zeigt die 30°-Linien, auf denen du isometrisch zeichnest.</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Die drei Ansichten</h2>
+          <div class="views-grid" id="views-grid">
+            <div class="reveal-overlay" id="reveal-overlay">
+              <p><strong>Erst skizzieren, dann aufdecken!</strong><br>Zeichne die drei Ansichten zuerst in deine Mappe.</p>
+              <button class="btn-primary" id="btn-reveal" type="button">Ansichten aufdecken 👀</button>
+            </div>
+            <div class="view-box" data-tint="rust"><canvas id="view-front"></canvas><div class="view-label">Vorderansicht</div></div>
+            <div class="view-box" data-tint="slate"><canvas id="view-side"></canvas><div class="view-label">Seitenansicht von links</div></div>
+            <div class="view-box" data-tint="sage"><canvas id="view-top"></canvas><div class="view-label">Draufsicht</div></div>
+            <div class="view-corner">Anordnung nach DIN:<br>Draufsicht unter der Vorderansicht,<br>Seitenansicht von links rechts daneben.</div>
+          </div>
+          <div class="edge-legend" aria-hidden="true">
+            <span><span class="line"></span> sichtbare Kante</span>
+            <span><span class="line line--dash"></span> verdeckte Kante</span>
+          </div>
+          <button class="btn-link" id="btn-hide" type="button" hidden>Ansichten wieder verdecken</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 2: ZUORDNEN ============ -->
+  <section class="panel" id="panel-zuordnen" hidden>
+    <div class="layout">
+      <div>
+        <div class="card">
+          <h2>Welche Ansicht fehlt? <span class="sub">Schau dir die beiden gegebenen Ansichten an.</span></h2>
+          <div class="progress-label">
+            <span>Aufgabe <span id="q-num">1</span> von <span id="q-total">8</span></span>
+            <span id="q-score">0 richtig</span>
+          </div>
+          <div class="progress-bar"><div class="progress-bar__fill" id="q-bar" style="width:0%"></div></div>
+
+          <div class="quiz-top">
+            <div class="given-box"><canvas id="q-given-a"></canvas><div class="given-label" id="q-label-a">–</div></div>
+            <div class="given-box"><canvas id="q-given-b"></canvas><div class="given-label" id="q-label-b">–</div></div>
+          </div>
+
+          <p style="margin:14px 0 4px;font-size:var(--text-sm);font-weight:600;">
+            Gesucht: <span id="q-ask" style="color:var(--col-rust-dark);">–</span>
+          </p>
+          <div class="options-grid" id="q-options"></div>
+
+          <div id="q-feedback" hidden style="margin-top:12px;" role="status" aria-live="polite"></div>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-primary" id="q-next" type="button" hidden>Nächste Aufgabe →</button>
+            <button class="btn-secondary" id="q-restart" type="button">Neu starten</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <h2>So funktioniert es</h2>
+          <ol class="steps">
+            <li>Zwei Ansichten sind vorgegeben – überlege dir den Körper räumlich.</li>
+            <li>Wähle aus vier Vorschlägen die passende dritte Ansicht.</li>
+            <li>Nach jeder Antwort bekommst du sofort eine Rückmeldung.</li>
+          </ol>
+          <div class="feedback-tipp" style="margin-top:10px;">
+            Achte auf die gestrichelten Linien. Sie zeigen Kanten, die hinter dem Körper liegen – oft der entscheidende Unterschied.
+          </div>
+        </div>
+        <div class="card">
+          <h2>Dein Ergebnis</h2>
+          <div id="q-result" class="feedback-tipp">Starte die Übung, um dein Ergebnis zu sehen.</div>
+          <div class="mappe-hinweis">Trag dein Ergebnis in dein Logbuch ein: Wie viele hast du beim ersten Versuch richtig gehabt?</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 3: SKIZZIEREN ============ -->
+  <section class="panel" id="panel-skizzieren" hidden>
+    <div class="layout">
+      <div>
+        <div class="card">
+          <h2>Skizzier-Auftrag <span class="sub" id="s-mode-label">Dreitafelprojektion</span></h2>
+          <div id="s-stage-wrap" style="position:relative;">
+            <canvas id="s-stage" aria-label="Körper für den Skizzier-Auftrag"></canvas>
+          </div>
+          <div class="snap-row">
+            <button class="btn-snap btn-snap--iso" data-sketch-snap="iso" type="button">◆ Isometrie</button>
+            <button class="btn-snap" data-sketch-snap="front" type="button">Vorderansicht</button>
+            <button class="btn-snap" data-sketch-snap="side" type="button">Seitenansicht</button>
+            <button class="btn-snap" data-sketch-snap="top" type="button">Draufsicht</button>
+            <button class="btn-secondary" id="s-new" type="button">🎲 Neuer Körper</button>
+          </div>
+          <div class="mappe-hinweis" id="s-auftrag">
+            Zeichne jetzt in deiner Mappe: die drei Ansichten dieses Körpers (Vorderansicht, Seitenansicht von links, Draufsicht) mit allen verdeckten Kanten.
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <h2>Auftrag wählen</h2>
+          <div class="chips" role="group" aria-label="Auftrag wählen">
+            <button class="chip" data-sketch-mode="drei" aria-pressed="true" type="button">Dreitafel skizzieren</button>
+            <button class="chip" data-sketch-mode="iso" aria-pressed="false" type="button">Isometrisch skizzieren</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Lösung</h2>
+          <div id="s-solution-wrap" style="position:relative;">
+            <div class="reveal-overlay" id="s-overlay">
+              <p><strong>Erst zeichnen, dann vergleichen.</strong><br>Decke die Lösung erst auf, wenn deine Skizze fertig ist.</p>
+              <button class="btn-primary" id="s-reveal" type="button">Lösung aufdecken 👀</button>
+            </div>
+            <div id="s-solution-drei" class="views-grid">
+              <div class="view-box" data-tint="rust"><canvas id="s-view-front"></canvas><div class="view-label">Vorderansicht</div></div>
+              <div class="view-box" data-tint="slate"><canvas id="s-view-side"></canvas><div class="view-label">Seitenansicht von links</div></div>
+              <div class="view-box" data-tint="sage"><canvas id="s-view-top"></canvas><div class="view-label">Draufsicht</div></div>
+              <div class="view-corner">Vergleiche Form für Form –<br>nicht nur den Umriss.</div>
+            </div>
+            <div id="s-solution-iso" hidden style="text-align:center;">
+              <canvas id="s-view-iso" style="width:100%;border-radius:8px;background:#FDFCFA;border:2px solid var(--col-rust);display:block;"></canvas>
+              <div class="view-label">Isometrische Darstellung</div>
+            </div>
+          </div>
+          <button class="btn-link" id="s-hide" type="button" hidden>Lösung wieder verdecken</button>
+        </div>
+        <div class="card">
+          <h2>Selbstcheck</h2>
+          <p style="font-size:var(--text-sm);color:var(--col-text-muted);margin-bottom:6px;">Prüfe deine Skizze ehrlich Punkt für Punkt.</p>
+          <ul class="check-list" id="s-checklist"></ul>
+          <div id="s-check-result" class="feedback-tipp" style="margin-top:10px;">Setze deine Haken, um eine Rückmeldung zu bekommen.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 4: ISOMETRIE ============ -->
+  <section class="panel" id="panel-isometrie" hidden>
+    <div class="card">
+      <h2>Warum sieht isometrisches Zeichnen so aus?</h2>
+      <div class="iso-explain">
+        <div>
+          <canvas id="iso-axes" aria-label="Die drei isometrischen Achsen mit 30 Grad Neigung"></canvas>
+          <div class="legend visible" style="justify-content:center;">
+            <span><span class="swatch" style="background:#EBA882"></span> Breite: 30° nach rechts oben</span>
+            <span><span class="swatch" style="background:#A9C2D4"></span> Tiefe: 30° nach links oben</span>
+            <span><span class="swatch" style="background:#A8D49D"></span> Höhe: senkrecht</span>
+          </div>
+        </div>
+        <div>
+          <p style="font-size:var(--text-sm);margin-bottom:10px;">
+            In der isometrischen Darstellung siehst du drei Seiten des Körpers gleichzeitig. Alle drei Achsen sind
+            gleich stark verkürzt – deshalb kannst du Längen direkt auf dem Gitter abzählen.
+          </p>
+          <ol class="steps">
+            <li>Zeichne zuerst die <strong>Höhe</strong> senkrecht nach oben.</li>
+            <li>Zeichne die <strong>Breite</strong> auf der Gitterlinie nach rechts oben.</li>
+            <li>Zeichne die <strong>Tiefe</strong> auf der Gitterlinie nach links oben.</li>
+            <li>Ergänze die restlichen Kanten parallel zu diesen drei Richtungen.</li>
+          </ol>
+          <div class="feedback-tipp" style="margin-top:10px;">
+            Merke: In der Isometrie gibt es <strong>keine schrägen Sonderlinien</strong>. Jede Kante des Körpers ist parallel zu einer der drei Achsen.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Isometriepapier</h2>
+      <p style="font-size:var(--text-sm);margin-bottom:10px;">
+        Auf dem Papier zeichnest du entlang der drei Gitterrichtungen. Ein Kästchen entspricht einer Einheit.
+        Du kannst das Gitter hier direkt ausdrucken oder das Blatt aus der Mappe nehmen.
+      </p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <button class="btn-primary" id="btn-print-iso" type="button">🖨 Isometriepapier drucken</button>
+        <span class="badge badge--pale-slate" style="align-self:center;">A4 · Hochformat</span>
+      </div>
+      <canvas id="iso-paper-preview" style="width:100%;max-width:420px;border:1.5px solid var(--col-border);border-radius:8px;background:#fff;display:block;margin:0 auto;"></canvas>
+      <div class="mappe-hinweis">Deine isometrische Skizze gehört auf Papier in die Mappe – erst zeichnen, dann im Tab „Selbst skizzieren" vergleichen.</div>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<footer>3D-Betrachter · Werkstofftechnik Holz · WP Technik Klasse 7</footer>
+
+<script>
+'use strict';
+
+/* ================= Körper ================= */
+function box(x0,x1,y0,y1,z0,z1){ const v=[]; for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)for(let z=z0;z<=z1;z++)v.push([x,y,z]); return v; }
+const BODIES = [
+  { id:'stufe',   name:'Stufenklotz',      voxels:[...box(0,2,0,1,0,0), ...box(0,1,0,1,1,1), ...box(0,0,0,1,2,2)] },
+  { id:'absatz',  name:'Block mit Absatz', voxels:[...box(0,2,0,1,0,0), ...box(0,2,1,1,1,1)] },
+  { id:'lwinkel', name:'L-Winkel',         voxels:[...box(0,2,0,1,0,0), ...box(0,0,0,1,1,2)] },
+  { id:'tstueck', name:'T-Stück',          voxels:[...box(1,2,0,1,0,0), ...box(0,3,0,1,1,1)] },
+  { id:'uprofil', name:'U-Profil',         voxels:[...box(0,3,0,1,0,0), ...box(0,0,0,1,1,1), ...box(3,3,0,1,1,1)] },
+  { id:'eckklotz',name:'Eckklotz',         voxels:[...box(0,2,0,2,0,0), ...box(0,0,0,2,1,1), ...box(0,2,0,0,1,1)] },
+  { id:'stufe2',  name:'Doppelstufe',      voxels:[...box(0,3,0,1,0,0), ...box(0,2,0,1,1,1), ...box(0,1,0,1,2,2)] },
+  { id:'nut',     name:'Klotz mit Nut',    voxels:[...box(0,3,0,1,0,0), ...box(0,0,0,1,1,1), ...box(2,3,0,1,1,1)] },
+];
+
+/* ================= Zustand ================= */
+const state = {
+  bodyIdx: 0, yaw: 45*Math.PI/180, pitch: 35.264*Math.PI/180,
+  colors:false, hidden:true, isogrid:false, revealed:false, anim:null,
+};
+const LS = 'hbg_dreitafel_v2';
+function save(){ try{ localStorage.setItem(LS, JSON.stringify({
+  bodyIdx:state.bodyIdx, colors:state.colors, hidden:state.hidden, isogrid:state.isogrid,
+  quizBest: quiz.best })); }catch(e){} }
+function load(){ try{ const r=localStorage.getItem(LS); return r?JSON.parse(r):null; }catch(e){ return null; } }
+
+/* ================= Modell ================= */
+const DIRS=[{n:[1,0,0]},{n:[-1,0,0]},{n:[0,1,0]},{n:[0,-1,0]},{n:[0,0,1]},{n:[0,0,-1]}];
+function faceCorners(v,n){ const [x,y,z]=v;
+  if(n[0]=== 1) return [[x+1,y,z],[x+1,y+1,z],[x+1,y+1,z+1],[x+1,y,z+1]];
+  if(n[0]===-1) return [[x,y,z],[x,y,z+1],[x,y+1,z+1],[x,y+1,z]];
+  if(n[1]=== 1) return [[x,y+1,z],[x,y+1,z+1],[x+1,y+1,z+1],[x+1,y+1,z]];
+  if(n[1]===-1) return [[x,y,z],[x+1,y,z],[x+1,y,z+1],[x,y,z+1]];
+  if(n[2]=== 1) return [[x,y,z+1],[x+1,y,z+1],[x+1,y+1,z+1],[x,y+1,z+1]];
+  return             [[x,y,z],[x,y+1,z],[x+1,y+1,z],[x+1,y,z]];
+}
+function buildModel(body){
+  const occ=new Set(body.voxels.map(v=>v.join(',')));
+  const faces=[];
+  for(const v of body.voxels) for(const {n} of DIRS){
+    const nb=[v[0]+n[0],v[1]+n[1],v[2]+n[2]];
+    if(occ.has(nb.join(','))) continue;
+    faces.push({corners:faceCorners(v,n), n});
+  }
+  const em=new Map();
+  faces.forEach((f,fi)=>{ for(let i=0;i<4;i++){
+    const a=f.corners[i], b=f.corners[(i+1)%4];
+    const k=[a.join(','),b.join(',')].sort().join('|');
+    if(!em.has(k)) em.set(k,[]); em.get(k).push(fi);
+  }});
+  faces.forEach(f=>{ f.drawEdges=[];
+    for(let i=0;i<4;i++){
+      const a=f.corners[i], b=f.corners[(i+1)%4];
+      const k=[a.join(','),b.join(',')].sort().join('|');
+      const sh=em.get(k);
+      const cop = sh.length===2 && sh.every(idx=>{ const g=faces[idx];
+        return g.n[0]===f.n[0]&&g.n[1]===f.n[1]&&g.n[2]===f.n[2]; });
+      if(!cop) f.drawEdges.push([a,b]);
+    }});
+  let mn=[Infinity,Infinity,Infinity], mx=[-Infinity,-Infinity,-Infinity];
+  for(const v of body.voxels) for(let i=0;i<3;i++){ mn[i]=Math.min(mn[i],v[i]); mx[i]=Math.max(mx[i],v[i]+1); }
+  const center=[(mn[0]+mx[0])/2,(mn[1]+mx[1])/2,(mn[2]+mx[2])/2];
+  const radius=Math.hypot(mx[0]-mn[0],mx[1]-mn[1],mx[2]-mn[2])/2;
+  return {faces,center,radius,mn,mx,body};
+}
+
+/* ================= 3D-Renderer ================= */
+function makeTransform(mdl, yaw, pitch){
+  return p=>{
+    const cx=p[0]-mdl.center[0], cy=p[1]-mdl.center[1], cz=p[2]-mdl.center[2];
+    const cyw=Math.cos(yaw), syw=Math.sin(yaw);
+    const x1=cx*cyw-cy*syw, y1=cx*syw+cy*cyw, z1=cz;
+    const cp=Math.cos(pitch), sp=Math.sin(pitch);
+    return [x1, y1*cp-z1*sp, y1*sp+z1*cp];
+  };
+}
+function faceColor(n, lambert, useColors){
+  let base='#E7CDA8';
+  if(useColors){
+    if(n[1]===-1) base='#EBA882';
+    else if(n[0]===-1) base='#A9C2D4';
+    else if(n[2]===1) base='#A8D49D';
+    else base='#E9E2D6';
+  }
+  const r=parseInt(base.slice(1,3),16),g=parseInt(base.slice(3,5),16),b=parseInt(base.slice(5,7),16);
+  const f=0.55+0.45*lambert;
+  return `rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)})`;
+}
+function drawIsoGrid(ctx,w,h,scale){
+  ctx.save();
+  ctx.strokeStyle='rgba(106,133,153,0.28)'; ctx.lineWidth=1;
+  const step=scale, R=Math.hypot(w,h);
+  const dirs=[[Math.cos(-Math.PI/6),Math.sin(-Math.PI/6)],[Math.cos(-5*Math.PI/6),Math.sin(-5*Math.PI/6)],[0,1]];
+  for(const [dx,dy] of dirs){
+    const px=-dy, py=dx;
+    for(let k=-40;k<=40;k++){
+      const ox=w/2+px*k*step, oy=h/2+py*k*step;
+      ctx.beginPath(); ctx.moveTo(ox-dx*R,oy-dy*R); ctx.lineTo(ox+dx*R,oy+dy*R); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+function render3D(canvas, mdl, yaw, pitch, opts){
+  opts=opts||{};
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const w=canvas.clientWidth, h=canvas.clientHeight;
+  if(!w||!h) return;
+  if(canvas.width!==Math.round(w*dpr)){ canvas.width=Math.round(w*dpr); canvas.height=Math.round(h*dpr); }
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  const scale=Math.min(w,h)*0.70/(mdl.radius*2);
+  if(opts.isogrid) drawIsoGrid(ctx,w,h,scale);
+  const tf=makeTransform(mdl,yaw,pitch);
+  const project=t=>[w/2+t[0]*scale, h/2-t[2]*scale];
+  const L=[-0.35,-0.65,0.67], Ll=Math.hypot(...L), Ln=L.map(v=>v/Ll);
+  const t0=tf(mdl.center.slice());
+  const list=[];
+  for(const f of mdl.faces){
+    const tn=tf([f.n[0]+mdl.center[0], f.n[1]+mdl.center[1], f.n[2]+mdl.center[2]]);
+    const nCam=[tn[0]-t0[0], tn[1]-t0[1], tn[2]-t0[2]];
+    if(nCam[1]>1e-6) continue;
+    const pts=f.corners.map(tf);
+    const depth=(pts[0][1]+pts[1][1]+pts[2][1]+pts[3][1])/4;
+    const lam=Math.max(0,-(nCam[0]*Ln[0]+nCam[1]*Ln[1]+nCam[2]*Ln[2]));
+    list.push({f,pts,depth,lam});
+  }
+  list.sort((a,b)=>b.depth-a.depth);
+  for(const it of list){
+    const s=it.pts.map(project);
+    ctx.beginPath(); ctx.moveTo(s[0][0],s[0][1]);
+    for(let i=1;i<4;i++) ctx.lineTo(s[i][0],s[i][1]);
+    ctx.closePath();
+    ctx.fillStyle=faceColor(it.f.n, it.lam, opts.colors); ctx.fill();
+    ctx.strokeStyle='#2C3D4C'; ctx.lineWidth=1.6; ctx.lineJoin='round'; ctx.lineCap='round';
+    for(const [a,b] of it.f.drawEdges){
+      const pa=project(tf(a)), pb=project(tf(b));
+      ctx.beginPath(); ctx.moveTo(pa[0],pa[1]); ctx.lineTo(pb[0],pb[1]); ctx.stroke();
+    }
+  }
+}
+
+/* ================= Ansichten (2D) ================= */
+function viewDefs(mdl){
+  const mn=mdl.mn, mx=mdl.mx;
+  const X=mx[0]-mn[0], Y=mx[1]-mn[1], Z=mx[2]-mn[2];
+  return {
+    front:{U:X,V:Z,D:Y, map:(x,y,z)=>({u:x-mn[0], v:(mx[2]-1)-z, d:y-mn[1]})},
+    side: {U:Y,V:Z,D:X, map:(x,y,z)=>({u:y-mn[1], v:(mx[2]-1)-z, d:x-mn[0]})},
+    top:  {U:X,V:Y,D:Z, map:(x,y,z)=>({u:x-mn[0], v:y-mn[1],     d:(mx[2]-1)-z})},
+  };
+}
+function computeViewEdges(def, body){
+  const occ=[];
+  for(let u=0;u<def.U;u++){ occ.push([]); for(let v=0;v<def.V;v++) occ[u].push(new Array(def.D).fill(false)); }
+  for(const vox of body.voxels){ const m=def.map(vox[0],vox[1],vox[2]); occ[m.u][m.v][m.d]=true; }
+  const visD=(u,v)=>{ if(u<0||v<0||u>=def.U||v>=def.V) return Infinity;
+    for(let d=0;d<def.D;d++) if(occ[u][v][d]) return d; return Infinity; };
+  const at=(u,v,d)=>(u>=0&&v>=0&&u<def.U&&v<def.V)?occ[u][v][d]:false;
+  const solid=[], dashed=[];
+  function classify(uA,vA,uB,vB,seg){
+    let diff=false, vis=false;
+    const dA=visD(uA,vA), dB=visD(uB,vB);
+    for(let d=0;d<def.D;d++){
+      const a=at(uA,vA,d), b=at(uB,vB,d);
+      if(a===b) continue;
+      diff=true;
+      const dOcc=a?dA:dB, dEmp=a?dB:dA;
+      if(dOcc===d && dEmp>=d) vis=true;
+    }
+    if(vis) solid.push(seg); else if(diff) dashed.push(seg);
+  }
+  for(let u=0;u<=def.U;u++) for(let v=0;v<def.V;v++) classify(u-1,v,u,v,[u,v,u,v+1]);
+  for(let v=0;v<=def.V;v++) for(let u=0;u<def.U;u++) classify(u,v-1,u,v,[u,v,u+1,v]);
+  const filled=[];
+  for(let u=0;u<def.U;u++) for(let v=0;v<def.V;v++) if(visD(u,v)!==Infinity) filled.push([u,v]);
+  return {solid,dashed,filled};
+}
+function renderView(canvas, def, body, tint, opts){
+  opts=opts||{};
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const PAD=12, CELL=30;
+  const w=def.U*CELL+PAD*2, h=def.V*CELL+PAD*2;
+  canvas.style.aspectRatio=`${w} / ${h}`;
+  const cssW=canvas.clientWidth||w, s=cssW/w;
+  canvas.width=Math.round(w*s*dpr); canvas.height=Math.round(h*s*dpr);
+  ctx.setTransform(s*dpr,0,0,s*dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  const {solid,dashed,filled}=computeViewEdges(def, body);
+  const fill = opts.colors
+    ? (tint==='rust'?'#F5DDD1':tint==='sage'?'#DDF0D8':tint==='slate'?'#DCE6EE':'#F1EBE0')
+    : '#F1EBE0';
+  ctx.fillStyle=fill;
+  for(const [u,v] of filled) ctx.fillRect(PAD+u*CELL, PAD+v*CELL, CELL, CELL);
+  if(opts.hidden!==false){
+    ctx.strokeStyle='#5A6A78'; ctx.lineWidth=2; ctx.setLineDash([6,5]); ctx.lineCap='butt';
+    for(const [u1,v1,u2,v2] of dashed){
+      ctx.beginPath(); ctx.moveTo(PAD+u1*CELL,PAD+v1*CELL); ctx.lineTo(PAD+u2*CELL,PAD+v2*CELL); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+  ctx.strokeStyle='#1E2A35'; ctx.lineWidth=2.6; ctx.lineJoin='round'; ctx.lineCap='round';
+  for(const [u1,v1,u2,v2] of solid){
+    ctx.beginPath(); ctx.moveTo(PAD+u1*CELL,PAD+v1*CELL); ctx.lineTo(PAD+u2*CELL,PAD+v2*CELL); ctx.stroke();
+  }
+}
+
+/* ================= TAB 1: Entdecken ================= */
+let model=null;
+const stage=document.getElementById('stage');
+function paintStage(){ render3D(stage, model, state.yaw, state.pitch, {colors:state.colors, isogrid:state.isogrid}); }
+function paintViews(){
+  const d=viewDefs(model), b=BODIES[state.bodyIdx];
+  const o={colors:state.colors, hidden:state.hidden};
+  renderView(document.getElementById('view-front'), d.front, b, 'rust',  o);
+  renderView(document.getElementById('view-side'),  d.side,  b, 'slate', o);
+  renderView(document.getElementById('view-top'),   d.top,   b, 'sage',  o);
+}
+let dragging=false,lastX=0,lastY=0;
+stage.addEventListener('pointerdown', e=>{
+  dragging=true; lastX=e.clientX; lastY=e.clientY;
+  stage.setPointerCapture(e.pointerId); stage.classList.add('dragging');
+  if(state.anim){ cancelAnimationFrame(state.anim); state.anim=null; }
+});
+stage.addEventListener('pointermove', e=>{
+  if(!dragging) return;
+  state.yaw += (e.clientX-lastX)*0.011;
+  state.pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, state.pitch+(e.clientY-lastY)*0.011));
+  lastX=e.clientX; lastY=e.clientY; paintStage();
+});
+['pointerup','pointercancel'].forEach(ev=>stage.addEventListener(ev,()=>{ dragging=false; stage.classList.remove('dragging'); }));
+
+const SNAPS={ iso:{yaw:45*Math.PI/180,pitch:35.264*Math.PI/180}, front:{yaw:0,pitch:0},
+  side:{yaw:Math.PI/2,pitch:0}, top:{yaw:0,pitch:Math.PI/2} };
+function norm(a){ while(a>Math.PI)a-=2*Math.PI; while(a<-Math.PI)a+=2*Math.PI; return a; }
+function animateTo(getY,getP,setY,setP,target,paint,holder){
+  const sy=getY(), sp=getP();
+  const dy=norm(target.yaw-norm(sy)), dp=target.pitch-sp;
+  const t0=performance.now(), DUR=430;
+  if(holder.anim) cancelAnimationFrame(holder.anim);
+  (function step(t){
+    const p=Math.min(1,(t-t0)/DUR), e=1-Math.pow(1-p,3);
+    setY(sy+dy*e); setP(sp+dp*e); paint();
+    if(p<1) holder.anim=requestAnimationFrame(step); else holder.anim=null;
+  })(performance.now());
+}
+document.querySelectorAll('[data-snap]').forEach(b=>b.addEventListener('click',()=>{
+  animateTo(()=>state.yaw,()=>state.pitch,v=>state.yaw=v,v=>state.pitch=v,SNAPS[b.dataset.snap],paintStage,state);
+}));
+
+const chipsWrap=document.getElementById('body-chips');
+function renderChips(){
+  chipsWrap.innerHTML='';
+  BODIES.forEach((b,i)=>{
+    const btn=document.createElement('button');
+    btn.className='chip'; btn.type='button'; btn.textContent=b.name;
+    btn.setAttribute('aria-pressed', i===state.bodyIdx?'true':'false');
+    btn.addEventListener('click',()=>{
+      state.bodyIdx=i; model=buildModel(BODIES[i]);
+      setRevealed(false); renderChips(); paintStage(); save();
+    });
+    chipsWrap.appendChild(btn);
+  });
+}
+const overlay=document.getElementById('reveal-overlay');
+const btnHide=document.getElementById('btn-hide');
+function setRevealed(on){
+  state.revealed=on;
+  overlay.style.display=on?'none':'flex';
+  btnHide.hidden=!on;
+  if(on) paintViews();
+}
+document.getElementById('btn-reveal').addEventListener('click',()=>setRevealed(true));
+btnHide.addEventListener('click',()=>setRevealed(false));
+
+const optColors=document.getElementById('opt-colors');
+const optHidden=document.getElementById('opt-hidden');
+const optIso=document.getElementById('opt-isogrid');
+optColors.addEventListener('change',()=>{
+  state.colors=optColors.checked;
+  document.getElementById('color-legend').classList.toggle('visible',state.colors);
+  paintStage(); if(state.revealed) paintViews(); save();
+});
+optHidden.addEventListener('change',()=>{ state.hidden=optHidden.checked; if(state.revealed) paintViews(); save(); });
+optIso.addEventListener('change',()=>{ state.isogrid=optIso.checked; paintStage(); save(); });
+
+/* ================= TAB 2: Zuordnen ================= */
+const VIEWKEYS=['front','side','top'];
+const VIEWNAMES={front:'Vorderansicht', side:'Seitenansicht von links', top:'Draufsicht'};
+const quiz={ idx:0, total:8, score:0, tasks:[], answered:false, best:null };
+
+function bodyVariants(base){
+  // Distraktoren: viele Kandidaten erzeugen, später auf Eindeutigkeit gefiltert
+  const out=[];
+  const vox=base.voxels;
+  const key=v=>v.join(',');
+  const has=(set,v)=>set.has(key(v));
+  const occ=new Set(vox.map(key));
+  const maxX=Math.max(...vox.map(v=>v[0]));
+  const maxZ=Math.max(...vox.map(v=>v[2]));
+  const maxY=Math.max(...vox.map(v=>v[1]));
+
+  // 1) Spiegelung in x
+  out.push({voxels:vox.map(v=>[maxX-v[0],v[1],v[2]])});
+  // 2) Spiegelung in z (auf den Kopf)
+  out.push({voxels:vox.map(v=>[v[0],v[1],maxZ-v[2]])});
+  // 3) Spiegelung in x und z
+  out.push({voxels:vox.map(v=>[maxX-v[0],v[1],maxZ-v[2]])});
+  // 4..n) je ein Voxel an einer freien Nachbarstelle ergänzen
+  for(const v of vox){
+    for(const d of [[1,0,0],[-1,0,0],[0,0,1],[0,0,-1]]){
+      const nb=[v[0]+d[0], v[1]+d[1], v[2]+d[2]];
+      if(nb[2]<0 || nb[0]<0) continue;
+      if(has(occ,nb)) continue;
+      const add=[];
+      for(let y=0;y<=maxY;y++) add.push([nb[0],y,nb[2]]);   // volle Tiefe ergänzen
+      out.push({voxels:[...vox,...add]});
+    }
+  }
+  // n+1..) je eine ganze Voxelsäule entfernen
+  const cols=new Set(vox.map(v=>v[0]+','+v[2]));
+  for(const c of cols){
+    const rest=vox.filter(v=> (v[0]+','+v[2])!==c );
+    if(rest.length>=3) out.push({voxels:rest});
+  }
+  return out;
+}
+// Signatur einer Ansicht: identifiziert visuell gleiche Ergebnisse
+function viewSignature(def, body){
+  const e=computeViewEdges(def, body);
+  const norm=arr=>arr.map(s=>s.join(',')).sort().join(';');
+  return def.U+'x'+def.V+'|'+norm(e.solid)+'|'+norm(e.dashed);
+}
+function shuffle(a){ for(let k=a.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [a[k],a[j]]=[a[j],a[k]]; } return a; }
+
+function buildOneTask(base, askKey){
+  const mdl=buildModel(base);
+  const defs=viewDefs(mdl);
+  const given=VIEWKEYS.filter(k=>k!==askKey);
+  const correctDef=defs[askKey];
+  const seen=new Set([viewSignature(correctDef, base)]);
+  const opts=[{def:correctDef, body:base, correct:true}];
+
+  for(const vb of shuffle(bodyVariants(base))){
+    if(opts.length>=4) break;
+    if(!vb.voxels.length) continue;
+    const vm=buildModel(vb);
+    const vdef=viewDefs(vm)[askKey];
+    const sig=viewSignature(vdef, vb);
+    if(seen.has(sig)) continue;          // visuell identisch → verwerfen
+    seen.add(sig);
+    opts.push({def:vdef, body:vb, correct:false});
+  }
+  if(opts.length<4) return null;         // zu wenige eindeutige Distraktoren
+  return {base, mdl, defs, askKey, given, opts:shuffle(opts)};
+}
+
+function buildQuizTasks(n){
+  // Alle sinnvollen Kombinationen aus Körper und gesuchter Ansicht sammeln
+  const combos=[];
+  for(const b of BODIES) for(const k of VIEWKEYS) combos.push({b,k});
+  shuffle(combos);
+  const tasks=[];
+  for(const c of combos){
+    if(tasks.length>=n) break;
+    const t=buildOneTask(c.b, c.k);
+    if(t) tasks.push(t);
+  }
+  return tasks;
+}
+function renderQuizTask(){
+  const t=quiz.tasks[quiz.idx];
+  quiz.answered=false;
+  document.getElementById('q-num').textContent=quiz.idx+1;
+  document.getElementById('q-total').textContent=quiz.total;
+  document.getElementById('q-score').textContent=quiz.score+' richtig';
+  const bar=document.getElementById('q-bar');
+  bar.style.width=(quiz.idx/quiz.total*100)+'%';
+  bar.classList.remove('progress-bar__fill--done');
+  const tintOf=k=>k==='front'?'rust':k==='side'?'slate':'sage';
+  renderView(document.getElementById('q-given-a'), t.defs[t.given[0]], t.base, tintOf(t.given[0]), {hidden:true});
+  renderView(document.getElementById('q-given-b'), t.defs[t.given[1]], t.base, tintOf(t.given[1]), {hidden:true});
+  document.getElementById('q-label-a').textContent=VIEWNAMES[t.given[0]];
+  document.getElementById('q-label-b').textContent=VIEWNAMES[t.given[1]];
+  document.getElementById('q-ask').textContent=VIEWNAMES[t.askKey];
+  const grid=document.getElementById('q-options');
+  grid.innerHTML='';
+  t.opts.forEach((o,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt-card'; btn.type='button';
+    btn.setAttribute('aria-label', 'Antwortmöglichkeit '+(i+1));
+    const cv=document.createElement('canvas');
+    btn.appendChild(cv);
+    const mark=document.createElement('span'); mark.className='mark'; mark.textContent=String.fromCharCode(65+i);
+    btn.appendChild(mark);
+    grid.appendChild(btn);
+    renderView(cv, o.def, o.body, tintOf(t.askKey), {hidden:true});
+    btn.addEventListener('click',()=>answerQuiz(i,btn));
+  });
+  document.getElementById('q-feedback').hidden=true;
+  document.getElementById('q-next').hidden=true;
+}
+function answerQuiz(i, btn){
+  if(quiz.answered) return;
+  quiz.answered=true;
+  const t=quiz.tasks[quiz.idx];
+  const correct=t.opts[i].correct;
+  const cards=[...document.querySelectorAll('#q-options .opt-card')];
+  cards.forEach((c,k)=>{
+    c.disabled=true;
+    if(t.opts[k].correct){ c.classList.add('correct'); c.querySelector('.mark').textContent='✓ richtig'; }
+    else if(k===i){ c.classList.add('wrong'); c.querySelector('.mark').textContent='✗ nicht passend'; }
+  });
+  if(correct) quiz.score++;
+  const fb=document.getElementById('q-feedback');
+  fb.className=correct?'feedback-richtig':'feedback-falsch';
+  fb.textContent=correct
+    ? 'Richtig! Die Umrisse und die verdeckten Kanten passen zu den beiden gegebenen Ansichten.'
+    : 'Nicht ganz. Vergleiche noch einmal die Höhe und Breite mit den gegebenen Ansichten – die richtige Lösung ist grün markiert.';
+  fb.hidden=false;
+  document.getElementById('q-score').textContent=quiz.score+' richtig';
+  document.getElementById('q-next').hidden=false;
+  document.getElementById('q-next').textContent = quiz.idx+1>=quiz.total ? 'Ergebnis anzeigen →' : 'Nächste Aufgabe →';
+}
+document.getElementById('q-next').addEventListener('click',()=>{
+  quiz.idx++;
+  if(quiz.idx>=quiz.total) finishQuiz(); else renderQuizTask();
+});
+function finishQuiz(){
+  const pct=quiz.score/quiz.total;
+  const bar=document.getElementById('q-bar');
+  bar.style.width='100%'; bar.classList.add('progress-bar__fill--done');
+  const res=document.getElementById('q-result');
+  let icon,txt,cls;
+  if(pct>=0.9){ icon='⭐⭐⭐'; txt='Ausgezeichnet! Du liest die drei Ansichten sehr sicher.'; cls='feedback-richtig'; }
+  else if(pct>=0.7){ icon='⭐⭐'; txt='Gut gemacht! Achte noch auf die verdeckten Kanten.'; cls='feedback-richtig'; }
+  else if(pct>=0.5){ icon='⭐'; txt='Solide Grundlage. Übe die Zuordnung noch einmal.'; cls='feedback-tipp'; }
+  else { icon='🔄'; txt='Schau dir im Tab „Entdecken" die Körper noch einmal in Ruhe an und versuche es dann erneut.'; cls='feedback-tipp'; }
+  res.className=cls;
+  res.textContent=`${icon} ${quiz.score} von ${quiz.total} richtig. ${txt}`;
+  if(quiz.best===null || quiz.score>quiz.best) quiz.best=quiz.score;
+  save();
+  document.getElementById('q-options').innerHTML='';
+  document.getElementById('q-feedback').hidden=true;
+  document.getElementById('q-next').hidden=true;
+}
+function startQuiz(){
+  quiz.idx=0; quiz.score=0;
+  quiz.tasks=buildQuizTasks(8);
+  quiz.total=quiz.tasks.length;
+  document.getElementById('q-total').textContent=quiz.total;
+  document.getElementById('q-result').className='feedback-tipp';
+  document.getElementById('q-result').textContent = quiz.best!==null
+    ? `Dein bisher bestes Ergebnis: ${quiz.best} von ${quiz.total}.`
+    : 'Beantworte alle Aufgaben, um dein Ergebnis zu sehen.';
+  renderQuizTask();
+}
+document.getElementById('q-restart').addEventListener('click',startQuiz);
+
+/* ================= TAB 3: Skizzieren ================= */
+const sketch={ bodyIdx:0, mode:'drei', yaw:45*Math.PI/180, pitch:35.264*Math.PI/180, anim:null, model:null, revealed:false };
+const sStage=document.getElementById('s-stage');
+sStage.style.width='100%'; sStage.style.aspectRatio='4/3'; sStage.style.display='block';
+sStage.style.borderRadius='10px'; sStage.style.background='linear-gradient(180deg,#FDFCFA 0%,#F0EDE7 100%)';
+sStage.style.border='1.5px solid var(--col-border)'; sStage.style.touchAction='none'; sStage.style.cursor='grab';
+
+const CHECKS={
+  drei:[
+    'Ich habe alle drei Ansichten gezeichnet.',
+    'Die Draufsicht liegt genau unter der Vorderansicht.',
+    'Die Seitenansicht liegt rechts neben der Vorderansicht.',
+    'Breiten und Höhen stimmen zwischen den Ansichten überein.',
+    'Verdeckte Kanten habe ich gestrichelt gezeichnet.',
+  ],
+  iso:[
+    'Ich habe zuerst die Höhe senkrecht gezeichnet.',
+    'Breite und Tiefe liegen auf den 30°-Gitterlinien.',
+    'Alle Kanten sind parallel zu einer der drei Achsen.',
+    'Der Körper hat die richtige Anzahl an Stufen bzw. Absätzen.',
+    'Ich habe keine verdeckten Kanten eingezeichnet (in der Isometrie nicht nötig).',
+  ],
+};
+function paintSketchStage(){
+  render3D(sStage, sketch.model, sketch.yaw, sketch.pitch, {colors:false, isogrid: sketch.mode==='iso'});
+}
+function paintSketchSolution(){
+  const b=BODIES[sketch.bodyIdx];
+  if(sketch.mode==='drei'){
+    const d=viewDefs(sketch.model);
+    renderView(document.getElementById('s-view-front'), d.front, b, 'rust',  {hidden:true});
+    renderView(document.getElementById('s-view-side'),  d.side,  b, 'slate', {hidden:true});
+    renderView(document.getElementById('s-view-top'),   d.top,   b, 'sage',  {hidden:true});
+  } else {
+    const cv=document.getElementById('s-view-iso');
+    cv.style.aspectRatio='4/3';
+    render3D(cv, sketch.model, SNAPS.iso.yaw, SNAPS.iso.pitch, {colors:false, isogrid:true});
+  }
+}
+function setSketchRevealed(on){
+  sketch.revealed=on;
+  document.getElementById('s-overlay').style.display=on?'none':'flex';
+  document.getElementById('s-hide').hidden=!on;
+  if(on) paintSketchSolution();
+}
+function setSketchMode(m){
+  sketch.mode=m;
+  document.querySelectorAll('[data-sketch-mode]').forEach(b=>
+    b.setAttribute('aria-pressed', b.dataset.sketchMode===m ? 'true':'false'));
+  document.getElementById('s-solution-drei').hidden = m!=='drei';
+  document.getElementById('s-solution-iso').hidden  = m!=='iso';
+  document.getElementById('s-mode-label').textContent = m==='drei'?'Dreitafelprojektion':'Isometrie';
+  document.getElementById('s-auftrag').textContent = m==='drei'
+    ? 'Zeichne jetzt in deiner Mappe: die drei Ansichten dieses Körpers (Vorderansicht, Seitenansicht von links, Draufsicht) mit allen verdeckten Kanten.'
+    : 'Zeichne jetzt auf Isometriepapier in deiner Mappe: eine isometrische Darstellung dieses Körpers.';
+  renderChecklist();
+  setSketchRevealed(false);
+  paintSketchStage();
+}
+function renderChecklist(){
+  const ul=document.getElementById('s-checklist');
+  ul.innerHTML='';
+  CHECKS[sketch.mode].forEach((txt,i)=>{
+    const li=document.createElement('li');
+    const id='chk-'+sketch.mode+'-'+i;
+    li.innerHTML=`<input type="checkbox" id="${id}"><label for="${id}">${txt}</label>`;
+    ul.appendChild(li);
+    li.querySelector('input').addEventListener('change', updateCheckResult);
+  });
+  updateCheckResult();
+}
+function updateCheckResult(){
+  const boxes=[...document.querySelectorAll('#s-checklist input')];
+  const n=boxes.filter(b=>b.checked).length, t=boxes.length;
+  const el=document.getElementById('s-check-result');
+  if(n===0){ el.className='feedback-tipp'; el.textContent='Setze deine Haken, um eine Rückmeldung zu bekommen.'; }
+  else if(n===t){ el.className='feedback-richtig'; el.textContent='Alle Punkte erfüllt. Trag diesen Erfolg in dein Kompetenzraster ein.'; }
+  else { el.className='feedback-tipp'; el.textContent=`${n} von ${t} Punkten erfüllt. Überarbeite deine Skizze bei den offenen Punkten – ein Fehler ist ein Hinweis darauf, woran du weiterlernen kannst.`; }
+}
+document.querySelectorAll('[data-sketch-mode]').forEach(b=>
+  b.addEventListener('click',()=>setSketchMode(b.dataset.sketchMode)));
+document.querySelectorAll('[data-sketch-snap]').forEach(b=>b.addEventListener('click',()=>{
+  animateTo(()=>sketch.yaw,()=>sketch.pitch,v=>sketch.yaw=v,v=>sketch.pitch=v,
+    SNAPS[b.dataset.sketchSnap], paintSketchStage, sketch);
+}));
+document.getElementById('s-new').addEventListener('click',()=>{
+  let i; do { i=Math.floor(Math.random()*BODIES.length); } while(i===sketch.bodyIdx && BODIES.length>1);
+  sketch.bodyIdx=i; sketch.model=buildModel(BODIES[i]);
+  sketch.yaw=SNAPS.iso.yaw; sketch.pitch=SNAPS.iso.pitch;
+  setSketchRevealed(false);
+  document.querySelectorAll('#s-checklist input').forEach(b=>b.checked=false);
+  updateCheckResult();
+  paintSketchStage();
+});
+document.getElementById('s-reveal').addEventListener('click',()=>setSketchRevealed(true));
+document.getElementById('s-hide').addEventListener('click',()=>setSketchRevealed(false));
+let sDrag=false,sLX=0,sLY=0;
+sStage.addEventListener('pointerdown',e=>{ sDrag=true; sLX=e.clientX; sLY=e.clientY;
+  sStage.setPointerCapture(e.pointerId); if(sketch.anim){cancelAnimationFrame(sketch.anim); sketch.anim=null;} });
+sStage.addEventListener('pointermove',e=>{ if(!sDrag) return;
+  sketch.yaw+=(e.clientX-sLX)*0.011;
+  sketch.pitch=Math.max(-Math.PI/2,Math.min(Math.PI/2,sketch.pitch+(e.clientY-sLY)*0.011));
+  sLX=e.clientX; sLY=e.clientY; paintSketchStage(); });
+['pointerup','pointercancel'].forEach(ev=>sStage.addEventListener(ev,()=>{sDrag=false;}));
+
+/* ================= TAB 4: Isometrie ================= */
+function drawIsoAxes(){
+  const cv=document.getElementById('iso-axes');
+  cv.style.aspectRatio='1/1';
+  const dpr=window.devicePixelRatio||1;
+  const w=cv.clientWidth||360, h=w;
+  cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+  const ctx=cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+  const cx=w/2, cy=h*0.60, L=Math.min(w,h)*0.34;
+  drawIsoGrid(ctx,w,h,L/3);
+  const axes=[
+    {dx:Math.cos(-Math.PI/6), dy:Math.sin(-Math.PI/6), col:'#9E4E22', lbl:'Breite'},
+    {dx:Math.cos(-5*Math.PI/6), dy:Math.sin(-5*Math.PI/6), col:'#3E5668', lbl:'Tiefe'},
+    {dx:0, dy:-1, col:'#4D8B3F', lbl:'Höhe'},
+  ];
+  for(const a of axes){
+    ctx.strokeStyle=a.col; ctx.lineWidth=4; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+a.dx*L, cy+a.dy*L); ctx.stroke();
+    // Pfeilspitze
+    const ex=cx+a.dx*L, ey=cy+a.dy*L, ang=Math.atan2(a.dy,a.dx);
+    ctx.beginPath(); ctx.moveTo(ex,ey);
+    ctx.lineTo(ex-11*Math.cos(ang-0.42), ey-11*Math.sin(ang-0.42));
+    ctx.lineTo(ex-11*Math.cos(ang+0.42), ey-11*Math.sin(ang+0.42));
+    ctx.closePath(); ctx.fillStyle=a.col; ctx.fill();
+    ctx.fillStyle=a.col; ctx.font='600 13px -apple-system, Arial, sans-serif';
+    ctx.textAlign = a.dx>0.1?'left':(a.dx<-0.1?'right':'center');
+    ctx.textBaseline = a.dy<-0.5?'bottom':'middle';
+    ctx.fillText(a.lbl, ex+a.dx*15, ey+a.dy*15);
+  }
+  // Winkelbogen 30°
+  ctx.strokeStyle='#5A6A78'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(cx-L*0.95, cy); ctx.lineTo(cx+L*0.95, cy); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.arc(cx,cy,L*0.32,-Math.PI/6,0); ctx.stroke();
+  ctx.fillStyle='#5A6A78'; ctx.font='600 12px -apple-system, Arial, sans-serif';
+  ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillText('30°', cx+L*0.36, cy-L*0.10);
+}
+function drawIsoPaperPreview(){
+  const cv=document.getElementById('iso-paper-preview');
+  cv.style.aspectRatio='210/297';
+  const dpr=window.devicePixelRatio||1;
+  const w=cv.clientWidth||420, h=w*297/210;
+  cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+  const ctx=cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h);
+  const m=w*0.09, gw=w-2*m, gh=h-2*m;
+  ctx.save(); ctx.beginPath(); ctx.rect(m,m,gw,gh); ctx.clip();
+  const step=gw/16;
+  ctx.strokeStyle='rgba(62,86,104,0.30)'; ctx.lineWidth=0.7;
+  const R=Math.hypot(gw,gh)*1.2;
+  const dirs=[[Math.cos(-Math.PI/6),Math.sin(-Math.PI/6)],[Math.cos(-5*Math.PI/6),Math.sin(-5*Math.PI/6)],[0,1]];
+  for(const [dx,dy] of dirs){
+    const px=-dy, py=dx;
+    for(let k=-70;k<=70;k++){
+      const ox=m+gw/2+px*k*step, oy=m+gh/2+py*k*step;
+      ctx.beginPath(); ctx.moveTo(ox-dx*R,oy-dy*R); ctx.lineTo(ox+dx*R,oy+dy*R); ctx.stroke();
+    }
+  }
+  ctx.restore();
+  ctx.strokeStyle='#D4D0C8'; ctx.lineWidth=1; ctx.strokeRect(m,m,gw,gh);
+  ctx.fillStyle='#5A6A78'; ctx.font=`600 ${Math.round(w*0.028)}px -apple-system, Arial, sans-serif`;
+  ctx.textAlign='left'; ctx.fillText('Isometriepapier · HBG Dortmund · WP Technik', m, m-w*0.025);
+}
+document.getElementById('btn-print-iso').addEventListener('click',()=>{
+  const win=window.open('','_blank');
+  if(!win){ alert('Bitte Pop-ups für diese Seite erlauben, um das Isometriepapier zu drucken.'); return; }
+  const svg=buildIsoPaperSVG();
+  win.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="utf-8">
+<title>Isometriepapier – HBG Dortmund</title>
+<style>@page{size:A4 portrait;margin:0}
+html,body{margin:0;padding:0}
+svg{display:block;width:210mm;height:297mm}
+@media print{ .noprint{display:none} }
+.noprint{font-family:-apple-system,Arial,sans-serif;padding:10px 14px;background:#EEF3F7;font-size:14px}
+</style></head><body>
+<div class="noprint">Drucken mit Strg/Cmd + P · Skalierung „100 %" bzw. „Originalgröße" wählen.</div>
+${svg}
+</body></html>`);
+  win.document.close();
+  setTimeout(()=>{ try{ win.focus(); win.print(); }catch(e){} }, 400);
+});
+function buildIsoPaperSVG(){
+  const W=210, H=297, M=15;              // mm
+  const step=6;                           // mm Gitterabstand
+  const gw=W-2*M, gh=H-2*M-12;            // Platz für Kopfzeile
+  const top=M+12;
+  let lines='';
+  const R=Math.hypot(gw,gh)*1.2;
+  const dirs=[
+    [Math.cos(-Math.PI/6), Math.sin(-Math.PI/6)],
+    [Math.cos(-5*Math.PI/6), Math.sin(-5*Math.PI/6)],
+    [0,1],
+  ];
+  const cx=M+gw/2, cy=top+gh/2;
+  for(const [dx,dy] of dirs){
+    const px=-dy, py=dx;
+    for(let k=-80;k<=80;k++){
+      const ox=cx+px*k*step, oy=cy+py*k*step;
+      lines+=`<line x1="${(ox-dx*R).toFixed(2)}" y1="${(oy-dy*R).toFixed(2)}" x2="${(ox+dx*R).toFixed(2)}" y2="${(oy+dy*R).toFixed(2)}"/>`;
+    }
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297">
+  <rect width="210" height="297" fill="#ffffff"/>
+  <text x="${M}" y="${M+2}" font-family="Arial, sans-serif" font-size="4.2" font-weight="700" fill="#2C3D4C">Isometriepapier</text>
+  <text x="${M}" y="${M+7.5}" font-family="Arial, sans-serif" font-size="3.2" fill="#5A6A78">HBG Dortmund · WP Technik · Klasse 7 · Name: ______________________  Datum: ____________</text>
+  <clipPath id="c"><rect x="${M}" y="${top}" width="${gw}" height="${gh}"/></clipPath>
+  <g clip-path="url(#c)" stroke="#7E93A3" stroke-width="0.18">${lines}</g>
+  <rect x="${M}" y="${top}" width="${gw}" height="${gh}" fill="none" stroke="#C9C4BB" stroke-width="0.4"/>
+  <text x="${M}" y="${H-6}" font-family="Arial, sans-serif" font-size="2.8" fill="#8A9299">Zeichne entlang der Gitterlinien: Höhe senkrecht · Breite nach rechts oben · Tiefe nach links oben.</text>
+</svg>`;
+}
+
+/* ================= Tabs ================= */
+const PANELS={entdecken:'panel-entdecken', zuordnen:'panel-zuordnen', skizzieren:'panel-skizzieren', isometrie:'panel-isometrie'};
+let quizStarted=false, sketchStarted=false, isoStarted=false;
+document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected', t===tab?'true':'false'));
+  Object.values(PANELS).forEach(id=>document.getElementById(id).hidden=true);
+  const key=tab.dataset.tab;
+  document.getElementById(PANELS[key]).hidden=false;
+  requestAnimationFrame(()=>{
+    if(key==='entdecken'){ paintStage(); if(state.revealed) paintViews(); }
+    if(key==='zuordnen' && !quizStarted){ quizStarted=true; startQuiz(); }
+    else if(key==='zuordnen' && quiz.tasks.length) renderQuizTask();
+    if(key==='skizzieren'){
+      if(!sketchStarted){ sketchStarted=true; sketch.model=buildModel(BODIES[sketch.bodyIdx]); setSketchMode('drei'); }
+      else { paintSketchStage(); if(sketch.revealed) paintSketchSolution(); }
+    }
+    if(key==='isometrie'){ drawIsoAxes(); drawIsoPaperPreview(); isoStarted=true; }
+  });
+}));
+
+/* ================= Vollbild & Resize ================= */
+document.getElementById('btn-fs').addEventListener('click',()=>{
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+  else document.exitFullscreen?.();
+});
+let rt;
+window.addEventListener('resize',()=>{
+  clearTimeout(rt);
+  rt=setTimeout(()=>{
+    paintStage(); if(state.revealed) paintViews();
+    if(sketchStarted){ paintSketchStage(); if(sketch.revealed) paintSketchSolution(); }
+    if(quizStarted && quiz.tasks.length && !document.getElementById('panel-zuordnen').hidden) renderQuizTask();
+    if(isoStarted){ drawIsoAxes(); drawIsoPaperPreview(); }
+  },140);
+});
+
+/* ================= Init ================= */
+(function init(){
+  const s=load();
+  if(s){
+    if(typeof s.bodyIdx==='number' && BODIES[s.bodyIdx]) state.bodyIdx=s.bodyIdx;
+    state.colors=!!s.colors; state.hidden=s.hidden!==false; state.isogrid=!!s.isogrid;
+    if(typeof s.quizBest==='number') quiz.best=s.quizBest;
+  }
+  optColors.checked=state.colors; optHidden.checked=state.hidden; optIso.checked=state.isogrid;
+  document.getElementById('color-legend').classList.toggle('visible',state.colors);
+  model=buildModel(BODIES[state.bodyIdx]);
+  renderChips(); setRevealed(false); paintStage();
+})();
+</script>
+</body>
+</html>
