@@ -17,7 +17,7 @@
     .stats{display:flex}.stat{min-width:86px;padding:6px 14px;text-align:center;border-left:1px solid #d9dedb}.stat:first-child{border:0}
     .stat span{display:block;color:#747d77;font-size:9px;font-weight:700;letter-spacing:.14em}.stat b{display:block;margin-top:3px;font-size:18px;font-variant-numeric:tabular-nums}
     .actions{display:flex;justify-content:flex-end;gap:5px}.action{min-width:67px;min-height:50px;padding:4px 8px;border:0;border-radius:9px;background:transparent;color:#2d3832;cursor:pointer}
-    .action:hover:not(:disabled){background:#e8eee9}.action:disabled{opacity:.25}.action i{display:block;height:25px;font-size:22px;font-style:normal}.action small{font-size:10px}
+    .action:hover:not(:disabled){background:#e8eee9}.action:disabled{opacity:.25}.action i{display:block;height:25px;font-size:22px;font-style:normal}.action small{font-size:10px}.action.auto-ready{color:#fff;background:#126b45}.action.auto-ready:hover:not(:disabled){background:#0d5838}.auto-running .felt{pointer-events:none}
     .menu{position:absolute;right:28px;top:calc(100% + 8px);width:270px;padding:18px;background:#fff;border:1px solid #d8ded9;border-radius:15px;box-shadow:0 16px 48px #0004}
     .menu[hidden]{display:none}.menu strong{font-size:14px}.menu>small{display:block;margin-top:9px;color:#6d7770;font-size:11px}.segment{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:10px;padding:4px;background:#edf1ee;border-radius:9px}
     .segment button{padding:8px;border:0;border-radius:6px;background:transparent;color:#47514b;cursor:pointer}.segment .active{background:#126b45;color:#fff;box-shadow:0 2px 5px #0003}
@@ -53,6 +53,7 @@
     </div>
     <div class="actions">
       <button class="action" id="undo" disabled aria-label="Rückgängig"><i>↶</i><small>Rückgängig</small></button>
+      <button class="action auto-ready" id="auto" hidden aria-label="Karten automatisch ablegen"><i>⇧</i><small>Auto-Ablage</small></button>
       <button class="action" id="new" aria-label="Neues Spiel"><i>＋</i><small>Neues Spiel</small></button>
       <button class="action" id="options" aria-label="Optionen"><i>⚙</i><small>Optionen</small></button>
     </div>
@@ -78,7 +79,7 @@
   const SUITS=["♠","♥","♦","♣"],RANKS=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
   const STORAGE_KEY="klondike-solitaer-spielstand-v2";
   const $=s=>document.querySelector(s),clone=o=>JSON.parse(JSON.stringify(o)),red=c=>c.suit==="♥"||c.suit==="♦";
-  let game,history=[],selected=null,drawCount=1,seconds=0,timer=null;
+  let game,history=[],selected=null,drawCount=1,seconds=0,timer=null,autoRunning=false,autoRunId=0;
   function save(){
     try{
       localStorage.setItem(STORAGE_KEY,JSON.stringify({
@@ -105,6 +106,7 @@
     return false;
   }
   function fresh(){
+    autoRunId++;autoRunning=false;document.body.classList.remove("auto-running");
     const deck=SUITS.flatMap(s=>RANKS.map((r,i)=>({id:s+r,suit:s,rank:r,value:i+1,up:false})));
     for(let i=51;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}
     const tableau=Array.from({length:7},()=>[]);
@@ -151,6 +153,9 @@
       el.ondragover=e=>e.preventDefault();el.ondrop=e=>drop(e,s=>moveTableau(s,i));
       el.querySelectorAll(".card.front").forEach(card=>{const idx=game.tableau[i].findIndex(c=>c.id===card.dataset.id);dragSource(card,{area:"tableau",pile:i,index:idx})});
     });
+    const autoAvailable=canAutoFinish();
+    $("#auto").hidden=!autoAvailable;
+    $("#auto").disabled=autoRunning;
     updateStats();checkWin();
   }
   function dragSource(el,source){el.ondragstart=e=>{e.dataTransfer.setData("text/plain",JSON.stringify(source));e.dataTransfer.effectAllowed="move"}}
@@ -172,18 +177,38 @@
     commit(n=>{const moving=sourcePile(n,s).slice(s.index),dest=n.tableau[target];if(!moving.length||!canTableau(moving[0],dest[dest.length-1]))return false;dest.push(...take(n,s));if(s.area==="waste")n.score+=5;if(s.area==="foundation")n.score=Math.max(0,n.score-15);expose(n,s);return true});
   }
   function moveFoundation(s,target){
-    commit(n=>{const p=sourcePile(n,s);if(s.index!==p.length-1)return false;const c=p[s.index];if(!canFoundation(c,n.foundations[target]))return false;n.foundations[target].push(...take(n,s));n.score+=10;expose(n,s);return true});
+    return commit(n=>{const p=sourcePile(n,s);if(s.index!==p.length-1)return false;const c=p[s.index];if(!canFoundation(c,n.foundations[target]))return false;n.foundations[target].push(...take(n,s));n.score+=10;expose(n,s);return true});
   }
   function autoFoundation(s){
     const p=sourcePile(game,s);if(s.index!==p.length-1)return;const c=p[s.index],target=game.foundations.findIndex(f=>canFoundation(c,f));if(target>=0)moveFoundation(s,target);
+  }
+  function canAutoFinish(){
+    return !game.stock.length&&!game.waste.length&&game.tableau.every(p=>p.every(c=>c.up))&&game.foundations.reduce((a,p)=>a+p.length,0)<52;
+  }
+  function autoFinish(){
+    if(autoRunning||!canAutoFinish())return;
+    autoRunning=true;document.body.classList.add("auto-running");
+    const run=++autoRunId;
+    const step=()=>{
+      if(run!==autoRunId)return;
+      if(game.foundations.reduce((a,p)=>a+p.length,0)===52){autoRunning=false;document.body.classList.remove("auto-running");return}
+      const choices=[];
+      game.tableau.forEach((p,pile)=>{if(p.length){const card=p[p.length-1],target=game.foundations.findIndex(f=>canFoundation(card,f));if(target>=0)choices.push({source:{area:"tableau",pile,index:p.length-1},target,value:card.value})}});
+      choices.sort((a,b)=>a.value-b.value);
+      if(!choices.length){autoRunning=false;document.body.classList.remove("auto-running");render();return}
+      const next=choices[0];
+      if(moveFoundation(next.source,next.target))setTimeout(step,180);
+      else{autoRunning=false;document.body.classList.remove("auto-running");render()}
+    };
+    render();step();
   }
   function checkWin(){
     if(game.foundations.reduce((a,p)=>a+p.length,0)!==52)return;
     stopTimer();$("#wtime").textContent=time();$("#wmoves").textContent=game.moves;$("#wscore").textContent=game.score;$("#overlay").hidden=false;
     if(window.gsap)gsap.to(".foundation .card",{y:()=>250+Math.random()*250,x:()=>-280+Math.random()*560,rotate:()=>-540+Math.random()*1080,duration:1.6,stagger:.06,ease:"bounce.out"});
   }
-  $("#new").onclick=fresh;$("#again").onclick=fresh;$("#options").onclick=()=>$("#menu").hidden=!$("#menu").hidden;
-  $("#undo").onclick=()=>{if(!history.length)return;game=history.pop();selected=null;save();render()};
+  $("#new").onclick=fresh;$("#again").onclick=fresh;$("#auto").onclick=autoFinish;$("#options").onclick=()=>$("#menu").hidden=!$("#menu").hidden;
+  $("#undo").onclick=()=>{if(!history.length)return;autoRunId++;autoRunning=false;document.body.classList.remove("auto-running");game=history.pop();selected=null;save();render()};
   $("#draw1").onclick=()=>{drawCount=1;$("#draw1").classList.add("active");$("#draw3").classList.remove("active");fresh()};
   $("#draw3").onclick=()=>{drawCount=3;$("#draw3").classList.add("active");$("#draw1").classList.remove("active");fresh()};
   document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){$("#undo").click()}if(e.key==="Escape"){selected=null;$("#menu").hidden=true;render()}});
