@@ -1,0 +1,1220 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#173f35">
+  <meta name="description" content="Felix und Lina – Los, Dschungelball! – ein Abenteuer mit Felix und Lina.">
+  <title>Felix und Lina – Los, Dschungelball!</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f8f4e8;
+      --paper-deep: #efe8d5;
+      --ink: #26322d;
+      --muted: #68736d;
+      --green: #1f5a49;
+      --green-dark: #123b31;
+      --green-soft: #dce8db;
+      --gold: #d5a848;
+      --line: rgba(31, 90, 73, .18);
+      --shadow: 0 16px 50px rgba(22, 53, 44, .16);
+      --reader-size: 20px;
+      --reader-leading: 1.72;
+      --bar-h: 58px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    button { font: inherit; }
+    button:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+    .cover {
+      position: relative;
+      min-height: 100svh;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      padding: max(28px, env(safe-area-inset-top)) 22px max(28px, env(safe-area-inset-bottom));
+      color: #fffdf3;
+      background:
+        radial-gradient(circle at 15% 12%, rgba(170, 218, 119, .28), transparent 28%),
+        radial-gradient(circle at 90% 76%, rgba(213, 168, 72, .24), transparent 25%),
+        linear-gradient(145deg, #0d332c 0%, #1b5b46 56%, #123d34 100%);
+    }
+    .cover::before,
+    .cover::after {
+      content: "";
+      position: absolute;
+      width: 190px;
+      height: 320px;
+      opacity: .34;
+      background: repeating-radial-gradient(ellipse at 15% 50%, transparent 0 18px, rgba(206, 232, 167, .65) 19px 24px, transparent 25px 40px);
+      transform: rotate(-24deg);
+      pointer-events: none;
+    }
+    .cover::before { top: -100px; left: -105px; }
+    .cover::after { right: -110px; bottom: -110px; transform: rotate(150deg); }
+    .cover-card { position: relative; z-index: 1; width: min(100%, 430px); text-align: center; }
+    .series-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 36px;
+      color: #d6e8cf;
+      font: 700 .74rem/1.2 system-ui, sans-serif;
+      letter-spacing: .17em;
+      text-transform: uppercase;
+    }
+    .series-label::before, .series-label::after { content: ""; width: 25px; height: 1px; background: currentColor; }
+    .cover h1 { margin: 0; font-size: clamp(2.65rem, 13vw, 4.4rem); line-height: .98; letter-spacing: -.045em; font-weight: 700; text-wrap: balance; }
+    .cover h1 span { display: block; margin-top: 13px; color: #f1cf76; font-size: .52em; line-height: 1.1; letter-spacing: -.02em; }
+    .pokeball-mark {
+      width: 86px;
+      height: 86px;
+      margin: 36px auto 29px;
+      border: 3px solid rgba(255,255,255,.8);
+      border-radius: 50%;
+      position: relative;
+      box-shadow: 0 0 0 7px rgba(255,255,255,.06);
+    }
+    .pokeball-mark::before { content: ""; position: absolute; left: 0; right: 0; top: 39px; height: 3px; background: rgba(255,255,255,.8); }
+    .pokeball-mark::after { content: ""; position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; border: 3px solid rgba(255,255,255,.8); border-radius: 50%; background: #1a5443; transform: translate(-50%, -50%); }
+    .cover-subtitle { margin: 0 auto 34px; max-width: 30ch; color: #d7e6da; font: 500 1rem/1.6 system-ui, sans-serif; }
+    .cover-actions { display: grid; gap: 11px; }
+    .primary-button, .secondary-button {
+      min-height: 52px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font: 750 1rem/1 system-ui, sans-serif;
+    }
+    .primary-button { background: #f0cc70; color: #17382f; box-shadow: 0 10px 25px rgba(0,0,0,.2); }
+    .secondary-button { color: #fff; border-color: rgba(255,255,255,.35); background: rgba(255,255,255,.08); }
+
+    .reader { display: none; min-height: 100vh; }
+    body.reading .cover { display: none; }
+    body.reading .reader { display: block; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      height: calc(var(--bar-h) + env(safe-area-inset-top));
+      padding: env(safe-area-inset-top) 10px 0;
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 6px;
+      background: color-mix(in srgb, var(--paper) 92%, transparent);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .icon-button {
+      width: 42px; height: 42px; border: 0; border-radius: 50%; cursor: pointer;
+      color: var(--green); background: transparent; display: grid; place-items: center;
+      font: 700 1.15rem/1 system-ui, sans-serif;
+    }
+    .icon-button:active { background: var(--green-soft); }
+    .bar-title { min-width: 0; text-align: center; }
+    .bar-title span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font: 650 .72rem/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; }
+    .bar-title strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 3px; font: 700 .9rem/1.1 system-ui, sans-serif; }
+    .font-controls { display: flex; align-items: center; }
+    .font-controls .icon-button { width: 36px; }
+    .font-controls .small { font-size: .82rem; }
+    .font-controls .large { font-size: 1.14rem; }
+    .progress-track { position: fixed; z-index: 30; top: calc(var(--bar-h) + env(safe-area-inset-top) - 2px); left: 0; width: 100%; height: 2px; background: transparent; }
+    .progress-fill { display: block; width: 0; height: 100%; background: var(--gold); transition: width .15s linear; }
+
+    main { width: min(100%, 720px); margin: 0 auto; padding: 0 22px calc(110px + env(safe-area-inset-bottom)); }
+    .chapter { display: none; }
+    .chapter.active { display: block; }
+    .chapter-heading { padding: clamp(58px, 13vh, 104px) 0 42px; text-align: center; }
+    .chapter-number { color: var(--green); font: 750 .76rem/1.2 system-ui, sans-serif; letter-spacing: .17em; text-transform: uppercase; }
+    .chapter h1 { margin: 14px auto 18px; max-width: 16ch; font-size: clamp(2.1rem, 10vw, 3.6rem); line-height: 1.05; letter-spacing: -.035em; text-wrap: balance; }
+    .leaf-divider { display: inline-grid; place-items: center; width: 34px; height: 20px; color: var(--gold); font-size: .65rem; }
+    .leaf-divider::before, .leaf-divider::after { content: ""; position: absolute; }
+    .chapter-copy { font-size: var(--reader-size); line-height: var(--reader-leading); hyphens: auto; overflow-wrap: break-word; }
+    .chapter-copy p { margin: 0 0 1.12em; }
+    .chapter-copy p:first-child::first-letter { float: left; margin: .08em .09em 0 0; color: var(--green); font-size: 3.25em; font-weight: 700; line-height: .74; }
+    .chapter-end { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 58px auto 18px; color: var(--gold); }
+    .chapter-end span { width: 48px; height: 1px; background: var(--line); }
+    .chapter-end b { font-size: .62rem; }
+
+    .bottom-nav {
+      position: fixed; z-index: 18; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); transform: translateX(-50%);
+      width: min(calc(100% - 28px), 460px); height: 58px; padding: 5px;
+      display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+      border: 1px solid var(--line); border-radius: 18px;
+      background: color-mix(in srgb, var(--paper) 94%, transparent); box-shadow: var(--shadow);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    }
+    .nav-button { height: 46px; border: 0; border-radius: 13px; cursor: pointer; color: var(--green); background: transparent; font: 750 .86rem/1 system-ui, sans-serif; }
+    .nav-button:disabled { opacity: .28; cursor: default; }
+    .page-count { padding: 0 10px; color: var(--muted); font: 700 .78rem/1 system-ui, sans-serif; white-space: nowrap; }
+
+    dialog {
+      width: min(calc(100% - 28px), 520px); max-height: min(82svh, 760px); margin: auto; padding: 0;
+      color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 24px 80px rgba(7, 36, 28, .35);
+    }
+    dialog::backdrop { background: rgba(7, 31, 25, .66); backdrop-filter: blur(3px); }
+    .dialog-header { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 18px 16px 12px 22px; background: var(--paper); border-bottom: 1px solid var(--line); }
+    .dialog-header h2 { margin: 0; font-size: 1.45rem; }
+    .toc-list { display: grid; gap: 4px; padding: 9px 10px calc(16px + env(safe-area-inset-bottom)); }
+    .toc-item { width: 100%; min-height: 61px; padding: 10px 12px; display: grid; grid-template-columns: 42px 1fr; align-items: center; text-align: left; border: 0; border-radius: 13px; color: var(--ink); background: transparent; cursor: pointer; }
+    .toc-item span { color: var(--green); font: 800 .76rem/1 system-ui, sans-serif; letter-spacing: .08em; }
+    .toc-item strong { font: 650 .96rem/1.3 system-ui, sans-serif; }
+    .toc-item:hover, .toc-item.current { background: var(--green-soft); }
+
+    body.dark {
+      color-scheme: dark;
+      --paper: #17211e;
+      --paper-deep: #202b27;
+      --ink: #ecede5;
+      --muted: #aeb9b3;
+      --green: #85c3a6;
+      --green-dark: #d5e8de;
+      --green-soft: #253a32;
+      --gold: #e6be68;
+      --line: rgba(209, 231, 219, .16);
+      --shadow: 0 16px 50px rgba(0, 0, 0, .4);
+    }
+
+    @media (min-width: 700px) {
+      main { padding-inline: 38px; }
+      .chapter-copy { text-align: justify; }
+      .cover-actions { grid-template-columns: 1.25fr 1fr; }
+    }
+    @media (max-width: 360px) {
+      :root { --bar-h: 54px; }
+      main { padding-inline: 17px; }
+      .font-controls .icon-button { width: 32px; }
+      .chapter-copy { font-size: min(var(--reader-size), 22px); }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+    @media print {
+      .cover, .topbar, .bottom-nav, .progress-track, dialog { display: none !important; }
+      .reader, .chapter { display: block !important; }
+      body { background: white; color: black; }
+      main { width: auto; max-width: none; padding: 0; }
+      .chapter { break-before: page; }
+      .chapter-copy { font-size: 11pt; }
+    }
+  </style>
+</head>
+<body>
+  <section class="cover" aria-labelledby="cover-title">
+    <div class="cover-card">
+      <div class="series-label">Felix und Lina</div>
+      <h1 id="cover-title">Los,<span>Dschungelball!</span></h1>
+      <div class="pokeball-mark" aria-hidden="true"></div>
+      <p class="cover-subtitle">Eine Forscher-Challenge im grünen Herzen der Arborina-Region</p>
+      <div class="cover-actions">
+        <button class="primary-button" id="start-reading" type="button">Buch öffnen</button>
+        <button class="secondary-button" id="cover-toc" type="button">Kapitel wählen</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="reader">
+    <header class="topbar">
+      <button class="icon-button" id="menu-button" type="button" aria-label="Kapitel auswählen">☰</button>
+      <div class="bar-title" aria-live="polite"><span id="bar-kicker">Kapitel 1</span><strong id="bar-chapter">Willkommen im Camp Blätterdach</strong></div>
+      <div class="font-controls" aria-label="Leseeinstellungen">
+        <button class="icon-button small" id="font-down" type="button" aria-label="Schrift verkleinern">A−</button>
+        <button class="icon-button large" id="font-up" type="button" aria-label="Schrift vergrößern">A+</button>
+        <button class="icon-button" id="theme-button" type="button" aria-label="Nachtmodus umschalten">◐</button>
+      </div>
+    </header>
+    <div class="progress-track" aria-hidden="true"><span class="progress-fill" id="progress-fill"></span></div>
+
+    <main id="book">
+
+      <section class="chapter" id="kapitel-1" data-index="0" aria-labelledby="kapitel-1-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 1</span>
+          <h1 id="kapitel-1-titel">Willkommen im Camp Blätterdach</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Das Schiff fuhr so dicht an den grünen Inseln vorbei, dass Lina einzelne Blätter erkennen konnte. Manche waren größer als Regenschirme. Zwischen den Baumkronen flatterten bunte Pokémon, und über einer fernen Bucht sprang ein Garados aus dem Wasser.</p>
+          <p>Felix hielt die Karte der Arborina-Region auf seinem Schoß. Eigentlich wollte er den Verlauf der Küste einzeichnen. Doch kaum hatte er eine Linie begonnen, verdeckte ein neuer Baum, ein Wasserfall oder ein vorbeifliegendes Pokémon seine Sicht.</p>
+          <p>„Du kannst auch einfach hinschauen“, sagte Lina.</p>
+          <p>„Das mache ich doch“, antwortete Felix. „Und ich zeichne gleichzeitig.“</p>
+          <p>Hopplo kletterte auf die Bank neben ihm. Es hielt Felix eine gelbe Beere hin.</p>
+          <p>Felix betrachtete sie misstrauisch. „Ist die sauer?“</p>
+          <p>Hopplo schüttelte sehr ernst den Kopf.</p>
+          <p>Felix biss hinein. Sofort zog sich sein Gesicht zusammen. Lina lachte, und Hopplo klopfte begeistert mit den Füßen auf die Bank.</p>
+          <p>„Das war Absicht“, sagte Felix.</p>
+          <p>„Natürlich“, sagte Lina. „Du hast die Beere schließlich selbst gegessen.“</p>
+          <p>Vom Bug des Schiffes winkte Ash ihnen zu. Pikachu saß auf seiner Schulter. Neben ihm stand Goh und hielt sein Smart-Rotom über die Reling.</p>
+          <p>„Da vorn ist das Camp!“, rief Ash.</p>
+          <p>Zwischen den Bäumen tauchten mehrere Holzhäuser auf. Sie standen auf hohen Pfählen und waren durch Stege verbunden. Über dem größten Gebäude spannte sich ein Dach aus grünen Stoffbahnen. In der Mitte des Camps ragte ein hölzerner Aussichtsturm über die Baumkronen.</p>
+          <p>Am Anleger wartete eine Frau mit einem breiten Tropenhut. An ihrer Weste hingen ein Fernglas, eine Lupe und drei Stifte.</p>
+          <p>„Willkommen in Arborina“, sagte sie, als die vier Kinder von Bord gingen. „Ich bin Professorin Marula und leite das Dschungelcamp Blätterdach.“</p>
+          <p>Sie führte die Gruppe über einen langen Steg. Unter den Brettern glitzerte ein schmaler Fluss. Kleine Gehweiher liefen über das Wasser, ohne einzusinken. In den Bäumen riefen Griffel einander zu.</p>
+          <p>Goh blieb alle paar Schritte stehen. „Gehweiher! Drei Griffel! Da hinten war ein Kecleon!“</p>
+          <p>„Das Camp hat noch gar nicht angefangen“, sagte Ash.</p>
+          <p>„Pokémon warten nicht auf ein Startsignal“, erwiderte Goh.</p>
+          <p>Felix gefiel dieser Satz. Er schrieb ihn in sein Notizbuch.</p>
+          <p>Auf dem großen Platz des Camps warteten weitere junge Trainer. Vor einer Tafel standen vier runde Stempelgeräte. Auf ihnen waren ein Blatt, ein Flügel, ein Tropfen und ein Mond zu sehen.</p>
+          <p>Professorin Marula hob einen besonderen Pokéball hoch. Seine obere Hälfte war grün, die untere sandfarben. Über den Knopf verlief ein Muster wie eine kleine Ranke.</p>
+          <p>„Das ist ein Dschungelball“, erklärte sie. „Er speichert Beobachtungsdaten über den Fundort eines Pokémon. Aber er ist kein Freibrief zum Fangen. In diesem Schutzgebiet entscheidet jedes Pokémon selbst, ob es mit einem Trainer reisen möchte.“</p>
+          <p>Lina nahm ihren Dschungelball vorsichtig entgegen. „Also darf ich ihn erst benutzen, wenn das Pokémon Ja sagt.“</p>
+          <p>„Genau“, sagte Professorin Marula.</p>
+          <p>Felix steckte seinen Ball in eine freie Schlaufe an seinem Gürtel. Hopplo betrachtete ihn, tippte gegen den Knopf und sprang erschrocken zurück, als der Ball einmal piepte.</p>
+          <p>„Die Forscher-Challenge führt durch vier Gebiete“, fuhr Professorin Marula fort. „Ihr zählt Pokémon, zeichnet Spuren auf und löst eine Geländeprüfung. Wer sorgfältig arbeitet, erhält den Stempel des Gebietes. Geschwindigkeit allein reicht nicht.“</p>
+          <p>Ash grinste. „Sorgfältig und schnell geht auch.“</p>
+          <p>„Das werden wir sehen“, sagte Felix.</p>
+          <p>Goh legte eine Hand auf Ashs Schulter. „Wir gegen euch beide?“</p>
+          <p>„Als freundschaftliche Konkurrenten“, ergänzte Ash.</p>
+          <p>Lina sah zu Felix. Beide nickten gleichzeitig.</p>
+          <p>„Abgemacht“, sagte sie.</p>
+          <p>In diesem Moment ertönte ein lautes Scheppern aus einem offenen Küchenhaus.</p>
+          <p>„Nicht schon wieder!“, rief ein Mann.</p>
+          <p>Ein rundlicher Koch mit rotem Halstuch stürmte heraus. In der einen Hand hielt er einen Kochlöffel, in der anderen einen leeren Korb.</p>
+          <p>„Hat jemand zwölf Mangobeeren gesehen?“</p>
+          <p>Hinter ihm erschien ein Relaxo. Es kaute langsam. Auf seinem Bauch lag die letzte Mangobeere.</p>
+          <p>Der Koch drehte sich um. Relaxo schloss die Augen und stellte sich schlafend.</p>
+          <p>„Pepe ist für unser Essen zuständig“, erklärte Professorin Marula. „Relaxo kümmert sich um die Qualitätskontrolle.“</p>
+          <p>„Sehr gründlich“, sagte Felix.</p>
+          <p>Pepe nahm die letzte Beere vom Bauch des Pokémon. Relaxo öffnete ein Auge, griff danach und zog die Beere zurück.</p>
+          <p>Am Nachmittag bezogen Felix und Lina eine kleine Hütte am Rand des Platzes. Sie stellten ihre Rucksäcke nebeneinander und legten die Pokébälle ihrer Partner in die vorgesehenen Halterungen. Danach erkundeten sie mit Pikachu und Hopplo das Camp.</p>
+          <p>Ash wollte sofort einen Kampf beginnen. Professorin Marula erlaubte ihnen, am nächsten Morgen das Trainingsfeld zu benutzen.</p>
+          <p>„Dann könnt ihr gleich zeigen, wie gut ihr nach eurem Turnier noch seid“, sagte Ash.</p>
+          <p>„Und ihr könnt zeigen, ob ihr auch zusammen kämpfen könnt“, antwortete Lina.</p>
+          <p>Goh lachte. Ash brauchte einen Augenblick, bis er merkte, dass Lina ihn aufgezogen hatte.</p>
+          <p>Kurz vor dem Abendessen ertönte vom Aussichtsturm eine Glocke. Professorin Marula rief alle Teilnehmer auf den Platz. Auf der großen Anzeigetafel war kein Campplan mehr zu sehen. Stattdessen erschienen vier Gestalten.</p>
+          <p>Eine Frau mit grüner Jacke trat vor. Hinter ihr wand sich ein Sarzenia durch dicke Ranken.</p>
+          <p>„Ich bin Liane von den Top Vier“, sagte sie. „Das Lianendickicht gehört uns.“</p>
+          <p>Neben ihr stand Tarun mit einem Pinsir. Vesper ließ ein Iksbat über ihrer Schulter kreisen. Ganz rechts wartete Nox. Die Augen seines Hundemon leuchteten in der Dämmerung.</p>
+          <p>„Der Dschungel ist unser Trainingsrevier“, sagte Nox. „Für euer Camp ist hier kein Platz.“</p>
+          <p>Professorin Marula trat an die Tafel. „Das Schutzgebiet hat die Challenge genehmigt. Wir beobachten die Pokémon, ohne sie zu stören.“</p>
+          <p>„Eine Genehmigung ist nur Papier“, erwiderte Nox. „Wir geben euch bis zum Ende der Challenge. Dann verschwindet ihr aus Arborina.“</p>
+          <p>Die Übertragung brach ab.</p>
+          <p>Für einen Moment hörte man nur den Dschungel. Dann knurrte irgendwo jenseits des Lichtkreises ein Pokémon.</p>
+          <p>Ash ballte die Hände. „Die können uns doch nicht einfach vertreiben.“</p>
+          <p>„Nein“, sagte Felix. Er klappte sein Notizbuch auf. „Aber wir müssen beweisen, dass das Camp den Pokémon nicht schadet.“</p>
+          <p>Lina blickte auf die vier leeren Stellen ihrer Zählkarte.</p>
+          <p>„Dann holen wir alle vier Stempel“, sagte sie. „Und schauen uns jedes ihrer Gebiete ganz genau an.“</p>
+          <p>Pikachu und Hopplo stellten sich nebeneinander. Ash und Goh kamen zu ihnen.</p>
+          <p>Aus der Küche rief Pepe: „Das Essen ist fertig!“</p>
+          <p>Relaxo schoss mit erstaunlicher Geschwindigkeit an allen vorbei.</p>
+          <p>„Und jetzt“, sagte Lina, „müssen wir erst einmal schneller sein als Relaxo.“</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-2" data-index="1" aria-labelledby="kapitel-2-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 2</span>
+          <h1 id="kapitel-2-titel">Die erste Zählung</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Am nächsten Morgen war Relaxo bereits vor allen anderen beim Frühstück.</p>
+          <p>Es saß vor der Küche und hielt einen Teller in jeder Pfote. Koch Pepe stellte eine Schüssel mit Beerenbrei auf den Tisch.</p>
+          <p>„Diese Schüssel ist für acht Personen“, warnte er.</p>
+          <p>Relaxo nickte verständnisvoll und zog die Schüssel zu sich.</p>
+          <p>Felix, Lina, Ash und Goh nahmen ihr Frühstück lieber am anderen Ende des Tisches ein. Professorin Marula verteilte währenddessen kleine Tafeln mit einem Plan des Campgeländes.</p>
+          <p>„Eure Probeaufgabe beginnt in zehn Minuten“, erklärte sie. „Rund um das Camp stehen sechs Beobachtungsposten. Findet heraus, welche Pokémon dort leben. Zählt jedes Tier nur einmal.“</p>
+          <p>Goh sprang auf. „Das wird leicht.“</p>
+          <p>„Du hast noch Brei am Kinn“, sagte Ash.</p>
+          <p>„Das stört die Pokémon nicht.“</p>
+          <p>Die beiden rannten los, sobald Professorin Marula das Startzeichen gab. Felix und Lina gingen langsamer. Pikachu lief neben Lina, während Hopplo immer wieder ins Gebüsch hüpfte.</p>
+          <p>Am ersten Posten entdeckte Felix Kratzspuren an einem Baum. Er wollte sie gerade einem Griffel zuordnen, doch Lina zeigte auf den Boden.</p>
+          <p>„Die Schalen liegen alle auf derselben Seite.“</p>
+          <p>Unter dem Baum lagen geöffnete Nüsse. Jede war mit einem sauberen Schnitt geteilt worden.</p>
+          <p>„Skaraborn“, sagte Felix. „Ein Griffel hätte sie eher zerbrochen.“</p>
+          <p>Sie trugen ein Skaraborn ein, obwohl sie das Pokémon selbst nicht sahen.</p>
+          <p>Am zweiten Posten rief Goh aus dem Dickicht: „Kecleon! Schon das dritte!“</p>
+          <p>Ein grüner Schatten huschte über einen Stamm. Wenige Augenblicke später erschien auf einem anderen Baum ein rötliches Kecleon.</p>
+          <p>Ash setzte drei Striche auf ihre Karte.</p>
+          <p>Felix betrachtete die gebogene Schwanzspitze des Pokémon. „Das ist immer dasselbe.“</p>
+          <p>„Es hat jetzt eine andere Farbe“, widersprach Ash.</p>
+          <p>„Kecleon passt seine Farbe an“, sagte Goh. Dann sah er auf seine drei Striche. „Oh.“</p>
+          <p>Lina zeigte nach oben. Zwischen breiten Blättern schauten zwei weitere Kecleon hervor. Eines hielt ein kleines Kecleon im Arm.</p>
+          <p>„Aber da sind noch drei“, sagte sie.</p>
+          <p>Goh strich zwei falsche Einträge und schrieb drei neue auf. „Langsam beobachten ist manchmal wirklich schneller.“</p>
+          <p>Am letzten Posten hatten Ash und Goh trotzdem einen kleinen Vorsprung. Dort fanden die vier Trainer ein freies Trainingsfeld. Weiße Steine markierten den Rand, und mehrere Baumstämme dienten als Hindernisse.</p>
+          <p>Professorin Marula wartete bereits. „Wer möchte die Pause für einen Trainingskampf nutzen?“</p>
+          <p>Ash hatte seinen Pokéball in der Hand, bevor sie ausgesprochen hatte.</p>
+          <p>„Pikachu, du bist dran!“</p>
+          <p>Goh rief Liberlo. Das große Feuer-Pokémon landete neben Pikachu und rollte einen kleinen Stein mit der Fußspitze hin und her.</p>
+          <p>Hopplo starrte es begeistert an. Es nahm ebenfalls einen Stein, schoss ihn hoch und bekam ihn auf den Kopf.</p>
+          <p>Liberlo fing den Stein auf, bevor er zu Boden fiel, und gab ihn Hopplo zurück.</p>
+          <p>„Wir nehmen Hopplo“, entschied Felix.</p>
+          <p>Lina rief Feelinara. Es stellte sich schützend neben Hopplo und bewegte seine langen Fühlerbänder.</p>
+          <p>Professorin Marula hob beide Hände. „Es ist ein Trainingskampf mit Zeitbegrenzung. Achtet auf eure Partner. Beginnt!“</p>
+          <p>„Pikachu, Ruckzuckhieb!“, rief Ash.</p>
+          <p>Pikachu schoss über das Feld. Felix zeigte auf den nächsten Baumstamm.</p>
+          <p>„Hopplo, herum und Glut!“</p>
+          <p>Hopplo sprang hinter den Stamm. Pikachu folgte, doch Feelinara legte eines seiner Fühlerbänder um Hopplos Bauch und zog es im richtigen Augenblick zur Seite. Hopplos Glut traf den Boden vor Pikachu und zwang es zum Abbremsen.</p>
+          <p>„Liberlo, Feuerball!“, befahl Goh.</p>
+          <p>Liberlo kickte einen brennenden Stein über den Platz. Lina erkannte, dass er nicht auf Feelinara zielte. Der Ball prallte gegen einen Baumstamm und kam von der Seite zurück.</p>
+          <p>„Sternschauer nach links!“</p>
+          <p>Feelinara schickte leuchtende Sterne in die Flugbahn. Der Feuerball zerplatzte, und goldene Funken regneten auf das Feld.</p>
+          <p>Hopplo sprang begeistert mitten hindurch.</p>
+          <p>„Nicht nur zuschauen“, erinnerte Felix es. „Doppelkick gegen Liberlo!“</p>
+          <p>Hopplo stürmte vor. Liberlo wich dem ersten Tritt aus. Beim zweiten stellte es sich nicht entgegen, sondern lenkte Hopplos Fuß mit einer schnellen Bewegung zur Seite. Hopplo drehte sich einmal um sich selbst und landete auf dem Rücken.</p>
+          <p>Liberlo hielt ihm eine Pfote hin.</p>
+          <p>Hopplo schlug sie weg, sprang allein auf und klopfte sich Gras vom Bauch. Dann stellte es sich genauso breitbeinig hin wie sein großes Vorbild.</p>
+          <p>„Pikachu, Elektroball!“, rief Ash.</p>
+          <p>„Feelinara, Schutzschild!“</p>
+          <p>Die elektrische Kugel traf die schimmernde Fläche. Gleichzeitig lief Liberlo hinter dem Schild entlang.</p>
+          <p>Felix bemerkte es. „Hopplo, Sand hochkicken!“</p>
+          <p>Hopplo scharrte mit beiden Füßen. Eine Wolke aus trockenem Boden stieg vor Liberlo auf. Es musste den Kopf abwenden. Feelinara ließ den Schutzschild sinken und traf Liberlo mit einer kontrollierten Feenbrise.</p>
+          <p>Liberlo rutschte zurück, blieb aber sicher stehen.</p>
+          <p>Pikachu nutzte den freien Weg und traf Hopplo mit einem schnellen Ruckzuckhieb. Hopplo rollte über das Gras, stand wieder auf und atmete schwer.</p>
+          <p>Felix ging in die Hocke. „Noch eine Runde?“</p>
+          <p>Hopplo nickte sofort. Seine Ohren richteten sich auf.</p>
+          <p>Auf der anderen Seite bemerkte Ash, dass Pikachus Bewegungen langsamer wurden.</p>
+          <p>„Kein volles Tempo mehr“, sagte er. „Bleib bei Liberlo.“</p>
+          <p>Feelinara und Hopplo rückten ebenfalls näher zusammen. Beide Teams warteten auf den nächsten Befehl.</p>
+          <p>Da erklang die Glocke von Professorin Marula.</p>
+          <p>„Die Zeit ist um. Unentschieden.“</p>
+          <p>Ash ließ die Schultern sinken. „Gerade jetzt?“</p>
+          <p>Pikachu sprang auf seine Schulter und stupste seine Wange an.</p>
+          <p>„Schon gut“, sagte Ash. „Dann kämpfen wir später weiter.“</p>
+          <p>Goh lobte Liberlo. Felix gab Hopplo die gelbe Beere, die es ihm am Vortag angeboten hatte. Hopplo biss hinein, verzog das Gesicht und sah Felix empört an.</p>
+          <p>„Sauer“, sagte Felix. „Überraschung.“</p>
+          <p>Bei der Auswertung hatten Ash und Goh die Strecke zuerst beendet. Felix und Lina hatten jedoch alle Arten richtig gezählt. Für die sorgfältigste Zählung erhielten sie einen kleinen Zusatzpunkt.</p>
+          <p>„Morgen beginnt das Lianendickicht“, erklärte Professorin Marula. „Dort wird es keine markierten Wege geben.“</p>
+          <p>Vom Fluss her dröhnte plötzlich ein Motor. Ein grünes Fahrzeug stapfte auf sechs langen Metallbeinen zwischen den Bäumen hindurch. Auf dem Dach saßen drei Gestalten mit Tropenhelmen und viel zu großen falschen Schnurrbärten.</p>
+          <p>„Dschungel-Lieferservice!“, rief die Frau am Steuer.</p>
+          <p>„Schnell, zuverlässig und vollkommen unauffällig!“, ergänzte der Mann neben ihr.</p>
+          <p>Das Fahrzeug bog links ab, obwohl der Steg rechts lag. Es umrundete einen Baum, kam von der anderen Seite zurück und begann eine zweite Runde.</p>
+          <p>Felix schob seine Brille hoch. „Die kenne ich.“</p>
+          <p>„Ich auch“, sagte Lina.</p>
+          <p>Eigentlich sollten Jessie, James und Mauzi noch immer Sozialstunden leisten. Ein heimlicher Dschungel-Lieferservice gehörte bestimmt nicht dazu.</p>
+          <p>Auf dem Dach versuchte der dritte Lieferant, seinen Schnurrbart festzuhalten. Dabei rutschte sein Tropenhelm herunter. Zwei spitze Ohren kamen zum Vorschein.</p>
+          <p>„Mauzi“, flüsterte Lina.</p>
+          <p>Das Fahrzeug lief noch einmal um den Baum.</p>
+          <p>„Wieso fahren wir im Kreis?“, zischte Jessie.</p>
+          <p>„Weil du den grünen Hebel gezogen hast!“, antwortete James.</p>
+          <p>„Der grüne Hebel ist für geradeaus!“</p>
+          <p>„Nein, geradeaus war der rote Knopf!“</p>
+          <p>Alle drei sahen gleichzeitig auf einen großen roten Knopf zwischen den Sitzen.</p>
+          <p>„Nicht drücken!“, riefen sie.</p>
+          <p>Ein Metallbein des Fahrzeugs stieß dagegen.</p>
+          <p>Mit einem Zischen klappten sämtliche Beine ein. Das Fahrzeug fiel in einen weichen Busch und blieb darin stecken. Nur die Tropenhelme ragten noch heraus.</p>
+          <p>Professorin Marula seufzte. „Ich sehe nach, ob unser angeblicher Lieferservice Hilfe braucht.“</p>
+          <p>Felix betrachtete das Fahrzeug. Unter den grünen Blättern entdeckte er den Rand eines zusammengefalteten Netzes.</p>
+          <p>„Die wollen bestimmt nicht nur Vorräte liefern“, sagte er.</p>
+          <p>Lina sah zum dunklen Eingang des Lianendickichts. Dort bewegten sich die Blätter, obwohl kein Wind wehte.</p>
+          <p>„Dann müssen wir morgen auf zwei Dinge achten“, sagte sie. „Auf die wilden Pokémon und auf Team Rocket.“</p>
+          <p>Hopplo hob seinen sauren Beerenrest auf und steckte ihn ein. Felix war sich sicher, dass es bereits wusste, wem es die Beere als Nächstes anbieten wollte.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-3" data-index="2" aria-labelledby="kapitel-3-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 3</span>
+          <h1 id="kapitel-3-titel">Das Lianendickicht</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Der Weg ins Lianendickicht war am Morgen noch zu erkennen. Nach den ersten zwanzig Schritten verschwand er unter Farnen, Wurzeln und breiten Blättern.</p>
+          <p>Über Felix und Lina schlossen sich die Baumkronen. Sonnenstrahlen fielen nur an wenigen Stellen bis zum Boden. In der feuchten Luft summten Käfer-Pokémon, und aus der Ferne erklang der Ruf eines Griffel.</p>
+          <p>Professorin Marula blieb am Eingang zurück. „In diesem Gebiet stehen drei Beobachtungsringe. Findet sie, zählt die Pflanzen-Pokémon in ihrer Umgebung und kehrt vor Sonnenuntergang zurück.“</p>
+          <p>Sie zeigte auf kleine rote Bänder an den Zweigen.</p>
+          <p>„Die Bänder markieren eine sichere Forschungsroute. Sie sollen euch führen, aber ihr müsst trotzdem selbst beobachten.“</p>
+          <p>Ash und Goh wählten die östliche Route. Felix und Lina gingen nach Westen. Bevor die beiden Gruppen sich trennten, hob Ash die Hand.</p>
+          <p>„Wir sehen uns mit dem ersten Stempel im Camp!“</p>
+          <p>„Mit unserem ersten Stempel“, verbesserte Goh ihn. „Du hast noch keine einzige Pflanze gezählt.“</p>
+          <p>Felix rief Meganie aus seinem Ball. Das große Pflanzen-Pokémon senkte den Kopf und prüfte die Luft. Lina ließ Pikachu neben sich laufen. Hopplo wollte ebenfalls mitkommen und sprang auf einen umgestürzten Baumstamm.</p>
+          <p>Der Stamm war feucht. Hopplos Füße rutschten weg, und es landete zwischen weichen Blättern. Sofort sprang es wieder auf und sah sich um, als habe es nur den Boden prüfen wollen.</p>
+          <p>„Das hast du dir von Quappo abgeschaut“, sagte Lina.</p>
+          <p>Am ersten roten Band blieb Felix stehen. Der Stoff war nicht wie bei den anderen mit einem einfachen Knoten befestigt. Jemand hatte ihn zweimal um den Ast gewickelt.</p>
+          <p>„Das sieht neu aus“, sagte er.</p>
+          <p>Lina zeigte nach links. Dort lagen mehrere süße Beeren in einer Reihe auf dem Boden. Sie führten zwischen zwei dichte Büsche.</p>
+          <p>Pikachu wollte ihnen folgen, doch Lina hielt es zurück. „Die sind extra hingelegt worden.“</p>
+          <p>Meganie schob vorsichtig ein paar Zweige auseinander. Dahinter begann kein Weg. Unter den Blättern lag eine tiefe, schlammige Mulde.</p>
+          <p>„Das Band zeigt in die falsche Richtung“, stellte Felix fest.</p>
+          <p>Er nahm es nicht ab. Stattdessen zeichnete er den Knoten und die Stelle in sein Notizbuch. Dann suchten sie gemeinsam nach älteren Spuren. Lina entdeckte eine abgebrochene Stelle am gegenüberliegenden Ast. Dort musste das Band ursprünglich gehangen haben.</p>
+          <p>Sie folgten der richtigen Richtung und erreichten den ersten Beobachtungsring. In einem Kreis aus hellen Steinen wuchsen kleine Blüten. Zwei Myrapla standen beinahe unbeweglich dazwischen. Ein Tangela rollte sich im Schatten zusammen, und auf einem Ast schlief ein Knofensa, den Kopf nach unten geneigt.</p>
+          <p>Felix setzte drei Einträge auf die Zählkarte.</p>
+          <p>Das Knofensa öffnete ein Auge.</p>
+          <p>Hopplo holte den Rest seiner sauren Beere hervor und hielt ihn hoch. Knofensa streckte eine Ranke aus, nahm die Beere und steckte sie in den Mund.</p>
+          <p>Einen Augenblick später spuckte es die Beere in hohem Bogen aus. Sie landete genau auf Hopplos Kopf.</p>
+          <p>Lina hielt sich den Bauch vor Lachen. Sogar Pikachu kicherte.</p>
+          <p>Hopplo nahm die Beere herunter und betrachtete Knofensa. Dann grinste es. Offenbar hatte es einen würdigen Gegner gefunden.</p>
+          <p>Als Felix das nächste rote Band untersuchen wollte, schnellte eine Ranke vor und riss es vom Zweig. Knofensa verschwand damit im Unterholz.</p>
+          <p>„He!“, rief Felix.</p>
+          <p>Er lief nicht sofort hinterher. Stattdessen betrachtete er die Richtung, in die das Band gezeigt hatte. Wieder lagen Beeren auf dem Boden. Diesmal führten sie unter ein niedriges Geflecht aus Dornen.</p>
+          <p>„Knofensa wollte uns davon abhalten“, sagte Lina.</p>
+          <p>Felix nickte. „Es hat das falsche Band weggenommen.“</p>
+          <p>Sie folgten den kleinen Abdrücken von Knofensas Wurzeln. Das Pokémon wartete hinter einem Farn und beobachtete sie. Als Felix näher kam, wich es zurück.</p>
+          <p>„Wir nehmen die Bänder nicht wieder“, sagte er. „Zeigst du uns den sicheren Weg?“</p>
+          <p>Knofensa neigte den Kopf. Dann drehte es sich um und hüpfte tiefer in den Dschungel.</p>
+          <p>Der neue Weg führte nicht direkt zum zweiten Beobachtungsring. Knofensa blieb an einer Felswand stehen, die dicht mit Moos bewachsen war. Aus einem schmalen Spalt drang ein heller Schimmer.</p>
+          <p>Pikachu stellte die Ohren auf. Dahinter erklang ein leises, fröhliches Singen.</p>
+          <p>Knofensa schob mit seinen Ranken einen Vorhang aus Blättern beiseite. Felix, Lina, Meganie, Pikachu und Hopplo zwängten sich durch die Öffnung.</p>
+          <p>Auf der anderen Seite lag eine runde Lichtung. Obwohl es noch Tag war, schimmerten die Blüten dort wie Mondlicht. Zwischen ihnen tanzte ein Piepi. Es führte drei Raupy über flache Steine, damit sie nicht durch eine schlammige Rinne kriechen mussten.</p>
+          <p>Lina ging in die Hocke. Piepi bemerkte sie und breitete schützend die Arme vor den Raupy aus.</p>
+          <p>„Wir tun euch nichts“, sagte Lina.</p>
+          <p>Pikachu setzte sich neben sie und legte den Schwanz auf den Boden. Piepi blickte von Pikachu zu Lina. Dann zeigte es auf mehrere rote Bänder, die in einem Haufen am Rand der Lichtung lagen.</p>
+          <p>Felix untersuchte sie. Auch diese Bänder hatten die doppelten Knoten.</p>
+          <p>„Jemand wollte die Teilnehmer hierherlocken“, sagte er.</p>
+          <p>„Aber warum?“, fragte Lina.</p>
+          <p>Piepi führte sie zu den Mondblüten. Zwischen den Pflanzen standen leere Metallhaken. An ihnen hatten Behälter gehangen. Der süße Beerengeruch war hier besonders stark.</p>
+          <p>Meganie schnaubte und schob mit dem Fuß Erde über einen klebrigen Fleck.</p>
+          <p>„Köder“, sagte Felix. „Die falschen Wege sollten Pokémon und Trainer an dieselben Stellen führen.“</p>
+          <p>Ein Rascheln ging durch die Baumkronen. Dicke Ranken sanken vor den Felsspalt und verschlossen den Rückweg.</p>
+          <p>Auf einem hohen Stein erschien Liane. Neben ihr stand Sarzenia.</p>
+          <p>„Ihr solltet euch auf eure Zählung konzentrieren“, sagte das Mitglied der Top Vier.</p>
+          <p>„Du hast die Markierungen vertauscht“, erwiderte Felix.</p>
+          <p>Liane lächelte kühl. „Vielleicht kommt ihr mit einem einfachen Dschungelweg nur nicht zurecht.“</p>
+          <p>Lina stellte sich neben Piepi. „Du hast Köder bei den Blumen aufgehängt. Die Pokémon sollen hier nicht alle zusammenkommen.“</p>
+          <p>Sarzenia ließ seine Blätter gegeneinanderschlagen. Die Ranken vor dem Ausgang zogen sich fester zusammen.</p>
+          <p>„Dann zeigt doch, wie gut ihr den Dschungel wirklich versteht“, sagte Liane. „Findet einen Weg hinaus.“</p>
+          <p>Sie verschwand zwischen den Blättern. Sarzenia folgte ihr.</p>
+          <p>Knofensa sprang zu den verschlossenen Ranken und zog daran. Sie waren zu dick.</p>
+          <p>Felix sah zu Meganie. Lina sah zu Piepi.</p>
+          <p>„Wir gehen nicht ohne sie“, sagte sie.</p>
+          <p>„Und nicht auf Lianes falschem Weg“, ergänzte Felix.</p>
+          <p>Gemeinsam begannen sie, die Lichtung nach einem anderen Ausgang abzusuchen.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-4" data-index="3" aria-labelledby="kapitel-4-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 4</span>
+          <h1 id="kapitel-4-titel">Los, Dschungelball!</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Piepi kannte jede Blüte auf der Lichtung, aber keinen zweiten Ausgang. Knofensa prüfte die Felswand mit seinen Ranken. Meganie schob Moos beiseite. Pikachu leuchtete mit kleinen elektrischen Funken in dunkle Spalten.</p>
+          <p>Nur Hopplo schien nicht zu suchen. Es starrte auf einen dünnen Sonnenstrahl, der durch ein Loch in der Felswand fiel. Dann warf es seine saure Beere in den Lichtstrahl.</p>
+          <p>Die Beere verschwand.</p>
+          <p>„Da ist eine Öffnung“, sagte Felix.</p>
+          <p>Hinter einem dichten Vorhang aus Wurzeln lag ein schmaler Tunnel. Für Meganie war er zu klein, aber Knofensa konnte seine Ranken hindurchschieben. Es zog eine Wurzel nach der anderen zur Seite.</p>
+          <p>Piepi half mit. Gemeinsam entstand ein Spalt, durch den Lina und Felix kriechen konnten. Meganie kehrte vorübergehend in seinen Ball zurück.</p>
+          <p>Der Tunnel endete am zweiten Beobachtungsring. Doch dort wartete Liane bereits. Sarzenia stand neben ihr, und ein kräftiges Tangela versperrte den Weg zum Stempelgerät.</p>
+          <p>„Nicht schlecht“, sagte Liane. „Aber die Prüfung ist noch nicht vorbei.“</p>
+          <p>„Das ist nicht deine Prüfung“, sagte Lina. „Du versuchst nur, uns aufzuhalten.“</p>
+          <p>„Im Dschungel bestimmt der Stärkste die Regeln.“</p>
+          <p>Felix rief Meganie wieder. Lina trat mit Pikachu an seine Seite.</p>
+          <p>„Dann räumen wir den Weg gemeinsam frei“, sagte Felix.</p>
+          <p>Liane hob eine Hand. „Tangela, Rankenhieb! Sarzenia, Rasierblatt!“</p>
+          <p>Die Ranken schossen über den Boden, während scharfe Blätter durch die Luft flogen.</p>
+          <p>„Meganie, Reflektor!“, rief Felix.</p>
+          <p>Eine helle Wand erschien. Die Rasierblätter prallten ab. Tangelas Ranken schlängelten sich jedoch um den Schutz herum und griffen nach Pikachu.</p>
+          <p>„Auf Meganias Rücken!“, rief Lina.</p>
+          <p>Pikachu sprang hoch. Meganie senkte den Kopf, fing es auf und schleuderte es mit einer schnellen Bewegung über die Ranken hinweg.</p>
+          <p>„Elektroball gegen Tangela!“</p>
+          <p>Pikachu drehte sich in der Luft und schickte die leuchtende Kugel hinab. Tangela rollte zur Seite. Der Elektroball traf den Boden und wirbelte Erde auf.</p>
+          <p>„Sarzenia, Schlafpuder!“, befahl Liane.</p>
+          <p>Eine glitzernde Wolke sank auf Meganie zu.</p>
+          <p>Felix zeigte auf die großen Blätter über ihnen. „Zauberblatt nach oben!“</p>
+          <p>Meganias Blätter schnitten mehrere breite Palmblätter von ihren Stielen. Sie segelten herab und schoben das Schlafpuder wie Fächer zur Seite.</p>
+          <p>Lina verstand Felix’ Idee. „Pikachu, Ruckzuckhieb über die Blätter!“</p>
+          <p>Pikachu sprang von einem fallenden Blatt zum nächsten. Es raste an Sarzenia vorbei und traf Tangela von der Seite. Tangela wurde gegen einen weichen Farn gedrückt. Es richtete sich wieder auf, doch seine Ranken hingen schwer herab.</p>
+          <p>Liane rief es zurück. „Du hast genug getan.“</p>
+          <p>Sarzenia war noch frisch. Es stellte sich allein vor das Stempelgerät und öffnete sein großes Maul.</p>
+          <p>Da dröhnte hinter den Bäumen ein Motor.</p>
+          <p>„Endlich geradeaus!“, jubelte James.</p>
+          <p>Team Rockets Dschungelfahrzeug brach durch das Unterholz. An seiner Vorderseite war ein breites Fangnetz befestigt. Jessie trug noch immer ihren falschen Schnurrbart. Er hing jetzt nur noch an einer Seite.</p>
+          <p>„So viele seltene Dschungel-Pokémon auf einer Stelle!“, rief sie.</p>
+          <p>„Und diesmal kann uns kein Busch aufhalten!“, ergänzte Mauzi.</p>
+          <p>Knofensa und Piepi kamen aus dem Tunnel. Piepi stellte sich vor die Raupy, die ihnen bis zum Beobachtungsring gefolgt waren. Knofensa breitete seine Blätter aus.</p>
+          <p>„Das sind genau die Pokémon, die wir suchen!“, sagte James.</p>
+          <p>Jessie schlug auf den roten Knopf.</p>
+          <p>Das Netz schoss los.</p>
+          <p>„Pikachu, Eisenschweif!“, rief Lina.</p>
+          <p>Pikachu traf den Rand des Netzes. Es drehte sich in der Luft, verfehlte die Pokémon und legte sich stattdessen über Sarzenia.</p>
+          <p>„Ihr Narren!“, rief Liane.</p>
+          <p>Sarzenia zerriss einen Teil des Netzes mit Rasierblatt. Dabei verfingen sich die losen Schnüre in den Ranken über dem Weg.</p>
+          <p>Knofensa erkannte die Gelegenheit. Mit Rankenhieb zog es kräftig an einer Schnur. Das Netz schnellte zurück wie ein Gummiband.</p>
+          <p>Jessie, James und Mauzi wurden von ihren Sitzen gehoben und landeten gemeinsam im Netz. Es schwang über ihnen zwischen zwei Bäumen.</p>
+          <p>Das führerlose Fahrzeug lief weiter auf die Mondlichtung zu.</p>
+          <p>„Die Blumen!“, rief Lina.</p>
+          <p>Piepi sprang vor das Fahrzeug. Ein heller Zauberschein traf die vorderen Metallbeine. Die Maschine schwankte, war aber noch zu schnell.</p>
+          <p>Felix zeigte auf eine dicke Wurzel am Boden. „Meganie, Rankenhieb an die linke Seite!“</p>
+          <p>Meganie schlang seine Ranken um das Fahrzeug. Knofensa packte gleichzeitig die rechte Seite. Gemeinsam zogen sie es herum. Die Metallbeine stolperten über die Wurzel, und die Maschine kippte in die schlammige Mulde neben dem falschen Weg.</p>
+          <p>Sie sank bis zur Hälfte ein. Ein kleines Fähnchen sprang aus dem Dach. Darauf stand: FANG ERFOLGREICH.</p>
+          <p>„Das Gerät lügt“, sagte Lina.</p>
+          <p>„Das ist heute nicht das einzige“, antwortete Felix und sah zu Liane.</p>
+          <p>Ash und Goh kamen durch das Unterholz gelaufen. Gohs Liberlo trug mehrere rote Bänder unter dem Arm.</p>
+          <p>„Unsere ganze Route war falsch markiert“, sagte Goh.</p>
+          <p>„Wir haben gesehen, wie Sarzenia die Bänder aufgehängt hat“, ergänzte Ash.</p>
+          <p>Liane sah von den vier Trainern zu Team Rocket, das noch immer im Netz schaukelte. Dann rief sie Sarzenia zurück.</p>
+          <p>„Ein einzelner Stempel macht euch noch nicht zu Dschungelforschern“, sagte sie.</p>
+          <p>„Aber er gehört uns“, sagte Lina.</p>
+          <p>Liane drehte sich um und verschwand zwischen den Bäumen.</p>
+          <p>Felix, Lina, Ash und Goh stellten die ursprüngliche Route wieder her. Danach zählten sie gemeinsam die Pokémon an der Mondlichtung und den beiden Beobachtungsringen. Goh wollte die drei Raupy zunächst einzeln auf seiner Karte markieren. Lina zeigte ihm ihre unterschiedlichen Punktezeichnungen, damit er sie später wiedererkennen konnte.</p>
+          <p>„Keines doppelt“, sagte sie.</p>
+          <p>„Du wärst gut bei Projekt Mew“, meinte Goh.</p>
+          <p>Als alle Daten eingetragen waren, leuchtete das Stempelgerät grün. Felix und Lina drückten ihre gemeinsame Zählkarte hinein. Ein Blatt erschien auf dem ersten Feld.</p>
+          <p>Ash und Goh erhielten ihren Stempel kurz danach.</p>
+          <p>Knofensa und Piepi begleiteten die Gruppe zurück zum Rand des Gebietes. Dort blieb Knofensa vor Felix stehen. Es hielt noch immer eines der falschen roten Bänder in einer Ranke.</p>
+          <p>Felix kniete sich hin. „Du hast uns geholfen, obwohl du uns gar nicht kanntest.“</p>
+          <p>Knofensa tippte erst gegen Felix’ Notizbuch und dann gegen den Dschungelball an seinem Gürtel.</p>
+          <p>Neben ihm nahm Lina ihren eigenen Ball in beide Hände. „Möchtest du auch mitkommen?“, fragte sie Piepi.</p>
+          <p>Piepi sah zur Mondlichtung zurück. Die Raupy waren bei ihrer Familie, und die falschen Köder waren entfernt. Dann legte es seine Hand auf Linas Dschungelball.</p>
+          <p>Knofensa berührte Felix’ Ball mit einer Ranke.</p>
+          <p>Felix und Lina sahen einander an.</p>
+          <p>„Los, Dschungelball!“, riefen sie gemeinsam.</p>
+          <p>Grünes Licht umgab Knofensa und Piepi. Beide Bälle schlossen sich fast gleichzeitig. Auf ihren Oberseiten leuchtete für einen Moment das kleine Rankenmuster.</p>
+          <p>Dann öffneten Felix und Lina die Bälle sofort wieder. Knofensa erschien neben Felix, Piepi neben Lina. Pikachu begrüßte Piepi mit einem fröhlichen Ruf. Hopplo hielt Knofensa den letzten winzigen Rest der sauren Beere hin.</p>
+          <p>Knofensa nahm ihn, zielte kurz und legte ihn dann einfach auf Hopplos Kopf.</p>
+          <p>Hopplo grinste.</p>
+          <p>Mit dem Blattstempel auf ihrer Karte und zwei neuen Freunden an ihrer Seite machten Felix und Lina sich auf den Rückweg zum Camp.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-5" data-index="4" aria-labelledby="kapitel-5-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 5</span>
+          <h1 id="kapitel-5-titel">Über den Kronenwald</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Knofensa und Piepi lernten das Camp am ersten Abend sehr unterschiedlich kennen.</p>
+          <p>Piepi ging vorsichtig von Hütte zu Hütte, begrüßte jedes Pokémon und half Koch Pepe dabei, heruntergefallene Beeren einzusammeln. Knofensa entdeckte dagegen sofort den Korb mit den besonders sauren Früchten. Es reichte eine davon an Hopplo weiter.</p>
+          <p>Hopplo biss hinein. Knofensa wartete gespannt.</p>
+          <p>Hopplo verzog keine Miene. Es kaute, schluckte und hielt Knofensa eine zweite Beere hin.</p>
+          <p>Knofensa nahm sie mutig. Nach dem ersten Bissen klappte sein großes Maul so schnell zu, dass ein leises Plopp erklang.</p>
+          <p>Felix schüttelte den Kopf. „Jetzt übertreffen sie sich gegenseitig.“</p>
+          <p>Neben dem Küchentisch öffnete Relaxo ein Auge. Es griff nach einer sauren Beere, roch daran und schob den ganzen Korb von sich weg.</p>
+          <p>„Das ist das erste Essen, das Relaxo freiwillig übrig lässt“, sagte Pepe ehrfürchtig.</p>
+          <p>Am nächsten Morgen begann die zweite Etappe der Forscher-Challenge. Ein Aufzug aus Holz und Seilen brachte die Teilnehmer hinauf in den Kronenwald. Die Plattform stieg zwischen gewaltigen Stämmen empor. Farne und Büsche blieben unter ihnen zurück. Schließlich erreichten Felix, Lina, Ash und Goh ein Netz aus Hängebrücken, Beobachtungsstegen und breiten Ästen.</p>
+          <p>Weit unten war der Boden kaum noch zu sehen.</p>
+          <p>„Hier oben leben andere Pokémon als im Lianendickicht“, erklärte Professorin Marula. „Findet drei Beobachtungsplattformen und zählt die Käfer-Pokémon in den Baumkronen. Achtet besonders auf Nester. Ihr dürft sie nicht berühren.“</p>
+          <p>Gohs Liberlo sprang als Erstes aus dem Aufzug. Hopplo folgte und versuchte, genauso lässig auf dem schmalen Steg zu landen. Es kam mit einem Fuß auf, ruderte mit den Armen und setzte sich hin.</p>
+          <p>Liberlo half ihm auf. Hopplo zog die Pfote diesmal nicht weg.</p>
+          <p>Felix nahm Knofensa mit. Seine Ranken konnten sich an den Seilen festhalten. Lina wählte Piepi, das Licht in die dunklen Astlöcher schicken konnte. Ashs Pikachu saß auf seiner Schulter, und Goh ließ Liberlo vorausgehen.</p>
+          <p>An der ersten Plattform entdeckten sie zwei Safcon zwischen gleichfarbigen Blättern. Knofensa zeigte auf ein drittes, das Felix beinahe übersehen hätte. Piepi fand eine Gruppe Webarak unter dem Steg. Es leuchtete nur kurz, damit die Pokémon nicht erschraken.</p>
+          <p>„Sieben“, sagte Lina.</p>
+          <p>Goh beugte sich über das Geländer. „Ich sehe acht.“</p>
+          <p>„Das da ist ein Blatt mit Loch“, sagte Ash.</p>
+          <p>Goh sah noch einmal hin. „Sieben.“</p>
+          <p>Am Ende der Plattform hing ein Brett mit einem Flügelsymbol. Darunter war ein Richtungspfeil eingeritzt. Er zeigte auf eine schmale Brücke.</p>
+          <p>Felix prüfte den ersten Knoten. „Diesmal wurde nichts vertauscht.“</p>
+          <p>„Noch nicht“, sagte eine Stimme über ihnen.</p>
+          <p>Tarun saß auf einem dicken Ast. Sein Pinsir hielt sich kopfüber neben ihm fest.</p>
+          <p>„Liane hat euch unterschätzt“, sagte das Mitglied der Top Vier. „Im Kronenwald reicht es nicht, Knoten anzusehen.“</p>
+          <p>Pinsir sprang auf das andere Ende der Brücke. Es schlug die Zangen gegen ein Halteseil. Mehrere Fasern rissen.</p>
+          <p>„Hör auf!“, rief Ash.</p>
+          <p>„Der Dschungel ist eben gefährlich“, erwiderte Tarun. „Kehrt um, solange ihr noch könnt.“</p>
+          <p>Er verschwand mit Pinsir in den höheren Ästen.</p>
+          <p>Goh untersuchte das Seil. „Die Brücke trägt uns nicht mehr alle.“</p>
+          <p>Felix blickte zu einem Ast, der parallel zur Brücke verlief. „Knofensa kann ein Sicherungsseil hinüberschicken. Dann gehen wir einzeln.“</p>
+          <p>Lina nahm Piepi an die Hand. „Und keiner drängelt.“</p>
+          <p>Knofensa wickelte zwei Ranken um den Ast auf der anderen Seite. Ash ging zuerst und prüfte jedes Brett. Danach folgten Goh, Felix und Lina. Die Pokémon sicherten einander. Liberlo fing ein loses Brett mit dem Fuß auf, bevor es hinabfallen konnte.</p>
+          <p>Auf der zweiten Plattform fand Goh ein leeres Nest.</p>
+          <p>„Hier waren Hornliu“, sagte er. „Die kleinen Hüllen an den Zweigen stammen von ihrer Entwicklung.“</p>
+          <p>Lina zeigte auf winzige Fraßspuren. „Sie sind noch in der Nähe.“</p>
+          <p>Ein leises Knacken lief durch das Holz.</p>
+          <p>Die Plattform neigte sich.</p>
+          <p>Das beschädigte Halteseil war nicht das einzige gewesen. Eine zweite Befestigung löste sich aus dem Stamm. Auf einem niedrigeren Seitenbrett krochen drei Hornliu aus einer Blätterhöhle. Das Brett sank mit ihnen nach unten.</p>
+          <p>„Zurück auf den Ast!“, rief Felix.</p>
+          <p>Ash und Goh sprangen mit ihren Pokémon in Sicherheit. Felix zog Lina zu sich. Piepi hielt sich an Knofensas Ranke fest.</p>
+          <p>Hopplo blieb auf der Plattform. Die drei Hornliu drängten sich am äußersten Ende zusammen. Zwischen ihnen und dem festen Ast klaffte bereits ein breiter Spalt.</p>
+          <p>„Hopplo, komm zurück!“, rief Felix.</p>
+          <p>Hopplo sah zu ihm. Dann sah es zu den Hornliu.</p>
+          <p>Liberlo sprang auf einen Ast über der Plattform und streckte die Pfote aus. Es konnte die Hornliu von dort nicht erreichen.</p>
+          <p>Hopplo nahm Anlauf. Es trat gegen ein loses Brett, sodass dieses über den Spalt rutschte. Das erste Hornliu kroch darauf. Das Brett war jedoch zu kurz und blieb schräg hängen.</p>
+          <p>„Nimm nicht Liberlos Weg“, rief Felix. „Nimm deinen!“</p>
+          <p>Hopplo blickte auf die langen Lianen über sich. Es sprang hoch, kickte eine davon gegen den Stamm und schwang zurück. Beim zweiten Schwung traf es das Brett mit beiden Füßen. Das Holz schob sich bis an den festen Ast.</p>
+          <p>Zwei Hornliu krochen hinüber. Die Plattform sackte weiter ab.</p>
+          <p>Das dritte Hornliu bewegte sich kaum. Hopplo nahm es vorsichtig in beide Arme.</p>
+          <p>Plötzlich begann sein Körper zu leuchten.</p>
+          <p>Seine Beine wurden länger. Sein Fell veränderte sich, und um Hals und Kopf entstand weiches, dichtes Fell. Als das Licht verging, stand Kickerlo auf der schrägen Plattform.</p>
+          <p>Felix hielt den Atem an. „Hopplo?“</p>
+          <p>Kickerlo sah ihn an und nickte.</p>
+          <p>Dann sprang es. Es setzte einen Fuß auf das kurze Brett, stieß sich ab und landete mit dem Hornliu sicher auf Felix’ Seite.</p>
+          <p>Felix legte beide Arme um seinen Partner. Kickerlo versuchte zunächst, ernst zu bleiben. Dann drückte es den Kopf an Felix’ Schulter.</p>
+          <p>Liberlo kam über den Ast zu ihnen. Es hob eine Pfote. Kickerlo schlug ein.</p>
+          <p>Gemeinsam sahen die vier Trainer zurück zur beschädigten Plattform. Auf dem Holz glänzte ein sauberer Schnitt.</p>
+          <p>„Das Seil ist nicht gerissen“, sagte Felix. „Es wurde durchtrennt.“</p>
+          <p>Lina blickte hinauf in die Baumkronen. Tarun war nicht mehr zu sehen.</p>
+          <p>„Dann sammeln wir jetzt Beweise“, sagte sie. „Und holen trotzdem den Flügelstempel.“</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-6" data-index="5" aria-labelledby="kapitel-6-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 6</span>
+          <h1 id="kapitel-6-titel">Training zwischen Baumriesen</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Professorin Marula sperrte die beschädigte Plattform und ließ die Seile sichern. Die drei Hornliu blieben bei ihrem Nest. Keines war verletzt, aber alle Beobachtungsteams mussten für eine Stunde warten.</p>
+          <p>Felix nutzte die Pause, um mit Kickerlo zu trainieren.</p>
+          <p>Kickerlos längere Beine waren kräftiger als zuvor. Beim ersten Versuch, einen kleinen Ast mit dem Fuß hochzuschießen, flog der Ast über das Trainingsnetz und landete in Pepes Vorratskorb, den ein Helfer gerade heraufgebracht hatte.</p>
+          <p>Von unten ertönte ein zufriedenes Brummen.</p>
+          <p>Relaxo hatte den Ast zusammen mit zwei Beeren aufgefangen.</p>
+          <p>„Langsamer“, sagte Felix. „Du musst nicht jedes Mal so stark treten.“</p>
+          <p>Gohs Liberlo rollte eine runde Nuss zu Kickerlo. Es tippte sie erst leicht mit der Fußspitze an, fing sie mit dem Knie auf und legte sie wieder auf den Boden.</p>
+          <p>Kickerlo versuchte es. Die Nuss flog gegen Felix’ Notizbuch.</p>
+          <p>Felix hob sie auf. „Schon besser als in den Vorratskorb.“</p>
+          <p>Währenddessen übte Lina mit Piepi. Pikachu rollte eine Beere über den Steg, und Piepi sollte ihr ausweichen, ohne an den Rand zu geraten. Nach drei Versuchen sprang Piepi nicht mehr einfach zurück. Es drehte sich seitlich, ließ die Beere vorbeilaufen und fing sie anschließend auf.</p>
+          <p>„Jetzt können wir sie noch essen“, sagte Lina.</p>
+          <p>Ash beobachtete beide Trainingsgruppen. „Wie wäre es mit einem Kampf? Neue Bewegungen lernt man am besten gegen einen Gegner.“</p>
+          <p>Diesmal wählte er Bisasam. Goh rief Scherox. Felix trat mit Kickerlo an, Lina mit Piepi.</p>
+          <p>„Kein Feuer auf den Holzstegen“, erinnerte Professorin Marula. „Und Schluss, sobald ein Pokémon nicht mehr sicher weitermachen kann.“</p>
+          <p>Der Kampf begann auf einer breiten Plattform zwischen zwei Baumriesen.</p>
+          <p>„Bisasam, Rankenhieb!“, rief Ash.</p>
+          <p>Zwei Ranken schossen auf Kickerlo zu. Es sprang darüber hinweg und wollte sofort zutreten.</p>
+          <p>„Nur antippen!“, erinnerte Felix es.</p>
+          <p>Kickerlo bremste. Sein Fuß traf eine Ranke nicht hart, sondern lenkte sie nach unten. Bisasams zweite Ranke erwischte es trotzdem an der Seite und schob es über die Bretter.</p>
+          <p>Scherox raste mit Ruckzuckhieb auf Piepi zu.</p>
+          <p>„Seitlich, wie beim Training!“, rief Lina.</p>
+          <p>Piepi drehte sich knapp aus der Bahn. Scherox fing sich mit den Scheren am Boden und griff erneut an.</p>
+          <p>„Zauberschein!“</p>
+          <p>Helles Licht zwang Scherox, die Augen zu schließen. Piepi lief nicht davon. Es stellte sich vor Kickerlo, das gerade wieder aufstand.</p>
+          <p>Felix verstand. „Kickerlo, die Nuss!“</p>
+          <p>Neben dem Geländer lagen mehrere harte Baumfrüchte. Kickerlo hob eine mit der Fußspitze hoch und schoss sie nicht auf die Gegner. Die Nuss prallte gegen den Pfosten hinter Bisasam. Bisasam blickte zum Geräusch.</p>
+          <p>„Piepi, Gesang!“</p>
+          <p>Piepis Stimme klang leise über die Plattform. Bisasam wurde langsamer. Ash erkannte es rechtzeitig.</p>
+          <p>„Zurück, Bisasam. Mach eine Pause.“</p>
+          <p>Das rote Licht holte Bisasam sicher in den Ball, bevor es einschlief.</p>
+          <p>Goh und Scherox kämpften nun allein. „Metallklaue gegen Kickerlo!“</p>
+          <p>Scherox stürmte vor. Kickerlo wich der ersten Schere aus. Die zweite traf es an der Schulter. Kickerlo taumelte.</p>
+          <p>Piepi wollte dazwischengehen. Kickerlo hob jedoch eine Pfote. Es konnte noch sicher stehen.</p>
+          <p>„Gemeinsam“, sagte Felix.</p>
+          <p>Lina nickte. „Piepi, Zauberschein nach oben!“</p>
+          <p>Das Licht traf die Blätter über Scherox. Helle Flecken tanzten über seinen glänzenden Körper. Für einen Moment konnte Goh nicht erkennen, wohin es blickte.</p>
+          <p>„Kickerlo, Doppelkick auf den Boden!“</p>
+          <p>Kickerlo trat zweimal gegen die Bretter. Die Plattform schwang leicht. Scherox breitete die Flügel aus, um das Gleichgewicht zu halten. In diesem Augenblick tippte Piepi es mit einem kontrollierten Duplexhieb an der Seite an.</p>
+          <p>Scherox rutschte zurück. Seine Flügel vibrierten, doch es wirkte müde.</p>
+          <p>Goh hob den Ball. „Das reicht. Gut gekämpft, Scherox.“</p>
+          <p>Ash grinste. „Diesmal habt ihr gewonnen.“</p>
+          <p>„Beim nächsten Mal nehmen wir andere Pokémon“, sagte Goh.</p>
+          <p>Kickerlo und Piepi berührten einander mit den Pfoten. Ihr erster gemeinsamer Sieg gehörte beiden.</p>
+          <p>Da schossen klebrige Fäden aus der Baumkrone. Sie wickelten sich um das Stempelgerät am Ende der Plattform und zogen es nach oben.</p>
+          <p>Tarun stand auf einer Hängebrücke. Neben Pinsir hockte ein Ariados.</p>
+          <p>„Euer kleiner Kampf ändert nichts“, rief er. „Ohne Gerät kein Flügelstempel.“</p>
+          <p>„Ariados hat das Seil an der Plattform durchtrennt“, sagte Felix. „Die Schnittstelle war mit Spinnfäden bedeckt.“</p>
+          <p>Taruns Lächeln verschwand.</p>
+          <p>Ash und Goh stellten sich neben Felix und Lina. Bisasam und Scherox ruhten in ihren Bällen, doch Pikachu und Liberlo waren bereit. Knofensa zog sich an einer Ranke auf das Geländer. Linas Pikachu sprang neben Piepi.</p>
+          <p>Tarun sah die vier Trainer und ihre Pokémon. „Pinsir, das Gerät zerstören!“</p>
+          <p>Pinsir hob die Zangen.</p>
+          <p>„Knofensa, Rankenhieb gegen die Fäden!“, rief Felix.</p>
+          <p>Knofensas Ranken trafen das Klebenetz. Gleichzeitig schoss Ashs Pikachu einen Elektroball auf den Ast über Ariados. Der Treffer ließ den Ast schwanken. Ariados musste sich festhalten und konnte sein Netz nicht weiterziehen.</p>
+          <p>„Liberlo, das Gerät auffangen!“, rief Goh.</p>
+          <p>Die Fäden rissen. Das Stempelgerät fiel. Liberlo sprang hoch und fing es mit beiden Pfoten.</p>
+          <p>Pinsir stürmte über die Brücke. Lina wartete, bis es die Mitte erreicht hatte.</p>
+          <p>„Piepi, Gesang!“</p>
+          <p>Pinsir wurde langsamer. Tarun rief es zurück, bevor es auf der schwankenden Brücke müde werden konnte.</p>
+          <p>„Das war noch kein richtiger Kampf“, sagte er.</p>
+          <p>„Nein“, antwortete Lina. „Wir haben nur unsere Forschung gerettet.“</p>
+          <p>Tarun rief auch Ariados zurück und verschwand über einen Seitensteg.</p>
+          <p>Professorin Marula nahm das gerettete Gerät entgegen. Darin waren alle Zählungen gespeichert. Felix zeigte ihr den Schnitt am alten Seil und die zurückgebliebenen Spinnfäden.</p>
+          <p>Gemeinsam brachten die vier Trainer das Gerät noch zur dritten Beobachtungsplattform. Dort zählten sie einen Schwarm Bibor aus sicherer Entfernung und entdeckten zwei Sichlor, die ihre Krallen an einem abgestorbenen Ast wetzten.</p>
+          <p>Am Nachmittag leuchtete auf den Zählkarten von Felix und Lina sowie Ash und Goh ein Flügelsymbol auf. Sie hatten das zweite Gebiet vollständig dokumentiert.</p>
+          <p>„Zwei zu zwei“, sagte Ash und hielt seine Karte neben die von Felix und Lina.</p>
+          <p>„Wir sind immer noch Konkurrenten“, sagte Goh.</p>
+          <p>Lina betrachtete die vier nebeneinanderstehenden Pokémon. Kickerlo zeigte Liberlo gerade, wie es die Nuss nun ganz leicht mit dem Knie auffing. Piepi und beide Pikachu klatschten Beifall.</p>
+          <p>„Aber nicht nur“, sagte Lina.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-7" data-index="6" aria-labelledby="kapitel-7-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 7</span>
+          <h1 id="kapitel-7-titel">Nebel über dem Sumpf</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Der Nebelsumpf begann dort, wo der feste Dschungelboden unter einer silbrigen Wasserfläche verschwand. Schmale Inseln aus Gras und Wurzeln ragten aus dem Wasser. Dazwischen führten alte Holzstege zu drei schwimmenden Beobachtungsstationen.</p>
+          <p>Felix rief Golking. Lina entschied sich für Quappo. Ash nahm Pikachu mit, und Goh ließ Intelleon neben sich über den Steg gehen.</p>
+          <p>„Im Sumpf lebt eine große Zahl von Wasser-, Käfer- und Gift-Pokémon“, erklärte Professorin Marula. „Zählt sie von den Stationen aus. Bleibt als Gruppe zusammen und fasst keine unbekannten Pflanzen an.“</p>
+          <p>Quappo ging als Erstes los. Es setzte einen Fuß auf ein rundes Stück Holz, das wie ein sicherer Trittstein aussah.</p>
+          <p>Das Holz drehte sich.</p>
+          <p>Quappo ruderte mit den Armen, rutschte in das flache Wasser und tauchte bis zum Bauch ein. Es stieg sofort wieder auf den Steg, verschränkte die Arme und blickte prüfend auf den Trittstein.</p>
+          <p>„Der ist also nicht sicher“, sagte Lina. „Gut getestet.“</p>
+          <p>Quappo nickte würdevoll.</p>
+          <p>An der ersten Station blieb die Zählkarte beinahe leer. Felix entdeckte zwei Felino unter einer Wurzel. Goh sah ein Yanma über das Wasser fliegen. Mehr war nicht zu finden.</p>
+          <p>„Hier müssten viel mehr Pokémon sein“, sagte Goh. „Im Campbericht standen allein zwölf verschiedene Arten.“</p>
+          <p>Lina kniete sich am Rand der Plattform hin. Im Schlamm verliefen viele Spuren. Manche stammten von Felino, andere von Toxiped und Webarak. Alle führten vom Wasser weg.</p>
+          <p>„Sie sind nicht verschwunden“, sagte sie. „Sie sind fortgelaufen.“</p>
+          <p>Quappo legte den Kopf schief. Ein tiefer Summton vibrierte durch das Holz. Er war kaum zu hören, aber im Wasser entstanden kleine Ringe.</p>
+          <p>Felix folgte dem Ton bis zu einem Büschel Schilf. Dahinter steckte ein grüner Metallkasten im Schlamm. Auf seiner Vorderseite war ein Lautsprecher befestigt. Eine kleine Lampe blinkte im gleichen Rhythmus wie das Summen.</p>
+          <p>„Kein Forschungsgerät“, sagte Felix.</p>
+          <p>Goh hielt sein Smart-Rotom darüber. „Es sendet Töne aus, die viele Pokémon viel besser hören können als wir.“</p>
+          <p>Lina sah auf die fortführenden Spuren. „Deshalb fliehen sie.“</p>
+          <p>Felix suchte nach einem Schalter. Der Kasten hatte keine sichtbare Klappe. Golking schwamm darum herum und stupste eine lockere Schilfmatte an. Darunter verlief ein Kabel zu einem zweiten Gerät.</p>
+          <p>Ein dichter Nebel glitt über das Wasser.</p>
+          <p>Vesper trat auf einen Steg gegenüber. Ihr Iksbat kreiste über ihr. Neben ihr schwebte ein Smogmog, aus dessen Öffnungen der Nebel quoll.</p>
+          <p>„Ihr solltet umkehren“, sagte Vesper. „Der Sumpf ist heute zu gefährlich.“</p>
+          <p>„Du hast die Geräte aufgestellt“, sagte Felix.</p>
+          <p>„Und du vertreibst die Pokémon, damit wir nichts zählen können“, ergänzte Lina.</p>
+          <p>Vesper lächelte. „Vielleicht sind sie nur klug genug, sich vor unerfahrenen Trainern zu verstecken.“</p>
+          <p>„Sie verstecken sich nicht vor uns“, sagte Lina. „Sie laufen vor deinem Ton weg.“</p>
+          <p>Vesper hob eine Hand. „Iksbat, Superschall!“</p>
+          <p>Schwingende Ringe flogen über den Sumpf. Intelleon sprang vor Goh und lenkte den Angriff mit einem gezielten Wasserstrahl in die Baumkronen. Pikachu hielt sich die Ohren zu. Quappo stellte sich schützend vor Lina.</p>
+          <p>„Golking, Aquawelle neben den Kasten!“, rief Felix.</p>
+          <p>Golking schickte eine kreisende Welle durch das Wasser. Der Schlamm neben dem Gerät wurde fortgespült. Eine Wartungsklappe kam zum Vorschein.</p>
+          <p>Felix öffnete sie und legte den Schalter um. Das Summen verstummte.</p>
+          <p>Fast sofort reckte eines der Felino den Kopf aus seinem Versteck.</p>
+          <p>Vesper gab Smogmog ein Zeichen. Noch mehr Nebel breitete sich aus und nahm den Kindern die Sicht.</p>
+          <p>„Sie will die anderen Geräte holen“, sagte Felix.</p>
+          <p>„Dann folgen wir nicht ihr“, antwortete Lina. „Wir folgen den Pokémon.“</p>
+          <p>Sie zeigte auf die Schlammspuren. Golking schwamm voraus, Quappo prüfte den Weg, und Intelleon markierte sichere Stellen mit kleinen Wasserpunkten. Pikachu achtete von Ashs Schulter aus auf Bewegungen im Nebel.</p>
+          <p>Die Spuren führten zu einer breiten Insel. Dort drängten sich Webarak, Toxiped, Felino und mehrere Yanma zwischen den Wurzeln. Sie waren nicht angriffslustig. Sie warteten nur darauf, dass der störende Ton verschwand.</p>
+          <p>Unter einer Holzbrücke fanden Felix und Lina zwei weitere Metallkästen.</p>
+          <p>„Drei Geräte für drei Stationen“, sagte Felix.</p>
+          <p>Als er den ersten ausschaltete, erklang ein Motor aus dem Nebel. Ein dicker, hohler Baumstamm trieb zwischen den Schilfpflanzen hindurch. An seinem Ende ragte ein Rohr aus dem Wasser.</p>
+          <p>Auf dem Stamm saßen drei Gestalten mit Blätterhüten.</p>
+          <p>„Das ist bestimmt ein ganz gewöhnlicher schwimmender Baum“, flüsterte James.</p>
+          <p>„Bäume haben keinen Auspuff“, zischte Mauzi.</p>
+          <p>Eine dunkle Rauchwolke stieg aus dem Stamm.</p>
+          <p>Jessie winkte sie mit beiden Händen fort. „Jetzt weiß es jeder!“</p>
+          <p>Lina sah zu Felix. „Und jetzt müssen wir wieder auf zwei Dinge achten.“</p>
+          <p>Der hohle Baumstamm drehte langsam bei und folgte den zusammengekommenen Pokémon.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-8" data-index="7" aria-labelledby="kapitel-8-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 8</span>
+          <h1 id="kapitel-8-titel">Vier Freunde im Morast</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Team Rockets Baumstammboot glitt näher an die Wurzelinsel. Jessie klappte den falschen Blätterhut nach hinten und zog an einem Hebel.</p>
+          <p>Das Rohr am Heck schwenkte herum.</p>
+          <p>„Unser Sumpfsauger fängt alle Pokémon auf einmal!“, verkündete sie.</p>
+          <p>„Sanft, bequem und fast ohne Schlamm“, ergänzte James.</p>
+          <p>Mauzi betrachtete das braune Wasser. „Das mit dem Schlamm glaube ich erst, wenn ich es sehe.“</p>
+          <p>Der Sauger sprang an. Luft, Blätter und Wasser wirbelten in das Rohr. Die Pokémon auf der Insel hielten sich an Wurzeln und Grashalmen fest. Ein Yanma wurde rückwärts durch die Luft gezogen.</p>
+          <p>„Intelleon, Präzisionsschuss gegen das Rohr!“, rief Goh.</p>
+          <p>Der Wasserstrahl traf das Gelenk. Das Rohr drehte sich zur Seite und saugte direkt in den Sumpf.</p>
+          <p>Matsch schoss durch die Maschine.</p>
+          <p>„Ausschalten!“, rief Mauzi.</p>
+          <p>Jessie drückte den gelben Knopf. Der Sauger wurde lauter.</p>
+          <p>James drückte den grünen. Das Boot begann sich im Kreis zu drehen.</p>
+          <p>„Der rote!“, riefen alle drei gleichzeitig.</p>
+          <p>„Nein!“, rief Felix.</p>
+          <p>Zu spät. Jessie schlug auf den roten Knopf. Drei zusätzliche Rohre klappten aus dem Baumstamm und saugten in verschiedene Richtungen.</p>
+          <p>Eines erwischte eine schwimmende Beobachtungsstation. Das Gerät riss sich von seiner Verankerung los. Ein zweites Rohr zog die Zählkarten aus Gohs Hand.</p>
+          <p>„Golking, die Karten!“, rief Felix.</p>
+          <p>Golking schoss durch das Wasser. Es fing die Karten mit seinem Horn auf, bevor sie im Rohr verschwanden.</p>
+          <p>Lina zeigte auf das Yanma, das noch immer gegen den Luftstrom kämpfte. „Quappo, hilf ihm!“</p>
+          <p>Quappo sprang von der Insel auf das Boot. Seine Füße landeten auf der nassen Rinde und rutschten auseinander. Quappo schlitterte unter dem Rohr hindurch, prallte mit dem Rücken gegen den roten Knopf und schaltete einen der Sauger aus.</p>
+          <p>Es stand auf, straffte die Schultern und hob Yanma vorsichtig aus dem schwächer werdenden Luftstrom.</p>
+          <p>„Genau so geplant“, sagte Lina.</p>
+          <p>Ash ließ sein Pikachu über eine Wurzel auf den Baumstamm laufen. „Eisenschweif gegen das Hauptrohr!“</p>
+          <p>Pikachus Schwanz traf die Halterung. Das Rohr klappte nach oben und saugte Jessies Blätterhut ein. Gleich danach verschwanden James’ Schal und Mauzis falscher Schnurrbart darin.</p>
+          <p>„Jetzt zieht es an mir!“, rief Mauzi.</p>
+          <p>James packte Mauzi. Jessie packte James. Das Boot drehte sich immer schneller.</p>
+          <p>Felix erkannte, dass die losgerissene Beobachtungsstation auf eine Gruppe Felino zutrieb. „Golking, Aquawelle nach rechts!“</p>
+          <p>Golking lenkte die Station mit einer sanften Welle um. Lina ließ Quappo vom Boot aus dagegenstemmen. Goh und Intelleon befestigten das lose Seil wieder an einer Wurzel.</p>
+          <p>Ash sprang zu ihnen. Gemeinsam zogen die vier Trainer das Seil fest.</p>
+          <p>Da verstopfte der eingesaugte Schlamm die Maschine.</p>
+          <p>Ein tiefes Blubbern kam aus dem Baumstamm.</p>
+          <p>„Das klingt nicht gut“, sagte James.</p>
+          <p>Aus allen Rohren schoss gleichzeitig eine Fontäne aus Matsch. Jessie, James und Mauzi wurden von Kopf bis Fuß braun. Das Boot kippte nicht um, sank aber bis zur Hälfte in den weichen Boden.</p>
+          <p>Quappo sprang ans Ufer. Es landete sicher, drehte sich stolz zu Lina um und trat rückwärts in ein Schlammloch. Nur sein Kopf und seine Arme ragten noch heraus.</p>
+          <p>Lina und Piepi zogen es gemeinsam heraus. Quappo strich sich den Schlamm von den Schultern und nahm sofort wieder seine beschützende Haltung ein.</p>
+          <p>Goh kniete sich zu Yanma. „Alles in Ordnung?“</p>
+          <p>Yanma bewegte die Flügel. Erst langsam, dann immer schneller. Es flog eine Runde um Goh und tippte gegen einen leeren Pokéball an seinem Gürtel.</p>
+          <p>Goh hielt den Ball hin. Yanma berührte den Knopf und verschwand im roten Licht. Als Goh es gleich wieder herausließ, setzte es sich auf seinen Kopf.</p>
+          <p>„Ich glaube, wir haben einen neuen Freund“, sagte Ash.</p>
+          <p>„Und meine Haare sind jetzt ein Nest“, antwortete Goh.</p>
+          <p>Hinter ihnen raschelte das Schilf. Vesper kam zurück. Iksbat trug einen der ausgeschalteten Metallkästen in den Krallen.</p>
+          <p>„Gebt mir die anderen Geräte“, verlangte sie.</p>
+          <p>Felix stellte sich vor die beiden Kästen. „Sie gehören zu den Beweisen.“</p>
+          <p>„Die Messdaten zeigen genau, wann sie eingeschaltet wurden“, sagte Goh und hob sein Smart-Rotom.</p>
+          <p>Lina zeigte auf die Insel. Die ersten Toxiped und Webarak kehrten bereits ans Wasser zurück. „Und die Pokémon zeigen, was die Geräte gemacht haben.“</p>
+          <p>Vesper schickte Iksbat vor. Doch Ash, Goh, Felix und Lina stellten sich nebeneinander. Pikachu, Intelleon, Golking und Quappo bildeten eine Reihe vor ihnen.</p>
+          <p>Iksbat blieb in der Luft stehen.</p>
+          <p>Vesper sah zu den Pokémon, zu den geretteten Forschungsgeräten und zum halb versunkenen Baumstammboot. Von dort winkte Jessie vorsichtig.</p>
+          <p>„Könntest du uns vielleicht zuerst hier raushelfen?“, fragte sie.</p>
+          <p>Vesper drehte sich wortlos um. „Nox wird euch stoppen.“</p>
+          <p>Sie rief Iksbat zurück und verschwand im Nebel.</p>
+          <p>Die vier Trainer schalteten das letzte Summgerät aus. Danach kehrten die wilden Pokémon nach und nach in ihre Bereiche zurück. Felix, Lina, Ash und Goh teilten ihre Beobachtungen, damit keine Art doppelt gezählt wurde.</p>
+          <p>Am Ausgang des Sumpfes setzte Professorin Marula den Tropfenstempel auf beide Zählkarten.</p>
+          <p>„Drei zu drei“, sagte Ash.</p>
+          <p>Goh blickte auf Yanma, das nun neben seinem Kopf flog. „Diesmal wäre mir der Stempel fast weniger wichtig gewesen als die Rettung.“</p>
+          <p>„Fast?“, fragte Lina.</p>
+          <p>Goh grinste. „Ein bisschen Konkurrenz darf bleiben.“</p>
+          <p>Auf dem Rückweg zum Camp gingen die vier nicht mehr als zwei getrennte Teams. Sie liefen nebeneinander und planten gemeinsam, wie sie in den Nachtruinen den letzten Stempel holen würden.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-9" data-index="8" aria-labelledby="kapitel-9-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 9</span>
+          <h1 id="kapitel-9-titel">Die Nachtruinen</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Die vierte Etappe begann erst nach Sonnenuntergang.</p>
+          <p>Professorin Marula gab jedem Trainer eine kleine Lampe. „In den Nachtruinen leben viele Pokémon, die tagsüber schlafen. Bleibt leise, zählt sie aus der Entfernung und folgt den silbernen Mondsymbolen.“</p>
+          <p>„Und wenn die Symbole vertauscht wurden?“, fragte Felix.</p>
+          <p>„Dann vertraut euren Beobachtungen“, antwortete die Professorin.</p>
+          <p>Felix und Lina nahmen Kickerlo, Knofensa, Piepi und Pikachu mit. Ash und Goh wurden von Ashs Pikachu und Gohs Yanma begleitet. Gemeinsam betraten sie einen überwucherten Torbogen.</p>
+          <p>Hinter ihm lagen Mauern, Treppen und halb eingestürzte Räume. Wurzeln wuchsen durch alte Fenster. Über den Steinen saßen Hoothoot, während mehrere Zubat unter einem Torbogen schliefen.</p>
+          <p>Goh hob sofort seine Zählkarte.</p>
+          <p>„Sechs Zubat“, flüsterte er.</p>
+          <p>Lina deutete auf einen kleinen Schatten zwischen zwei größeren Flügeln. „Sieben.“</p>
+          <p>An der ersten Kreuzung glitzerte ein silberner Mondpfeil. Er zeigte nach rechts. Piepi blieb jedoch stehen und blickte nach links.</p>
+          <p>„Was ist?“, fragte Lina.</p>
+          <p>Piepi hob beide Arme. Ein sanftes Licht breitete sich aus. Auf dem rechten Weg kamen weitere Pfeile zum Vorschein. Sie waren auf dünne schwarze Platten gemalt und nur zwischen die Steine geklemmt worden.</p>
+          <p>Felix zog eine heraus. „Der echte Pfeil ist in die Mauer gemeißelt.“</p>
+          <p>Unter dem falschen Schild entdeckte Knofensa eine schwarze Schnur. Sie führte zu einem Stapel leerer Fässer. Wenn jemand auf die Platte trat, wären die Fässer polternd über den Weg gerollt und hätten alle Pokémon aufgeschreckt.</p>
+          <p>„Nox will nicht nur uns verwirren“, sagte Lina. „Er will wieder die Zählung unmöglich machen.“</p>
+          <p>Die Kinder lösten die Schnur und folgten dem echten Weg. Piepis Licht zeigte alte Mondzeichen an den Wänden. Es kannte sie nicht, schien aber zu spüren, welche Richtung sicher war.</p>
+          <p>In einem runden Innenhof fanden sie drei Kramurx, ein Nachtara und zwei Traunfugil. Die Pokémon blieben ruhig, solange die Trainer leise sprachen. Yanma wollte auf einem Stein landen, erschrak jedoch vor seinem eigenen langen Schatten und setzte sich lieber auf Gohs Kopf.</p>
+          <p>„Das wird wirklich dein Nest“, flüsterte Ash.</p>
+          <p>Goh schob Yanmas Flügel aus seinem Gesicht. „Ein bewegliches Nest.“</p>
+          <p>Ein Hundemon trat aus einem dunklen Tor. Hinter ihm erschien Nox.</p>
+          <p>„Ihr habt drei Warnungen nicht verstanden“, sagte er. „Also bekommt ihr keine vierte.“</p>
+          <p>Hundemon setzte Glut ein. Die kleinen Flammen trafen nicht die Kinder, sondern mehrere hölzerne Wegweiser. Das Licht erlosch, und Rauch zog durch den Hof.</p>
+          <p>„Pikachu, leuchten!“, rief Lina.</p>
+          <p>Kleine elektrische Funken glitzerten auf Pikachus Wangen. Gleichzeitig ließ Piepi seinen Zauberschein über den Boden gleiten. Die echten Mondsymbole wurden sichtbar.</p>
+          <p>„Kickerlo, den Weg freimachen!“, befahl Felix.</p>
+          <p>Kickerlo trat einen brennenden Wegweiser von den trockenen Blättern auf eine freie Steinfläche. Knofensa zog einen zweiten mit seinen Ranken aus dem Rauch. Ashs Pikachu löschte die letzten Funken mit aufgewirbelter Erde.</p>
+          <p>Als der Rauch sich verzog, waren Nox und Hundemon verschwunden.</p>
+          <p>„Er will, dass wir ihm folgen“, sagte Ash.</p>
+          <p>„Dann machen wir das nicht“, erwiderte Felix.</p>
+          <p>Sie setzten zuerst ihre Zählung fort. Hinter dem Nachtara führte ein schmaler Durchgang in eine Kammer. In ihrer Mitte stand eine flache Steinschale. Darin lag ein runder Stein, der im Licht von Piepi silbern schimmerte.</p>
+          <p>Lina kannte diesen Glanz. Knuddeluff hatte sich einst mit einem solchen Stein entwickelt.</p>
+          <p>„Ein Mondstein“, sagte sie.</p>
+          <p>Piepi ging langsam auf die Schale zu. Es legte beide Hände auf den Rand und sah Lina an.</p>
+          <p>„Du musst dich nicht entwickeln“, sagte Lina. „Nur wenn du es selbst möchtest.“</p>
+          <p>Piepi blickte auf den Stein, dann auf Pikachu, Knofensa und Kickerlo. Schließlich hob es den Mondstein aus der Schale und drückte ihn an sich.</p>
+          <p>Helles Licht erfüllte die Kammer. Piepis Körper wuchs. Seine Ohren wurden länger, und auf seinem Rücken erschienen kleine Flügel. Als das Licht verging, stand Pixi vor Lina.</p>
+          <p>Pixi betrachtete seine Hände und drehte sich einmal im Kreis. Dann lief es zu Lina und umarmte sie.</p>
+          <p>„Du bist immer noch du“, sagte Lina und drückte es an sich.</p>
+          <p>Pixis neues Licht füllte die ganze Kammer. An der hinteren Wand erschienen Linien, die zuvor unsichtbar gewesen waren. Sie zeigten eine Karte aller vier Dschungelgebiete. Daneben standen Zeiten und Zeichen: ein Blatt, ein Käferflügel, ein Tropfen und ein schwarzer Mond.</p>
+          <p>Felix erkannte die doppelten Knoten aus dem Lianendickicht, das zerschnittene Seil aus dem Kronenwald und Vespers Summgeräte.</p>
+          <p>„Das ist ihr Plan“, sagte er. „Alle vier haben zusammengearbeitet.“</p>
+          <p>Goh fotografierte die Wand mit seinem Smart-Rotom. Ash fand unter einem Steinpult mehrere Listen mit den Namen der Beobachtungsstationen.</p>
+          <p>Ganz unten stand: CAMP SCHLIESSEN – NACH DER VIERTEN ETAPPE.</p>
+          <p>Aus dem Eingang erklang langsames Klatschen.</p>
+          <p>Nox stand wieder dort. Neben ihm warteten Liane, Tarun und Vesper.</p>
+          <p>„Ihr habt genug gesehen“, sagte Nox.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-10" data-index="9" aria-labelledby="kapitel-10-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 10</span>
+          <h1 id="kapitel-10-titel">Die Forderung der Top Vier</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Die vier Mitglieder versperrten den Ausgang der Kammer. Sarzenia, Pinsir, Iksbat und Hundemon standen vor ihnen.</p>
+          <p>Ash griff nach einem Pokéball. Felix hob die Hand.</p>
+          <p>„Noch nicht“, sagte er leise. „Hier sind schlafende Pokémon.“</p>
+          <p>Lina stellte sich neben Pixi. „Wir haben eure Pläne fotografiert.“</p>
+          <p>„Ein paar Bilder beweisen gar nichts“, sagte Vesper.</p>
+          <p>Goh hielt sein Smart-Rotom hoch. „Die Uhrzeiten passen zu den Geräten im Sumpf. Und wir haben das zerschnittene Seil, die falschen Bänder und eure Markierungen.“</p>
+          <p>Nox gab Hundemon ein Zeichen. Das Pokémon sprang auf das Steinpult und schnappte sich die beiden Zählkarten.</p>
+          <p>„Dann beendet eure Challenge ohne diese“, sagte Nox.</p>
+          <p>Die Top Vier wichen in den Gang zurück. Hundemon trug die Karten zwischen den Zähnen. Bevor Ash ihnen folgen konnte, ließ Taruns Ariados ein dichtes Netz vor den Eingang fallen.</p>
+          <p>Knofensa zerschnitt die Fäden mit seinen Blättern. Doch als die vier Trainer den Innenhof erreichten, waren ihre Gegner fort.</p>
+          <p>„Unsere Beobachtungen sind noch gespeichert“, sagte Felix.</p>
+          <p>„Aber ohne Karten bekommen wir keinen Mondstempel“, sagte Lina.</p>
+          <p>Pixi legte eine Hand auf ihre Schulter. Dann zeigte es auf die unsichtbare Karte in der Kammer. Das Licht war schwächer geworden, aber Gohs Fotos waren deutlich.</p>
+          <p>„Wir bringen erst die Beweise ins Camp“, entschied Felix. „Danach holen wir die Karten zurück.“</p>
+          <p>Sie beendeten ihre Zählung auf dem Rückweg. Pixi fand zwei Nachtara hinter einer eingestürzten Mauer. Kickerlo entdeckte eine Gruppe Kramurx, weil sich ihre Augen im Mondlicht spiegelten. Am Ausgang meldeten die vier ihre vollständigen Daten an Professorin Marula.</p>
+          <p>Die Professorin betrachtete die Fotos lange. „Ich habe die Liga bereits nach dem Vorfall im Kronenwald benachrichtigt. Jetzt sende ich alles noch einmal. Vertreter der Liga sind unterwegs.“</p>
+          <p>„Bis sie hier sind, ist das Camp geschlossen“, erklang Nox’ Stimme über den Platz.</p>
+          <p>Die Top Vier standen am anderen Ende des Lagers. Hinter ihnen lag ein schwarzer Gerätekoffer. Auf ihm ruhten Felix’ und Linas Zählkarte sowie die Karte von Ash und Goh.</p>
+          <p>„Dieses Camp verlässt morgen den Dschungel“, sagte Nox. „Wer bleibt, hat in unserem Revier nichts zu suchen.“</p>
+          <p>Professorin Marula trat vor. „Ihr könnt eine genehmigte Forschungsstation nicht schließen.“</p>
+          <p>„Aber wir können verhindern, dass hier noch jemand eine Prüfung besteht“, antwortete Liane.</p>
+          <p>Ash stellte sich neben Felix, Lina und Goh. „Dann kämpfen wir darum.“</p>
+          <p>Nox lächelte. „Vier Trainer gegen die Top Vier?“</p>
+          <p>„Gemeinsam“, sagte Lina.</p>
+          <p>Die Bedingungen waren schnell festgelegt. Am nächsten Morgen sollte auf der großen Lichtung hinter dem Camp ein Vier-gegen-vier-Kampf stattfinden. Jeder Trainer durfte ein Pokémon einsetzen. Gewannen Felix, Lina, Ash und Goh, mussten die Top Vier das Camp bis zum Eintreffen der Liga in Ruhe lassen. Verloren sie, wollte Nox die Forschungsgeräte abbauen lassen.</p>
+          <p>Professorin Marula gefiel diese Bedingung nicht. Doch der Kampf verschaffte der Liga Zeit, das Camp zu erreichen.</p>
+          <p>Während alle auf die Lichtung sahen, schlichen drei schlammverkrustete Gestalten hinter den Top Vier entlang.</p>
+          <p>„In dem schwarzen Koffer sind bestimmt seltene Pokébälle“, flüsterte Jessie.</p>
+          <p>„Oder die Fundorte aller Dschungel-Pokémon“, sagte James.</p>
+          <p>Mauzi öffnete den Koffer einen Spalt. „Nur Papier.“</p>
+          <p>„Papier mit Fundorten!“, zischte Jessie.</p>
+          <p>Sie trugen den Koffer zu ihrem sechsbeinigen Dschungelfahrzeug. Der Motor sprang an. Diesmal zeigte das Fahrzeug tatsächlich in Richtung Ausgang.</p>
+          <p>„Geradeaus!“, jubelte James.</p>
+          <p>Mitten auf dem Weg schlief Relaxo. Sein Bauch hob und senkte sich ruhig.</p>
+          <p>„Bremsen!“, rief Mauzi.</p>
+          <p>Jessie zog am grünen Hebel. Das Fahrzeug bog links ab, umrundete Relaxo und fuhr zurück auf den Platz.</p>
+          <p>„Der andere Hebel!“, rief James.</p>
+          <p>Das Fahrzeug umrundete Relaxo ein zweites Mal. Beim dritten Kreis öffnete sich die Heckklappe. Der schwarze Koffer rutschte heraus und landete direkt vor Professorin Marula.</p>
+          <p>Felix hob die Zählkarten auf. „Danke für die Lieferung.“</p>
+          <p>Team Rocket raste weiter im Kreis. Relaxo schlief unbeeindruckt.</p>
+          <p>Professorin Marula setzte den Mondstempel auf beide Karten. Nun leuchteten Blatt, Flügel, Tropfen und Mond nebeneinander.</p>
+          <p>Die Top Vier konnten den erfolgreichen Abschluss der Challenge nicht mehr verhindern. Nox nahm seinen Koffer an sich und ging, ohne Team Rocket auch nur anzusehen.</p>
+          <p>Am Abend bereiteten sich die vier Freunde auf den Kampf vor. Ash entschied sich für Pikachu. Goh wählte Scherox. Lina fragte Pixi, ob es nach seiner Entwicklung schon kämpfen wollte. Pixi antwortete mit einem entschlossenen Nicken.</p>
+          <p>Felix setzte sich neben Kickerlo. „Das wird ein schwerer Kampf. Du musst nicht antreten.“</p>
+          <p>Kickerlo sah zu Gohs Liberlo, das am Rand des Platzes trainierte. Dann rollte es eine harte Baumfrucht vor seine Füße, fing sie sauber mit dem Knie auf und schoss sie in Felix’ Hand.</p>
+          <p>„Du willst“, sagte Felix.</p>
+          <p>Kickerlo nickte.</p>
+          <p>Auf der anderen Seite des Camps brannten bereits die Lichter der großen Dschungellichtung. Dort warteten Sarzenia, Pinsir, Iksbat und Hundemon.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-11" data-index="10" aria-labelledby="kapitel-11-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 11</span>
+          <h1 id="kapitel-11-titel">Vier gegen die Top Vier</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Am nächsten Morgen standen die Campteilnehmer rings um die große Dschungellichtung. Das Kampffeld bestand aus Gras, freiliegenden Wurzeln, einem flachen Wasserlauf und mehreren alten Steinmauern.</p>
+          <p>Professorin Marula trat zwischen die beiden Gruppen. „Der Kampf endet, sobald eine Seite keine einsatzbereiten Pokémon mehr hat. Wer nicht sicher weiterkämpfen kann, wird sofort zurückgerufen.“</p>
+          <p>Felix, Lina, Ash und Goh stellten sich nebeneinander auf. Kickerlo, Pixi, Pikachu und Scherox warteten vor ihnen.</p>
+          <p>Auf der anderen Seite standen Liane mit Sarzenia, Tarun mit Pinsir, Vesper mit Iksbat und Nox mit Hundemon.</p>
+          <p>„Beginnt!“, rief Professorin Marula.</p>
+          <p>„Sarzenia, Rankenhieb gegen Kickerlo!“, befahl Liane.</p>
+          <p>„Iksbat, Superschall!“, rief Vesper.</p>
+          <p>Die Top Vier griffen gleichzeitig an. Ranken schossen über das Feld. Schallwellen breiteten sich darüber aus. Pinsir stürmte auf Pixi zu, während Hundemon Scherox mit Flammenwurf angriff.</p>
+          <p>„Auseinander!“, rief Ash.</p>
+          <p>Pikachu sprang auf eine Steinmauer. Scherox flog über den Wasserlauf. Pixi wich Pinsirs Zangen mit einer Drehung aus. Kickerlo trat eine Ranke zur Seite, doch eine zweite wickelte sich um sein Bein.</p>
+          <p>„Scherox, Metallklaue!“, rief Goh.</p>
+          <p>Scherox durchschnitt die Ranke. Im selben Augenblick musste es Hundemons nächstem Flammenwurf ausweichen. Die Hitze strich dicht an seinen Flügeln vorbei.</p>
+          <p>„Sie treiben uns auseinander“, sagte Felix.</p>
+          <p>Nox hörte ihn. „Natürlich. Vier Trainer sind noch lange kein Team.“</p>
+          <p>Hundemon sprang auf die Steinmauer und feuerte von oben. Sarzenia zog seine Ranken durch den Wasserlauf, sodass sie plötzlich aus verschiedenen Richtungen auftauchten. Pinsir trieb Pixi auf den schlammigen Rand zu, und Iksbat blieb hoch über dem Feld.</p>
+          <p>Felix sah keinen freien Weg für Kickerlo. Lina konnte Pixi kaum ausweichen lassen, ohne Scherox zu behindern. Ashs Pikachu musste gleichzeitig auf Iksbat und Hundemon achten.</p>
+          <p>„Unter der Mauer durch!“, rief Goh.</p>
+          <p>Scherox raste durch eine Lücke und lenkte Hundemons nächsten Flammenwurf mit einer Metallklaue nach oben. Kickerlo nutzte den Moment, sprang auf eine Wurzel und trat zwei von Sarzenias Ranken auseinander. Pixi glitt über die nun freie Stelle zurück in die Mitte.</p>
+          <p>„Gut!“, rief Ash. „Jetzt Iksbat—“</p>
+          <p>Pinsir schlug mit seinen Zangen gegen die Mauer. Ein Stein löste sich und zwang Pikachu zum Absprung. Der geplante Gegenangriff brach auseinander.</p>
+          <p>„Sie sind stark“, sagte Felix.</p>
+          <p>„Wir auch“, antwortete Lina. „Aber wir müssen einander helfen, bevor jemand darum ruft.“</p>
+          <p>„Pikachu, Elektroball gegen Iksbat!“, rief Ash.</p>
+          <p>Iksbat wich der Kugel aus. Sie flog über das Feld und traf beinahe Sarzenia.</p>
+          <p>„Pass auf!“, rief Liane.</p>
+          <p>„Ich habe es unter Kontrolle“, erwiderte Vesper.</p>
+          <p>Lina bemerkte, dass die Top Vier nur auf ihre eigenen Gegner achteten. „Wir dürfen nicht jeder einen Kampf führen“, sagte sie. „Pixi, Schutzschild vor Scherox!“</p>
+          <p>Die schimmernde Fläche fing Hundemons Flammen ab. Scherox nutzte den Schutz und schoss über das Feld.</p>
+          <p>„Ruckzuckhieb gegen Iksbat!“, rief Goh.</p>
+          <p>Iksbat musste nach oben ausweichen. Dort wartete Pikachus nächster Elektroball. Der Treffer drückte es zurück, aber es fing sich mit kräftigen Flügelschlägen.</p>
+          <p>Pinsir griff Pixi erneut an. Kickerlo sprang dazwischen und lenkte seine Zange mit einem kontrollierten Doppelkick zur Seite.</p>
+          <p>„Jetzt!“, rief Lina. „Pixi, Zauberschein!“</p>
+          <p>Helles Licht traf Pinsir. Es rutschte bis an eine Wurzel zurück. Tarun befahl ihm sofort einen weiteren Angriff.</p>
+          <p>Pinsir setzte sich in Bewegung, stolperte jedoch an der Wurzel. Es stand wieder auf, doch seine Beine zitterten.</p>
+          <p>„Pinsir kann nicht mehr sicher stürmen“, sagte Professorin Marula.</p>
+          <p>Tarun zögerte. Dann rief er sein Pokémon zurück. „Das war nur Pech.“</p>
+          <p>„Es war das Gelände“, sagte Felix. „Das gehört zum Kampf.“</p>
+          <p>Die vier Freunde hatten nun einen Gegner weniger. Nox reagierte sofort.</p>
+          <p>„Hundemon, Finsteraura gegen Pixi!“</p>
+          <p>Die dunkle Welle schoss über die Lichtung. Pixi errichtete einen Schutzschild. Der Angriff drückte es über das Gras zurück.</p>
+          <p>„Sarzenia, Schlafpuder!“, befahl Liane.</p>
+          <p>Die glitzernde Wolke sank hinter Pixi herab. Kickerlo sprang hinein und wirbelte sie mit schnellen Tritten auseinander. Ein Teil des Pulvers blieb an seinem Fell hängen. Seine Bewegungen wurden langsamer.</p>
+          <p>Felix trat näher an den Rand des Feldes. „Kickerlo, zurück zu mir!“</p>
+          <p>Kickerlo schüttelte den Kopf. Es war noch wach und stand sicher, aber die drei Gegner richteten sich bereits auf es aus.</p>
+          <p>„Iksbat, Luftschnitt!“, rief Vesper.</p>
+          <p>„Sarzenia, Rasierblatt!“</p>
+          <p>„Hundemon, Flammenwurf!“</p>
+          <p>Scherox fing mehrere Rasierblätter mit seinen Scheren ab. Pikachu sprang vor Kickerlo und lenkte den Luftschnitt mit Eisenschweif zur Seite. Pixi stellte sich gegen den Flammenwurf und bildete einen Schutzschild.</p>
+          <p>Die drei Angriffe trafen fast gleichzeitig. Pixis Schild bekam Risse. Scherox wurde durch die Blätter zurückgedrängt. Pikachu landete auf allen vieren und atmete schwer.</p>
+          <p>Kickerlo sah seine Freunde vor sich. Sie hatten es geschützt, obwohl jeder selbst unter Druck stand.</p>
+          <p>Gohs Liberlo stand außerhalb des Feldes. Es rief Kickerlo etwas zu und hob die Pfote.</p>
+          <p>Kickerlo richtete sich auf.</p>
+          <p>„Du musst nicht so kämpfen wie Liberlo“, sagte Felix. „Du musst nur entscheiden, wie du deinen Freunden helfen kannst.“</p>
+          <p>Kickerlo blickte auf die harte Baumfrucht, die neben einer Wurzel lag. Dann sah es zu Pixis brüchigem Schutzschild und zu Hundemon, das bereits den nächsten Flammenwurf vorbereitete.</p>
+          <p>Es setzte sich in Bewegung.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-12" data-index="11" aria-labelledby="kapitel-12-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 12</span>
+          <h1 id="kapitel-12-titel">Der Ball aus Blättern</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Kickerlo hob die Baumfrucht mit der Fußspitze an. Es schoss sie nicht auf Hundemon. Stattdessen trat es die Frucht gegen eine schräge Steinplatte.</p>
+          <p>Sie prallte ab und flog zwischen Hundemon und Sarzenia. Beide wichen einen Schritt auseinander. Der nächste Flammenwurf verfehlte Pixis Schutzschild.</p>
+          <p>Kickerlo sprang vor Pixi.</p>
+          <p>Sein Körper begann zu leuchten.</p>
+          <p>Felix sah die vielen Trainingsmomente vor sich: Hopplos erste misslungene Schüsse, Liberlos ruhige Bewegungen und Kickerlos genauer Tritt im Kronenwald. Jetzt kam alles zusammen.</p>
+          <p>Kickerlo wuchs. Seine Ohren wurden länger, seine Beine kräftiger. Als das Licht erlosch, stand Liberlo auf dem Feld.</p>
+          <p>Gohs Liberlo rief begeistert vom Rand der Lichtung. Felix’ Liberlo hob kurz die Pfote zu ihm. Dann drehte es sich wieder zu seinen Freunden.</p>
+          <p>„Du bist bereit“, sagte Felix. „Feuerball gegen die Steinplatte!“</p>
+          <p>Liberlo ließ die Baumfrucht mit einem Tritt aufflammen. Der Feuerball prallte gegen den Stein und teilte Sarzenia und Hundemon endgültig voneinander.</p>
+          <p>„Pixi, Licht über das ganze Feld!“, rief Lina.</p>
+          <p>Pixis Zauberschein spiegelte sich an den alten Mauern. Iksbat konnte sich nicht mehr im Schatten verstecken.</p>
+          <p>„Pikachu, Elektroball!“, befahl Ash.</p>
+          <p>Die elektrische Kugel traf Iksbat an der Seite. Es fing sich noch einmal, doch sein Flug wurde unsicher.</p>
+          <p>Vesper hob den Pokéball. „Zurück, Iksbat.“</p>
+          <p>Nur Sarzenia und Hundemon blieben.</p>
+          <p>Liane ließ Sarzenia ein dichtes Netz aus Ranken über den Boden ziehen. Nox befahl Hundemon, hinter dem Geflecht Flammenwurf vorzubereiten.</p>
+          <p>„Scherox, schneide einen Weg!“, rief Goh.</p>
+          <p>Scherox setzte Metallklaue ein. Es öffnete eine schmale Gasse, musste aber sofort vor Hundemons Flammen zurückweichen.</p>
+          <p>„Nicht hindurch“, sagte Lina. Sie deutete auf die lockeren Enden der Ranken. „Pixi, Psychokinese!“</p>
+          <p>Pixi hob mehrere Ranken an. Felix erkannte den Plan.</p>
+          <p>„Liberlo, über die Ranken!“</p>
+          <p>Liberlo sprang von einer angehobenen Ranke zur nächsten. Sarzenia versuchte, sie wegzuziehen. Dadurch öffnete sich das Netz auch für Pikachu und Scherox.</p>
+          <p>Pikachu traf Sarzenia mit Eisenschweif. Scherox folgte mit einem kontrollierten Ruckzuckhieb. Sarzenia blieb stehen, doch seine Blätter hingen erschöpft herab.</p>
+          <p>Liane sah es an und rief es zurück. „Genug.“</p>
+          <p>Nox stand nun allein mit Hundemon auf dem Feld.</p>
+          <p>„Finsteraura auf Pixi!“, befahl er.</p>
+          <p>Hundemon griff an. Pixi hatte kaum noch Kraft für einen Schutzschild. Liberlo wollte sich davorstellen, aber Lina hob die Hand.</p>
+          <p>„Scherox, nach links! Pikachu, nach rechts!“</p>
+          <p>Goh und Ash verstanden sofort. Scherox und Pikachu griffen nicht Hundemon an. Sie trafen zwei flache Steine neben ihm. Die Finsteraura wurde von aufgewirbeltem Staub verdeckt und verlor ihre klare Richtung. Pixi wich aus.</p>
+          <p>„Jetzt gemeinsam!“, rief Felix.</p>
+          <p>Pixi setzte Mondgewalt ein. Das Licht hob die Baumfrucht vom Boden. Pikachu gab ihr mit einem kleinen Elektroschock zusätzlichen Schwung. Scherox lenkte sie mit einer Schere genau aus. Liberlo trat zu.</p>
+          <p>Der Feuerball flog nicht direkt auf Hundemon. Er schlug vor ihm in den Boden und erzeugte eine helle Flammenlinie. Hundemon bremste. Pixis Mondgewalt traf unmittelbar danach und drückte es zurück.</p>
+          <p>Hundemon versuchte erneut aufzustehen. Seine Beine zitterten, und die Flamme in seinem Maul flackerte.</p>
+          <p>Nox ballte die Hand. Dann sah er Professorin Marula an und hob widerwillig den Ball.</p>
+          <p>„Zurück.“</p>
+          <p>Hundemon verschwand sicher im roten Licht.</p>
+          <p>Für einen Moment war es auf der Lichtung still.</p>
+          <p>Dann hob Professorin Marula beide Arme. „Die Sieger sind Felix, Lina, Ash und Goh!“</p>
+          <p>Der Jubel der Campteilnehmer erfüllte den Dschungel. Felix lief zu Liberlo. Lina kniete sich zu Pixi. Ash hob Pikachu hoch, und Goh legte beide Arme um Scherox.</p>
+          <p>Am Rand der Lichtung erschienen mehrere Pokémon-Ranger und Vertreter der Arborina-Liga. Sie hatten den letzten Teil des Kampfes und die Übertragung aus dem Camp gesehen. Professorin Marula übergab ihnen die falschen Markierungen, die Summgeräte, das zerschnittene Seil und Gohs Aufnahmen aus den Nachtruinen.</p>
+          <p>Die Liga entzog Liane, Tarun, Vesper und Nox ihre Ämter. Der Dschungel gehörte nicht länger ihnen. Bis neue Top Vier bestimmt waren, übernahmen Ranger den Schutz der vier Gebiete.</p>
+          <p>Auch Team Rocket wurde gefunden. Ihr Fahrzeug lief noch immer im Kreis um das schlafende Relaxo. Die Ranger schalteten den Motor aus und brachten Jessie, James und Mauzi zurück zu ihren Sozialstunden.</p>
+          <p>„Wir haben immerhin den Koffer zurückgebracht“, sagte James.</p>
+          <p>„Das gibt bestimmt einen Pluspunkt“, meinte Jessie.</p>
+          <p>Mauzi sah zu ihrem eingesunkenen Baumstammboot. „Und ungefähr hundert Minuspunkte.“</p>
+          <p>Am Abend fand das Abschlussfest statt. Professorin Marula überreichte Felix und Lina ein Forschungsabzeichen in Form eines grünen Dschungelballs. Ash und Goh erhielten dasselbe Abzeichen. Einen einzelnen Sieger gab es nicht. Alle vier hatten die Challenge vollständig und ehrlich beendet.</p>
+          <p>Koch Pepe stellte ein großes Essen auf den Tisch. Auf einer Platte lagen kleine Brötchen in Blattform.</p>
+          <p>„Ich hatte vierzig gebacken“, sagte er. „Jetzt sind es noch zwölf.“</p>
+          <p>Relaxo saß unschuldig daneben. Auf seinem Bauch lagen viele Krümel.</p>
+          <p>Felix und Lina ließen alle ihre Pokémon aus den Bällen. Knofensa stellte sich neben Liberlo und bot ihm eine besonders saure Beere an. Liberlo biss hinein, verzog kurz das Gesicht und aß dann weiter. Pixi tanzte mit Pikachu zwischen den Lampen des Camps.</p>
+          <p>Felix betrachtete den Dschungelball an seinem Gürtel. Lina hielt ihren daneben. Knofensa und Pixi hatten sich ihnen freiwillig angeschlossen. Beide Teams bestanden nun aus je zehn Pokémon.</p>
+          <p>Ash und Goh kamen mit ihren Abzeichen zu ihnen.</p>
+          <p>„Beim nächsten Mal gewinnen wir den Trainingskampf“, sagte Ash.</p>
+          <p>„Welchen von den vielen?“, fragte Lina.</p>
+          <p>Goh lachte. „Wir brauchen wohl eine neue Reise, um das herauszufinden.“</p>
+          <p>Felix, Lina, Ash und Goh hoben ihre Abzeichen in das Licht der Campfeuer. Hinter ihnen rauschten die Blätter, und aus dem Dschungel erklangen die Rufe der gezählten Pokémon.</p>
+          <p>Die Forscher-Challenge war beendet. Das Camp Blätterdach durfte bleiben.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Kapitelnavigation">
+      <button class="nav-button" id="previous-button" type="button">← Zurück</button>
+      <span class="page-count" id="page-count">1 / 12</span>
+      <button class="nav-button" id="next-button" type="button">Weiter →</button>
+    </nav>
+  </div>
+
+  <dialog id="toc-dialog" aria-labelledby="toc-heading">
+    <div class="dialog-header">
+      <h2 id="toc-heading">Kapitel</h2>
+      <button class="icon-button" id="close-toc" type="button" aria-label="Kapitelmenü schließen">×</button>
+    </div>
+    <div class="toc-list">
+          <button class="toc-item" type="button" data-chapter="0"><span>01</span><strong>Willkommen im Camp Blätterdach</strong></button>
+          <button class="toc-item" type="button" data-chapter="1"><span>02</span><strong>Die erste Zählung</strong></button>
+          <button class="toc-item" type="button" data-chapter="2"><span>03</span><strong>Das Lianendickicht</strong></button>
+          <button class="toc-item" type="button" data-chapter="3"><span>04</span><strong>Los, Dschungelball!</strong></button>
+          <button class="toc-item" type="button" data-chapter="4"><span>05</span><strong>Über den Kronenwald</strong></button>
+          <button class="toc-item" type="button" data-chapter="5"><span>06</span><strong>Training zwischen Baumriesen</strong></button>
+          <button class="toc-item" type="button" data-chapter="6"><span>07</span><strong>Nebel über dem Sumpf</strong></button>
+          <button class="toc-item" type="button" data-chapter="7"><span>08</span><strong>Vier Freunde im Morast</strong></button>
+          <button class="toc-item" type="button" data-chapter="8"><span>09</span><strong>Die Nachtruinen</strong></button>
+          <button class="toc-item" type="button" data-chapter="9"><span>10</span><strong>Die Forderung der Top Vier</strong></button>
+          <button class="toc-item" type="button" data-chapter="10"><span>11</span><strong>Vier gegen die Top Vier</strong></button>
+          <button class="toc-item" type="button" data-chapter="11"><span>12</span><strong>Der Ball aus Blättern</strong></button>
+    </div>
+  </dialog>
+
+  <script>
+    (() => {
+      const key = 'los-dschungelball-reader-v1';
+      const chapters = [...document.querySelectorAll('.chapter')];
+      const tocItems = [...document.querySelectorAll('.toc-item')];
+      const dialog = document.querySelector('#toc-dialog');
+      const state = { chapter: 0, fontSize: 20, dark: false, positions: {} };
+      try { Object.assign(state, JSON.parse(localStorage.getItem(key)) || {}); } catch (_) {}
+      state.chapter = Math.max(0, Math.min(chapters.length - 1, Number(state.chapter) || 0));
+      state.fontSize = Math.max(17, Math.min(28, Number(state.fontSize) || 20));
+      state.dark = Boolean(state.dark);
+
+      const save = () => localStorage.setItem(key, JSON.stringify(state));
+      const splitTitle = (value) => {
+        const match = value.match(/^Kapitels+(d+):s*(.*)$/);
+        return match ? { kicker: 'Kapitel ' + match[1], title: match[2] } : { kicker: '', title: value };
+      };
+      const applyPreferences = () => {
+        document.documentElement.style.setProperty('--reader-size', state.fontSize + 'px');
+        document.body.classList.toggle('dark', state.dark);
+        document.querySelector('meta[name="theme-color"]').content = state.dark ? '#17211e' : '#173f35';
+      };
+      const updateProgress = () => {
+        if (!document.body.classList.contains('reading')) return;
+        const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+        const within = Math.max(0, Math.min(1, scrollY / max));
+        const total = ((state.chapter + within) / chapters.length) * 100;
+        document.querySelector('#progress-fill').style.width = total + '%';
+        state.positions[state.chapter] = Math.round(scrollY);
+      };
+      const showChapter = (index, restore = false) => {
+        state.positions[state.chapter] = Math.round(scrollY);
+        state.chapter = Math.max(0, Math.min(chapters.length - 1, index));
+        chapters.forEach((chapter, i) => chapter.classList.toggle('active', i === state.chapter));
+        tocItems.forEach((item, i) => {
+          item.classList.toggle('current', i === state.chapter);
+          if (i === state.chapter) item.setAttribute('aria-current', 'page'); else item.removeAttribute('aria-current');
+        });
+        const title = splitTitle(chapters[state.chapter].querySelector('h1').id
+          ? tocItems[state.chapter].querySelector('strong').textContent
+          : chapters[state.chapter].querySelector('h1').textContent);
+        document.querySelector('#bar-kicker').textContent = 'Kapitel ' + (state.chapter + 1);
+        document.querySelector('#bar-chapter').textContent = tocItems[state.chapter].querySelector('strong').textContent;
+        document.querySelector('#page-count').textContent = (state.chapter + 1) + ' / ' + chapters.length;
+        document.querySelector('#previous-button').disabled = state.chapter === 0;
+        document.querySelector('#next-button').disabled = state.chapter === chapters.length - 1;
+        document.title = 'Kapitel ' + (state.chapter + 1) + ' · Los, Dschungelball!';
+        save();
+        requestAnimationFrame(() => {
+          scrollTo({ top: restore ? (state.positions[state.chapter] || 0) : 0, behavior: restore ? 'auto' : 'smooth' });
+          updateProgress();
+        });
+      };
+      const openReader = (restore = true) => {
+        document.body.classList.add('reading');
+        showChapter(state.chapter, restore);
+      };
+      const openToc = () => dialog.showModal();
+
+      applyPreferences();
+      showChapter(state.chapter, false);
+      document.querySelector('#start-reading').textContent = state.positions[state.chapter] ? 'Weiterlesen' : 'Buch öffnen';
+      document.querySelector('#start-reading').addEventListener('click', () => openReader(true));
+      document.querySelector('#cover-toc').addEventListener('click', openToc);
+      document.querySelector('#menu-button').addEventListener('click', openToc);
+      document.querySelector('#close-toc').addEventListener('click', () => dialog.close());
+      dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+      tocItems.forEach((item) => item.addEventListener('click', () => {
+        document.body.classList.add('reading');
+        dialog.close();
+        showChapter(Number(item.dataset.chapter));
+      }));
+      document.querySelector('#previous-button').addEventListener('click', () => showChapter(state.chapter - 1));
+      document.querySelector('#next-button').addEventListener('click', () => showChapter(state.chapter + 1));
+      document.querySelector('#font-down').addEventListener('click', () => { state.fontSize = Math.max(17, state.fontSize - 1); applyPreferences(); save(); updateProgress(); });
+      document.querySelector('#font-up').addEventListener('click', () => { state.fontSize = Math.min(28, state.fontSize + 1); applyPreferences(); save(); updateProgress(); });
+      document.querySelector('#theme-button').addEventListener('click', () => { state.dark = !state.dark; applyPreferences(); save(); });
+      addEventListener('scroll', updateProgress, { passive: true });
+      addEventListener('beforeunload', () => { updateProgress(); save(); });
+      addEventListener('keydown', (event) => {
+        if (dialog.open) return;
+        if (event.key === 'ArrowLeft' && state.chapter > 0) showChapter(state.chapter - 1);
+        if (event.key === 'ArrowRight' && state.chapter < chapters.length - 1) showChapter(state.chapter + 1);
+      });
+    })();
+  </script>
+</body>
+</html>
