@@ -1,0 +1,1210 @@
+Warning: truncated output (original token count: 30458)
+Total output lines: 1221
+
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#173c61">
+  <meta name="description" content="Felix und Lina – Kampf der Urgewalten – ein Abenteuer mit Felix und Lina.">
+  <title>Felix und Lina – Kampf der Urgewalten</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f8f4e8;
+      --paper-deep: #efe8d5;
+      --ink: #252d36;
+      --muted: #697481;
+      --green: #245688;
+      --green-dark: #173c61;
+      --green-soft: #dbe7f2;
+      --gold: #d97a4a;
+      --line: rgba(36, 86, 136, .18);
+      --shadow: 0 16px 50px rgba(23, 60, 97, .16);
+      --reader-size: 20px;
+      --reader-leading: 1.72;
+      --bar-h: 58px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    button { font: inherit; }
+    button:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+    .cover {
+      position: relative;
+      min-height: 100svh;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      padding: max(28px, env(safe-area-inset-top)) 22px max(28px, env(safe-area-inset-bottom));
+      color: #fffdf3;
+      background:
+        radial-gradient(circle at 15% 12%, rgba(96, 183, 222, .33), transparent 30%),
+        radial-gradient(circle at 90% 76%, rgba(233, 112, 61, .30), transparent 28%),
+        linear-gradient(145deg, #102e4b 0%, #245688 49%, #7a3526 100%);
+    }
+    .cover::before,
+    .cover::after {
+      content: "";
+      position: absolute;
+      width: 190px;
+      height: 320px;
+      opacity: .34;
+      background: repeating-radial-gradient(ellipse at 15% 50%, transparent 0 18px, rgba(206, 232, 167, .65) 19px 24px, transparent 25px 40px);
+      transform: rotate(-24deg);
+      pointer-events: none;
+    }
+    .cover::before { top: -100px; left: -105px; }
+    .cover::after { right: -110px; bottom: -110px; transform: rotate(150deg); }
+    .cover-card { position: relative; z-index: 1; width: min(100%, 430px); text-align: center; }
+    .series-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 36px;
+      color: #dceaf6;
+      font: 700 .74rem/1.2 system-ui, sans-serif;
+      letter-spacing: .17em;
+      text-transform: uppercase;
+    }
+    .series-label::before, .series-label::after { content: ""; width: 25px; height: 1px; background: currentColor; }
+    .cover h1 { margin: 0; font-size: clamp(2.65rem, 13vw, 4.4rem); line-height: .98; letter-spacing: -.045em; font-weight: 700; text-wrap: balance; }
+    .cover h1 span { display: block; margin-top: 13px; color: #ffb06d; font-size: .52em; line-height: 1.1; letter-spacing: -.02em; }
+    .pokeball-mark {
+      width: 86px;
+      height: 86px;
+      margin: 36px auto 29px;
+      border: 3px solid rgba(255,255,255,.8);
+      border-radius: 50%;
+      position: relative;
+      box-shadow: 0 0 0 7px rgba(255,255,255,.06);
+    }
+    .pokeball-mark::before { content: ""; position: absolute; left: 0; right: 0; top: 39px; height: 3px; background: rgba(255,255,255,.8); }
+    .pokeball-mark::after { content: ""; position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; border: 3px solid rgba(255,255,255,.8); border-radius: 50%; background: #245688; transform: translate(-50%, -50%); }
+    .cover-subtitle { margin: 0 auto 34px; max-width: 30ch; color: #e0eaf2; font: 500 1rem/1.6 system-ui, sans-serif; }
+    .cover-actions { display: grid; gap: 11px; }
+    .primary-button, .secondary-button {
+      min-height: 52px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font: 750 1rem/1 system-ui, sans-serif;
+    }
+    .primary-button { background: #f4a261; color: #17324b; box-shadow: 0 10px 25px rgba(0,0,0,.2); }
+    .secondary-button { color: #fff; border-color: rgba(255,255,255,.35); background: rgba(255,255,255,.08); }
+
+    .reader { display: none; min-height: 100vh; }
+    body.reading .cover { display: none; }
+    body.reading .reader { display: block; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      height: calc(var(--bar-h) + env(safe-area-inset-top));
+      padding: env(safe-area-inset-top) 10px 0;
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 6px;
+      background: color-mix(in srgb, var(--paper) 92%, transparent);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .icon-button {
+      width: 42px; height: 42px; border: 0; border-radius: 50%; cursor: pointer;
+      color: var(--green); background: transparent; display: grid; place-items: center;
+      font: 700 1.15rem/1 system-ui, sans-serif;
+    }
+    .icon-button:active { background: var(--green-soft); }
+    .bar-title { min-width: 0; text-align: center; }
+    .bar-title span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font: 650 .72rem/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; }
+    .bar-title strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 3px; font: 700 .9rem/1.1 system-ui, sans-serif; }
+    .font-controls { display: flex; align-items: center; }
+    .font-controls .icon-button { width: 36px; }
+    .font-controls .small { font-size: .82rem; }
+    .font-controls .large { font-size: 1.14rem; }
+    .progress-track { position: fixed; z-index: 30; top: calc(var(--bar-h) + env(safe-area-inset-top) - 2px); left: 0; width: 100%; height: 2px; background: transparent; }
+    .progress-fill { display: block; width: 0; height: 100%; background: var(--gold); transition: width .15s linear; }
+
+    main { width: min(100%, 720px); margin: 0 auto; padding: 0 22px calc(110px + env(safe-area-inset-bottom)); }
+    .chapter { display: none; }
+    .chapter.active { display: block; }
+    .chapter-heading { padding: clamp(58px, 13vh, 104px) 0 42px; text-align: center; }
+    .chapter-number { color: var(--green); font: 750 .76rem/1.2 system-ui, sans-serif; letter-spacing: .17em; text-transform: uppercase; }
+    .chapter h1 { margin: 14px auto 18px; max-width: 16ch; font-size: clamp(2.1rem, 10vw, 3.6rem); line-height: 1.05; letter-spacing: -.035em; text-wrap: balance; }
+    .leaf-divider { display: inline-grid; place-items: center; width: 34px; height: 20px; color: var(--gold); font-size: .65rem; }
+    .leaf-divider::before, .leaf-divider::after { content: ""; position: absolute; }
+    .chapter-copy { font-size: var(--reader-size); line-height: var(--reader-leading); hyphens: auto; overflow-wrap: break-word; }
+    .chapter-copy p { margin: 0 0 1.12em; }
+    .chapter-copy p:first-child::first-letter { float: left; margin: .08em .09em 0 0; color: var(--green); font-size: 3.25em; font-weight: 700; line-height: .74; }
+    .chapter-end { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 58px auto 18px; color: var(--gold); }
+    .chapter-end span { width: 48px; height: 1px; background: var(--line); }
+    .chapter-end b { font-size: .62rem; }
+
+    .bottom-nav {
+      position: fixed; z-index: 18; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); transform: translateX(-50%);
+      width: min(calc(100% - 28px), 460px); height: 58px; padding: 5px;
+      display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+      border: 1px solid var(--line); border-radius: 18px;
+      background: color-mix(in srgb, var(--paper) 94%, transparent); box-shadow: var(--shadow);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    }
+    .nav-button { height: 46px; border: 0; border-radius: 13px; cursor: pointer; color: var(--green); background: transparent; font: 750 .86rem/1 system-ui, sans-serif; }
+    .nav-button:disabled { opacity: .28; cursor: default; }
+    .page-count { padding: 0 10px; color: var(--muted); font: 700 .78rem/1 system-ui, sans-serif; white-space: nowrap; }
+
+    dialog {
+      width: min(calc(100% - 28px), 520px); max-height: min(82svh, 760px); margin: auto; padding: 0;
+      color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 24px 80px rgba(7, 36, 28, .35);
+    }
+    dialog::backdrop { background: rgba(7, 31, 25, .66); backdrop-filter: blur(3px); }
+    .dialog-header { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 18px 16px 12px 22px; background: var(--paper); border-bottom: 1px solid var(--line); }
+    .dialog-header h2 { margin: 0; font-size: 1.45rem; }
+    .toc-list { display: grid; gap: 4px; padding: 9px 10px calc(16px + env(safe-area-inset-bottom)); }
+    .toc-item { width: 100%; min-height: 61px; padding: 10px 12px; display: grid; grid-template-columns: 42px 1fr; align-items: center; text-align: left; border: 0; border-radius: 13px; color: var(--ink); background: transparent; cursor: pointer; }
+    .toc-item span { color: var(--green); font: 800 .76rem/1 system-ui, sans-serif; letter-spacing: .08em; }
+    .toc-item strong { font: 650 .96rem/1.3 system-ui, sans-serif; }
+    .toc-item:hover, .toc-item.current { background: var(--green-soft); }
+
+    body.dark {
+      color-scheme: dark;
+      --paper: #17211e;
+      --paper-deep: #202b27;
+      --ink: #ecede5;
+      --muted: #aeb9b3;
+      --green: #8fc3ee;
+      --green-dark: #d5e8de;
+      --green-soft: #24394d;
+      --gold: #f0a16c;
+      --line: rgba(205, 225, 242, .16);
+      --shadow: 0 16px 50px rgba(0, 0, 0, .4);
+    }
+
+    @media (min-width: 700px) {
+      main { padding-inline: 38px; }
+      .chapter-copy { text-align: justify; }
+      .cover-actions { grid-template-columns: 1.25fr 1fr; }
+    }
+    @media (max-width: 360px) {
+      :root { --bar-h: 54px; }
+      main { padding-inline: 17px; }
+      .font-controls .icon-button { width: 32px; }
+      .chapter-copy { font-size: min(var(--reader-size), 22px); }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+    @media print {
+      .cover, .topbar, .bottom-nav, .progress-track, dialog { display: none !important; }
+      .reader, .chapter { display: block !important; }
+      body { background: white; color: black; }
+      main { width: auto; max-width: none; padding: 0; }
+      .chapter { break-before: page; }
+      .chapter-copy { font-size: 11pt; }
+    }
+  </style>
+</head>
+<body>
+  <section class="cover" aria-labelledby="cover-title">
+    <div class="cover-card">
+      <div class="series-label">Felix und Lina</div>
+      <h1 id="cover-title">Kampf der<span>Urgewalten</span></h1>
+      <div class="pokeball-mark" aria-hidden="true"></div>
+      <p class="cover-subtitle">Ein Abenteuer zwischen Meer und Vulkan in der Hoenn-Region</p>
+      <div class="cover-actions">
+        <button class="primary-button" id="start-reading" type="button">Buch öffnen</button>
+        <button class="secondary-button" id="cover-toc" type="button">Kapitel wählen</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="reader">
+    <header class="topbar">
+      <button class="icon-button" id="menu-button" type="button" aria-label="Kapitel auswählen">☰</button>
+      <div class="bar-title" aria-live="polite"><span id="bar-kicker">Kapitel 1</span><strong id="bar-chapter">Unwetter über Hoenn</strong></div>
+      <div class="font-controls" aria-label="Leseeinstellungen">
+        <button class="icon-button small" id="font-down" type="button" aria-label="Schrift verkleinern">A−</button>
+        <button class="icon-button large" id="font-up" type="button" aria-label="Schrift vergrößern">A+</button>
+        <button class="icon-button" id="theme-button" type="button" aria-label="Nachtmodus umschalten">◐</button>
+      </div>
+    </header>
+    <div class="progress-track" aria-hidden="true"><span class="progress-fill" id="progress-fill"></span></div>
+
+    <main id="book">
+
+      <section class="chapter" id="kapitel-1" data-index="0" aria-labelledby="kapitel-1-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 1</span>
+          <h1 id="kapitel-1-titel">Unwetter über Hoenn</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Schon bei der Einfahrt in den Hafen von Graphitport merkte Felix, dass mit dem Wetter etwas nicht stimmte.</p>
+          <p>Auf der linken Seite des Schiffes peitschte Regen über das Meer. Dunkle Wolken hingen so tief, dass sie beinahe die Spitzen der Kräne berührten. Auf der rechten Seite schien dagegen grelles Sonnenlicht auf trockene Hügel. Über dem Boden flimmerte die Hitze.</p>
+          <p>Felix hielt seine Karte unter die Jacke. „Zwischen dem Hafen und den Hügeln liegen nicht einmal zehn Kilometer.“</p>
+          <p>Lina streckte eine Hand in den Regen und die andere in einen warmen Sonnenstrahl. „Hier braucht man gleichzeitig einen Regenschirm und einen Sonnenhut.“</p>
+          <p>Pikachu saß auf ihrer Schulter und schüttelte die Tropfen aus dem Fell. Dabei bekam Felix mehrere davon ins Gesicht.</p>
+          <p>„Danke“, sagte er und wischte seine Brille trocken.</p>
+          <p>Pikachu grinste.</p>
+          <p>Neben Felix stand Liberlo an der Reling. Es ließ eine kleine, grüne Beere auf dem Fuß hüpfen und bot sie Felix an.</p>
+          <p>Felix betrachtete sie misstrauisch. Seit Liberlo noch ein Hopplo gewesen war, suchte es mit großer Begeisterung besonders saure Beeren für ihn aus.</p>
+          <p>„Später“, sagte er.</p>
+          <p>Liberlo biss selbst hinein. Sein Gesicht verzog sich so stark, dass Lina lachen musste. Trotzdem kaute es tapfer weiter.</p>
+          <p>Am Anleger wartete Professor Birk. Der Wind zerrte an seinem Hemd, und unter einem Arm hielt er eine dicke, wasserdichte Mappe fest.</p>
+          <p>„Gut, dass ihr da seid!“, rief er. „Wir sollten schnell zur Forschungsstation. In einer Stunde kann es hier wieder ganz anders aussehen.“</p>
+          <p>„Besser?“, fragte Lina.</p>
+          <p>Professor Birk blickte zu den schwarzen Wolken hinaus.</p>
+          <p>„Anders“, antwortete er.</p>
+          <p>Auf dem Weg durch den Hafen sahen Felix und Lina, was er meinte. Arbeiter befestigten Sandsäcke vor den Lagerhäusern. Gleichzeitig brachte ein Tankwagen Wasser zu einem ausgetrockneten Park am Rand der Stadt. Wingull drängten sich auf den Dächern zusammen, statt über dem Meer zu kreisen. Einige Krebscorps waren aus einem zu warm gewordenen Kanal in schattige Pfützen geklettert.</p>
+          <p>Lina blieb stehen. „Die Pokémon wissen auch nicht mehr, wohin sie sollen.“</p>
+          <p>„Genau das ist unser größtes Problem“, sagte Professor Birk. „Die Wetterzonen verschieben sich jeden Tag. Viele Pokémon verlassen ihre Lebensräume. Andere werden von den Veränderungen überrascht.“</p>
+          <p>Die Forschungsstation lag in einem flachen Gebäude oberhalb des Hafens. Auf dem Dach drehten sich Messgeräte im Wind. Eines zeigte nach Westen, ein zweites nach Osten und ein drittes drehte sich ohne Pause im Kreis.</p>
+          <p>„Das ist kaputt“, stellte Felix fest.</p>
+          <p>„Leider nicht“, sagte Professor Birk. „Der Wind wechselt tatsächlich so schnell.“</p>
+          <p>Im Arbeitsraum standen Karten, Messgeräte und mehrere Behälter mit Gesteinsproben. In der Mitte des größten Tisches lagen zwei graue Steintafeln. Jede war ungefähr so groß wie ein Tablett. Auf der einen verliefen blaue Linien in Form einer Welle. Die andere zeigte eine rote Sonne über gezackten Bergen.</p>
+          <p>Pikachu sprang auf einen Stuhl und beugte sich neugierig vor.</p>
+          <p>„Nicht anfassen“, sagte Professor Birk freundlich. „Wir wissen noch nicht, ob die Tafeln auf Pokémon-Kräfte reagieren.“</p>
+          <p>Pikachu zog die Pfoten zurück.</p>
+          <p>Liberlo nahm ebenfalls die Hände vom Tisch, obwohl niemand gesehen hatte, wann es sie dort hingelegt hatte.</p>
+          <p>Professor Birk breitete eine Karte der Küste aus. „Vor drei Wochen haben Taucher einen versunkenen Tempel entdeckt. Diese Tafeln lagen in zwei gegenüberliegenden Kammern. Kurz nachdem sie heraufgebracht worden waren, begann das ungewöhnliche Wetter.“</p>
+          <p>Felix betrachtete die Karte. Der Tempel lag zwischen einem tiefen Meeresgraben und einer Insel mit einem erloschen geglaubten Vulkan.</p>
+          <p>„Dann müssen die Tafeln zurück“, sagte Lina.</p>
+          <p>„Das haben wir versucht“, erklärte der Professor. „Doch der Eingang ist inzwischen durch starke Strömungen versperrt. Außerdem fehlen in den Kammern zwei runde Siegel. Ohne sie reagieren die Tafeln nicht mehr auf ihren alten Platz.“</p>
+          <p>Felix ging um den Tisch. Am unteren Rand der Sonnentafel entdeckte er kleine Einkerbungen. Sie sahen zunächst wie Kratzer aus, bildeten aber eine Reihe aus Bergen, Pfeilen und Kreisen. Auf der Wellentafel verlief ein ähnliches Muster.</p>
+          <p>„Das sind Wege“, sagte er. „Oder Anweisungen.“</p>
+          <p>Professor Birk nickte. „Das vermuten wir auch. Die Zeichen könnten zu den fehlenden Siegeln führen.“</p>
+          <p>Lina stand vor einem großen Fenster. Der Regen schlug gegen die Scheibe. Dahinter kämpfte ein kleines Vogel-Pokémon gegen den Wind. Sein dunkler Körper wurde von gelben Federn durchzogen. Es flatterte auf der Stelle, verlor plötzlich an Höhe und landete unsanft auf dem Fenstersims.</p>
+          <p>„Da ist ein Voltrel!“ Lina öffnete das Fenster einen Spalt.</p>
+          <p>Sofort drückte der Wind Regen in den Raum. Voltrel klammerte sich mit den Füßen am Sims fest. Es wirkte erschöpft, doch sein Blick blieb auf den Klippen nördlich des Hafens gerichtet.</p>
+          <p>„Komm herein“, sagte Lina ruhig.</p>
+          <p>Voltrel sah sie an, breitete aber wieder die Flügel aus.</p>
+          <p>Eine Böe traf es. Lina griff nicht nach dem Pokémon. Sie hielt nur beide Hände wie eine schützende Wand neben den Fensterspalt. Voltrel fing sich und flatterte in den Raum. Auf dem Boden blieb es jedoch nicht sitzen. Es hüpfte sofort zurück zum Fenster und rief aufgeregt.</p>
+          <p>„Es will wieder hinaus“, sagte Professor Birk.</p>
+          <p>Lina schüttelte den Kopf. „Es will, dass wir mitkommen.“</p>
+          <p>Voltrel rief erneut und blickte zu den Klippen.</p>
+          <p>Felix nahm seine Karte. „Dort draußen liegt eine bekannte Brutstelle für Flug-Pokémon. Wenn die anderen Voltrel noch dort sind, sitzen sie mitten im Sturm.“</p>
+          <p>Ein tiefes Grollen rollte über das Meer. Die Fensterscheibe vibrierte. Für einen Moment glaubte Felix, es sei Donner. Doch Pikachu stellte die Ohren auf, und Voltrel duckte sich.</p>
+          <p>Das Geräusch hatte nicht aus den Wolken gekommen.</p>
+          <p>Es war aus dem Meer gekommen.</p>
+          <p>Professor Birk trat ans Fenster. „Wir müssen herausfinden, was an den Klippen geschieht. Aber ihr entscheidet selbst, ob ihr bei diesem Wetter mitkommt.“</p>
+          <p>Felix sah Lina an. Sie musste nichts sagen. Sie blickten beide zu Voltrel, das trotz seiner Erschöpfung schon wieder hinauswollte.</p>
+          <p>„Wir kommen mit“, sagten sie gleichzeitig.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-2" data-index="1" aria-labelledby="kapitel-2-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 2</span>
+          <h1 id="kapitel-2-titel">Das Voltrel im Sturm</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Der Weg zu den Sturmklippen führte zunächst an niedrigen Häusern vorbei. Danach wurde er schmal und steinig. Der Wind kam in heftigen Stößen vom Meer herauf.</p>
+          <p>Professor Birk trug ein Messgerät vor sich. Felix hatte die Karte in eine durchsichtige Hülle gesteckt. Lina hielt Voltrel nicht fest. Das Pokémon flog immer ein kurzes Stück voraus, wartete auf einem Felsen und rief sie weiter.</p>
+          <p>„Es spart seine Kraft“, bemerkte Felix.</p>
+          <p>„Und es passt auf, dass wir nicht verloren gehen“, sagte Lina.</p>
+          <p>Pikachu lief dicht neben ihr. Liberlo hielt mit einer Hand seinen langen Ohrbüschel fest, als könne der Wind ihn sonst davontragen.</p>
+          <p>Kurz vor den Klippen hörten sie viele aufgeregte Rufe. Hinter einer Felswand duckte sich eine Gruppe Voltrel in eine Mulde. Einige Wingull saßen zwischen ihnen. Der Wind drückte die kleineren Pokémon immer wieder gegen den Boden.</p>
+          <p>Das Voltrel, dem sie gefolgt waren, landete mitten in der Gruppe. Zwei junge Voltrel drängten sich sofort an seine Seite.</p>
+          <p>„Es hat seine Familie gesucht“, sagte Lina.</p>
+          <p>Professor Birk prüfte die Umgebung. „Die Mulde bietet nicht mehr lange Schutz. Wenn der Wind weiter dreht, trifft er sie direkt.“</p>
+          <p>Unterhalb der Klippen lag eine tiefe Felshöhle. Ihr Eingang war breit genug für alle Pokémon. Doch zwischen der Mulde und der Höhle verlief ein offener Hang. Jede Windböe fegte ungebremst darüber hinweg.</p>
+          <p>„Wir brauchen einen sicheren Weg“, sagte Felix.</p>
+          <p>Er beobachtete das hohe Gras. Es legte sich nicht überall gleichzeitig um. Erst bog es sich nahe der Klippenkante, dann in der Mitte und zuletzt am Höhleneingang.</p>
+          <p>„Die Böen laufen in Wellen über den Hang“, erklärte er. „Dazwischen sind kurze Pausen.“</p>
+          <p>Lina sah zu den verängstigten Pokémon. „Die Kleinen können aber nicht alle gleichzeitig losfliegen.“</p>
+          <p>„Dann fliegen sie nicht.“ Felix nahm zwei Pokébälle. „Tauboss und Aerodactyl, wir brauchen euch!“</p>
+          <p>Die beiden Pokémon erschienen im Schutz der Felswand. Tauboss breitete vorsichtig die Flügel aus und prüfte den Wind. Aerodactyl stemmte seine kräftigen Füße gegen den Boden.</p>
+          <p>Lina rief Quappo. Es landete breitbeinig auf dem nassen Fels, hob entschlossen die Arme und rutschte sofort ein Stück rückwärts.</p>
+          <p>Quappo fing sich, verschränkte die Arme und blickte so ernst über den Hang, als habe es genau diese Stelle prüfen wollen.</p>
+          <p>„Sehr gründlich“, sagte Lina.</p>
+          <p>Quappo nickte würdevoll.</p>
+          <p>Felix erklärte seinen Plan. Aerodactyl sollte auf der Meerseite des Weges bleiben und die stärksten Böen mit seinen Flügeln brechen. Tauboss sollte dicht über dem Boden fliegen und den Pokémon die sicheren Pausen anzeigen. Quappo würde am unteren Ende stehen und jeden auffangen, der den Halt verlor.</p>
+          <p>„Und wir?“, fragte Lina.</p>
+          <p>„Wir führen die Gruppe hinunter.“</p>
+          <p>Professor Birk befestigte ein Seil an einem Felsvorsprung. Felix legte es in weiten Schlaufen über den Hang. So konnten sich die Pokémon daran orientieren, ohne daran festgebunden zu sein.</p>
+          <p>Das erste Windfenster kam.</p>
+          <p>Tauboss rief. Drei Wingull liefen mit angelegten Flügeln den Hang hinab. Eine Böe setzte ein, doch Aerodactyl stemmte sich dagegen und nahm ihr die größte Kraft. Die Wingull erreichten die Höhle.</p>
+          <p>Beim zweiten Windfenster folgten vier Voltrel. Beim dritten wagten sich die beiden kleinsten aus der Mulde. Das Voltrel aus der Forschungsstation blieb dicht bei ihnen.</p>
+          <p>Mitten auf dem Hang rollte Donner über die Klippen. Die kleinen Voltrel erschraken. Eines breitete zu früh die Flügel aus und wurde vom Boden gehoben.</p>
+          <p>„Voltrel!“, rief Lina.</p>
+          <p>Das größere Voltrel schoss hinterher. Es packte das Junge mit den Füßen, wurde nun aber selbst seitwärts über den Hang gedrückt.</p>
+          <p>Lina hielt sich mit einer Hand am Seil fest und lief ihnen entgegen. Pikachu klammerte sich an ihre Schulter. Quappo stapfte von unten herauf.</p>
+          <p>„Tauboss, links herum!“, rief Felix. „Aerodactyl, noch einen Schritt zum Meer!“</p>
+          <p>Tauboss flog in einem Bogen über die beiden Voltrel und drückte sie mit einem gezielten Flügelschlag tiefer. Aerodactyl fing die nächste Böe ab. Für einen kurzen Moment schwebten beide Vogel-Pokémon fast still in der Luft.</p>
+          <p>Lina streckte die Arme aus. Das größere Voltrel ließ das Junge nicht los. Beide landeten gegen ihre Brust. Lina ging in die Knie, hielt sie aber sicher.</p>
+          <p>„Alles gut“, sagte sie. „Ihr seid beide da.“</p>
+          <p>Das größere Voltrel sprang sofort wieder auf den Boden und stupste das Junge vorwärts. Erst als es den Höhleneingang erreicht hatte, blieb es bei Lina stehen.</p>
+          <p>„Du wolltest nicht gerettet werden“, sagte sie leise. „Du wolltest alle anderen retten.“</p>
+          <p>Voltrel sah sie lange an. Dann berührte es mit dem Schnabel kurz ihre Hand.</p>
+          <p>Ein lautes Knattern ertönte oberhalb der Klippen.</p>
+          <p>Ein orangefarbenes Fahrzeug rumpelte über den Weg. Auf seinem Dach drehte sich ein riesiger Trichter. An der Seite stand in schiefen Buchstaben: <strong>Rocket-Wetterrettung – Wir entfernen jedes Wetter!</strong></p>
+          <p>Jessie trug einen viel zu großen Regenmantel. James hatte eine Sonnenbrille über eine Schutzbrille gesetzt. Mauzi hielt ein Klemmbrett verkehrt herum.</p>
+          <p>„Keine Sorge!“, rief Jessie. „Die besten Wetterfachleute der gesamten Hoenn-Region sind eingetroffen!“</p>
+          <p>Professor Birk starrte sie an. „Seit wann seid ihr Wetterfachleute?“</p>
+          <p>„Seit heute Morgen“, antwortete James.</p>
+          <p>„Und wir waren den ganzen Vormittag fast fehlerfrei“, ergänzte Mauzi.</p>
+          <p>Hinter dem Fahrzeug fiel mit einem Klappern ein Rad ab.</p>
+          <p>Felix stellte sich vor die Höhle. „Schaltet die Maschine nicht ein. Die Pokémon sind bereits in Sicherheit.“</p>
+          <p>Jessie legte einen Hebel um. „Unsere Maschine saugt den gesamten Sturm ein!“</p>
+          <p>Der Trichter begann zu brummen. Zuerst sog er Regentropfen an. Dann flogen Blätter, kleine Steine und James’ Sonnenbrille hinein.</p>
+          <p>„Mehr Kraft!“, rief Jessie.</p>
+          <p>Mauzi drückte einen roten Knopf.</p>
+          <p>Der Trichter drehte sich ruckartig zur Seite und saugte Jessies Kapuze über ihren Kopf. James verlor einen Stiefel. Mauzis Klemmbrett verschwand im Rohr.</p>
+          <p>Dann rollte das abgebrochene Rad am Fahrzeug vorbei, wurde ebenfalls eingesogen und verkeilte sich im Trichter.</p>
+          <p>Die Maschine hustete.</p>
+          <p>Sie spuckte alles wieder aus.</p>
+          <p>Sonnenbrille, Stiefel, Klemmbrett, Blätter und eine große Menge Regenwasser prasselten auf Team Rocket herab. Das Fahrzeug setzte sich rückwärts in Bewegung.</p>
+          <p>„Die Bremse!“, rief James.</p>
+          <p>„Welche von den sieben?“, fragte Mauzi.</p>
+          <p>Das Fahrzeug rollte um eine Kurve und verschwand. Einen Augenblick später hörte man Jessie rufen: „Nicht den roten Hebel!“</p>
+          <p>Danach folgte ein dumpfes Platschen.</p>
+          <p>In der Höhle waren nun alle Flug-Pokémon versammelt. Professor Birk untersuchte sie, ohne eines festzuhalten. Keines war ernsthaft verletzt. Tauboss und Aerodactyl blieben am Eingang, bis der stärkste Teil des Sturms vorübergezogen war.</p>
+          <p>Lina setzte sich auf einen flachen Stein. Das Voltrel aus der Forschungsstation kam zu ihr. Sie nahm keinen Pokéball heraus. Das Pokémon hatte seine Familie gerade erst wiedergefunden, und sie wollte nicht für Voltrel entscheiden.</p>
+          <p>„Du kannst hierbleiben“, sagte sie. „Wir helfen euch trotzdem.“</p>
+          <p>Voltrel sah zu den beiden jüngeren Pokémon. Dann blickte es zu Lina, Felix und ihren Partnern. Es hüpfte einen Schritt näher zu Lina und blieb dort sitzen.</p>
+          <p>Felix kniete am Rand der Höhle. Zwischen den Pfützen lag ein dunkler Stein, den die letzte Welle bis hier hinaufgeschleudert haben musste. In seiner Oberfläche verlief eine blaue Linie. Sie sah genauso aus wie die Welle auf der Steintafel.</p>
+          <p>„Professor Birk“, sagte er. „Das sollten Sie sich ansehen.“</p>
+          <p>Bevor der Professor antworten konnte, wurde das Meer draußen plötzlich still.</p>
+          <p>Nicht ruhig. Still.</p>
+          <p>Die Wellen hielten für einen einzigen, unnatürlichen Augenblick inne. Dann hob sich weit vor der Küste eine dunkle, riesige Form aus dem Wasser.</p>
+          <p>Ein tiefer Ruf rollte über das Meer und ließ die Höhle erzittern.</p>
+          <p>Voltrel drängte sich an Lina. Pikachus Wangen knisterten. Felix umfasste den Stein mit der Wellenlinie.</p>
+          <p>Professor Birk blickte hinaus in den Regen.</p>
+          <p>„Kyogre“, sagte er.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-3" data-index="2" aria-labelledby="kapitel-3-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 3</span>
+          <h1 id="kapitel-3-titel">Der Pfad der Gezeiten</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Kyogres dunkle Gestalt verschwand wieder unter der Wasseroberfläche. Erst danach setzten sich die Wellen in Bewegung. Sie rollten nicht wie gewöhnliche Wellen zur Küste. Das Wasser zog sich zunächst weit zurück und kehrte dann mit solcher Kraft zurück, dass es gegen die unteren Felsen der Klippe schlug.</p>
+          <p>„Wir gehen höher“, entschied Professor Birk.</p>
+          <p>Felix steckte den Stein mit der blauen Linie in eine Seitentasche. Dann half er Professor Birk, die erschöpften Wingull und Voltrel in den hinteren Teil der Höhle zu führen. Lina wartete, bis auch das letzte kleine Voltrel sicher war.</p>
+          <p>Das Voltrel, das sie zur Klippe geführt hatte, blieb bei ihr.</p>
+          <p>„Deine Familie ist dort hinten“, sagte Lina und zeigte in die Höhle.</p>
+          <p>Voltrel blickte zu den anderen. Die beiden jungen Pokémon saßen geschützt zwischen mehreren Wingull. Dann sah es wieder hinaus zum Meer und rief leise.</p>
+          <p>„Es will wissen, warum Kyogre gekommen ist“, sagte Lina.</p>
+          <p>„Oder es will verhindern, dass der nächste Sturm seine Familie wieder überrascht“, ergänzte Felix.</p>
+          <p>Sie verließen die Höhle durch einen schmalen Aufstieg, der zu einem alten Küstenweg führte. Tauboss und Aerodactyl flogen über ihnen. Voltrel folgte aus eigener Kraft. Wenn eine Böe kam, landete es kurz auf Linas Rucksack.</p>
+          <p>Nach wenigen Minuten begann der Stein in Felix’ Tasche schwach blau zu leuchten.</p>
+          <p>„Das hat er vorher nicht gemacht.“ Felix holte ihn hervor.</p>
+          <p>Die Wellenlinie auf seiner Oberfläche zeigte jetzt in eine Richtung. Sie wies zu einer Gruppe halb versunkener Mauern am Ende des Küstenwegs.</p>
+          <p>Professor Birk blieb stehen. „Diese Ruine ist viel älter als Graphitport. Wir hielten sie bisher für einen Beobachtungsplatz der früheren Seefahrer.“</p>
+          <p>Der Eingang lag hinter einem schmalen Wasserbecken. Auf dem ersten Stein der Mauer war dasselbe Wellenzeichen eingemeißelt wie auf der Tafel in der Forschungsstation.</p>
+          <p>Felix setzte den gefundenen Stein in eine Vertiefung. Er passte genau hinein.</p>
+          <p>Mit einem tiefen Knirschen öffnete sich ein Spalt in der Mauer. Dahinter führte eine Treppe hinunter in einen runden Raum. Wasser floss durch Rinnen im Boden. An den Wänden waren Pokémon abgebildet, die in Flüssen, Seen und im Meer lebten.</p>
+          <p>„Der Pfad der Gezeiten“, las Professor Birk von einer verwitterten Inschrift ab. „Wer das Meer verstehen will, darf nicht nur seiner Kraft folgen.“</p>
+          <p>„Da fehlt etwas“, sagte Lina.</p>
+          <p>Ein Teil der Inschrift war abgebrochen. Felix leuchtete mit seiner Taschenlampe über die Wand. Auf der gegenüberliegenden Seite fanden sie die Fortsetzung.</p>
+          <p>„Er muss auch erkennen, wohin das Wasser fließen muss“, las Felix.</p>
+          <p>In der Mitte des Raums lagen fünf steinerne Becken. Das erste lief ständig über, während die anderen fast trocken waren. Kleine Wasser-Pokémon drängten sich in den wenigen gefüllten Rinnen: zwei Marill, mehrere Gehweiher und ein junges Krebscorps. Der Sturm hatte sie durch einen Seiteneingang in die Ruine gespült.</p>
+          <p>„Die Prüfung läuft noch“, erkannte Lina. „Aber das Wasser erreicht nicht mehr alle Becken.“</p>
+          <p>Felix untersuchte die Rinnen. Mehrere waren von Sand, Muschelschalen und kleinen Steinen verstopft. „Wenn wir einfach alles öffnen, fließt das Wasser nur in das tiefste Becken. Wir müssen es verteilen.“</p>
+          <p>Lina kniete sich zu den Pokémon. „Und dabei müssen alle einen sicheren Platz bekommen.“</p>
+          <p>Sie rief Quappo, während Felix Turtok auswählte. Quappo stellte sich in die stärkste Strömung und hielt einen lockeren Steinblock fest. Turtok spülte mit vorsichtigen, kurzen Wasserstößen Sand aus den kleineren Kanälen.</p>
+          <p>Felix zeichnete die Rinnen auf seiner Karte ein. „Das Wasser muss zuerst nach rechts, dann durch die mittlere Schleuse und zuletzt in das hintere Becken.“</p>
+          <p>Lina beobachtete die Gehweiher. Jedes Mal, wenn Felix eine bestimmte Schleuse öffnete, wichen sie erschrocken zurück.</p>
+          <p>„Stopp“, sagte sie. „Der Weg ist für das Wasser richtig, aber nicht für die Pokémon. Die Strömung wird dort zu schnell.“</p>
+          <p>Felix sah noch einmal hin. Lina hatte recht. Er hatte nur auf die Höhe der Becken geachtet.</p>
+          <p>„Dann öffnen wir zuerst diese beiden Seitenrinnen. Das dauert länger, aber die Strömung bleibt schwächer.“</p>
+          <p>Lina nickte. Gemeinsam führten sie die Marill und Gehweiher in das erste sichere Becken. Krebscorps wollte sich nicht bewegen. Es hob die Scheren und stellte sich mitten in die Rinne.</p>
+          <p>Quappo trat vorsichtig heran. Es hob ebenfalls beide Arme. Krebscorps hob seine Scheren noch höher. Quappo machte sich größer. Krebscorps auch.</p>
+          <p>Dann trat Quappo auf eine glatte Muschel, rutschte aus und setzte sich mit einem Platschen ins Wasser.</p>
+          <p>Krebscorps starrte es an.</p>
+          <p>Quappo stand sofort wieder auf und zeigte mit einer würdevollen Bewegung zum sicheren Becken. Krebscorps senkte eine Schere, als müsse es über diesen Vorschlag nachdenken. Dann folgte es.</p>
+          <p>„Überzeugend“, sagte Felix.</p>
+          <p>Quappo nickte ernst.</p>
+          <p>Als die letzte Schleuse geöffnet werden sollte, brach ein Stück der Decke herab. Ein flacher Stein fiel in die Hauptrinne und blockierte sie vollständig. Das erste Becken füllte sich rasch. Wasser schwappte über den Rand.</p>
+          <p>Turtok setzte die Füße fest auf den Boden und versuchte, den Block zur Seite zu schieben. Er bewegte sich nur wenige Zentimeter.</p>
+          <p>Voltrel flatterte durch den Raum. Es landete auf einer steinernen Säule und rief Lina zu.</p>
+          <p>„Du hast etwas entdeckt.“ Lina folgte seinem Blick.</p>
+          <p>Oberhalb der Rinne verlief eine schmale Metallschiene. An ihrem Ende saß ein verrosteter Hebel. Lina konnte ihn nicht erreichen.</p>
+          <p>„Voltrel, kannst du ihn bewegen?“</p>
+          <p>Voltrel flog hinauf, packte den Hebel mit den Füßen und schlug kräftig mit den Flügeln. Nichts geschah.</p>
+          <p>„Pikachu, hilf ihm mit einem ganz schwachen Donnerschock!“, rief Lina.</p>
+          <p>Pikachu zielte auf die Metallschiene. Kleine Funken liefen daran entlang. Der Rost knackte. Voltrel zog erneut, und der Hebel sprang um.</p>
+          <p>Unter dem Steinblock öffnete sich eine zweite Rinne. Der Wasserdruck ließ nach. Turtok konnte den Block nun zur Seite schieben.</p>
+          <p>Das Wasser floss durch alle fünf Becken. Die Linien an den Beckenrändern begannen blau zu leuchten und verbanden sich zu einem einzigen Wellenzeichen.</p>
+          <p>Aus der Wand glitt eine kleine Scheibe. Auf ihrer Vorderseite war eine Welle abgebildet. Auf der Rückseite zeigte ein Pfeil nach Nordosten.</p>
+          <p>„Das ist noch nicht das Gezeitensiegel“, sagte Professor Birk. „Aber vermutlich führt uns diese Scheibe zur nächsten Station des Pfades.“</p>
+          <p>Die Wasser-Pokémon konnten die Ruine durch einen nun geöffneten Kanal verlassen. Draußen hatte der Regen nachgelassen. Voltrels Familie kreiste über der Klippe.</p>
+          <p>Lina ging mit Voltrel auf einen freien Felsen. „Du kannst zu ihnen zurück.“</p>
+          <p>Voltrel rief zu den anderen hinauf. Die beiden jungen Voltrel kamen herunter und berührten seinen Schnabel. Danach flogen sie wieder zu ihrer Gruppe.</p>
+          <p>Voltrel blieb.</p>
+          <p>Lina nahm langsam einen Pokéball heraus und hielt ihn auf der offenen Hand. „Du musst nicht mitkommen. Aber wenn du Kyogres Geheimnis mit uns herausfinden möchtest, bist du willkommen.“</p>
+          <p>Voltrel sah zu seiner Familie, dann zu Pikachu und schließlich zu Lina. Es sprang auf ihren Arm und berührte den Ball selbst mit dem Schnabel.</p>
+          <p>Der Ball öffnete sich. Einen Moment später schloss er sich ruhig.</p>
+          <p>Lina hielt ihn mit beiden Händen fest. „Willkommen bei uns, Voltrel.“</p>
+          <p>Als sie das Pokémon wieder herausließ, landete es sofort auf ihrer Schulter. Pikachu rückte ein kleines Stück zur Seite. Voltrel rückte ebenfalls. Schließlich saßen beide so dicht beieinander, dass sich ihre Wangenfedern berührten.</p>
+          <p>Felix lächelte. Dann betrachtete er die Scheibe mit dem Pfeil.</p>
+          <p>„Der Pfad der Gezeiten führt weiter“, sagte er. „Aber die Sonnentafel besitzt bestimmt einen eigenen Weg.“</p>
+          <p>Professor Birk blickte zu den trockenen Hügeln im Landesinneren. Über ihnen war der Himmel rot geworden.</p>
+          <p>„Dann sollten wir uns diesen Weg als Nächstes ansehen.“</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-4" data-index="3" aria-labelledby="kapitel-4-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 4</span>
+          <h1 id="kapitel-4-titel">Der Wächter der Schlucht</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Am nächsten Morgen hatte der Regen über Graphitport aufgehört. Dafür war die Luft so heiß, dass die Steine auf dem Weg ins Landesinnere bereits am Vormittag warm waren.</p>
+          <p>Professor Birk trug die Sonnentafel in einem gepolsterten Schutzbehälter. Sobald sie die ersten Berge erreichten, leuchtete das rote Zeichen durch den durchsichtigen Deckel.</p>
+          <p>Voltrel flog über Lina und Pikachu. Noch war es bei längeren Strecken schnell erschöpft. Dann setzte es sich für einige Minuten auf Linas Rucksack. Lina ließ es selbst entscheiden, wann es weiterfliegen wollte.</p>
+          <p>Felix hatte Liberlo und Knofensa bei sich. Liberlo sprang von Fels zu Fels. Knofensa ging deutlich vorsichtiger. Immer wieder stellte es beide Füße auf den Boden und blieb reglos stehen.</p>
+          <p>„Suchst du Wasser?“, fragte Felix.</p>
+          <p>Knofensa antwortete nicht sofort. Seine Blätter zitterten, obwohl gerade kein Wind wehte. Dann lief es weiter.</p>
+          <p>Der Weg endete vor einer engen Schlucht. Auf beiden Seiten ragten hohe Felswände auf. In der Mitte stand ein Duraludon.</p>
+          <p>Sein Körper glänzte im Sonnenlicht wie heller Stahl. Es versperrte den einzigen Durchgang und stieß einen warnenden Ruf aus.</p>
+          <p>Professor Birk blieb stehen. „Duraludon leben normalerweise nicht in dieser Gegend.“</p>
+          <p>Felix trat einen Schritt vor. Duraludon senkte den Kopf.</p>
+          <p>„Es will nicht, dass wir weitergehen“, sagte er.</p>
+          <p>„Vielleicht ist dahinter etwas Gefährliches“, meinte Lina.</p>
+          <p>Liberlo deutete auf Duraludon und nahm eine Kampfhaltung ein.</p>
+          <p>„Noch nicht“, sagte Felix. „Wir wissen nicht, warum es hier steht.“</p>
+          <p>Er zeigte Duraludon seine leeren Hände. „Wir wollen niemanden vertreiben. Wir suchen nur den Pfad der Sonne.“</p>
+          <p>Beim Wort Sonne blickte Duraludon kurz zu einem Felstor hinter sich. Dort war ein roter Kreis in den Stein gemeißelt.</p>
+          <p>Dann bebte der Boden.</p>
+          <p>Kleine Steine lösten sich aus der Felswand. Duraludon drehte sich sofort um und stemmte beide Arme gegen einen schief stehenden Pfeiler. Hinter ihm flüchteten mehrere Flurmel und Stollun aus einer Nische.</p>
+          <p>„Es bewacht nicht den Weg“, erkannte Lina. „Es bewacht die Pokémon!“</p>
+          <p>Felix griff nach einem Pokéball. „Onix, hilf Duraludon!“</p>
+          <p>Onix erschien im breiteren Teil der Schlucht. Es legte seinen langen Körper entlang der Felswand und fing mehrere herabfallende Steine ab. Lina rief Bisaflor. Kräftige Ranken schoben die kleineren Pokémon aus der Gefahrenzone.</p>
+          <p>Der Erdstoß endete. Duraludon blieb noch einen Moment am Pfeiler stehen. Erst als kein Stein mehr fiel, trat es zurück.</p>
+          <p>Felix untersuchte den Durchgang aus sicherer Entfernung. Mehrere alte Stützen waren gerissen. Über ihnen hing eine große Felsplatte schräg in der Wand.</p>
+          <p>„Wenn wir jetzt einfach hindurchgehen, kann die Platte herunterkommen“, sagte er. „Duraludon hält deshalb alle auf.“</p>
+          <p>Professor Birk öffnete seine Tasche. „Ich habe Messmarken und ein kleines Ortungsgerät. Aber für die Stabilität dieser Felswand ist es nicht gedacht.“</p>
+          <p>„Wir müssen sehen, welche Steine sich bewegen“, sagte Felix.</p>
+          <p>Lina beobachtete die wilden Pokémon. Ein Stollun lief zu einer bestimmten Stelle, schnupperte am Boden und wich sofort zurück. Auch Knofensa blieb dort stehen.</p>
+          <p>Seine Blätter zitterten wieder.</p>
+          <p>„Felix“, sagte Lina. „Knofensa hat das Beben vorhin schon gespürt.“</p>
+          <p>Felix kniete sich neben sein Pokémon. „Deshalb bist du unterwegs immer stehen geblieben.“</p>
+          <p>Knofensa drückte seine Füße fester in den Boden. Nach einigen Sekunden drehte es sich nach links und zeigte mit einem Blatt auf einen schmalen Spalt.</p>
+          <p>Felix legte eine Messmarke daneben. „Dort bewegt sich etwas.“</p>
+          <p>Duraludon kam näher. Es klopfte mit einer Hand gegen drei verschiedene Stellen der Wand. Jede klang anders. Beim dritten Schlag entstand ein tiefes, hohles Dröhnen.</p>
+          <p>„Du prüfst den Felsen über den Klang“, sagte Felix.</p>
+          <p>Duraludon nickte knapp.</p>
+          <p>Gemeinsam untersuchten sie die Schlucht. Knofensa spürte Bewegungen im Boden, Duraludon prüfte die Felswand, und Felix trug alles in seine Karte ein. Lina führte währenddessen die wilden Pokémon zu einem geschützten Platz. Voltrel flog über die Schlucht und meldete lockere Steine, die von unten nicht zu erkennen waren.</p>
+          <p>Schließlich fanden sie einen sicheren schmalen Weg bis zum Felstor. Doch Duraludon blieb davor stehen.</p>
+          <p>„Es reicht noch nicht“, sagte Lina.</p>
+          <p>Knofensa setzte beide Füße auf den Boden. Plötzlich riss es die Blätter hoch und stieß einen schrillen Ruf aus.</p>
+          <p>„Ein neues Beben!“, rief Felix.</p>
+          <p>Diesmal blieb kaum Zeit. Die große Felsplatte über dem Durchgang rutschte mehrere Zentimeter nach unten. Onix stemmte sich dagegen. Duraludon drückte von der anderen Seite. Trotzdem senkte sich die Platte weiter.</p>
+          <p>„Bisaflor, stütze sie mit deinen Ranken!“, rief Lina.</p>
+          <p>Bisaflor schlang zwei Ranken um einen festen Felsvorsprung und zwei weitere um die Platte. Felix ließ Meganie erscheinen. Mit ihren Ranken verstärkte sie Bisaflors Halt.</p>
+          <p>„Die Platte darf nicht nur festgehalten werden“, sagte Felix. „Wir müssen ihr Gewicht auf den Boden leiten.“</p>
+          <p>Er zeigte auf zwei aufrecht stehende Steinblöcke. Duraludon verstand sofort. Es löste einen Arm von der Platte und schob den ersten Block darunter. Onix bewegte den zweiten mit seinem Schweif an die richtige Stelle.</p>
+          <p>Der Boden bebte stärker. Staub füllte die Luft.</p>
+          <p>„Jetzt!“, rief Lina.</p>
+          <p>Bisaflor und Meganie zogen die Platte wenige Zentimeter nach oben. Duraludon stieß den zweiten Block darunter. Die Platte setzte sich darauf und blieb liegen.</p>
+          <p>Das Beben verklang.</p>
+          <p>Eine Weile sagte niemand etwas. Dann kam Duraludon zu Felix. Es betrachtete zuerst seine Karte, dann Knofensa und schließlich die beiden steinernen Stützen.</p>
+          <p>Es berührte mit einer Hand kurz Felix’ Schulter.</p>
+          <p>„Wir haben es zusammen geschafft“, sagte Felix.</p>
+          <p>Duraludon trat zur Seite und gab den Weg zum Felstor frei. Der rote Kreis darauf leuchtete im gleichen Takt wie die Sonnentafel.</p>
+          <p>Doch als Professor Birk den Schutzbehälter öffnete, erschien mitten im Kreis ein langer Riss.</p>
+          <p>Aus der Tiefe hinter dem Tor kam ein dumpfer Schlag.</p>
+          <p>Knofensa drückte die Füße in den Boden und wich erschrocken zurück. Duraludon stellte sich sofort wieder schützend vor die Gruppe.</p>
+          <p>Der zweite Schlag war stärker. Hoch oben lösten sich kleine Steine aus der Wand.</p>
+          <p>Felix sah Lina an. Sie stand bereits neben ihm.</p>
+          <p>Tief unter der Schlucht bewegte sich etwas Gewaltiges.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-5" data-index="4" aria-labelledby="kapitel-5-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 5</span>
+          <h1 id="kapitel-5-titel">Duraludons Entscheidung</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Der dritte Schlag ließ den roten Kreis im Felstor aufflammen. Staub rieselte aus dem neuen Riss.</p>
+          <p>„Zurück von der Wand!“, rief Professor Birk.</p>
+          <p>Alle wichen zu den frisch eingesetzten Stützen zurück. Duraludon blieb vor dem Tor und breitete die Arme aus. Es wollte nicht zulassen, dass jemand weiterging.</p>
+          <p>Knofensa drückte die Füße in den Boden. Seine Blätter zitterten erst schnell, dann wurden sie wieder ruhig.</p>
+          <p>„Das Beben zieht tiefer unter uns vorbei“, sagte Felix. „Im Moment kommt kein weiterer Stoß.“</p>
+          <p>Er hatte kaum ausgesprochen, da knackte es über ihnen.</p>
+          <p>„Im Moment war ziemlich kurz“, sagte Lina.</p>
+          <p>Der Riss im Felstor wurde breiter. Aber statt einzustürzen, schob sich die Steintür langsam zur Seite. Dahinter lag eine Kammer, deren Wände im roten Licht der Sonnentafel glänzten.</p>
+          <p>Duraludon prüfte den Boden mit einem kräftigen Schlag. Dann ging es als Erstes hinein. Felix und Lina folgten gemeinsam. Professor Birk blieb dicht hinter ihnen.</p>
+          <p>In der Mitte der Kammer stand ein steinernes Gestell. Darin lag eine rote Scheibe, ähnlich der blauen Scheibe aus der Küstenruine. Auf ihrer Vorderseite war eine Sonne abgebildet. Die Rückseite zeigte einen Pfeil zu den Bergen.</p>
+          <p>„Der Wegweiser für den Pfad der Sonne“, sagte Professor Birk.</p>
+          <p>An der hinteren Wand waren zwei große Pokémon eingemeißelt. Eines erhob sich aus hohen Wellen. Das andere stand zwischen Bergen, über denen eine Sonne brannte. Zwischen ihnen lag eine Insel. Eine Hälfte war von Wasser umgeben, die andere von Felsspalten durchzogen.</p>
+          <p>Felix betrachtete die Darstellung. „Beide Wege enden am gleichen Ort.“</p>
+          <p>Ein metallisches Brummen kam aus der Schlucht.</p>
+          <p>Duraludon drehte sich um. Sein Körper zitterte leicht, als würde etwas daran ziehen.</p>
+          <p>„Das ist kein Erdbeben“, sagte Lina.</p>
+          <p>Draußen stand ein neues Fahrzeug von Team Rocket. Es hatte sechs Räder, einen langen Kranarm und einen riesigen Magneten. Jessie saß am Steuer. James hielt eine Fernbedienung. Mauzi trug einen Schutzhelm, der ihm ständig über die Augen rutschte.</p>
+          <p>„Da ist unser seltenes Metall-Pokémon!“, rief Jessie.</p>
+          <p>„Es ist ein Stahl-Pokémon“, verbesserte James.</p>
+          <p>„Stahl ist Metall“, sagte Mauzi. „Der Plan ist wissenschaftlich einwandfrei!“</p>
+          <p>James drückte einen Knopf. Der Magnet summte lauter.</p>
+          <p>Duraludon rutschte einen Schritt nach vorn. Es stemmte die Füße gegen den Boden. Gleichzeitig flogen Professor Birks Messmarken aus seiner Tasche und klackten gegen den Magneten.</p>
+          <p>„Ausschalten!“, rief Felix.</p>
+          <p>„Natürlich“, antwortete Jessie. „Sobald Duraludon in unserem Fangbehälter sitzt.“</p>
+          <p>Der Magnet zog nun auch an den Metallklammern, mit denen Professor Birk die neuen Steinblöcke gesichert hatte. Die Felsplatte bewegte sich.</p>
+          <p>Lina zeigte nach oben. „Wenn ihr weitermacht, stürzt der Durchgang ein!“</p>
+          <p>Team Rocket sah gleichzeitig zur Felsplatte.</p>
+          <p>„Das stand nicht in meiner Berechnung“, sagte James.</p>
+          <p>„Du hattest eine Berechnung?“, fragte Mauzi.</p>
+          <p>Felix rief Onix zurück in den Durchgang. „Halte die Platte noch einmal!“</p>
+          <p>Onix legte sich unter den Fels. Bisaflor und Meganie verstärkten die Stützen mit ihren Ranken. Duraludon versuchte, sich aus der Kraft des Magneten zu lösen.</p>
+          <p>Lina sah zu Voltrel und Pikachu. „Der Magnet braucht Strom. Könnt ihr die Leitung unterbrechen?“</p>
+          <p>Voltrel stieg über den Kranarm. Pikachu lief am Rand der Schlucht entlang. Voltrel erzeugte mit Funkensprung einen kurzen Lichtbogen über dem Stromkabel. Gleichzeitig traf Pikachus Donnerschock den Schaltkasten.</p>
+          <p>Der Magnet ging aus.</p>
+          <p>Duraludon fiel nach hinten, fing sich aber sofort. Die Metallklammern prasselten auf den Boden.</p>
+          <p>„Einschalten!“, rief Jessie.</p>
+          <p>James drückte auf der Fernbedienung mehrere Knöpfe. Nichts geschah.</p>
+          <p>Mauzi hob seinen Helm hoch. „Vielleicht der rote?“</p>
+          <p>„Nicht der rote!“, riefen Jessie und James.</p>
+          <p>Mauzi drückte ihn.</p>
+          <p>Der Magnet wechselte seine Richtung. Nun stieß er Metall ab. Die Messmarken schossen auseinander. Professor Birks Kochtopf flog aus dem Fahrzeug, der Kranarm klappte nach hinten und drückte gegen das eigene Ersatzrad.</p>
+          <p>Das Rad sprang ab. Das Fahrzeug neigte sich zur Seite, drehte sich einmal vollständig im Kreis und blieb quer zwischen zwei Felsen stecken.</p>
+          <p>„Warum fährt bei uns immer alles im Kreis?“, fragte James.</p>
+          <p>Der Kranarm schnellte ein letztes Mal nach vorn. Der Magnet schob Jessie, James und Mauzi samt Fahrzeug rückwärts aus der Schlucht.</p>
+          <p>„Wir kommen wieder!“, rief Jessie.</p>
+          <p>„Mit weniger Magnetismus!“, ergänzte James.</p>
+          <p>„Und mehr Bremsen!“, schrie Mauzi, bevor sie hinter der nächsten Kurve verschwanden.</p>
+          <p>Felix und Lina kümmerten sich wieder um die Felsplatte. Duraludon schob die Metallklammern zurück an die Steinblöcke. Felix befestigte sie erneut. Knofensa prüfte den Boden, bis es keine Bewegung mehr spürte.</p>
+          <p>Als der Durchgang sicher war, nahm Professor Birk die Sonnenscheibe aus der Kammer. Das rote Licht der Tafel wurde schwächer, blieb aber sichtbar.</p>
+          <p>Duraludon trat vor Felix. Es zeigte auf Liberlos Pokéball und dann auf eine freie Fläche der Schlucht.</p>
+          <p>„Du möchtest kämpfen“, sagte Felix.</p>
+          <p>Duraludon nickte.</p>
+          <p>„Aber nicht, um uns zu vertreiben“, erkannte Lina. „Es möchte wissen, wie Felix mit seinen Pokémon kämpft.“</p>
+          <p>Felix sah Duraludon an. „Ein fairer Kampf. Wir hören auf, sobald einer nicht mehr weitermachen möchte.“</p>
+          <p>Duraludon schlug zustimmend eine Faust gegen die andere Hand.</p>
+          <p>„Liberlo, du bist dran!“</p>
+          <p>Liberlo sprang vor und ließ einen kleinen Stein mit dem Fuß hüpfen.</p>
+          <p>Duraludon begann mit Metallklaue. Seine Hand glänzte, als es auf Liberlo zustürmte.</p>
+          <p>„Weich zur Seite aus und setz Doppelkick ein!“, rief Felix.</p>
+          <p>Liberlo drehte sich an Duraludon vorbei und traf es zweimal an der Seite. Duraludon fing den zweiten Tritt mit dem Arm ab. Es setzte Drachenklaue ein und zwang Liberlo zu mehreren schnellen Sprüngen nach hinten.</p>
+          <p>Felix bemerkte, dass Duraludon selbst im Kampf den Weg zur Felswand deckte. Es achtete weiter auf die geschützten Pokémon hinter sich.</p>
+          <p>„Liberlo, nicht direkt angreifen. Lock es in die Mitte!“</p>
+          <p>Liberlo schoss einen kleinen Feuerball vor Duraludons Füße. Duraludon wich zur Seite. Ein zweiter Feuerball lenkte es weiter von der Wand weg. Nun hatte es genug Platz, um seine ganze Kraft zu zeigen.</p>
+          <p>Duraludon sammelte leuchtende Energie vor seinem Körper.</p>
+          <p>„Das ist Lichtkanone!“, warnte Professor Birk.</p>
+          <p>„Sprungfeder!“, rief Felix.</p>
+          <p>Liberlo schoss nach oben. Die Lichtkanone raste unter ihm hindurch und traf eine freie Felsfläche. Im Herabfallen setzte Liberlo Doppelkick ein. Duraludon blockte den ersten Treffer, der zweite brachte es einen Schritt zurück.</p>
+          <p>Beide Pokémon atmeten schwerer. Liberlo wartete auf Felix’ nächsten Befehl. Duraludon hob erneut die Klauen, doch die Bewegung war langsamer als zuvor.</p>
+          <p>Felix hob die Hand. „Liberlo, stopp.“</p>
+          <p>Liberlo senkte sofort den Fuß.</p>
+          <p>Duraludon sah Felix überrascht an.</p>
+          <p>„Du hast genug gezeigt“, sagte Felix. „Wir müssen nicht kämpfen, bis keiner mehr stehen kann.“</p>
+          <p>Einen Augenblick blieb Duraludon reglos. Dann entspannte es die Arme. Es ging zu Liberlo und berührte dessen Faust mit seiner eigenen.</p>
+          <p>Felix hielt Duraludon einen Pokéball hin. „Du hast die Schlucht beschützt. Wenn du hierbleiben willst, verstehen wir das. Wenn du mitkommen möchtest, beschützen wir andere Orte zusammen.“</p>
+          <p>Duraludon blickte zum Felstor, zu den wilden Pokémon und zu den neuen Stützen. Alles war sicher. Schließlich legte es eine Hand auf den Pokéball.</p>
+          <p>Der Ball öffnete sich. Kurz darauf lag er ruhig in Felix’ Händen.</p>
+          <p>Lina hielt ihren Voltrel-Ball neben Felix’ neuen Ball. „Jetzt haben wir beide einen neuen Partner aus Hoenn.“</p>
+          <p>Felix nickte. „Und beide haben uns zuerst gezeigt, was ihnen wichtig ist.“</p>
+          <p>Hinter dem Felstor leuchtete die Sonnentafel noch einmal auf. Die rote Scheibe in Professor Birks Hand drehte ihren Pfeil nach Norden.</p>
+          <p>Der Pfad der Sonne hatte ihnen seine Richtung gezeigt.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-6" data-index="5" aria-labelledby="kapitel-6-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 6</span>
+          <h1 id="kapitel-6-titel">Das Erwachen der Legenden</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Am Abend lagen beide Wegscheiben neben den Steintafeln in der Forschungsstation. Die blaue Scheibe zeigte eine Welle, die rote eine Sonne. Professor Birk hatte Lampen, Messgeräte und mehrere Kameras darum aufgebaut.</p>
+          <p>Felix verglich die Zeichen mit seinen Aufzeichnungen aus der Schlucht. Lina saß auf einem hohen Stuhl und fütterte Voltrel mit kleinen Beerenstücken. Neben ihr stand Duraludon. Obwohl es nun zu Felix gehörte, betrachtete es jeden Riss in der Wand, als müsse es auch die Forschungsstation sichern.</p>
+          <p>Liberlo bot ihm eine grüne Beere an.</p>
+          <p>Duraludon nahm sie, biss hinein und erstarrte.</p>
+          <p>Liberlo grinste erwartungsvoll.</p>
+          <p>Duraludon kaute langsam weiter. Es verzog keine Miene. Liberlos Grinsen verschwand. Offenbar hatte es zum ersten Mal jemanden gefunden, der wegen einer sauren Beere nicht einmal blinzelte.</p>
+          <p>„Vielleicht werden die beiden gute Freunde“, sagte Lina.</p>
+          <p>„Oder Liberlo sucht ab jetzt noch saurere Beeren“, meinte Felix.</p>
+          <p>Professor Birk schob die blaue Scheibe an die Wellentafel. Beide Zeichen begannen gleichzeitig zu leuchten. Mit der roten Scheibe und der Sonnentafel geschah dasselbe.</p>
+          <p>Über dem Tisch entstand ein Bild aus blauem und rotem Licht. Es zeigte den versunkenen Tempel, die Berge und dazwischen die Insel von der Wandzeichnung.</p>
+          <p>Zwei leere Kreise erschienen über dem Tempel.</p>
+          <p>„Das müssen die fehlenden Siegel sein“, sagte Felix.</p>
+          <p>Professor Birk deutete auf zwei Lichtlinien. „Die Scheiben sind Wegweiser. Die blaue führt durch den Tempel der Gezeiten. Die rote zeigt den Weg in das Herz des Vulkans. Erst am Ende dieser Wege können wir die Siegel aktivieren.“</p>
+          <p>Lina betrachtete die Insel. „Und wenn beide Siegel leuchten?“</p>
+          <p>Das Lichtbild veränderte sich. Eine blaue Linie floss vom Meer zur Insel. Eine rote Linie führte aus den Bergen dorthin. In der Mitte verbanden sie sich.</p>
+          <p>„Dann wird das Gleichgewicht wiederhergestellt“, vermutete Professor Birk. „Zumindest war das der ursprüngliche Plan.“</p>
+          <p>Felix sah ihn an. „Sie glauben nicht, dass es noch so einfach ist.“</p>
+          <p>„Kyogre ist bereits erwacht. Wenn auch das zweite Pokémon auf der Wandzeichnung—“</p>
+          <p>Ein Alarm unterbrach ihn.</p>
+          <p>Alle Messgeräte im Raum sprangen gleichzeitig an.…458 tokens truncated…elt. Kyogre und Groudon blickten einander an. Unter ihnen lagen Land und Meer in gleich großen Flächen.</p>
+          <p>„Vielleicht war die Insel früher der Ort, an dem ihre Kräfte ausgeglichen wurden“, sagte er. „Ohne die Siegel treffen sie dort jetzt ungeschützt aufeinander.“</p>
+          <p>Ein weiterer Erdstoß ging durch das Gebäude. Auf dem Tisch schwappte Wasser aus einem Glas. Draußen begann es zu regnen, während die trockenen Hügel am Horizont im roten Licht glühten.</p>
+          <p>„Dann dürfen sie die Insel nicht erreichen, bevor wir die Siegel aktiviert haben“, sagte Felix.</p>
+          <p>„Wir müssen beide Wege schaffen“, ergänzte Lina.</p>
+          <p>„Einen nach dem anderen“, sagte Professor Birk. „Der Tempel der Gezeiten ist durch die Strömung gefährlich. Der Weg zum Vulkan wird ebenfalls instabiler.“</p>
+          <p>Lina schüttelte den Kopf. „Ich meinte nicht, dass Felix einen Weg nimmt und ich den anderen. Wir machen beide Wege zusammen.“</p>
+          <p>„Natürlich“, sagte Felix. „Am Meer kennt Lina die Pokémon besser. Im Gebirge kann ich die Bewegungen im Boden untersuchen. Aber keiner von uns geht allein.“</p>
+          <p>Professor Birk nickte. „Dann beginnen wir mit dem Tempel. Die Strömungsdaten zeigen morgen früh ein kurzes ruhigeres Zeitfenster.“</p>
+          <p>Unbemerkt von ihnen hing an der Außenseite des Fensters ein winziges Mikrofon. Ein langes Kabel führte über das Dach, durch einen Busch und bis zu einem notdürftig reparierten Fahrzeug.</p>
+          <p>Jessie nahm die Kopfhörer ab. „Kyogre und Groudon!“</p>
+          <p>James entrollte einen Bauplan. „Für zwei legendäre Pokémon brauchen wir natürlich eine doppelte Fangmaschine.“</p>
+          <p>Mauzi betrachtete die Zeichnung. Links war ein U-Boot zu sehen, rechts ein Wüstenfahrzeug. Beide waren in der Mitte mit Klebeband verbunden.</p>
+          <p>„Und welches Teil steuert?“, fragte er.</p>
+          <p>Jessie und James sahen sich an.</p>
+          <p>„Das klären wir unterwegs“, sagte Jessie.</p>
+          <p>Im selben Moment setzte sich das Fahrzeug von allein in Bewegung. Es fuhr rückwärts den Hügel hinab.</p>
+          <p>„Die Bremse!“, rief James.</p>
+          <p>„Nicht schon wieder!“, schrie Mauzi.</p>
+          <p>Das Mikrofon riss vom Fenster ab und verschwand mit dem Kabel im Dunkeln.</p>
+          <p>In der Forschungsstation hatten Felix und Lina nichts davon bemerkt. Sie legten die blaue Wegscheibe in eine wasserdichte Tasche. Pikachu und Voltrel saßen nebeneinander auf dem Tisch. Liberlo stand bei Duraludon.</p>
+          <p>Auf der Karte näherten sich Kyogre und Groudon weiter der Insel der zwei Himmel.</p>
+          <p>Felix schloss die Tasche. „Morgen suchen wir das Gezeitensiegel.“</p>
+          <p>Lina legte ihre Hand auf seine. „Und danach das Sonnensiegel.“</p>
+          <p>Draußen trafen die ersten schweren Regentropfen auf den ausgetrockneten Boden.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-7" data-index="6" aria-labelledby="kapitel-7-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 7</span>
+          <h1 id="kapitel-7-titel">Im Tempel der Gezeiten</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Am frühen Morgen brachte Professor Birk Felix und Lina mit einem Forschungsboot zum versunkenen Tempel. Der Regen hatte nachgelassen, doch das Meer hob und senkte das Boot in langen Wellen.</p>
+          <p>„Das ruhige Zeitfenster dauert ungefähr zwei Stunden“, erklärte er. „Danach wird die Strömung wieder stärker.“</p>
+          <p>Felix und Lina trugen leichte Taucheranzüge mit durchsichtigen Helmen. Die Luftflaschen waren klein, weil der Weg nur durch einen überschwemmten Eingang führte. Im Tempel sollte sich eine trockene Kammer befinden.</p>
+          <p>Lina rief Quappo. Felix ließ Turtok und Golking ins Wasser. Voltrel blieb mit Duraludon und den übrigen Pokémon auf dem Boot. Es lief unruhig am Rand entlang, bis Lina ihm versprach, bald zurückzukommen.</p>
+          <p>Professor Birk blieb über dem Tempel und überwachte ihre Luft und die Strömung. Über Funk konnte er mit ihnen sprechen.</p>
+          <p>„Bereit?“, fragte Felix.</p>
+          <p>Lina hielt ihm die Hand hin. „Zusammen.“</p>
+          <p>Sie sprangen nebeneinander ins Wasser.</p>
+          <p>Unter der Oberfläche wurde das Geräusch des Regens leise. Sonnenstrahlen fielen wie bewegliche Säulen in die Tiefe. Golking schwamm voraus. Turtok hielt sich links von Felix, Quappo rechts von Lina.</p>
+          <p>Die blaue Wegscheibe leuchtete in Linas Tasche. Ihr Pfeil führte zu einem Tor zwischen zwei umgestürzten Säulen. Als Lina die Scheibe in eine runde Vertiefung setzte, öffnete sich das Tor langsam.</p>
+          <p>Ein Wasserstrom zog sie hinein. Turtok fing Felix ab. Quappo packte Lina am Arm, rutschte dabei über eine glatte Bodenplatte und drehte sich einmal vollständig um sich selbst. Danach schwamm es kerzengerade weiter, als sei die Drehung Teil eines besonders schwierigen Tauchmanövers gewesen.</p>
+          <p>Hinter dem Tor stiegen sie durch einen Schacht nach oben und erreichten eine große Luftkammer. Sie nahmen die Helme ab.</p>
+          <p>Die Wände waren mit Bildern bedeckt. Kyogre schwamm darauf nicht allein. Um das legendäre Pokémon herum waren Schwärme kleiner Wasser-Pokémon zu sehen. Auf einem Bild schützte sein großer Körper sie vor einer gewaltigen Welle. Auf einem anderen führte es Regen zu einem ausgetrockneten See.</p>
+          <p>Lina betrachtete die Bilder lange. „Kyogre will das Meer nicht einfach nur größer machen. Es glaubt, dass mehr Wasser alle beschützt.“</p>
+          <p>„Aber zu viel Wasser nimmt den Land-Pokémon ihren Lebensraum“, sagte Felix.</p>
+          <p>„Vielleicht sieht Kyogre das gerade nicht mehr.“</p>
+          <p>Am Ende der Kammer lagen drei runde Steinringe ineinander. Dahinter verliefen sechs Wasserkanäle in verschiedene Räume. Nur durch einen floss Wasser. Dort drängten sich Corasonn und Lampi zusammen. Die übrigen Kammern waren fast leer.</p>
+          <p>Eine Inschrift leuchtete auf: <strong>Keine Strömung darf alles erhalten. Keine Kammer darf alles verlieren.</strong></p>
+          <p>„Das Wasser muss durch alle sechs Kanäle fließen“, sagte Felix.</p>
+          <p>Er versuchte, den äußeren Steinring zu drehen. Er bewegte sich keinen Millimeter.</p>
+          <p>Lina kniete an einem der trockenen Kanäle. „Hier warten Pokémon.“</p>
+          <p>In der nächsten Kammer saßen mehrere Krebscorps und ein Hydropi. Hinter einer geschlossenen Schleuse war nur noch eine flache Pfütze übrig.</p>
+          <p>„Dann öffnen wir zuerst diesen Kanal“, entschied Lina.</p>
+          <p>Turtok und Quappo drückten gemeinsam gegen den äußeren Ring. Felix beobachtete die Markierungen und gab die Richtung an. Der Ring bewegte sich. Wasser begann in die Kammer mit dem Hydropi zu fließen.</p>
+          <p>Doch nun sank der Wasserstand bei den Lampi.</p>
+          <p>„Wir müssen alle drei Ringe gleichzeitig ausrichten“, erkannte Felix.</p>
+          <p>Golking schwamm durch einen unteren Kanal und zeigte mit seiner Flosse auf eine verborgene Markierung. Lina entdeckte eine zweite unterhalb der Wasserlinie. Felix fand die dritte an der Decke.</p>
+          <p>Sie stellten Turtok, Quappo und Golking an verschiedene Stellen. Felix zählte die Abstände zwischen den Zeichen. Lina beobachtete, wie die Pokémon in den sechs Kammern auf jede Veränderung reagierten.</p>
+          <p>„Ein Stück nach links“, sagte Felix.</p>
+          <p>„Stopp“, rief Lina. „Die Strömung bei den Corasonn wird zu stark.“</p>
+          <p>Sie veränderten den mittleren Ring. Das Wasser verteilte sich gleichmäßiger. Noch fehlte der sechste Kanal.</p>
+          <p>Plötzlich dröhnte es hinter der Wand. Ein metallener Bohrer durchbrach einen Seitengang. Dahinter erschien ein kleines U-Boot in Form eines Welsar. Jessie, James und Mauzi saßen darin dicht an dicht.</p>
+          <p>„Team Rockets unsinkbares Unterwasser-Fangboot!“, verkündete Jessie über einen Lautsprecher.</p>
+          <p>Wasser tropfte von der Decke auf James’ Kopf.</p>
+          <p>„Fast unsinkbar“, ergänzte er.</p>
+          <p>Mauzi deutete auf einen roten Knopf. „Der öffnet bestimmt den Fangbehälter.“</p>
+          <p>„Warte!“, rief James.</p>
+          <p>Mauzi drückte.</p>
+          <p>Alle Fenster des U-Boots klappten gleichzeitig auf.</p>
+          <p>Wasser schoss hinein. Jessie, James und Mauzi kreischten, während das U-Boot absackte. Dabei riss sein Heck eine alte Steinplatte aus dem Boden. Unter ihr kam der bisher verborgene sechste Kanal zum Vorschein.</p>
+          <p>„Da ist die letzte Rinne!“, rief Lina.</p>
+          <p>Felix zeigte auf die Markierungen. „Turtok, den äußeren Ring noch einmal nach rechts! Quappo, halte den mittleren! Golking, dreh den inneren Ring!“</p>
+          <p>Die drei Pokémon bewegten die Ringe. Wasser strömte nun durch alle sechs Kanäle. Die gefluteten Kammern füllten sich, ohne dass eine Strömung zu stark wurde.</p>
+          <p>In der Mitte erhob sich ein blauer Stein aus dem Boden. Er war rund und zeigte eine leuchtende Welle: das Gezeitensiegel.</p>
+          <p>Lina legte beide Hände darauf. „Felix!“</p>
+          <p>Felix stellte sich neben sie und berührte das Siegel ebenfalls. Gemeinsam setzten sie die blaue Wegscheibe in seine Mitte.</p>
+          <p>Das Siegel leuchtete auf. Blaues Licht lief durch alle Kanäle und hinaus ins Meer. Für einen Moment erschien über dem Wasser das Bild Kyogres. Sein Ruf klang diesmal nicht wütend, sondern suchend.</p>
+          <p>Professor Birks Stimme kam über Funk. „Das Gezeitensiegel ist aktiv! Die Strömungen um den Tempel werden ruhiger.“</p>
+          <p>Hinter ihnen blubberte das U-Boot von Team Rocket. Es wurde durch den neu geöffneten Kanal nach draußen gespült. Jessie, James und Mauzi trieben in einer großen Luftblase hinterher.</p>
+          <p>„Wir haben die Kammer gefunden!“, rief James stolz.</p>
+          <p>„Und sofort wieder verlassen!“, schimpfte Jessie.</p>
+          <p>Mauzi paddelte mit seinem Helm. „Beim nächsten Mal nehmen wir ein Boot ohne Fenster!“</p>
+          <p>Felix und Lina sahen einander an und mussten lachen. Dann blickte Lina noch einmal zum Bild Kyogres an der Wand.</p>
+          <p>„Ein Siegel reicht nicht“, sagte sie.</p>
+          <p>Felix nahm die nun dauerhaft leuchtende Wegscheibe aus der Vertiefung. „Dann gehen wir als Nächstes zum Vulkan.“</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-8" data-index="7" aria-labelledby="kapitel-8-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 8</span>
+          <h1 id="kapitel-8-titel">Das Herz des Vulkans</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Der Pfad der Sonne begann am folgenden Morgen oberhalb der Felsschlucht. Die rote Wegscheibe führte Felix, Lina und Professor Birk zu einem schmalen Bergweg. Über ihnen stand die Sonne in einem wolkenlosen Himmel. Hinter ihnen lagen die Küste und das Meer unter dunklen Regenwolken.</p>
+          <p>„Es sieht aus, als würden zwei verschiedene Tage gleichzeitig stattfinden“, sagte Lina.</p>
+          <p>Sie ritt auf ihrem Feuer-Gallopa. Seine flammende Mähne störte die Hitze nicht. Felix ging neben Duraludon. Knofensa lief einige Schritte voraus und prüfte regelmäßig den Boden.</p>
+          <p>Professor Birk blickte auf sein Messgerät. „Groudon ist nicht mehr weit von der Insel der zwei Himmel entfernt. Wir müssen das Sonnensiegel aktivieren, bevor es dort ankommt.“</p>
+          <p>Der Weg führte durch ein Tor aus schwarzem Gestein. Dahinter lag ein alter Vulkantunnel. In seinen Wänden verliefen rote Kristalladern. Sie glühten, sobald die Sonnenscheibe in ihre Nähe kam.</p>
+          <p>Felix leuchtete auf den Boden. „Hier sind Spuren.“</p>
+          <p>Mehrere Camaub und Schneckmag waren tiefer in den Tunnel geflohen. Normalerweise lebten sie gern in der Wärme. Nun drängten sie sich jedoch in kühleren Nischen zusammen.</p>
+          <p>Lina stieg von Gallopa. „Sie fürchten nicht die Hitze. Sie fürchten die Beben.“</p>
+          <p>Knofensa blieb stehen. Seine Blätter spannten sich an.</p>
+          <p>„Es kommt eins“, sagte Felix.</p>
+          <p>Diesmal vertrauten alle sofort auf seine Warnung. Duraludon stellte sich vor die Gruppe. Gallopa führte die wilden Pokémon in eine breite Seitennische. Nur Sekunden später bebte der Tunnel. Kleine Steine prallten an Duraludons Körper ab.</p>
+          <p>Als es wieder still wurde, führte Knofensa sie weiter. Der Tunnel endete an einer gewaltigen Höhle. Tief unten leuchtete flüssiges Gestein. Ein breiter Weg aus schwarzem Fels führte zu einer Plattform in der Mitte.</p>
+          <p>Über der Plattform hingen vier drehbare Steinscheiben. Durch einen Schacht in der Decke fiel ein einzelner Sonnenstrahl. An der hinteren Wand war ein dunkler Kreis eingelassen.</p>
+          <p>„Das Sonnensiegel“, sagte Professor Birk. „Aber es erhält kein Licht.“</p>
+          <p>Felix verstand die Aufgabe. „Die vier Scheiben müssen den Sonnenstrahl weiterleiten.“</p>
+          <p>Duraludon drehte die erste Scheibe. Das Licht traf die zweite, sprang von dort aber gegen die Wand. Lina ging um die Plattform und beobachtete die Abbildungen am Boden. Neben jeder Scheibe war ein anderes Pokémon eingeritzt.</p>
+          <p>„Die Bilder zeigen die Reihenfolge“, sagte sie. „Camaub, Schneckmag, Qurtel und Groudon.“</p>
+          <p>Felix verglich die Blickrichtungen der Bilder. „Dann müssen die Scheiben so stehen wie ihre Köpfe.“</p>
+          <p>Gemeinsam stellten sie die ersten drei Scheiben ein. Der Sonnenstrahl wanderte über die Höhle. Als Duraludon die vierte bewegen wollte, ertönte von der linken Seite ein schriller Ruf.</p>
+          <p>Eine Gruppe Camaub stand auf einem Felsvorsprung. Der Weg hinter ihnen war eingebrochen. Unter dem Vorsprung verlief ein neuer, rot glühender Riss.</p>
+          <p>„Wir müssen sie zuerst holen“, sagte Lina.</p>
+          <p>Felix nickte sofort. „Das Siegel wartet.“</p>
+          <p>Bisaflor und Meganie ließen ihre Ranken über den Spalt wachsen. Gallopa ging vorsichtig über die entstandene Brücke. Lina saß sicher auf seinem Rücken und rief die Camaub zu sich.</p>
+          <p>Das kleinste Camaub bewegte sich nicht. Es sah immer wieder zum Boden.</p>
+          <p>Knofensa stieß plötzlich einen Warnruf aus. Seine Füße waren tief in einer schmalen Erdspalte verankert. Der Felsvorsprung begann zu zittern.</p>
+          <p>„Lina, zurück!“, rief Felix.</p>
+          <p>Lina führte die ersten Camaub über die Rankenbrücke. Das kleine blieb noch immer zurück. Ein Stein löste sich und versperrte ihm den Weg.</p>
+          <p>Knofensa sprang auf den Felsvorsprung. Es schlang seine Ranken um den Stein, doch sie waren zu kurz. Der Boden unter ihm riss weiter auf.</p>
+          <p>„Knofensa, komm zurück!“, rief Felix. „Du musst das nicht allein schaffen!“</p>
+          <p>Duraludon trat an den Spalt. Bisaflor und Meganie verstärkten die Brücke. Lina drehte Gallopa um, damit es das Camaub erreichen konnte.</p>
+          <p>Knofensa blickte zu Felix. Es zog die Füße nicht aus dem Boden. Stattdessen drückte es sie noch tiefer hinein und spürte, welche Stelle des Felsens fest blieb. Dann leuchtete sein ganzer Körper auf.</p>
+          <p>Es wurde größer. Seine Blätter wuchsen, sein Körper öffnete sich zu einer kräftigen, glockenförmigen Gestalt. Aus Knofensa wurde Ultrigaria.</p>
+          <p>Mit seinen längeren Ranken umschlang Ultrigaria den Stein und zog ihn zur Seite. Eine zweite Ranke legte es um das kleine Camaub. Gallopa sprang über die letzte Lücke und brachte beide zurück auf den sicheren Weg.</p>
+          <p>Felix lief Ultrigaria entgegen. „Du hast es geschafft!“</p>
+          <p>Ultrigaria stellte beide Füße auf den Boden. Es wartete kurz und zeigte dann nach rechts.</p>
+          <p>„Dort bleibt der Fels stabil“, verstand Felix.</p>
+          <p>Alle folgten Ultrigarias Weg. Kurz darauf brach der verlassene Vorsprung ab. Er fiel nicht in die Tiefe, sondern blieb auf einer niedrigeren Felsplatte liegen. Die Camaub waren längst in Sicherheit.</p>
+          <p>Lina legte eine Hand an Ultrigarias Seite. „Du hast nicht nur das Beben gespürt. Du hast den sicheren Weg gefunden.“</p>
+          <p>Ultrigaria berührte Felix mit einer Ranke und Lina mit der anderen.</p>
+          <p>Erst danach kehrten sie zur Plattform zurück. Felix und Lina richteten gemeinsam die letzte Steinscheibe aus. Der Sonnenstrahl traf den dunklen Kreis in der Wand.</p>
+          <p>Das Sonnensiegel erwachte.</p>
+          <p>Rotes Licht erfüllte die Höhle. Felix setzte die rote Wegscheibe in die Mitte des Siegels. Lina legte ihre Hand auf seine. Das Licht wurde golden und breitete sich durch die Kristalladern im gesamten Vulkan aus.</p>
+          <p>Auf Professor Birks Messgerät erschien das Zeichen der Insel. Eine blaue und eine rote Linie liefen nun von den beiden Siegeln darauf zu.</p>
+          <p>„Beide Siegel sind aktiv“, sagte er erleichtert.</p>
+          <p>Ein gewaltiger Ruf erschütterte den Berg. Er kam nicht aus der Höhle, sondern von draußen.</p>
+          <p>Die Gruppe eilte zum Ausgang. Von dort konnten sie weit über Hoenn sehen. Am Horizont bewegte sich Groudon durch das Gebirge. Gleichzeitig stieg vor der Küste eine riesige Welle auf, in deren Mitte Kyogre schwamm.</p>
+          <p>Blaues und rotes Licht trafen sich über der Insel der zwei Himmel.</p>
+          <p>Doch statt sich ruhig zu verbinden, prallten die Farben voneinander ab.</p>
+          <p>„Die Siegel funktionieren“, sagte Felix. „Aber Kyogre und Groudon hören noch nicht auf.“</p>
+          <p>Lina sah zu den beiden fernen Gestalten. „Dann müssen wir selbst zur Insel.“</p>
+          <p>Voltrel erhob sich von ihrer Schulter und flog auf das Meer zu. Über seinem Kopf zuckten erste Blitze durch die dunklen Wolken.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-9" data-index="8" aria-labelledby="kapitel-9-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 9</span>
+          <h1 id="kapitel-9-titel">Die Insel der zwei Himmel</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Das Licht der Siegel zeigte ihnen den kürzesten Weg zur Insel. Vom Vulkan führte eine rote Linie durch das Gestein bis zu einer Bucht. Dort wartete Professor Birks Forschungsboot.</p>
+          <p>Über dem Meer hing ein schweres Gewitter. Auf der anderen Seite der Bucht war der Himmel klar und glühend rot. Zwischen beiden Wetterzonen lag die Insel der zwei Himmel.</p>
+          <p>Ihre linke Hälfte bestand aus dunklen Klippen und kleinen Buchten. Auf der rechten Seite erhob sich schwarzes Vulkangestein. Genau in der Mitte ragten die Reste eines Tempels auf.</p>
+          <p>„Kyogre erreicht die Insel von Westen“, sagte Professor Birk und zeigte auf sein Messgerät. „Groudon kommt von Osten. Wir haben nicht mehr viel Zeit.“</p>
+          <p>Das Boot fuhr los. Garados schwamm neben ihm und schirmte die Wellen ab. Quappo stand am Bug. Bei jedem hohen Wellenberg hob es entschlossen die Arme. Als das Boot plötzlich absackte, fiel Quappo rückwärts in einen Sitz. Es stand sofort wieder auf und deutete würdevoll voraus.</p>
+          <p>„Die Richtung stimmt“, sagte Lina.</p>
+          <p>Quappo nickte ernst.</p>
+          <p>Je näher sie der Insel kamen, desto wilder wurde das Meer. Gleichzeitig tauchten zwischen den Wellen glühend heiße Felsen auf. Professor Birk musste das Boot stoppen.</p>
+          <p>„Weiter kann ich nicht fahren. Der Motor überhitzt, und die nächste Welle könnte uns auf die Felsen drücken.“</p>
+          <p>Die beiden Siegel reagierten. Aus dem Wasser erhoben sich breite Steinplatten. Sie bildeten keinen vollständigen Weg, sondern zwei unterbrochene Pfade: einen über das Meer und einen entlang der Felsen.</p>
+          <p>Felix betrachtete die Abstände. „Duraludon kann die lockeren Platten auf der Landseite sichern.“</p>
+          <p>Lina sah zu dem vom Sturm zerrissenen Wasserpfad. „Und Voltrel kennt die Windpausen.“</p>
+          <p>Professor Birk holte zwei leichte Sicherungsgurte aus der Bootskiste. „Ihr bleibt über Funk verbunden. Wenn einer nicht weiterkommt, kehren beide um.“</p>
+          <p>„Wir erreichen die Insel zusammen“, sagte Felix.</p>
+          <p>Lina schlug mit ihrer Hand gegen seine. „Wie immer.“</p>
+          <p>Felix sprang mit Duraludon auf die erste Felsplatte. Lina folgte auf dem parallelen Wasserweg, während Quappo und Garados neben ihr schwammen. Die Geschwister blieben nur wenige Meter voneinander entfernt.</p>
+          <p>Duraludon prüfte jede Platte mit einem Schlag. Wo ein Spalt zu breit war, stemmte es eine schmale Felssäule als Brücke dazwischen. Felix befestigte das Sicherungsseil an den stabilen Steinen.</p>
+          <p>Auf Linas Seite wurden die Abstände größer. Voltrel flog voraus und rief jedes Mal, wenn der Wind für einen Moment nachließ. Lina sprang von Platte zu Platte. Pikachu saß fest in ihrem Rucksack und spähte über ihre Schulter.</p>
+          <p>Dann hob eine Welle die nächste Platte aus dem Wasser. Sie kippte zur Seite und verschwand.</p>
+          <p>„Lina!“, rief Felix.</p>
+          <p>„Ich bin sicher.“ Lina hing am Sicherungsgurt über dem Wasser. Quappo hielt das untere Ende des Seils. Doch die Strömung zog sie von der Insel weg.</p>
+          <p>Voltrel packte den Gurt mit den Füßen. Es schlug gegen den Wind an, kam aber nicht vorwärts.</p>
+          <p>„Lass los!“, rief Lina. „Du bist noch nicht stark genug!“</p>
+          <p>Voltrel ließ nicht los. Es dachte an die jungen Pokémon an den Sturmklippen und an den Weg durch die Ruine. Damals hatte es Hilfe geholt. Jetzt wollte es selbst helfen.</p>
+          <p>Ein Blitz leuchtete über dem Meer. Voltrels Körper begann ebenfalls zu leuchten.</p>
+          <p>Seine Flügel wurden größer und kräftiger. Die gelben Federn zogen sich wie helle Blitze über seinen Körper. Aus Voltrel wurde Voltrean.</p>
+          <p>Mit einem einzigen starken Flügelschlag hob Voltrean Lina aus der Strömung. Quappo zog am Seil, während Voltrean den Gurt trug. Gemeinsam brachten sie Lina auf die nächste Felsplatte.</p>
+          <p>Felix und Duraludon erreichten sie gleichzeitig von der anderen Seite.</p>
+          <p>„Alles in Ordnung?“, fragte Felix.</p>
+          <p>Lina nickte und umarmte Voltrean am Hals. „Du hättest trotzdem loslassen dürfen.“</p>
+          <p>Voltrean antwortete mit einem stolzen Ruf.</p>
+          <p>Die letzten Meter legten sie auf einem gemeinsamen Steinweg zurück. Duraludon hielt die Platten fest, Voltrean flog über ihnen und warnte vor jeder Welle.</p>
+          <p>Als Felix und Lina die Insel betraten, bebte der Boden. Im Westen erhob sich Kyogre aus dem Meer. Auf der Ostseite stieg Groudon über den Rand des Vulkangesteins.</p>
+          <p>Zwischen ihnen rumpelte ein seltsames Fahrzeug aus dem Gebüsch. Seine linke Hälfte sah wie ein U-Boot aus. Die rechte besaß riesige Wüstenreifen. In der Mitte waren beide Teile mit Metallstreben und sehr viel Klebeband verbunden.</p>
+          <p>„Team Rockets Doppel-Legenden-Fänger!“, rief Jessie.</p>
+          <p>„Für Wasser und Land gleichzeitig!“, ergänzte James.</p>
+          <p>Mauzi saß zwischen zwei Lenkrädern. „Ich hab nur noch nicht herausgefunden, welches wohin lenkt.“</p>
+          <p>Jessie feuerte zwei Fangnetze ab. Eines flog auf Kyogre zu, das andere auf Groudon.</p>
+          <p>Kyogre schlug mit einer Flosse auf das Wasser. Groudon stampfte gleichzeitig auf den Boden. Welle und Erschütterung trafen die Maschine von beiden Seiten.</p>
+          <p>Die Netze wickelten sich um das eigene Fahrzeug. Die Wüstenräder drehten vorwärts, der U-Boot-Antrieb schob rückwärts. Der Doppel-Fänger wirbelte im Kreis.</p>
+          <p>„Linkes Lenkrad nach rechts!“, schrie James.</p>
+          <p>„Welches Links?“, rief Mauzi.</p>
+          <p>Die Maschine raste zwischen Kyogre und Groudon hindurch, prallte gegen einen Felsen und flog mit Team Rocket über die Tempelmauer.</p>
+          <p>„Das war nur der Probelauf!“, hörten Felix und Lina Jessie noch rufen.</p>
+          <p>Danach schlug Kyogre eine zweite Welle gegen die Insel. Groudon antwortete mit einer glühenden Felsspalte. Wasser und Hitze trafen in der Mitte aufeinander. Eine riesige Dampfwolke stieg auf.</p>
+          <p>Felix und Lina stellten sich nebeneinander vor die Tempelruine. Duraludon stand bei Felix, Voltrean bei Lina.</p>
+          <p>Kyogre und Groudon blickten einander an.</p>
+          <p>Dann begann der Kampf der Urgewalten.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-10" data-index="9" aria-labelledby="kapitel-10-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 10</span>
+          <h1 id="kapitel-10-titel">Land gegen Meer</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Kyogre zog das Wasser um die Insel zu einer hohen Welle zusammen. Groudon hob beide Arme, und mehrere Felsen lösten sich aus dem Boden.</p>
+          <p>„Duraludon, schütze die Tempelmauer!“, rief Felix.</p>
+          <p>„Voltrean, lenke die Blitze nach oben!“, rief Lina.</p>
+          <p>Duraludon stellte sich breit vor die Ruine und fing die kleineren Steine mit seinem Körper ab. Voltrean stieg in die Gewitterwolken. Elektrische Energie lief über seine Flügel und entlud sich weit über den Köpfen der anderen.</p>
+          <p>Die Welle traf auf Groudons Felsen. Dampf schoss über die Insel. Felix und Lina konnten für einen Moment kaum etwas sehen.</p>
+          <p>„Wir müssen verhindern, dass sie sich weiter angreifen“, sagte Felix.</p>
+          <p>„Und wir müssen beide gleichzeitig erreichen“, antwortete Lina.</p>
+          <p>Sie riefen weitere Partner. Felix ließ Garados auf der Meerseite erscheinen und Ultrigaria auf dem Land. Lina wählte Quappo und Diancie.</p>
+          <p>„Garados, halte die nächste Welle zurück, aber greif Kyogre nicht an!“, befahl Felix.</p>
+          <p>Garados legte seinen langen Körper vor die Bucht. Es konnte Kyogres Wassermassen nicht stoppen, aber es teilte die Welle. Das Wasser strömte rechts und links am Tempel vorbei.</p>
+          <p>„Diancie, schütze Groudon vor den losen Felsen!“, rief Lina.</p>
+          <p>Diancie ließ eine Reihe starker Kristalle aus dem Boden wachsen. Gesteinsbrocken prallten daran ab, bevor sie auf Groudon zurückfallen konnten.</p>
+          <p>Kyogre sah zu Garados. Groudon blickte auf Diancies Schutzwand. Für einen Augenblick unterbrachen beide ihren Angriff.</p>
+          <p>Felix trat neben Lina. „Sie bemerken, dass wir ihnen helfen.“</p>
+          <p>„Aber sie vertrauen einander trotzdem nicht.“</p>
+          <p>Kyogre ließ Regen auf die Landseite der Insel fallen. Das Wasser füllte die Felsspalten und stieg um Groudons Füße. Groudon antwortete mit einer Hitzewelle. In der Bucht begann das Wasser zu dampfen.</p>
+          <p>Lina beobachtete Kyogre. Als das Meer zurückwich, schwamm es sofort weiter an die Insel heran. Sein Körper schob sich schützend vor mehrere kleine Wasser-Pokémon, die zwischen den Klippen Zuflucht gesucht hatten.</p>
+          <p>„Kyogre denkt, Groudon will das Meer austrocknen“, sagte sie. „Es kämpft, damit die Wasser-Pokémon genug Platz behalten.“</p>
+          <p>Felix beobachtete Groudon. Das legendäre Pokémon blickte zu einer Gruppe Camaub auf einem erhöhten Felsen. Als eine Welle dessen Fuß überspülte, schlug Groudon sofort eine neue Steinbarriere aus dem Boden.</p>
+          <p>„Und Groudon glaubt, Kyogre will alles Land überfluten“, sagte Felix. „Beide versuchen, ihren eigenen Lebensraum zu retten.“</p>
+          <p>„Indem sie den anderen immer kleiner machen.“</p>
+          <p>Die Geschwister sahen sich an. Sie mussten nicht entscheiden, welches Pokémon recht hatte. Beide hatten einen Grund für ihre Angst. Und beide richteten mit ihrer Antwort zu viel Schaden an.</p>
+          <p>„Wir können ihnen nicht nur zeigen, dass wir stark sind“, sagte Felix.</p>
+          <p>„Wir müssen zeigen, dass Land und Meer einander schützen können“, sagte Lina.</p>
+          <p>Eine neue Welle kam. Groudon hob bereits den Arm zum Gegenangriff.</p>
+          <p>„Quappo, Eishieb auf den Boden vor der Welle!“, rief Lina.</p>
+          <p>Quappo schlug auf das flache Wasser. Eine breite Eisschicht entstand. Sie bremste die Welle, ohne sie zurück auf Kyogre zu werfen.</p>
+          <p>„Ultrigaria, Ranken um die Felskante!“, befahl Felix.</p>
+          <p>Ultrigaria verankerte seine Ranken. Die Eisschicht zerbrach daran in kleine Stücke. Das Wasser verteilte sich ruhig über mehrere Rinnen und floss zurück ins Meer.</p>
+          <p>Kyogre gab einen tiefen Laut von sich. Groudon antwortete. Diesmal griffen sie nicht sofort an.</p>
+          <p>Unter Felix’ Jacke begann die rote Wegscheibe zu leuchten. Gleichzeitig strahlte die blaue Scheibe in Linas Tasche.</p>
+          <p>Die Kinder nahmen beide Scheiben heraus. Von ihnen liefen Lichtlinien zum alten Tempel. In der Ruine erhoben sich zwei steinerne Säulen. Eine trug das Wellenzeichen, die andere das Zeichen der Sonne.</p>
+          <p>Professor Birks Stimme kam aus dem Funkgerät. Das Forschungsboot lag weit genug von der Insel entfernt. „Setzt die Scheiben in die Säulen! Auf meinen Bildern erscheint gerade eine neue Inschrift.“</p>
+          <p>Felix und Lina liefen gemeinsam zum Tempel. Duraludon und Diancie schützten den Weg. Sie setzten die Scheiben gleichzeitig in die beiden Säulen.</p>
+          <p>Blaues und rotes Licht breiteten sich über den Boden aus. Auf der Meerseite entstand ein rundes Kampffeld aus flachen Steinringen. Auf der Landseite hob sich eine Felsplattform. Ein leuchtender Streifen verband beide Flächen.</p>
+          <p>Zwischen den Säulen erschien eine Inschrift:</p>
+          <p><strong>Wer Gleichgewicht fordert, muss beide Kräfte achten. Wer beide Kräfte achtet, muss sich beiden Prüfungen stellen.</strong></p>
+          <p>Lina blickte zu Kyogre. „Es fordert mich heraus.“</p>
+          <p>Felix sah Groudon an. „Und Groudon fordert mich heraus.“</p>
+          <p>Kyogre schwamm an den Rand des Wasserfeldes. Groudon betrat die Felsplattform. Keines griff an. Beide warteten.</p>
+          <p>Felix rief Garados und Ultrigaria zu sich. Sie hatten viel Kraft eingesetzt. „Ihr habt genug getan. Ruht euch aus.“</p>
+          <p>Lina holte Quappo und Diancie zurück. Quappo salutierte noch kurz, trat dabei auf ein loses Eisstück und rutschte in Linas Arme. Es stellte sich sofort wieder hin und nickte, als hätte es nur die Stabilität des Bodens prüfen wollen.</p>
+          <p>Duraludon und Voltrean blieben bei den Geschwistern. Pikachu und Liberlo kamen aus der geschützten Tempelkammer zu ihnen.</p>
+          <p>„Die Kampffelder sind verbunden“, sagte Felix. „Was auf einer Seite geschieht, wirkt sich auf die andere aus.“</p>
+          <p>Lina legte ihre Hand in seine. „Dann kämpfen wir nicht getrennt. Wir führen zwei Kämpfe zusammen.“</p>
+          <p>Felix drückte ihre Hand. „Und wenn einer Hilfe braucht, hilft der andere.“</p>
+          <p>Sie traten auf die beiden Hälften des verbundenen Feldes. Zwischen ihnen lagen nur wenige Schritte und der leuchtende Streifen.</p>
+          <p>Kyogre hob die Flossen. Groudon senkte die mächtigen Arme.</p>
+          <p>Voltrean breitete neben Lina seine neuen Flügel aus. Duraludon stellte sich neben Felix und schlug eine Faust gegen die andere Hand.</p>
+          <p>Die doppelte Prüfung begann.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-11" data-index="10" aria-labelledby="kapitel-11-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 11</span>
+          <h1 id="kapitel-11-titel">Die doppelte Prüfung</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Kyogre schlug mit beiden Flossen auf das Wasser. Eine Reihe kreisförmiger Wellen raste über Linas Kampffeld. Gleichzeitig stampfte Groudon auf die Felsplattform. Scharfkantige Steine schossen vor Duraludon aus dem Boden.</p>
+          <p>„Voltrean, steig auf und flieg zwischen den Wellen!“, rief Lina.</p>
+          <p>Voltrean schwang sich in die Luft. Es flog nicht einfach über die Angriffe hinweg. Jede Welle zog einen Windstoß hinter sich her. Voltrean neigte die Flügel, ließ sich kurz tragen und wechselte dann die Richtung.</p>
+          <p>„Duraludon, Metallklaue gegen die vorderen Steine!“, rief Felix.</p>
+          <p>Duraludons Hand leuchtete. Es zerbrach die erste Steinreihe. Statt sofort anzugreifen, schob es die Bruchstücke an den Rand der Plattform. Dort bildeten sie eine kleine Mauer gegen das Wasser, das von Linas Kampffeld herüberschwappte.</p>
+          <p>Kyogre schickte einen Wasserstrahl auf Voltrean. Groudon holte gleichzeitig zu einem Hieb gegen Duraludon aus.</p>
+          <p>„Funkensprung und dann nach rechts!“, rief Lina.</p>
+          <p>Voltrean hüllte sich in elektrische Energie. Es schoss über das Wasser und wich Kyogres Strahl aus. Die Elektrizität lief über die nassen Steinringe bis auf Felix’ Seite.</p>
+          <p>Duraludon sah zu dem alten Tempelableiter neben der Plattform.</p>
+          <p>„Du willst die Energie nutzen“, erkannte Felix. „Stell dich zwischen den Leuchtstreifen und den Ableiter!“</p>
+          <p>Duraludon setzte beide Füße fest auf den Boden und berührte den steinernen Leiter mit einer Hand. Voltreans elektrische Energie lief über seinen metallischen Körper in die alte Vorrichtung. Der Ableiter leuchtete auf. Eine Schutzlinie erschien zwischen beiden Kampffeldern.</p>
+          <p>Groudons Hieb traf nicht Duraludon, sondern die leuchtende Linie. Sie fing einen Teil der Kraft ab. Gleichzeitig entstand auf Linas Seite ein kleiner Schutzwall, der Kyogres Wasserstrahl teilte.</p>
+          <p>„Es funktioniert!“, rief Lina. „Unsere Felder helfen einander.“</p>
+          <p>Kyogre und Groudon antworteten mit tiefen Rufen. Sie wirkten nicht verärgert. Ihre nächsten Angriffe kamen jedoch schneller.</p>
+          <p>Kyogre ließ mehrere Wasserkugeln über der Bucht entstehen. Groudon schleuderte Felsbrocken in die Luft. Wasser und Steine kreuzten über dem Tempel die Wege.</p>
+          <p>„Voltrean, Elektroball gegen die Wasserkugeln!“, befahl Lina.</p>
+          <p>Voltrean feuerte eine leuchtende Kugel ab. Sie traf die erste Wasserkugel, sprang über die feuchte Luft zur zweiten und brachte beide zum Platzen.</p>
+          <p>„Duraludon, Lichtkanone nach oben!“, rief Felix.</p>
+          <p>Duraludons Angriff zerbrach einen Felsbrocken. Die kleineren Stücke fielen jedoch auf Linas Seite herab.</p>
+          <p>„Voltrean, Windstoß!“, rief Lina.</p>
+          <p>Voltrean drehte sich in der Luft und lenkte die Bruchstücke ins Wasser. Eines davon landete genau vor Quappo, das am Rand wartete. Quappo hob den Stein auf, prüfte ihn von allen Seiten und legte ihn ordentlich neben sich ab.</p>
+          <p>Felix bemerkte, dass Duraludons Bewegungen langsamer wurden. Es hatte den Magneten überstanden, die Inselwege gesichert und nun mehrere starke Angriffe abgefangen.</p>
+          <p>Auch Voltrean verlor an Höhe. Seine Entwicklung hatte ihm neue Kraft gegeben, aber es war seit dem Sturm kaum zur Ruhe gekommen.</p>
+          <p>„Duraludon, zurück!“, rief Felix, bevor Groudon erneut angriff.</p>
+          <p>„Voltrean, du auch!“, sagte Lina.</p>
+          <p>Beide Pokémon reagierten sofort. Duraludon trat vom Feld und berührte beim Vorbeigehen Voltreans Flügel mit der Faust. Voltrean antwortete mit einem kurzen Ruf. Dann kehrten beide in ihre Bälle zurück.</p>
+          <p>Kyogre und Groudon warteten. Sie griffen die erschöpften Pokémon nicht weiter an.</p>
+          <p>„Jetzt brauchen wir festen Halt“, sagte Felix.</p>
+          <p>„Und jemanden, der sich von einer Welle nicht beeindrucken lässt“, ergänzte Lina.</p>
+          <p>„Ultrigaria, los!“</p>
+          <p>„Quappo, du bist dran!“</p>
+          <p>Ultrigaria erschien auf der Felsplattform. Quappo landete im flachen Wasser, stellte sich breitbeinig hin und hob beide Arme.</p>
+          <p>Kyogre erzeugte einen Strudel. Er zog Quappo zur Mitte des Wasserfeldes. Groudon ließ Felix’ Plattform mit einer Erschütterung schwanken.</p>
+          <p>„Ultrigaria, verwurzle dich und gib Quappo eine Ranke!“, rief Felix.</p>
+          <p>Ultrigaria verankerte seine Füße in einer Spalte. Eine lange Ranke flog über den Leuchtstreifen. Quappo packte sie mit beiden Händen.</p>
+          <p>Der Strudel zog stärker. Quappos Füße glitten über den Boden, doch Ultrigaria hielt es fest. Dann bebte Felix’ Kampffeld erneut. Nun wurde Ultrigaria nach vorn gerissen.</p>
+          <p>„Quappo, Gegenzug!“, rief Lina.</p>
+          <p>Quappo stemmte sich gegen die Strömung und zog an der Ranke. Dadurch blieb Ultrigaria auf den Füßen. Beide Pokémon hielten sich gegenseitig fest.</p>
+          <p>Kyogre beobachtete Quappo. Groudon sah auf Ultrigaria. Die beiden Legenden senkten für einen Moment die Köpfe.</p>
+          <p>„Sie sehen, dass Wasser und Land einander Halt geben“, sagte Lina.</p>
+          <p>„Aber die Prüfung ist noch nicht vorbei“, sagte Felix.</p>
+          <p>Groudon schleuderte eine Reihe Steine auf Quappos Feld. Kyogre schickte gleichzeitig eine Welle auf Ultrigaria zu.</p>
+          <p>„Quappo, Megahieb gegen die Steine!“, rief Lina.</p>
+          <p>Quappo sprang und zerschlug den ersten Felsen. Den zweiten lenkte es mit einem seitlichen Schlag ab. Der dritte war zu groß.</p>
+          <p>„Ultrigaria, Rankenhieb!“, befahl Felix.</p>
+          <p>Eine Ranke schoss über die Grenze und zog den Felsen zur Seite. Dafür traf die Welle nun direkt auf Ultrigaria.</p>
+          <p>„Quappo, Eishieb in den Leuchtstreifen!“, rief Lina.</p>
+          <p>Quappo schlug auf das Wasser. Eis lief nicht auf Kyogre zu, sondern quer über beide Kampffelder. Vor Ultrigaria entstand eine niedrige Eiskante. Sie brach die Welle und leitete das Wasser in zwei Rinnen ab.</p>
+          <p>Ultrigaria blieb stehen.</p>
+          <p>Felix und Lina riefen gleichzeitig: „Jetzt gemeinsam!“</p>
+          <p>Quappo setzte Aquaknarre ein. Der Wasserstrahl traf Ultrigarias Ranken. Ultrigaria drehte sich und schleuderte das Wasser in einem weiten Bogen zwischen Kyogre und Groudon. Es traf keines der beiden. Stattdessen fiel es als sanfter Regen auf die Grenze zwischen Land und Meer.</p>
+          <p>Aus den nassen Felsspalten sprossen kleine grüne Pflanzen. Im flachen Wasser sammelte sich nährstoffreiche Erde. Mehrere Wasser-Pokémon näherten sich der Küste, während die Camaub auf den neuen Pflanzen kauten.</p>
+          <p>Kyogre und Groudon sahen nicht mehr einander an. Beide betrachteten das entstandene Ufer.</p>
+          <p>Die Geschwister ließen ihre Pokémon verschnaufen. Quappo stützte sich auf Ultrigarias Ranke. Ultrigaria hielt die Verbindung, obwohl auch seine Kräfte nachließen.</p>
+          <p>Dann hoben Kyogre und Groudon gleichzeitig die Köpfe.</p>
+          <p>Das Wasser um die Insel zog sich zurück. Unter Groudons Füßen öffneten sich glühende Linien. Die beiden Kampffelder begannen zu beben.</p>
+          <p>Professor Birks Stimme erklang im Funkgerät. „Die Messwerte steigen stärker als zuvor!“</p>
+          <p>„Das ist der letzte Teil der Prüfung“, sagte Felix.</p>
+          <p>Lina rief Quappo zurück, bevor der Strudel es erfassen konnte. Felix holte Ultrigaria in seinen Ball, als die Felsplattform zu heiß wurde.</p>
+          <p>„Sie haben großartig gekämpft“, sagte Lina.</p>
+          <p>Felix nickte. „Jetzt müssen wir zeigen, was wir gelernt haben.“</p>
+          <p>Kyogre erhob eine gewaltige Welle. Groudon ließ eine glühende Spalte quer über die Insel wachsen.</p>
+          <p>Zwischen ihnen standen Felix und Lina, Seite an Seite am leuchtenden Rand der beiden Kampffelder.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+
+      <section class="chapter" id="kapitel-12" data-index="11" aria-labelledby="kapitel-12-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 12</span>
+          <h1 id="kapitel-12-titel">Das Gleichgewicht der Urgewalten</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Die Welle war höher als die Tempelruine. Die glühende Spalte lief direkt auf das Meer zu. Wenn beide Kräfte zusammenprallten, würde die gesamte Mitte der Insel unter Wasser, Dampf und Gestein verschwinden.</p>
+          <p>Felix blickte auf die beiden Siegel. Die rote und die blaue Lichtlinie stießen sich noch immer voneinander ab.</p>
+          <p>„Wir dürfen die Welle nicht zurück zu Kyogre schicken“, sagte Lina.</p>
+          <p>„Und die Spalte nicht wieder auf Groudon lenken“, sagte Felix.</p>
+          <p>Sie dachten an die Rinnen im Tempel der Gezeiten und an die festen Wege, die Ultrigaria im Vulkan gefunden hatte.</p>
+          <p>„Wir leiten beides um“, sagten sie gleichzeitig.</p>
+          <p>Felix rief Turtok und Onix. Lina wählte Bisaflor und Pikachu.</p>
+          <p>„Onix, zieh zwei tiefe Rinnen durch die Landseite!“, rief Felix.</p>
+          <p>Onix grub seinen steinernen Körper durch den Boden. Es führte die Rinnen nicht auf Groudon zu, sondern rechts und links an ihm vorbei.</p>
+          <p>„Bisaflor, sichere die Ränder!“, befahl Lina.</p>
+          <p>Bisaflor verankerte die Rinnen mit seinen Ranken. Seine breiten Blätter schützten die kleinen Land-Pokémon vor den heißen Luftstößen.</p>
+          <p>Die Welle erreichte die Küste.</p>
+          <p>„Turtok, Aquaknarre schräg gegen die Mitte!“, rief Felix.</p>
+          <p>Turtoks Wasserstrahlen konnten Kyogres Welle nicht aufhalten. Sie teilten jedoch ihre Spitze. Das Wasser strömte in Onix’ beide Rinnen und umfloss Groudon.</p>
+          <p>Die glühende Spalte traf auf das umgeleitete Wasser. Dampf stieg auf, aber er schoss nicht mehr ungebremst über die Insel. Bisaflors Blätter lenkten ihn nach oben.</p>
+          <p>„Pikachu, in den Tempelableiter!“, rief Lina.</p>
+          <p>Pikachu sprang auf die mittlere Säule und setzte Donnerschock ein. Elektrische Energie lief durch den alten Ableiter. Die roten und blauen Linien begannen im gleichen Takt zu leuchten.</p>
+          <p>Das Wasser kühlte das glühende Gestein. Aus der Spalte entstand neuer, fester Boden. Die Wärme verwandelte einen Teil der Welle in Wolken. Ein sanfter Regen fiel auf beide Seiten der Insel.</p>
+          <p>Kyogre hielt inne.</p>
+          <p>Groudon senkte die Arme.</p>
+          <p>Felix und Lina liefen zu den Säulen. Felix legte eine Hand auf das Sonnensiegel. Lina berührte das Gezeitensiegel. Mit ihren freien Händen fassten sie einander.</p>
+          <p>„Land braucht Wasser“, sagte Felix.</p>
+          <p>„Und das Meer braucht Grenzen“, sagte Lina.</p>
+          <p>Das rote und das blaue Licht verbanden sich. Es entstand keine neue Farbe, die eine der beiden verdrängte. Beide Linien liefen nebeneinander über die Insel und bildeten einen leuchtenden Kreis um Land und Meer.</p>
+          <p>Kyogre glitt in die ruhige Bucht. Groudon trat auf den frisch abgekühlten Fels. Zwischen ihnen lag das neue Ufer.</p>
+          <p>Eine Gruppe Lampi schwamm bis an die Küste. Auf der Landseite kamen Camaub und Stollun aus ihren Verstecken. Keines der Pokémon musste fliehen. Wasser und Land boten beiden Gruppen Platz.</p>
+          <p>Die doppelte Prüfung war beendet.</p>
+          <p>Professor Birks Stimme kam leise aus dem Funkgerät. „Die Wetterwerte sinken. Ihr habt es geschafft.“</p>
+          <p>Felix rief Onix und Turtok zurück, damit sie sich ausruhen konnten. Lina bedankte sich bei Bisaflor und Pikachu. Pikachu blieb auf ihrer Schulter sitzen und atmete zufrieden aus.</p>
+          <p>Dann gingen Felix und Lina gemeinsam über den schmalen Uferstreifen.</p>
+          <p>Kyogre schwamm auf Lina zu. Es war so groß, dass sein Schatten die ganze Bucht bedeckte. Lina blieb stehen. Sie hob keine Hand zum Angriff und griff nicht nach einem Ball.</p>
+          <p>„Du wolltest das Meer und seine Pokémon beschützen“, sagte sie. „Aber du musst dafür nicht alles Land überfluten.“</p>
+          <p>Kyogre gab einen tiefen Ruf von sich. Das Wasser um Lina kräuselte sich, blieb aber ruhig.</p>
+          <p>Auf der anderen Seite kam Groudon zu Felix. Jeder seiner Schritte ließ den Boden vibrieren, doch es entstanden keine neuen Risse.</p>
+          <p>„Du wolltest verhindern, dass das Land verschwindet“, sagte Felix. „Aber du musst dafür nicht das Meer austrocknen.“</p>
+          <p>Groudon sah an Felix vorbei zu Kyogre. Kyogre blickte zurück. Die beiden legendären Pokémon waren noch immer sehr verschieden. Doch diesmal griff keines an.</p>
+          <p>Lina nahm langsam einen leeren Pokéball heraus. „Wenn du mit mir kommen möchtest, beschützen wir das Meer gemeinsam. Und ich verspreche dir, dass ich dich niemals gegen Groudon kämpfen lasse.“</p>
+          <p>Felix hielt ebenfalls einen Ball auf seiner offenen Hand. „Wenn du dich mir anschließen möchtest, beschützen wir das Land. Aber nicht auf Kosten des Meeres. Ich werde dich niemals zum Kampf gegen Kyogre zwingen.“</p>
+          <p>Die Geschwister warteten.</p>
+          <p>Kyogre schwamm eine kleine Runde durch die Bucht. Groudon ging zum Rand des neuen Ufers. Beide betrachteten den leuchtenden Kreis der Siegel.</p>
+          <p>Dann kehrten sie gleichzeitig zurück.</p>
+          <p>Kyogre senkte eine Flosse zu Linas Ball. Groudon berührte Felix’ Ball mit einer Klaue.</p>
+          <p>Die Bälle öffneten sich. Blaues und rotes Licht leuchteten noch einmal über der Insel. Danach schlossen sich beide Bälle ruhig.</p>
+          <p>Keiner wackelte.</p>
+          <p>Felix und Lina standen mit den Bällen in den Händen nebeneinander. Einen Moment sagten sie nichts.</p>
+          <p>Dann lächelte Lina. „Kyogre gehört jetzt zu meinem Team.“</p>
+          <p>Felix hob seinen Ball. „Und Groudon zu meinem.“</p>
+          <p>Sie ließen beide Pokémon noch einmal erscheinen. Kyogre schwamm ruhig vor der Insel. Groudon stand am Ufer. Felix und Lina stellten sich zwischen sie.</p>
+          <p>„Kein Kampf“, sagte Lina bestimmt.</p>
+          <p>Kyogre blies einen kleinen Wasserstrahl in die Luft. Er fiel als Sprühregen auf Groudon herab.</p>
+          <p>Groudon schnaubte. Dann schob es mit einer Klaue einen warmen Stein ins Wasser. Kyogre ließ ihn einmal um sich kreisen und legte ihn wieder ans Ufer.</p>
+          <p>Es war noch keine Freundschaft. Aber es war ein Anfang ohne Angriff.</p>
+          <p>Die dunklen Wolken über Hoenn lösten sich auf. Gleichzeitig sank die Hitze über den Bergen. Am Himmel erschien ein breiter Regenbogen.</p>
+          <p>Voltrean flog aus seinem Ball und zog eine Runde darunter. Duraludon stellte sich neben Felix und beobachtete Groudon mit großem Respekt. Ultrigaria setzte die Füße in den feuchten Boden. Kleine Pflanzen wuchsen zwischen den erkalteten Steinen.</p>
+          <p>Professor Birk erreichte die Insel mit dem Forschungsboot. „In Graphitport fällt nur noch gewöhnlicher Regen“, berichtete er. „Und in den Bergen sinken die Temperaturen. Die Pokémon kehren bereits in ihre Gebiete zurück.“</p>
+          <p>Ein gelbes Schlauchboot trieb hinter ihm her. Es war wie ein Enton geformt. Jessie, James und Mauzi saßen übereinander in seinem viel zu kleinen Bauch.</p>
+          <p>„Da sind die beiden legendären Pokémon!“, rief Jessie.</p>
+          <p>„Und wir haben keine Fangmaschine mehr“, sagte James.</p>
+          <p>Mauzi hielt einen verbogenen Kescher hoch. „Wir könnten es damit versuchen.“</p>
+          <p>Jessie und James sahen erst den Kescher, dann Kyogre und Groudon an.</p>
+          <p>„Lieber nicht“, sagten beide.</p>
+          <p>„Wir haben die Rettung Hoenns sowieso aus sicherer Entfernung überwacht“, behauptete Jessie.</p>
+          <p>In diesem Moment blieb der Kescher an einer Felskante hängen. Das Enton-Boot drehte sich. Sein Schnabel löste sich mit einem leisen Zischen.</p>
+          <p>„Wir verlieren Luft!“, rief James.</p>
+          <p>„Paddeln!“, schrie Mauzi.</p>
+          <p>Jessie, James und Mauzi paddelten mit den Händen. Das Enton-Boot bewegte sich erst vorwärts, dann seitwärts und schließlich wieder im Kreis.</p>
+          <p>Professor Birk warf ihnen ein langes Seil zu. „Wir ziehen euch zurück nach Graphitport.“</p>
+          <p>„Genau dorthin wollten wir!“, rief Jessie.</p>
+          <p>Am Abend saßen Felix und Lina mit ihren Pokémon am Ufer der Insel. Das Meer war ruhig. Über den Bergen leuchtete die untergehende Sonne.</p>
+          <p>Felix legte Groudons Ball neben Duraludons. Lina legte Kyogres Ball neben Voltreans. Beide Teams bestanden nun aus zwölf Pokémon.</p>
+          <p>„Glaubst du, Kyogre und Groudon werden wieder anfangen?“, fragte Lina.</p>
+          <p>Felix dachte kurz nach. „Sie werden sich wahrscheinlich nie über alles einig sein.“</p>
+          <p>„Müssen sie auch nicht“, sagte Lina. „Sie dürfen nur nicht versuchen, den anderen wegzumachen.“</p>
+          <p>Felix nickte. „Und wir passen gemeinsam darauf auf.“</p>
+          <p>Voltrean landete hinter ihnen. Duraludon setzte sich auf die andere Seite. Pikachu lehnte sich an Lina, und Liberlo rollte Felix eine grüne Beere zu.</p>
+          <p>Felix betrachtete sie. „Ist die sehr sauer?“</p>
+          <p>Liberlo schüttelte schnell den Kopf.</p>
+          <p>Duraludon biss in eine zweite Beere und verzog keine Miene.</p>
+          <p>Felix probierte vorsichtig. Sofort zog sich sein ganzes Gesicht zusammen.</p>
+          <p>Lina lachte. Sogar Professor Birk musste grinsen.</p>
+          <p>Über der Insel der zwei Himmel lagen Land und Meer friedlich nebeneinander.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Kapitelnavigation">
+      <button class="nav-button" id="previous-button" type="button">← Zurück</button>
+      <span class="page-count" id="page-count">1 / 12</span>
+      <button class="nav-button" id="next-button" type="button">Weiter →</button>
+    </nav>
+  </div>
+
+  <dialog id="toc-dialog" aria-labelledby="toc-heading">
+    <div class="dialog-header">
+      <h2 id="toc-heading">Kapitel</h2>
+      <button class="icon-button" id="close-toc" type="button" aria-label="Kapitelmenü schließen">×</button>
+    </div>
+    <div class="toc-list">
+          <button class="toc-item" type="button" data-chapter="0"><span>01</span><strong>Unwetter über Hoenn</strong></button>
+          <button class="toc-item" type="button" data-chapter="1"><span>02</span><strong>Das Voltrel im Sturm</strong></button>
+          <button class="toc-item" type="button" data-chapter="2"><span>03</span><strong>Der Pfad der Gezeiten</strong></button>
+          <button class="toc-item" type="button" data-chapter="3"><span>04</span><strong>Der Wächter der Schlucht</strong></button>
+          <button class="toc-item" type="button" data-chapter="4"><span>05</span><strong>Duraludons Entscheidung</strong></button>
+          <button class="toc-item" type="button" data-chapter="5"><span>06</span><strong>Das Erwachen der Legenden</strong></button>
+          <button class="toc-item" type="button" data-chapter="6"><span>07</span><strong>Im Tempel der Gezeiten</strong></button>
+          <button class="toc-item" type="button" data-chapter="7"><span>08</span><strong>Das Herz des Vulkans</strong></button>
+          <button class="toc-item" type="button" data-chapter="8"><span>09</span><strong>Die Insel der zwei Himmel</strong></button>
+          <button class="toc-item" type="button" data-chapter="9"><span>10</span><strong>Land gegen Meer</strong></button>
+          <button class="toc-item" type="button" data-chapter="10"><span>11</span><strong>Die doppelte Prüfung</strong></button>
+          <button class="toc-item" type="button" data-chapter="11"><span>12</span><strong>Das Gleichgewicht der Urgewalten</strong></button>
+    </div>
+  </dialog>
+
+  <script>
+    (() => {
+      const key = 'kampf-der-urgewalten-reader-v1';
+      const chapters = [...document.querySelectorAll('.chapter')];
+      const tocItems = [...document.querySelectorAll('.toc-item')];
+      const dialog = document.querySelector('#toc-dialog');
+      const state = { chapter: 0, fontSize: 20, dark: false, positions: {} };
+      try { Object.assign(state, JSON.parse(localStorage.getItem(key)) || {}); } catch (_) {}
+      state.chapter = Math.max(0, Math.min(chapters.length - 1, Number(state.chapter) || 0));
+      state.fontSize = Math.max(17, Math.min(28, Number(state.fontSize) || 20));
+      state.dark = Boolean(state.dark);
+
+      const save = () => localStorage.setItem(key, JSON.stringify(state));
+      const splitTitle = (value) => {
+        const match = value.match(/^Kapitel\s+(\d+):\s*(.*)$/);
+        return match ? { kicker: 'Kapitel ' + match[1], title: match[2] } : { kicker: '', title: value };
+      };
+      const applyPreferences = () => {
+        document.documentElement.style.setProperty('--reader-size', state.fontSize + 'px');
+        document.body.classList.toggle('dark', state.dark);
+        document.querySelector('meta[name="theme-color"]').content = state.dark ? '#17211e' : '#173c61';
+      };
+      const updateProgress = () => {
+        if (!document.body.classList.contains('reading')) return;
+        const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+        const within = Math.max(0, Math.min(1, scrollY / max));
+        const total = ((state.chapter + within) / chapters.length) * 100;
+        document.querySelector('#progress-fill').style.width = total + '%';
+        state.positions[state.chapter] = Math.round(scrollY);
+      };
+      const showChapter = (index, restore = false) => {
+        state.positions[state.chapter] = Math.round(scrollY);
+        state.chapter = Math.max(0, Math.min(chapters.length - 1, index));
+        chapters.forEach((chapter, i) => chapter.classList.toggle('active', i === state.chapter));
+        tocItems.forEach((item, i) => {
+          item.classList.toggle('current', i === state.chapter);
+          if (i === state.chapter) item.setAttribute('aria-current', 'page'); else item.removeAttribute('aria-current');
+        });
+        const title = splitTitle(chapters[state.chapter].querySelector('h1').id
+          ? tocItems[state.chapter].querySelector('strong').textContent
+          : chapters[state.chapter].querySelector('h1').textContent);
+        document.querySelector('#bar-kicker').textContent = 'Kapitel ' + (state.chapter + 1);
+        document.querySelector('#bar-chapter').textContent = tocItems[state.chapter].querySelector('strong').textContent;
+        document.querySelector('#page-count').textContent = (state.chapter + 1) + ' / ' + chapters.length;
+        document.querySelector('#previous-button').disabled = state.chapter === 0;
+        document.querySelector('#next-button').disabled = state.chapter === chapters.length - 1;
+        document.title = 'Kapitel ' + (state.chapter + 1) + ' · Kampf der Urgewalten';
+        save();
+        requestAnimationFrame(() => {
+          scrollTo({ top: restore ? (state.positions[state.chapter] || 0) : 0, behavior: restore ? 'auto' : 'smooth' });
+          updateProgress();
+        });
+      };
+      const openReader = (restore = true) => {
+        document.body.classList.add('reading');
+        showChapter(state.chapter, restore);
+      };
+      const openToc = () => dialog.showModal();
+
+      applyPreferences();
+      showChapter(state.chapter, false);
+      document.querySelector('#start-reading').textContent = state.positions[state.chapter] ? 'Weiterlesen' : 'Buch öffnen';
+      document.querySelector('#start-reading').addEventListener('click', () => openReader(true));
+      document.querySelector('#cover-toc').addEventListener('click', openToc);
+      document.querySelector('#menu-button').addEventListener('click', openToc);
+      document.querySelector('#close-toc').addEventListener('click', () => dialog.close());
+      dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+      tocItems.forEach((item) => item.addEventListener('click', () => {
+        document.body.classList.add('reading');
+        dialog.close();
+        showChapter(Number(item.dataset.chapter));
+      }));
+      document.querySelector('#previous-button').addEventListener('click', () => showChapter(state.chapter - 1));
+      document.querySelector('#next-button').addEventListener('click', () => showChapter(state.chapter + 1));
+      document.querySelector('#font-down').addEventListener('click', () => { state.fontSize = Math.max(17, state.fontSize - 1); applyPreferences(); save(); updateProgress(); });
+      document.querySelector('#font-up').addEventListener('click', () => { state.fontSize = Math.min(28, state.fontSize + 1); applyPreferences(); save(); updateProgress(); });
+      document.querySelector('#theme-button').addEventListener('click', () => { state.dark = !state.dark; applyPreferences(); save(); });
+      addEventListener('scroll', updateProgress, { passive: true });
+      addEventListener('beforeunload', () => { updateProgress(); save(); });
+      addEventListener('keydown', (event) => {
+        if (dialog.open) return;
+        if (event.key === 'ArrowLeft' && state.chapter > 0) showChapter(state.chapter - 1);
+        if (event.key === 'ArrowRight' && state.chapter < chapters.length - 1) showChapter(state.chapter + 1);
+      });
+    })();
+  </script>
+</body>
+</html>
