@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2a1f50">
+  <meta name="description" content="Felix und Lina – Die Nullkrone – ein Pokémon-Abenteuer über Freundschaft und Zusammenhalt.">
+  <title>Felix und Lina – Die Nullkrone</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f8f4e8;
+      --paper-deep: #efe8d5;
+      --ink: #252d36;
+      --muted: #697481;
+      --green: #574596;
+      --green-dark: #2a1f50;
+      --green-soft: #e6e0f4;
+      --gold: #79a950;
+      --line: rgba(87, 69, 150, .20);
+      --shadow: 0 16px 50px rgba(42, 31, 80, .18);
+      --reader-size: 20px;
+      --reader-leading: 1.72;
+      --bar-h: 58px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    button { font: inherit; }
+    button:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+    .cover {
+      position: relative;
+      min-height: 100svh;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      padding: max(28px, env(safe-area-inset-top)) 22px max(28px, env(safe-area-inset-bottom));
+      color: #fffdf3;
+      background:
+        radial-gradient(circle at 15% 12%, rgba(154, 126, 232, .28), transparent 30%),
+        radial-gradient(circle at 90% 76%, rgba(121, 169, 80, .24), transparent 28%),
+        linear-gradient(145deg, #12101f 0%, #382867 52%, #182d24 100%);
+    }
+    .cover::before,
+    .cover::after {
+      content: "";
+      position: absolute;
+      width: 190px;
+      height: 320px;
+      opacity: .34;
+      background: repeating-radial-gradient(ellipse at 15% 50%, transparent 0 18px, rgba(206, 232, 167, .65) 19px 24px, transparent 25px 40px);
+      transform: rotate(-24deg);
+      pointer-events: none;
+    }
+    .cover::before { top: -100px; left: -105px; }
+    .cover::after { right: -110px; bottom: -110px; transform: rotate(150deg); }
+    .cover-card { position: relative; z-index: 1; width: min(100%, 430px); text-align: center; }
+    .series-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 36px;
+      color: #e7e0fa;
+      font: 700 .74rem/1.2 system-ui, sans-serif;
+      letter-spacing: .17em;
+      text-transform: uppercase;
+    }
+    .series-label::before, .series-label::after { content: ""; width: 25px; height: 1px; background: currentColor; }
+    .cover h1 { margin: 0; font-size: clamp(2.65rem, 13vw, 4.4rem); line-height: .98; letter-spacing: -.045em; font-weight: 700; text-wrap: balance; }
+    .cover h1 span { display: block; margin-top: 13px; color: #b5db78; font-size: .52em; line-height: 1.1; letter-spacing: -.02em; }
+    .pokeball-mark {
+      width: 86px;
+      height: 86px;
+      margin: 36px auto 29px;
+      border: 3px solid rgba(255,255,255,.8);
+      border-radius: 50%;
+      position: relative;
+      box-shadow: 0 0 0 7px rgba(255,255,255,.06);
+    }
+    .pokeball-mark::before { content: ""; position: absolute; left: 0; right: 0; top: 39px; height: 3px; background: rgba(255,255,255,.8); }
+    .pokeball-mark::after { content: ""; position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; border: 3px solid rgba(255,255,255,.8); border-radius: 50%; background: #574596; transform: translate(-50%, -50%); }
+    .cover-subtitle { margin: 0 auto 34px; max-width: 30ch; color: #e3ddf2; font: 500 1rem/1.6 system-ui, sans-serif; }
+    .cover-actions { display: grid; gap: 11px; }
+    .primary-button, .secondary-button {
+      min-height: 52px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font: 750 1rem/1 system-ui, sans-serif;
+    }
+    .primary-button { background: #a5cf69; color: #211a38; box-shadow: 0 10px 25px rgba(0,0,0,.2); }
+    .secondary-button { color: #fff; border-color: rgba(255,255,255,.35); background: rgba(255,255,255,.08); }
+
+    .reader { display: none; min-height: 100vh; }
+    body.reading .cover { display: none; }
+    body.reading .reader { display: block; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      height: calc(var(--bar-h) + env(safe-area-inset-top));
+      padding: env(safe-area-inset-top) 10px 0;
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 6px;
+      background: color-mix(in srgb, var(--paper) 92%, transparent);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .icon-button {
+      width: 42px; height: 42px; border: 0; border-radius: 50%; cursor: pointer;
+      color: var(--green); background: transparent; display: grid; place-items: center;
+      font: 700 1.15rem/1 system-ui, sans-serif;
+    }
+    .icon-button:active { background: var(--green-soft); }
+    .bar-title { min-width: 0; text-align: center; }
+    .bar-title span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font: 650 .72rem/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; }
+    .bar-title strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 3px; font: 700 .9rem/1.1 system-ui, sans-serif; }
+    .font-controls { display: flex; align-items: center; }
+    .font-controls .icon-button { width: 36px; }
+    .font-controls .small { font-size: .82rem; }
+    .font-controls .large { font-size: 1.14rem; }
+    .progress-track { position: fixed; z-index: 30; top: calc(var(--bar-h) + env(safe-area-inset-top) - 2px); left: 0; width: 100%; height: 2px; background: transparent; }
+    .progress-fill { display: block; width: 0; height: 100%; background: var(--gold); transition: width .15s linear; }
+
+    main { width: min(100%, 720px); margin: 0 auto; padding: 0 22px calc(110px + env(safe-area-inset-bottom)); }
+    .chapter { display: none; }
+    .chapter.active { display: block; }
+    .chapter-heading { padding: clamp(58px, 13vh, 104px) 0 42px; text-align: center; }
+    .chapter-number { color: var(--green); font: 750 .76rem/1.2 system-ui, sans-serif; letter-spacing: .17em; text-transform: uppercase; }
+    .chapter h1 { margin: 14px auto 18px; max-width: 16ch; font-size: clamp(2.1rem, 10vw, 3.6rem); line-height: 1.05; letter-spacing: -.035em; text-wrap: balance; }
+    .leaf-divider { display: inline-grid; place-items: center; width: 34px; height: 20px; color: var(--gold); font-size: .65rem; }
+    .leaf-divider::before, .leaf-divider::after { content: ""; position: absolute; }
+    .chapter-copy { font-size: var(--reader-size); line-height: var(--reader-leading); hyphens: auto; overflow-wrap: break-word; }
+    .chapter-copy p { margin: 0 0 1.12em; }
+    .chapter-copy p:first-child::first-letter { float: left; margin: .08em .09em 0 0; color: var(--green); font-size: 3.25em; font-weight: 700; line-height: .74; }
+    .chapter-end { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 58px auto 18px; color: var(--gold); }
+    .chapter-end span { width: 48px; height: 1px; background: var(--line); }
+    .chapter-end b { font-size: .62rem; }
+
+    .bottom-nav {
+      position: fixed; z-index: 18; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); transform: translateX(-50%);
+      width: min(calc(100% - 28px), 460px); height: 58px; padding: 5px;
+      display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+      border: 1px solid var(--line); border-radius: 18px;
+      background: color-mix(in srgb, var(--paper) 94%, transparent); box-shadow: var(--shadow);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    }
+    .nav-button { height: 46px; border: 0; border-radius: 13px; cursor: pointer; color: var(--green); background: transparent; font: 750 .86rem/1 system-ui, sans-serif; }
+    .nav-button:disabled { opacity: .28; cursor: default; }
+    .page-count { padding: 0 10px; color: var(--muted); font: 700 .78rem/1 system-ui, sans-serif; white-space: nowrap; }
+
+    dialog {
+      width: min(calc(100% - 28px), 520px); max-height: min(82svh, 760px); margin: auto; padding: 0;
+      color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 24px 80px rgba(7, 36, 28, .35);
+    }
+    dialog::backdrop { background: rgba(7, 31, 25, .66); backdrop-filter: blur(3px); }
+    .dialog-header { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 18px 16px 12px 22px; background: var(--paper); border-bottom: 1px solid var(--line); }
+    .dialog-header h2 { margin: 0; font-size: 1.45rem; }
+    .toc-list { display: grid; gap: 4px; padding: 9px 10px calc(16px + env(safe-area-inset-bottom)); }
+    .toc-item { width: 100%; min-height: 61px; padding: 10px 12px; display: grid; grid-template-columns: 42px 1fr; align-items: center; text-align: left; border: 0; border-radius: 13px; color: var(--ink); background: transparent; cursor: pointer; }
+    .toc-item span { color: var(--green); font: 800 .76rem/1 system-ui, sans-serif; letter-spacing: .08em; }
+    .toc-item strong { font: 650 .96rem/1.3 system-ui, sans-serif; }
+    .toc-item:hover, .toc-item.current { background: var(--green-soft); }
+
+    body.dark {
+      color-scheme: dark;
+      --paper: #17211e;
+      --paper-deep: #202b27;
+      --ink: #ecede5;
+      --muted: #aeb9b3;
+      --green: #8fc3ee;
+      --green-dark: #d5e8de;
+      --green-soft: #24394d;
+      --gold: #f0a16c;
+      --line: rgba(205, 225, 242, .16);
+      --shadow: 0 16px 50px rgba(0, 0, 0, .4);
+    }
+
+    @media (min-width: 700px) {
+      main { padding-inline: 38px; }
+      .chapter-copy { text-align: justify; }
+      .cover-actions { grid-template-columns: 1.25fr 1fr; }
+    }
+    @media (max-width: 360px) {
+      :root { --bar-h: 54px; }
+      main { padding-inline: 17px; }
+      .font-controls .icon-button { width: 32px; }
+      .chapter-copy { font-size: min(var(--reader-size), 22px); }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+    @media print {
+      .cover, .topbar, .bottom-nav, .progress-track, dialog { display: none !important; }
+      .reader, .chapter { display: block !important; }
+      body { background: white; color: black; }
+      main { width: auto; max-width: none; padding: 0; }
+      .chapter { break-before: page; }
+      .chapter-copy { font-size: 11pt; }
+    }
+  </style>
+</head>
+<body>
+  <section class="cover" aria-labelledby="cover-title">
+    <div class="cover-card">
+      <div class="series-label">Felix und Lina</div>
+      <h1 id="cover-title">Die<span>Nullkrone</span></h1>
+      <div class="pokeball-mark" aria-hidden="true"></div>
+      <p class="cover-subtitle">Das große Abenteuer um die Nullzone und die Rückkehr aller Gefährten</p>
+      <div class="cover-actions">
+        <button class="primary-button" id="start-reading" type="button">Buch öffnen</button>
+        <button class="secondary-button" id="cover-toc" type="button">Kapitel wählen</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="reader">
+    <header class="topbar">
+      <button class="icon-button" id="menu-button" type="button" aria-label="Kapitel auswählen">☰</button>
+      <div class="bar-title" aria-live="polite"><span id="bar-kicker">Kapitel 1</span><strong id="bar-chapter">Der schwarze Riss</strong></div>
+      <div class="font-controls" aria-label="Leseeinstellungen">
+        <button class="icon-button small" id="font-down" type="button" aria-label="Schrift verkleinern">A−</button>
+        <button class="icon-button large" id="font-up" type="button" aria-label="Schrift vergrößern">A+</button>
+        <button class="icon-button" id="theme-button" type="button" aria-label="Nachtmodus umschalten">◐</button>
+      </div>
+    </header>
+    <div class="progress-track" aria-hidden="true"><span class="progress-fill" id="progress-fill"></span></div>
+
+    <main id="book">
+      <section class="chapter" id="kapitel-1" data-index="0" aria-labelledby="kapitel-1-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 1</span>
+          <h1 id="kapitel-1-titel">Der schwarze Riss</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Professor Eich stand auf der Wiese hinter seinem Labor und betrachtete erst Groudon, dann Kyogre und danach wieder Groudon.</p>
+          <p>„Nun“, sagte er langsam. „Für einen gewöhnlichen Forschungsbericht sind die beiden vielleicht ein wenig groß.“</p>
+          <p>Felix grinste. Lina legte Kyogres Pokéball auf den Tisch, den Professor Eich in sicherer Entfernung unter einem Sonnenschirm aufgestellt hatte. Daneben lag Groudons Ball.</p>
+          <p>„Sie haben seit Hoenn nicht mehr gestritten“, berichtete Lina.</p>
+          <p>„Sie halten nur Abstand“, ergänzte Felix. „Das klappt besser.“</p>
+          <p>Am Rand der Wiese stand Groudon auf einem breiten Stück trockener Erde. Kyogre schwamm in dem künstlichen See, den Professor Eich für seine Wasser-Pokémon angelegt hatte. Zwischen beiden verlief ein schmaler Uferstreifen.</p>
+          <p>Kyogre ließ eine kleine Welle darüberrollen. Groudon schob mit einer Klaue einen Stein davor. Das Wasser teilte sich und floss rechts und links zurück in den See.</p>
+          <p>„Kein Streit“, sagte Lina aufmerksam.</p>
+          <p>Groudon brummte. Kyogre antwortete mit einem tiefen Ruf. Dann wandten sich beide voneinander ab.</p>
+          <p>„Das zählt“, meinte Felix.</p>
+          <p>Auch die übrigen Pokémon genossen den freien Nachmittag. Duraludon stand neben Ultrigaria und ließ sich von dessen Ranken einige Blätter von der Schulter wischen. Voltrean jagte mit Tauboss durch die Luft. Liberlo spielte Pikachu eine grüne Beere zu. Pikachu roch daran und rollte sie sofort zurück.</p>
+          <p>Quappo wollte den Ball abfangen. Es trat auf die Beere, rutschte aus und landete auf dem Rücken. Sofort sprang es wieder auf, verschränkte die Arme und sah so würdevoll über die Wiese, als hätte es genau diese Bewegung geplant.</p>
+          <p>Da erschien Mew über dem See.</p>
+          <p>Es kam nicht wie sonst mit einem fröhlichen Überschlag. Es schoss aus einem rosa Lichtblitz, blickte sich hastig um und flog direkt zu Felix und Lina.</p>
+          <p>„Mew!“, rief Lina erfreut.</p>
+          <p>Mew berührte ihre Stirn. Im selben Augenblick sahen beide Geschwister ein fremdes Bild.</p>
+          <p>Eine dunkle Halle lag tief unter der Erde. In ihrer Mitte erhob sich eine Maschine aus schwarzen Ringen. Zwischen den Ringen schwebte ein großes Pokémon mit kantigen Gliedern. Bänder aus violettem Licht hielten es fest.</p>
+          <p>Vor der Maschine stand Giovanni.</p>
+          <p>Er hob eine Hand. Die Ringe begannen sich zu drehen. Hinter ihm öffnete sich ein schwarzer Spalt, in dem kein Licht zu sehen war.</p>
+          <p>Das Gedankenbild brach ab.</p>
+          <p>Felix blinzelte. „Giovanni.“</p>
+          <p>Professor Eich war ernst geworden. „Und das gefangene Pokémon war Necrozma. Es kann Licht aufnehmen und ungeheure Energiemengen lenken.“</p>
+          <p>Mew zeigte auf die Pokébälle auf dem Tisch. Dann ahmte es mit den Pfoten nach, wie etwas hineingezogen wurde.</p>
+          <p>„Giovanni will Groudon und Kyogre“, sagte Lina.</p>
+          <p>Ein dünnes Sirren erklang über ihnen.</p>
+          <p>Duraludon hob sofort den Kopf. Zwischen zwei Wolken erschien ein schwarzer Strich. Er wurde breiter und öffnete sich wie ein Riss in der Luft.</p>
+          <p>Sechs kleine Flugmaschinen schossen heraus. Ihre runden Körper glänzten dunkelviolett. Unter jedem Körper hingen Greifarme und ein Netzwerfer. In ihrer Mitte leuchtete ein schwarzer Kern.</p>
+          <p>„Nullspäher!“, verkündete eine Stimme aus einem Lautsprecher.</p>
+          <p>Ein viel zu kleiner Team-Rocket-Ballon stieg hinter dem Labor auf. Jessie, James und Mauzi standen in seinem Korb. James hielt eine Fernsteuerung, auf der mindestens doppelt so viele Knöpfe wie nötig angebracht waren.</p>
+          <p>„Im Auftrag des großen Giovanni holen wir uns heute zwei Urgewalten!“, rief Jessie.</p>
+          <p>„Und vielleicht noch ein paar seltene Zugaben“, fügte James hinzu.</p>
+          <p>Mauzi zeigte auf Groudon. „Fangt mit dem Kleinen da an!“</p>
+          <p>Groudon drehte langsam den Kopf zu ihm.</p>
+          <p>„Oder mit irgendwas, das wirklich klein ist“, sagte Mauzi schnell.</p>
+          <p>Die Nullspäher stürzten auf den Tisch mit den Pokébällen zu.</p>
+          <p>„Pikachu, Donnerschock!“, rief Lina.</p>
+          <p>„Duraludon, Lichtkanone!“, befahl Felix.</p>
+          <p>Pikachus Elektrizität traf die beiden vorderen Roboter. Duraludons Lichtkanone erwischte einen dritten. Die Maschinen taumelten, richteten sich jedoch sofort wieder auf. Aus dem schwarzen Riss flossen violette Fäden in ihre Kerne. Verbogene Greifarme sprangen zurück an ihren Platz.</p>
+          <p>„Die reparieren sich!“, rief Felix.</p>
+          <p>Ein Nullspäher feuerte sein Netz auf Pikachu. Voltrean raste heran und riss das Netz mit einem Windstoß zur Seite. Es legte sich über Quappo. Quappo kämpfte sich mit kräftigen Bewegungen frei, stolperte aus den Maschen und stellte sich sofort wieder mit verschränkten Armen hin.</p>
+          <p>Lina blickte nicht auf den Roboter, sondern auf den violetten Faden hinter ihm. „Wir müssen die Verbindung treffen!“</p>
+          <p>„Voltrean, Rückenwind quer durch den Riss!“, rief sie.</p>
+          <p>Voltrean schlug kräftig mit den Flügeln. Der Wind verzog den schwarzen Spalt. Die violetten Energiefäden flackerten.</p>
+          <p>„Jetzt, Duraludon!“, rief Felix. „Noch einmal Lichtkanone – auf den Kern!“</p>
+          <p>Der helle Strahl traf den ersten Nullspäher genau in der Mitte. Diesmal setzte er sich nicht wieder zusammen. Er sank qualmend ins Gras.</p>
+          <p>„Pikachu, die beiden rechts!“, rief Lina.</p>
+          <p>Pikachu sprang auf Liberlos ausgestreckten Fuß. Liberlo schleuderte es in die Höhe. Mitten im Sprung entlud Pikachu einen breiten Donnerschock. Zwei weitere Kerne erloschen.</p>
+          <p>Felix zeigte auf die übrigen Roboter. „Turtok, Aquaknarre! Treib sie vom Riss weg!“</p>
+          <p>Turtok trat vor Felix und feuerte aus beiden Kanonen. Die Wasserstrahlen rissen die Nullspäher aus ihren Energiefäden. Diancie ließ vor ihnen eine Kristallwand wachsen. Die Roboter prallten dagegen, und Duraludon schaltete ihre Kerne mit einer letzten Lichtkanone aus.</p>
+          <p>Im Ballon drückte James hektisch mehrere Tasten.</p>
+          <p>„Warum fliegen sie nicht zurück?“, fragte Jessie.</p>
+          <p>„Vielleicht ist es der rote Knopf.“</p>
+          <p>„Nicht der rote Knopf!“, rief Mauzi.</p>
+          <p>James drückte ihn.</p>
+          <p>Der Ballon machte einen Satz nach hinten, rammte einen Baum und drehte sich dreimal um den Stamm. Jessie, James und Mauzi hingen kopfüber im Korb.</p>
+          <p>„Das war eine geplante Wendung!“, rief Jessie.</p>
+          <p>Eine Stimme knackte aus der Fernsteuerung. „Kehrt zur Nullfestung zurück“, befahl Giovanni. „Die Krone ist bereit.“</p>
+          <p>Auf dem Bildschirm erschien für einen Augenblick eine Karte. Felix erkannte die Umrisse des Indigo-Plateaus und eine blinkende Markierung an dessen Nordseite.</p>
+          <p>Dann riss Jessie James die Steuerung aus der Hand. Der Ballon löste sich vom Baum und schoss davon – allerdings mit dem Korb voran.</p>
+          <p>Mew flog auf die liegen gebliebenen Roboter zu. Es berührte einen schwarzen Kern und zuckte zurück. Ein winziger Riss öffnete sich darüber. Dahinter lag dieselbe lichtlose Leere wie in Mews Gedankenbild.</p>
+          <p>„Die Nullzone“, sagte Professor Eich leise. „Giovanni speist seine Maschinen mit Energie aus einem Raum zwischen den Welten.“</p>
+          <p>Felix sah zum Indigo-Plateau. „Dann müssen wir zur Festung, bevor er die Krone noch einmal einsetzt.“</p>
+          <p>Lina stellte sich neben ihn. „Und wir holen Necrozma da heraus.“</p>
+          <p>Mew schwebte zwischen ihnen und nickte.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+      <section class="chapter" id="kapitel-2" data-index="1" aria-labelledby="kapitel-2-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 2</span>
+          <h1 id="kapitel-2-titel">Die geraubten Pokébälle</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Der Eingang zur Nullfestung lag hinter einer grauen Felswand an der Nordseite des Indigo-Plateaus. Ohne Mew hätten Felix und Lina ihn nie gefunden.</p>
+          <p>Mew zeichnete mit seinem Schweif einen Kreis in die Luft. Rosafarbenes Licht lief über den Stein. Eine breite Metalltür wurde sichtbar.</p>
+          <p>Groudon trat vor und schob seine Klauen in einen Spalt. Mit einem tiefen Knirschen drückte es die Tür auseinander. Dahinter führte ein Tunnel schräg nach unten.</p>
+          <p>Kyogre schwamm in einem Wasserlauf, der neben dem Weg in die Tiefe floss. Es hielt den steigenden Wasserspiegel ruhig, während Groudon lockeres Gestein abstützte. Die beiden arbeiteten auf entgegengesetzten Seiten des Tunnels und kamen einander nicht in die Quere.</p>
+          <p>„Sehr gut“, sagte Lina zu Kyogre.</p>
+          <p>Felix nickte Groudon zu. „Genau so.“</p>
+          <p>Hinter der ersten Biegung warteten drei Nullwächter. Sie waren größer als die Flugroboter auf Professor Eichs Wiese. Einer besaß breite Schildarme, der zweite zwei Netzwerfer und der dritte schwere Greifhände. Aus der Wand liefen dunkle Energiebahnen in ihre leuchtenden Kerne.</p>
+          <p>Über den Wächtern erschien Giovanni auf einem Bildschirm.</p>
+          <p>„Ihr habt mir Groudon und Kyogre direkt gebracht“, sagte er. „Das erspart Team Rocket viel Arbeit.“</p>
+          <p>Jessie, James und Mauzi standen hinter ihm. Ihre Haare waren zerzaust, und Mauzi trug noch einen kleinen Zweig auf dem Kopf.</p>
+          <p>„Genau wie geplant“, sagte Jessie.</p>
+          <p>Giovanni würdigte sie keines Blickes. „Nullwächter, beginnt.“</p>
+          <p>Der Roboter mit den Schildarmen stürmte vor.</p>
+          <p>„Onix, Eisenschweif!“, rief Felix.</p>
+          <p>Onix schlug gegen den Schild. Der Wächter rutschte zurück, doch seine Füße blieben auf den leuchtenden Energiebahnen. Der schwarze Kern flammte auf, und der Roboter drückte Onix wieder vorwärts.</p>
+          <p>„Bisaflor, Rankenhieb auf die Leitungen!“, befahl Lina.</p>
+          <p>Bisaflors Ranken schossen am Wächter vorbei und rissen zwei Energiebahnen aus der Wand. Gleichzeitig ließ Pikachu einen Donnerschock durch die freigelegten Kabel laufen. Der Schild erlosch.</p>
+          <p>„Onix, jetzt!“, rief Felix.</p>
+          <p>Onix traf den ungeschützten Kern mit einem zweiten Eisenschweif. Der Nullwächter zerfiel in mehrere Teile und blieb liegen.</p>
+          <p>Der Netzroboter feuerte auf Bisaflor. Ultrigaria packte das Netz mit seinen Ranken, schwang es herum und warf es über den dritten Wächter. Duraludon setzte Lichtkanone ein. Der helle Strahl traf beide Kerne nacheinander.</p>
+          <p>„Das waren nur die ersten“, warnte Felix.</p>
+          <p>Er rief Onix, Ultrigaria und Duraludon zurück, damit sie sich ausruhen konnten. Lina bedankte sich bei Bisaflor und Pikachu und holte auch sie in ihre Bälle. Vor ihnen lag noch ein langer Weg.</p>
+          <p>Turtok blieb neben Felix. Diancie schwebte an Linas Seite. Mew flog voraus. Groudon und Kyogre folgten durch die beiden breiten Rinnen der Festung.</p>
+          <p>Sie erreichten eine unterirdische Halle, die so groß war, dass Groudons Schritte darin widerhallten. Über einem runden Abgrund schwebten mehrere schwarze Metallringe. Violette Blitze sprangen zwischen ihnen hin und her.</p>
+          <p>In der Mitte hing Necrozma.</p>
+          <p>Seine kantigen Arme waren von leuchtenden Fesseln umschlossen. Es bewegte sich, aber jeder Versuch ließ die Ringe schneller kreisen. Licht wurde aus seinem Körper gezogen und floss in eine Krone aus dunklem Metall über der Maschine.</p>
+          <p>Mew stieß einen erschrockenen Ruf aus und flog los.</p>
+          <p>„Mew, warte!“, rief Lina.</p>
+          <p>Eine durchsichtige Wand flammte vor Necrozma auf. Mew prallte dagegen, fing sich in der Luft und setzte Psychokinese ein. Rosa Licht drückte gegen die Barriere. Für einen Moment bekam sie einen Riss.</p>
+          <p>Dann trat Giovanni auf eine Plattform über der Maschine.</p>
+          <p>Jessie, James und Mauzi standen an einem Steuerpult unter ihm. James hielt den Finger über einen großen roten Knopf.</p>
+          <p>„Diesmal ist Rot wirklich richtig“, sagte er.</p>
+          <p>„Das hast du beim Ballon auch gesagt“, murmelte Mauzi.</p>
+          <p>„Aktivieren!“, befahl Giovanni.</p>
+          <p>James drückte.</p>
+          <p>Die dunkle Krone senkte sich über Necrozma. Sämtliche Ringe begannen sich zu drehen. Ein tiefer Ton erfüllte die Halle.</p>
+          <p>Felix spürte ein Ziehen an seinem Gürtel.</p>
+          <p>Groudons Pokéball löste sich als Erster. Felix griff danach, doch der Ball schoss an seinen Fingern vorbei. Hinter ihm öffnete sich ein schwarzer Riss und verschluckte ihn.</p>
+          <p>Dann wurden auch die anderen Bälle fortgerissen.</p>
+          <p>„Nein!“, rief Felix.</p>
+          <p>Gluraks Ball verschwand. Danach Tauboss, Onix, Meganie, Garados, Aerodactyl, Golking, Liberlo, Ultrigaria und Duraludon. Turtoks leerer Ball wurde ebenfalls aus Felix’ Tasche gezogen, aber Turtok selbst blieb schützend vor ihm stehen.</p>
+          <p>Neben Lina leuchtete Diancie hell auf. Es ließ eine Kuppel aus Kristall um Lina wachsen. Pikachus Ball prallte kurz gegen die Innenseite, doch ein schwarzer Strahl bohrte sich durch eine Lücke und riss ihn hinaus.</p>
+          <p>„Halt sie fest!“, rief Lina.</p>
+          <p>Diancie schloss beide Hände um seinen eigenen Ball an Linas Gürtel. Die Kristalle legten sich darum. Alle anderen Bälle verschwanden: Knuddeluff, Quappo, Vulnona, Feelinara, beide Gallopa, Bisaflor, Pixi, Voltrean und Kyogre.</p>
+          <p>Mew stemmte sich mit Psychokinese gegen die schwarzen Risse. Für wenige Sekunden hielten drei von ihnen inne.</p>
+          <p>Groudon sah zu Felix. Kyogre hob den Kopf aus dem Wasserlauf. Beide hätten durch den offenen Tunnel fliehen können.</p>
+          <p>Stattdessen blickten sie zu den verschwundenen Bällen ihrer Teams.</p>
+          <p>Groudon sprang in den roten Riss. Kyogre glitt in einen blauen Spalt. Die beiden Urgewalten folgten freiwillig den anderen Pokémon in die Nullzone.</p>
+          <p>„Groudon!“, rief Felix.</p>
+          <p>„Kyogre!“, rief Lina.</p>
+          <p>Mew schoss hinter ihnen her. Kurz bevor es verschwand, berührte sein Gedankenbild Felix und Lina.</p>
+          <p>Sie sahen ihre Pokémon. Sie standen gemeinsam auf einer dunklen Fläche. Groudon und Kyogre stellten sich schützend an ihre Seiten. Niemand war verletzt. Duraludon hob einen Arm und schlug dreimal gegen den Boden.</p>
+          <p>Dann schloss sich der Riss.</p>
+          <p>Stille fiel über die Halle.</p>
+          <p>Felix tastete seinen leeren Gürtel ab. Nur Turtok stand noch bei ihm. Lina hielt Diancies geschützten Ball in beiden Händen. Diancie schwebte dicht an ihrer Schulter.</p>
+          <p>Oben auf der Plattform lächelte Giovanni.</p>
+          <p>„Zwei Kinder“, sagte er. „Zwei Pokémon. Und eine ganze Festung voller Nullwächter.“</p>
+          <p>Turtok stellte sich breitbeinig vor Felix. Diancies Kristalle leuchteten heller.</p>
+          <p>Lina griff nach Felix’ Hand. „Unsere Pokémon sind zusammen.“</p>
+          <p>Felix erinnerte sich an die drei Schläge in Mews Gedankenbild. Da erklang das Geräusch erneut.</p>
+          <p>Klong. Klong. Klong.</p>
+          <p>Es kam tief aus der Wand der Festung.</p>
+          <p>Felix hob den Kopf. „Und sie suchen schon einen Weg zurück.“</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+      <section class="chapter" id="kapitel-3" data-index="2" aria-labelledby="kapitel-3-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 3</span>
+          <h1 id="kapitel-3-titel">Stimmen aus der Nullzone</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Die drei Schläge verklangen. Felix legte die Hand an die kalte Wand.</p>
+          <p>„Duraludon hört uns“, sagte er.</p>
+          <p>Ein einzelner Schlag antwortete.</p>
+          <p>Lina trat neben ihn. „Einmal heißt Ja.“</p>
+          <p>Von der Plattform über ihnen kam Giovannis Stimme. „Es bedeutet nur, dass eure Pokémon in der Nullzone festsitzen.“</p>
+          <p>Er wandte sich ab. Die dunkle Krone über Necrozma drehte sich weiter. „Jessie, James, Mauzi – sorgt dafür, dass die Kinder die Zentrale nicht wieder erreichen.“</p>
+          <p>„Natürlich, Boss!“, rief Jessie.</p>
+          <p>„Niemand entkommt unserer Wachsamkeit“, versprach James.</p>
+          <p>Mauzi sah auf einen Bildschirm. „Äh, die Kinder laufen gerade weg.“</p>
+          <p>Felix und Lina waren bereits hinter Turtok und Diancie in einen Seitengang gerannt. Zwei Nullwächter stampften ihnen nach. Ihre Greifarme schnappten knapp hinter Turtoks Panzer zu.</p>
+          <p>„Turtok, Aquaknarre gegen den Boden!“, rief Felix.</p>
+          <p>Turtok feuerte nach hinten. Das Wasser schoss über den glatten Metallboden. Der erste Nullwächter rutschte aus und prallte gegen den zweiten. Beide stürzten, doch violette Energie floss sofort in ihre schwarzen Kerne.</p>
+          <p>„Die stehen gleich wieder auf“, warnte Felix.</p>
+          <p>Vor ihnen endete der Gang an einem geschlossenen Tor. Lina sah nach oben. Über der Tür verlief eine schmale schwarze Leitung.</p>
+          <p>„Diancie, da ist ihre Energie!“</p>
+          <p>Diancie ließ eine Reihe spitzer Kristalle wachsen. Sie trafen die Leitung und trennten sie durch. Hinter Felix und Lina erloschen die Kerne der beiden Wächter. Gleichzeitig sprang das Tor auf.</p>
+          <p>Die Geschwister liefen hindurch. Turtok folgte als Letztes. Das Tor schloss sich vor den Greifarmen der Roboter.</p>
+          <p>Der neue Raum war rund. Drei dicke Energiebahnen verliefen an seinen Wänden entlang. Jede führte in eine andere Richtung.</p>
+          <p>Felix klopfte dreimal auf den Boden.</p>
+          <p>Die Antwort kam sofort: drei Schläge, eine Pause, dann zwei Schläge.</p>
+          <p>„Drei und zwei“, überlegte Felix. „Vielleicht drei Leitungen und zwei müssen unterbrochen werden?“</p>
+          <p>Lina beobachtete Diancie. Das Pokémon hielt beide Hände über den Boden. Kleine Kristalle wuchsen entlang der Energiebahnen. Zwei leuchteten violett. Der dritte blieb dunkel.</p>
+          <p>„Zwei Leitungen bringen gerade Energie zur Krone“, sagte Lina. „Die dritte führt zu unseren Pokémon.“</p>
+          <p>Felix nickte. „Dann dürfen wir die nicht zerstören.“</p>
+          <p>An der Decke öffnete sich eine Klappe. Ein zusammengefaltetes Metallgestell fiel heraus, klappte vier Beine auf und richtete einen Netzwerfer auf die Kinder.</p>
+          <p>„Unsere neueste, unüberwindbare Falle!“, verkündete Jessie über einen Lautsprecher.</p>
+          <p>Ein zweites Gestell fiel direkt auf das erste. Beide verhedderten sich mit ihren Beinen.</p>
+          <p>„James!“, zischte Jessie.</p>
+          <p>„Du hast gesagt, ich soll alle Fallen gleichzeitig auslösen.“</p>
+          <p>Mauzis Stimme erklang im Hintergrund. „Das war bestimmt bildlich gemeint!“</p>
+          <p>Die Roboter befreiten sich voneinander. Ihre schwarzen Kerne flammten auf. Der erste schoss ein Netz auf Diancie, während der zweite mit einer Greifzange nach Felix schnappte.</p>
+          <p>„Turtok, Turbodreher!“, rief Felix.</p>
+          <p>Turtok zog Kopf und Beine ein. Es wirbelte zwischen den Kindern hindurch, wickelte das Netz um seinen Panzer und riss es dem Roboter aus dem Werfer. Die Greifzange prallte an Turtoks Panzer ab.</p>
+          <p>Diancie hob beide Arme. Mehrere Kristalle wuchsen unter dem zweiten Roboter empor und kippten ihn zur Seite. Doch die violette Leitung ließ seinen Kern immer heller werden. Die Maschine drückte die Kristalle auseinander.</p>
+          <p>Plötzlich hielt sie mitten in der Bewegung an.</p>
+          <p>Ein blaues Leuchten umgab den Roboter. Langsam wurde er in die Luft gehoben. Auch der andere Wächter schwebte nach oben.</p>
+          <p>Eine tiefe Stimme erklang in den Gedanken der Kinder.</p>
+          <p>„Mew hat mich gerufen.“</p>
+          <p>Mewtu schwebte durch das offene Tor. Seine Augen leuchteten blau. Mit einer Bewegung schleuderte es beide Roboter von der Energiebahn. Ihre Kerne erloschen.</p>
+          <p>„Mewtu!“, rief Lina.</p>
+          <p>Mewtu landete vor ihnen. „Mews Ruf brach ab. Danach spürte ich nur noch eine Leere, die nicht hierhergehört.“</p>
+          <p>Felix zeigte auf die beiden leuchtenden Bahnen. „Giovanni nennt sie die Nullzone. Dort sind Mew und unsere Pokémon.“</p>
+          <p>Mewtu legte zwei Finger an die erste Leitung. Blaues Licht breitete sich darüber aus. Sofort quoll schwarze Energie hervor und drängte seine Psychokinese zurück.</p>
+          <p>„Diese Kraft gehorcht keinen gewöhnlichen Gedanken“, sagte Mewtu. „Ich kann sie aufhalten, aber nicht allein schließen.“</p>
+          <p>„Du musst auch nicht allein“, sagte Lina.</p>
+          <p>Diancie ließ einen klaren Kristall um die Leitung wachsen. Die violette Energie wurde darin sichtbar wie Tinte in Wasser.</p>
+          <p>Felix entdeckte drei dunkle Stellen, die nacheinander aufleuchteten. „Der Strom springt immer weiter. Wenn wir alle drei Stellen gleichzeitig trennen, kann er nicht zurückfließen.“</p>
+          <p>Mewtu hielt die Energie mit Psychokinese fest. Diancie umschloss zwei Verbindungen mit Kristall. Turtok zielte auf die dritte.</p>
+          <p>„Jetzt!“, rief Felix.</p>
+          <p>Turtoks Aquaknarre traf. Diancie zerbrach seine beiden Kristallklammern, und Mewtu stieß die festgehaltene Energie zurück. Die gesamte Bahn erlosch.</p>
+          <p>Tief in der Festung bebte etwas. Aus der Wand kam eine schnelle Folge metallischer Schläge.</p>
+          <p>Klong. Klong. Klong. Klong.</p>
+          <p>„Das klingt nicht mehr wie eine Warnung“, sagte Lina.</p>
+          <p>Felix lächelte zum ersten Mal seit dem Verschwinden der Pokébälle. „Duraludon sagt uns, dass es funktioniert hat.“</p>
+          <p>Nur noch eine violette Leitung führte zur Nullkrone.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+      <section class="chapter" id="kapitel-4" data-index="3" aria-labelledby="kapitel-4-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 4</span>
+          <h1 id="kapitel-4-titel">Die grüne Beere</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Die letzte violette Energiebahn führte geradewegs zurück zur zentralen Halle. Sie verlief unter dem Boden und pulsierte im Takt der Nullkrone.</p>
+          <p>Felix, Lina, Turtok, Diancie und Mewtu folgten ihr durch einen langen Gang. Schwarze Risse flackerten an den Wänden. Manchmal hörten die Kinder dahinter einen Ruf oder das Scharren von Krallen.</p>
+          <p>Lina blieb an einem Riss stehen. Ein gelber Funke sprang daraus hervor und verschwand wieder.</p>
+          <p>„Pikachu“, sagte sie.</p>
+          <p>Diancie berührte die Stelle. Der Riss wurde für einen Augenblick klar. Dahinter stand Pikachu neben Voltrean. In der Ferne waren die Umrisse von Groudon und Kyogre zu sehen.</p>
+          <p>Dann wurde die Fläche wieder schwarz.</p>
+          <p>„Sie sind ganz nah“, sagte Lina.</p>
+          <p>„Und sie haben die Leitung von ihrer Seite gefunden“, ergänzte Felix.</p>
+          <p>Vor ihnen öffnete sich eine Tür. Jessie, James und Mauzi standen dahinter in schwarzen Schutzanzügen. Vor ihnen wartete ein Nullwächter mit einem breiten Energieschild.</p>
+          <p>„Keinen Schritt weiter!“, befahl Jessie.</p>
+          <p>„Hinter uns liegt die Zentrale“, sagte James.</p>
+          <p>Mauzi stieß ihn an. „Das solltest du ihnen doch nicht verraten!“</p>
+          <p>„Sie folgen ohnehin der leuchtenden Leitung.“</p>
+          <p>„Dann schaltet die Leitung aus!“, rief Jessie.</p>
+          <p>James blickte auf sein Steuerpult. „Welche Taste?“</p>
+          <p>„Nicht die rote“, sagten Jessie und Mauzi gleichzeitig.</p>
+          <p>Der Nullwächter griff an. Sein Schild raste wie eine dunkle Wand auf Turtok zu.</p>
+          <p>„Nicht dagegenstemmen!“, rief Felix. „Seitlich weg!“</p>
+          <p>Turtok sprang im letzten Moment zur Seite. Der Wächter konnte nicht schnell genug abbiegen und rammte die Wand. Diancie ließ Kristalle über seine Füße wachsen, doch aus der Leitung floss neue Energie in den Kern. Der Roboter riss sich los.</p>
+          <p>Mewtu hob ihn mit Psychokinese an. Schwarze Funken liefen über den Schild und drängten Mewtus Kraft zurück.</p>
+          <p>„Er bekommt immer dann neue Energie, wenn der Kern aufblitzt!“, erkannte Lina. „Diancie, fang sie ab!“</p>
+          <p>Diancie breitete die Arme aus. Ein großer, klarer Kristall wuchs zwischen Leitung und Roboter. Die violette Energie strömte hinein und kreiste darin, ohne den Kern zu erreichen.</p>
+          <p>Der Schild flackerte.</p>
+          <p>„Turtok, Schädelwumme!“, rief Felix.</p>
+          <p>Turtok senkte den Kopf und stieß gegen den ungeschützten Kern. Der Wächter taumelte rückwärts in Team Rockets Steuerpult.</p>
+          <p>James versuchte, das Gerät festzuhalten. Dabei drückte sein Ellbogen den grünen Knopf. Der Boden unter Jessie, James und Mauzi begann sich zu drehen.</p>
+          <p>„Mach es aus!“, rief Jessie.</p>
+          <p>James schlug auf den roten Knopf. Die Drehscheibe wurde schneller, aber hinter ihnen sprang das Tor zur Zentrale auf.</p>
+          <p>„Ihr kommt trotzdem nicht vorbei!“, rief Mauzi, während er im Kreis fuhr.</p>
+          <p>Turtok schob den abgeschalteten Wächter beiseite. Felix und Lina liefen durch das Tor. Mewtu folgte ihnen.</p>
+          <p>In der zentralen Halle drehte sich die Nullkrone schneller als zuvor. Necrozma hing noch immer zwischen ihren Ringen. Unter der Maschine stand ein riesiger Roboter. Er war so hoch wie ein Haus. Sechs Arme lagen zusammengefaltet an seinem Körper, und in seiner Brust glühten drei schwarze Kerne.</p>
+          <p>Giovanni erwartete sie auf der Plattform.</p>
+          <p>„Ihr habt einen Energieanker ausgeschaltet“, sagte er. „Das ändert nichts. Die Nullzone gehört jetzt mir.“</p>
+          <p>Mewtu schoss auf Necrozma zu. Eine schwarze Barriere flammte auf und hielt es zurück. Mewtu setzte Psychokinese ein, doch die Fläche bog sich nur leicht nach innen.</p>
+          <p>„Geh zu Mew“, sagte Lina. „Felix und ich kümmern uns um den letzten Anker.“</p>
+          <p>Mewtu nickte und stemmte beide Hände gegen die Barriere.</p>
+          <p>Turtok und Diancie stellten sich mit Felix und Lina vor die letzte Energiebahn. Da entfaltete der riesige Roboter seine sechs Arme.</p>
+          <p>„Der Nullgigant“, verkündete Giovanni. „Gebaut, um selbst legendäre Pokémon aufzuhalten. Und ihr seid nur zwei Kinder mit zwei erschöpften Partnern.“</p>
+          <p>Turtok atmete schwer, blieb aber vor Felix stehen. Diancies Kristalle waren kleiner geworden, doch es schwebte entschlossen neben Lina.</p>
+          <p>Felix legte eine Hand auf Turtoks Panzer. „Wir gehen nicht weg.“</p>
+          <p>Lina berührte Diancies Schulter. „Unsere Freunde kommen zurück.“</p>
+          <p>Der Nullgigant hob zwei Arme. Dunkle Energie sammelte sich in seinen Händen.</p>
+          <p>Etwas Kleines fiel klappernd aus einem schmalen Riss in der Wand.</p>
+          <p>Eine grüne Beere rollte über den Boden. Sie kullerte zwischen Felix’ Füße und blieb vor Turtok liegen.</p>
+          <p>Felix sah hinunter.</p>
+          <p>Dann drehten sich beide Geschwister um.</p>
+          <p>Der Riss in der Wand leuchtete plötzlich orange auf. Zwei lange Ohren erschienen darin. Liberlo sprang hindurch, landete auf einem Fuß und fing die grüne Beere mit dem anderen auf.</p>
+          <p>„Liberlo!“, rief Felix.</p>
+          <p>Neben dem ersten Riss öffnete sich ein zweiter. Pikachu sprang heraus und landete in Linas Armen.</p>
+          <p>„Pikachu!“ Lina drückte es kurz an sich. Pikachu legte die Pfoten an ihre Wangen.</p>
+          <p>Mewtus Augen leuchteten stärker. Auf der anderen Seite der Barriere erschien Mew. Es legte beide Pfoten gegen dieselbe Stelle. Rosa und blaues Licht trafen sich.</p>
+          <p>Überall in der Halle öffneten sich Durchgänge.</p>
+          <p>Glurak und Tauboss stießen aus einem Portal unter der Decke. Aerodactyl folgte mit weit ausgebreiteten Flügeln. Voltrean schoss zwischen ihnen hindurch und ließ einen kräftigen Wind durch die Halle wehen.</p>
+          <p>Onix brach durch einen niedrigen Riss am Boden. Neben ihm kam Duraludon hervor und schlug zur Begrüßung dreimal mit dem Arm gegen seine Brust. Ultrigaria schwang sich an seinen Ranken über Onix hinweg. Meganie folgte, und Liberlo stellte sich direkt an Felix’ andere Seite.</p>
+          <p>Ein breiter Durchgang füllte sich mit Wasser. Garados glitt daraus hervor, begleitet von Golking und Quappo. Quappo trat auf den nassen Boden, rutschte beinahe aus und fing sich gerade noch. Es verschränkte sofort die Arme und sah den Nullgiganten streng an.</p>
+          <p>Knuddeluff, Vulnona, Feelinara und Pixi liefen gemeinsam durch ein helles Portal. Das Feuer-Gallopa und das Galar-Gallopa erschienen Seite an Seite. Bisaflor setzte mit einem schweren Schritt auf dem Boden auf und breitete schützend seine Blätter über die kleineren Pokémon.</p>
+          <p>Zuletzt bebte die Halle. Ein gewaltiges rotes Tor öffnete sich. Groudon trat hindurch. Auf der anderen Seite erhob sich Kyogre aus dem Wasserportal. Die beiden sahen einander kurz an. Dann stellten sie sich friedlich nebeneinander hinter Felix und Lina.</p>
+          <p>Auch die verschwundenen Pokébälle kehrten zurück. Mew ließ sie in rosa Licht durch die Luft schweben. Einer nach dem anderen fand seinen Platz an Felix’ und Linas Gürteln.</p>
+          <p>Die Geschwister standen wieder vor ihren vollständigen Teams. Turtok richtete sich neben Felix auf. Diancie nahm Linas Hand. Mew und Mewtu schwebten über ihnen.</p>
+          <p>Jessie, James und Mauzi stolperten aus dem Seitengang. Ihre Drehscheibe drehte sich hinter ihnen noch immer.</p>
+          <p>„Das sind viel mehr, als wir bestellt haben“, murmelte James.</p>
+          <p>„Giovanni wird sie trotzdem besiegen“, behauptete Jessie. Doch sie klang weniger sicher als zuvor.</p>
+          <p>Giovanni hob die Hand. „Nullgigant, greif sie alle an.“</p>
+          <p>Die drei Kerne in der Brust des Roboters flammten auf. Seine sechs Arme richteten sich gleichzeitig auf die versammelten Pokémon – auch auf Jessie, James und Mauzi.</p>
+          <p>Mauzi machte einen Schritt zurück. „Hat er gerade wirklich alle gesagt?“</p>
+          <p>Felix hob die grüne Beere auf und gab sie Liberlo zurück. Dann stellte er sich neben Lina.</p>
+          <p>„Jetzt“, sagte er, „kämpfen wir gemeinsam.“</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+      <section class="chapter" id="kapitel-5" data-index="4" aria-labelledby="kapitel-5-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 5</span>
+          <h1 id="kapitel-5-titel">Der Nullgigant</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Der erste Angriff des Nullgiganten traf den Boden wie ein schwarzer Blitz.</p>
+          <p>„Auseinander!“, rief Felix.</p>
+          <p>Die Pokémon sprangen in alle Richtungen. Groudon stellte sich über Felix und Lina und fing herabfallende Metallstücke mit seinem breiten Rücken ab. Kyogre ließ eine Wasserwand aufsteigen. Der zweite Energiestrahl prallte hinein und wurde als dunkler Dampf zur Decke gelenkt.</p>
+          <p>Dann öffneten sich Klappen im Körper des Giganten. Ein ganzer Schwarm Nullspäher schoss heraus.</p>
+          <p>„Wir teilen die Aufgaben!“, rief Lina. „Voltrean, Tauboss und Glurak – nach oben!“</p>
+          <p>Voltrean erzeugte Rückenwind. Tauboss nutzte ihn, um zwei Nullspäher mit einer schnellen Wendung gegeneinanderzulenken. Glurak zog eine Feuerlinie durch die Luft und trennte die Roboter von den schwarzen Rissen, die sie mit Energie versorgten.</p>
+          <p>„Aerodactyl, die Kerne!“, befahl Felix.</p>
+          <p>Aerodactyl stieß von oben herab und traf die freigelegten Kerne mit Flügelschlag. Drei Nullspäher fielen auf den Boden und blieben liegen.</p>
+          <p>Der Nullgigant setzte sich in Bewegung. Bei jedem Schritt bebte die Halle. Zwei seiner Arme schlugen nach Groudon, während zwei weitere Kyogre mit dunklen Netzen angriffen.</p>
+          <p>„Onix und Duraludon, helft Groudon!“, rief Felix. „Ultrigaria, die Gelenke!“</p>
+          <p>Onix wickelte sich um ein Bein des Giganten. Duraludon stemmte sich gegen den zweiten Fuß. Ultrigarias Ranken schlangen sich um einen Arm und hielten ihn für einen Augenblick fest.</p>
+          <p>Auf der anderen Seite zerschnitt Kyogre ein Netz mit einem kräftigen Wasserstrahl. Das zweite fiel auf Quappo und Knuddeluff.</p>
+          <p>Quappo packte die Maschen und zog. Knuddeluff schob von der anderen Seite. Gemeinsam rissen sie das Netz entzwei. Quappo stolperte rückwärts, fing sich an Knuddeluffs Ohr und nahm sofort wieder eine besonders aufrechte Haltung ein.</p>
+          <p>Golking sprang aus Kyogres Wasserwand und trieb mit Aquawelle drei Nullspäher von ihren Energierissen fort. Pixi ließ Mondgewalt über ihnen aufleuchten. Im hellen Schein erkannte Tauboss die freigelegten Kerne und schaltete sie mit einem gezielten Flügelschlag aus.</p>
+          <p>„Bisaflor und Meganie, sichert den Boden!“, rief Lina. „Feelinara, schütze die Kleinen!“</p>
+          <p>Bisaflor und Meganie ließen starke Ranken durch Risse im Metallboden wachsen. Sie bildeten ein Netz, das die Schritte des Nullgiganten verlangsamte. Feelinara spannte seine Fühler vor Pixi und Pikachu und zog beide aus dem Weg eines Greifarms.</p>
+          <p>Felix beobachtete die drei Kerne in der Brust des Roboters. Jeder war von einem eigenen Schild bedeckt. Immer wenn ein Arm angriff, floss Energie von einem Kern durch die Schulter.</p>
+          <p>„Die Arme sind mit den Kernen verbunden!“, rief er. „Wir müssen zuerst ihre Leitungen unterbrechen.“</p>
+          <p>„Pikachu und Voltrean schaffen die obere“, sagte Lina. „Duraludon findet den richtigen Takt.“</p>
+          <p>Duraludon schlug dreimal gegen den Boden. Beim dritten Schlag flammte der mittlere Kern auf.</p>
+          <p>„Jetzt!“, rief Lina.</p>
+          <p>Pikachu setzte Donnerblitz ein. Voltrean stürzte aus der Höhe herab und verstärkte den Angriff mit Funkensprung. Die Elektrizität traf die Leitung in der Schulter. Zwei Arme sanken herab.</p>
+          <p>Liberlo sprang auf Onix’ Rücken, lief über dessen steinernen Körper und schoss einen Feuerball gegen die zweite Verbindung. Vulnona setzte Flammenwurf ein. Beide Feuerattacken trafen gleichzeitig. Der zweite Schild begann zu flackern.</p>
+          <p>„Garados, du bist bereit?“, fragte Felix.</p>
+          <p>Garados antwortete mit einem entschlossenen Brüllen. Der Garadosnit leuchtete. Felix’ Schlüsselstein strahlte in derselben Farbe.</p>
+          <p>„Garados – Mega-Entwicklung!“</p>
+          <p>Licht umhüllte Garados. Sein Körper wurde kräftiger, seine Flossen breiter. Mega-Garados schoss durch Kyogres Wasserwand und rammte den flackernden Schild. Ein breiter Riss zog sich hindurch.</p>
+          <p>Lina sah zu Bisaflor. Es stand fest zwischen seinen Ranken und nickte ihr zu.</p>
+          <p>„Bisaflor – Mega-Entwicklung!“</p>
+          <p>Der Bisaflornit und Linas Schlüsselstein verbanden sich mit einem hellen Band. Mega-Bisaflors Blüte wuchs, und mächtige Ranken schossen über den gesamten Boden. Sie packten vier Arme des Nullgiganten und zogen sie auseinander.</p>
+          <p>„Mega-Garados, Nassschweif auf die Brust!“, rief Felix.</p>
+          <p>Mega-Garados traf den beschädigten Schild. Er zerbrach in dunkle Splitter. Dahinter kamen alle drei Nullkerne zum Vorschein.</p>
+          <p>Da schwenkte ein Greifarm zur Seite. Er packte Mauzi und hob ihn vom Boden.</p>
+          <p>„He!“, schrie Mauzi. „Ich gehöre zu Team Rocket!“</p>
+          <p>„Der Nullgigant nimmt jedes Pokémon auf, das seine Energie vergrößern kann“, sagte Giovanni ungerührt.</p>
+          <p>Der schwarze Kern begann, Licht aus Mauzi zu ziehen. Jessie und James rannten los und hängten sich an den Greifarm.</p>
+          <p>„Lass ihn los!“, rief Jessie.</p>
+          <p>„Mauzi ist unser Freund!“, rief James.</p>
+          <p>„Eure Aufgabe ist es, mir zu dienen“, erwiderte Giovanni. „Wenn ihr dabei im Weg steht, seid ihr ebenso entbehrlich.“</p>
+          <p>Jessie und James sahen einander an. Dann blickten sie zu Mauzi.</p>
+          <p>Jessie zog ihre Team-Rocket-Mütze vom Kopf und warf sie auf den Boden. James tat es ihr nach.</p>
+          <p>Mauzi krallte sich mit beiden Pfoten am Greifarm fest. „Vielleicht sind wir Gauner“, rief es, „aber unsere Freunde lassen wir uns von niemandem wegnehmen!“</p>
+          <p>„Schon gar nicht von unserem eigenen Boss!“, ergänzte Jessie.</p>
+          <p>„Ehemaligen Boss“, sagte James.</p>
+          <p>Lina zeigte auf den Arm. „Feuer-Gallopa, Flammenrad! Galar-Gallopa, Psychokinese!“</p>
+          <p>Das Feuer-Gallopa raste gegen das Gelenk. Gleichzeitig hielt das Galar-Gallopa Mauzi mit Psychokinese fest. Der Greifer öffnete sich, und Mauzi schwebte sicher zu Jessie und James hinunter.</p>
+          <p>„Danke“, sagte James überrascht.</p>
+          <p>„Bedankt euch später“, rief Felix. „Wir brauchen die Steuerung des Giganten!“</p>
+          <p>Mauzi grinste. „Damit kennen wir uns leider bestens aus.“</p>
+          <p>Die drei sprangen auf ihre noch immer kreisende Steuerplattform. James drückte den grünen Knopf, Jessie zog einen Hebel, und Mauzi trat gegen das Gehäuse. Die Plattform schoss rückwärts los und rammte den Nullgiganten in die Ferse.</p>
+          <p>„Vorwärts wäre besser gewesen!“, rief James.</p>
+          <p>„Wir haben getroffen!“, antwortete Jessie.</p>
+          <p>Der Nullgigant verlor das Gleichgewicht. Mega-Bisaflor hielt ihn mit seinen Ranken aufrecht, damit er nicht auf die kleineren Pokémon stürzte. Mega-Garados stemmte sich gegen seine Brust.</p>
+          <p>Die drei Kerne waren nun ungeschützt. Doch sie pulsierten nicht gleichzeitig.</p>
+          <p>Duraludon schlug den Takt: einmal, zweimal, dreimal.</p>
+          <p>Felix verstand. „Wir müssen alle drei im selben Augenblick treffen.“</p>
+          <p>Über ihnen begann die Nullkrone immer schneller zu kreisen.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+      <section class="chapter" id="kapitel-6" data-index="5" aria-labelledby="kapitel-6-titel">
+        <header class="chapter-heading">
+          <span class="chapter-number">Kapitel 6</span>
+          <h1 id="kapitel-6-titel">Ein Himmel für alle</h1>
+          <span class="leaf-divider" aria-hidden="true">◆</span>
+        </header>
+        <div class="chapter-copy">
+          <p>Mega-Garados und Mega-Bisaflor lösten ihre Entwicklungen. Beide atmeten schwer, standen aber sicher. Felix und Lina bedankten sich bei ihnen und riefen sie zum Ausruhen in ihre Pokébälle zurück.</p>
+          <p>Der Nullgigant richtete sich wieder auf. Die drei freigelegten Kerne wechselten ihr Licht immer schneller. Aus der Nullkrone floss neue Energie in seinen Körper.</p>
+          <p>„Wir brauchen drei Angriffe von drei Seiten“, sagte Felix.</p>
+          <p>Lina blickte nach oben. Der höchste Kern lag direkt unter der rotierenden Krone. „Und jemand muss Diancie zu Necrozma bringen.“</p>
+          <p>Aerodactyl landete vor Felix. Diancie nahm Linas Hand. Beide Pokémon waren bereit.</p>
+          <p>Felix berührte seinen Schlüsselstein. Aerodactyls Mega-Stein antwortete.</p>
+          <p>„Aerodactyl – Mega-Entwicklung!“</p>
+          <p>Mega-Aerodactyl breitete seine steinernen Flügel aus. Gleichzeitig leuchteten Linas Schlüsselstein und der Diancienit.</p>
+          <p>„Diancie – Mega-Entwicklung!“</p>
+          <p>Diancie verwandelte sich in Mega-Diancie. Lange Kristalle funkelten um seinen Körper. Es sprang auf Mega-Aerodactyls Rücken, und beide schossen zur Nullkrone hinauf.</p>
+          <p>„Alle anderen halten den Giganten fest!“, rief Felix.</p>
+          <p>Onix wickelte sich erneut um ein Bein. Groudon stemmte beide Klauen gegen den Körper. Kyogre umgab die Füße mit einem kreisenden Wasserstrom. Turtok und Quappo feuerten gemeinsam auf die Gelenke.</p>
+          <p>Meganie und Ultrigaria zogen mit ihren Ranken an einem Arm. Feelinara und Knuddeluff hielten einen zweiten zurück. Glurak, Tauboss und Voltrean vertrieben die letzten Nullspäher aus der Luft.</p>
+          <p>Vulnona und das Feuer-Gallopa erhitzten eine dunkle Leitung, bis sie weich wurde. Duraludon traf die geschwächte Stelle mit Lichtkanone. Die Leitung zerbrach. Pikachu sprang durch die Öffnung und setzte Donnerblitz ein.</p>
+          <p>Alle drei Kerne leuchteten gleichzeitig.</p>
+          <p>Duraludon hob den Arm.</p>
+          <p>Klong.</p>
+          <p>Liberlo schoss einen Feuerball auf den linken Kern. Pikachu traf den rechten mit Donnerblitz. Mega-Aerodactyl stürzte von oben auf den mittleren herab.</p>
+          <p>Die drei Angriffe trafen im selben Augenblick.</p>
+          <p>Die Kerne zerbrachen. Der Nullgigant schwankte.</p>
+          <p>„Groudon!“, rief Felix.</p>
+          <p>Groudon fing den riesigen Roboter auf. Seine Füße gruben sich tief in den Boden.</p>
+          <p>„Kyogre, Wasserstrahl unter den Rücken!“, befahl Lina.</p>
+          <p>Kyogres Wasser hob den Giganten leicht an. Groudon und Onix drehten ihn zur Seite. Er sank langsam auf eine freie Fläche, ohne jemanden unter sich zu begraben. Seine Arme blieben still liegen.</p>
+          <p>„Der ist besiegt!“, jubelte Mauzi.</p>
+          <p>Giovanni schlug mit der Faust auf sein Steuerpult. „Dann brauche ich keine Maschine mehr zwischen Necrozma und der Nullzone.“</p>
+          <p>Er zog den größten Hebel bis zum Anschlag.</p>
+          <p>Die Nullkrone senkte sich. Schwarze Energie schoss direkt in Necrozmas Fesseln. Über der Festung öffnete sich ein gewaltiger Riss. Durch die beschädigte Decke sahen die Kinder, wie draußen gleichzeitig dunkle Wolken aufzogen und der Boden zu glühen begann.</p>
+          <p>Groudon schnaubte. Kyogre schlug mit den Flossen. Die Kraft der Nullzone versuchte, ihren alten Streit erneut zu wecken.</p>
+          <p>Felix trat zu Groudon. „Sie will, dass du gegen Kyogre kämpfst.“</p>
+          <p>Lina stand bei Kyogre. „Aber ihr entscheidet selbst.“</p>
+          <p>Groudon sah zum Meerespokémon. Kyogre erwiderte den Blick. Dann wandten sich beide gemeinsam der Nullkrone zu.</p>
+          <p>Groudon ließ Wärme durch den Boden fließen. Kyogre sammelte das Wasser der Halle zu einem breiten Ring. Diesmal trafen Hitze und Wasser nicht als Angriff aufeinander. Warmer Dampf stieg kontrolliert nach oben und trug Mega-Aerodactyl und Mega-Diancie bis zu Necrozma.</p>
+          <p>Mew und Mewtu warteten an der schwarzen Barriere.</p>
+          <p>Mew legte seine Pfoten von innen dagegen. Mewtu hielt sie von außen fest. Rosa und blaues Licht verbanden sich. Ein heller Spalt öffnete sich.</p>
+          <p>„Mega-Diancie, ordne die Energie!“, rief Lina.</p>
+          <p>Mega-Diancie ließ einen Kreis aus klaren Kristallen um die Nullkrone wachsen. Die schwarzen Ströme wurden eingefangen und in getrennte Bahnen gelenkt. Mega-Aerodactyl flog zwischen den Ringen hindurch.</p>
+          <p>„Steinhagel auf die Fesseln!“, rief Felix.</p>
+          <p>Die Steine trafen nicht Necrozma, sondern die Halterungen der violetten Bänder. Zwei brachen. Mew löste die kleineren Verschlüsse mit Psychokinese. Mewtu hielt den großen Hauptring auf.</p>
+          <p>Turtok und Pikachu stellten sich nebeneinander unter das Steuerpult.</p>
+          <p>„Turtok, Aquaknarre auf den Kühlkanal!“, rief Felix.</p>
+          <p>„Pikachu, Donnerblitz hinein!“, rief Lina.</p>
+          <p>Wasser und Elektrizität liefen durch die Maschine. Sämtliche Anzeigen blinkten. Jessie, James und Mauzi sprangen an das zweite Pult.</p>
+          <p>„Welcher Knopf schaltet alles aus?“, fragte James.</p>
+          <p>„Bestimmt nicht der rote“, sagte Jessie.</p>
+          <p>Mauzi betrachtete die vielen Schalter. Dann zog es den dicken Stecker aus der Wand.</p>
+          <p>Die Nullkrone blieb stehen.</p>
+          <p>Der Hauptring sprang auf. Necrozma war frei.</p>
+          <p>Für einen Moment schwebte es reglos in der Halle. Dann hob es die Arme. Es griff niemanden an. Stattdessen nahm es das Licht auf, das durch Dampf und Wasser über Groudon und Kyogre entstanden war.</p>
+          <p>Ein breiter Regenbogen spannte sich durch die geöffnete Decke.</p>
+          <p>Necrozmas Körper leuchtete. Mit einer einzigen hellen Welle schloss es den großen Riss über der Festung. Die kleineren Nullspalten verschwanden. Alle noch aktiven Roboter sanken ohne Energie zu Boden.</p>
+          <p>Giovanni versuchte zu fliehen. Doch seine Plattform fuhr nur bis zur nächsten Tür. Dort warteten bereits Professor Eich und mehrere Mitglieder der Pokémon-Liga. Mewtu hatte ihnen während des Kampfes ein Gedankenbild des Eingangs geschickt.</p>
+          <p>„Giovanni“, sagte Professor Eich, „diesmal gibt es keinen verborgenen Ausgang.“</p>
+          <p>Hinter Giovanni schob Groudon eine Klaue vor die letzte Seitentür. Kyogre füllte den Fluchttunnel mit einer ruhigen Wasserwand. Giovanni blieb stehen.</p>
+          <p>Am Abend waren alle wieder auf Professor Eichs Wiese.</p>
+          <p>Necrozma schwebte frei über dem Labor. Mew flog ausgelassen um es herum. Mewtu hielt etwas Abstand, doch als Mew ihm auf den Kopf tippte, verzog sich sein Mund zu einem kleinen Lächeln. Kurz darauf verschwanden alle drei in einem hellen Portal. Sie blieben frei und konnten selbst entscheiden, wohin sie gingen.</p>
+          <p>Die Mega-Entwicklungen waren längst beendet. Aerodactyl und Diancie ruhten bei Felix und Lina. Groudon lag auf der trockenen Seite der Wiese. Kyogre schwamm im See. Zwischen ihnen verlief derselbe Uferstreifen wie am Morgen.</p>
+          <p>Jessie, James und Mauzi standen vor Professor Eich. Drei Mitglieder der Liga warteten hinter ihnen.</p>
+          <p>„Wir haben im richtigen Augenblick die richtige Entscheidung getroffen“, erklärte Jessie.</p>
+          <p>„Nachdem wir vorher mehrere falsche getroffen hatten“, gab James zu.</p>
+          <p>Mauzi verschränkte die Arme. „Können wir den zweiten Teil aus dem Bericht streichen?“</p>
+          <p>„Nein“, sagte Professor Eich. „Aber Felix und Lina haben bestätigt, dass ihr im entscheidenden Moment geholfen habt. Ihr werdet beim Wiederaufbau mitarbeiten.“</p>
+          <p>James seufzte. Jessie hob das Kinn. „Team Rocket für ehrliche Reparaturen.“</p>
+          <p>Hinter ihnen sprang ihr Fahrzeug an. Es fuhr rückwärts über die Wiese und zog die drei an einem noch befestigten Seil hinter sich her.</p>
+          <p>„Wir fangen morgen an!“, rief Mauzi, während sie verschwanden.</p>
+          <p>Felix und Lina saßen mitten zwischen ihren vollständigen Teams. Kein Pokéball fehlte. Turtok ruhte neben Felix, und Pikachu lehnte an Lina. Die anderen Pokémon lagen, saßen oder standen dicht um sie herum.</p>
+          <p>Liberlo rollte die grüne Beere zu Felix zurück.</p>
+          <p>„Schon wieder?“, fragte Felix.</p>
+          <p>Liberlo nickte unschuldig.</p>
+          <p>Felix biss vorsichtig hinein. Sofort zog sich sein Gesicht zusammen.</p>
+          <p>Lina lachte. Diancie funkelte. Quappo wollte besonders gelassen aussehen, probierte ebenfalls ein Stück und sprang mit weit aufgerissenen Augen in den See.</p>
+          <p>Groudon brummte. Kyogre antwortete aus dem Wasser. Diesmal klang es beinahe, als würden beide gemeinsam lachen.</p>
+          <p>Über der Wiese standen Land, Wasser und Himmel friedlich nebeneinander. Und Felix und Lina wussten, dass selbst die größte Kraft nichts gegen Freunde ausrichten konnte, die geschlossen zueinander zurückkehrten.</p>
+        </div>
+        <div class="chapter-end" aria-label="Kapitelende"><span></span><b>◆</b><span></span></div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Kapitelnavigation">
+      <button class="nav-button" id="previous-button" type="button">← Zurück</button>
+      <span class="page-count" id="page-count">1 / 6</span>
+      <button class="nav-button" id="next-button" type="button">Weiter →</button>
+    </nav>
+  </div>
+
+  <dialog id="toc-dialog" aria-labelledby="toc-heading">
+    <div class="dialog-header">
+      <h2 id="toc-heading">Kapitel</h2>
+      <button class="icon-button" id="close-toc" type="button" aria-label="Kapitelmenü schließen">×</button>
+    </div>
+    <div class="toc-list">
+      <button class="toc-item" type="button" data-chapter="0"><span>01</span><strong>Der schwarze Riss</strong></button>
+      <button class="toc-item" type="button" data-chapter="1"><span>02</span><strong>Die geraubten Pokébälle</strong></button>
+      <button class="toc-item" type="button" data-chapter="2"><span>03</span><strong>Stimmen aus der Nullzone</strong></button>
+      <button class="toc-item" type="button" data-chapter="3"><span>04</span><strong>Die grüne Beere</strong></button>
+      <button class="toc-item" type="button" data-chapter="4"><span>05</span><strong>Der Nullgigant</strong></button>
+      <button class="toc-item" type="button" data-chapter="5"><span>06</span><strong>Ein Himmel für alle</strong></button>
+    </div>
+  </dialog>
+
+  <script>
+    (() => {
+      const key = 'nullkrone-reader-v1';
+      const chapters = [...document.querySelectorAll('.chapter')];
+      const tocItems = [...document.querySelectorAll('.toc-item')];
+      const dialog = document.querySelector('#toc-dialog');
+      const state = { chapter: 0, fontSize: 20, dark: false, positions: {} };
+      try { Object.assign(state, JSON.parse(localStorage.getItem(key)) || {}); } catch (_) {}
+      state.chapter = Math.max(0, Math.min(chapters.length - 1, Number(state.chapter) || 0));
+      state.fontSize = Math.max(17, Math.min(28, Number(state.fontSize) || 20));
+      state.dark = Boolean(state.dark);
+
+      const save = () => localStorage.setItem(key, JSON.stringify(state));
+      const splitTitle = (value) => {
+        const match = value.match(/^Kapitel\s+(\d+):\s*(.*)$/);
+        return match ? { kicker: 'Kapitel ' + match[1], title: match[2] } : { kicker: '', title: value };
+      };
+      const applyPreferences = () => {
+        document.documentElement.style.setProperty('--reader-size', state.fontSize + 'px');
+        document.body.classList.toggle('dark', state.dark);
+        document.querySelector('meta[name="theme-color"]').content = state.dark ? '#17211e' : '#2a1f50';
+      };
+      const updateProgress = () => {
+        if (!document.body.classList.contains('reading')) return;
+        const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+        const within = Math.max(0, Math.min(1, scrollY / max));
+        const total = ((state.chapter + within) / chapters.length) * 100;
+        document.querySelector('#progress-fill').style.width = total + '%';
+        state.positions[state.chapter] = Math.round(scrollY);
+      };
+      const showChapter = (index, restore = false) => {
+        state.positions[state.chapter] = Math.round(scrollY);
+        state.chapter = Math.max(0, Math.min(chapters.length - 1, index));
+        chapters.forEach((chapter, i) => chapter.classList.toggle('active', i === state.chapter));
+        tocItems.forEach((item, i) => {
+          item.classList.toggle('current', i === state.chapter);
+          if (i === state.chapter) item.setAttribute('aria-current', 'page'); else item.removeAttribute('aria-current');
+        });
+        const title = splitTitle(chapters[state.chapter].querySelector('h1').id
+          ? tocItems[state.chapter].querySelector('strong').textContent
+          : chapters[state.chapter].querySelector('h1').textContent);
+        document.querySelector('#bar-kicker').textContent = 'Kapitel ' + (state.chapter + 1);
+        document.querySelector('#bar-chapter').textContent = tocItems[state.chapter].querySelector('strong').textContent;
+        document.querySelector('#page-count').textContent = (state.chapter + 1) + ' / ' + chapters.length;
+        document.querySelector('#previous-button').disabled = state.chapter === 0;
+        document.querySelector('#next-button').disabled = state.chapter === chapters.length - 1;
+        document.title = 'Kapitel ' + (state.chapter + 1) + ' · Die Nullkrone';
+        save();
+        requestAnimationFrame(() => {
+          scrollTo({ top: restore ? (state.positions[state.chapter] || 0) : 0, behavior: restore ? 'auto' : 'smooth' });
+          updateProgress();
+        });
+      };
+      const openReader = (restore = true) => {
+        document.body.classList.add('reading');
+        showChapter(state.chapter, restore);
+      };
+      const openToc = () => dialog.showModal();
+
+      applyPreferences();
+      showChapter(state.chapter, false);
+      document.querySelector('#start-reading').textContent = state.positions[state.chapter] ? 'Weiterlesen' : 'Buch öffnen';
+      document.querySelector('#start-reading').addEventListener('click', () => openReader(true));
+      document.querySelector('#cover-toc').addEventListener('click', openToc);
+      document.querySelector('#menu-button').addEventListener('click', openToc);
+      document.querySelector('#close-toc').addEventListener('click', () => dialog.close());
+      dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+      tocItems.forEach((item) => item.addEventListener('click', () => {
+        document.body.classList.add('reading');
+        dialog.close();
+        showChapter(Number(item.dataset.chapter));
+      }));
+      document.querySelector('#previous-button').addEventListener('click', () => showChapter(state.chapter - 1));
+      document.querySelector('#next-button').addEventListener('click', () => showChapter(state.chapter + 1));
+      document.querySelector('#font-down').addEventListener('click', () => { state.fontSize = Math.max(17, state.fontSize - 1); applyPreferences(); save(); updateProgress(); });
+      document.querySelector('#font-up').addEventListener('click', () => { state.fontSize = Math.min(28, state.fontSize + 1); applyPreferences(); save(); updateProgress(); });
+      document.querySelector('#theme-button').addEventListener('click', () => { state.dark = !state.dark; applyPreferences(); save(); });
+      addEventListener('scroll', updateProgress, { passive: true });
+      addEventListener('beforeunload', () => { updateProgress(); save(); });
+      addEventListener('keydown', (event) => {
+        if (dialog.open) return;
+        if (event.key === 'ArrowLeft' && state.chapter > 0) showChapter(state.chapter - 1);
+        if (event.key === 'ArrowRight' && state.chapter < chapters.length - 1) showChapter(state.chapter + 1);
+      });
+    })();
+  </script>
+</body>
+</html>
