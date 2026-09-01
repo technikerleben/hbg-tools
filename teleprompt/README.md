@@ -10,7 +10,8 @@ Installierbare Progressive Web App ohne Spracherkennung.
 - Countdown, Pause und Fortsetzen
 - festes Scrolltempo und Feinregler während der Aufnahme
 - verschiebbares Teleprompterfenster
-- im Querformat rechts kameranah und rechtsbündig
+- wählbare Frontkameraposition an acht Stellen des Geräterahmens
+- automatische kameranahe Position und passende Textausrichtung
 - Offline-Nutzung nach dem ersten vollständigen Laden
 - Export über das iPad-Teilen-Menü oder direkten Download
 
