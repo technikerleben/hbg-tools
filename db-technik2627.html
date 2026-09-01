@@ -178,8 +178,8 @@ const COLORS=['#3E5668','#B5613A','#5A9A4E','#5A7A8F','#9E4E22','#4D8B3F','#2C3E
 
 const DEFAULT_TOPS=[
   {title:'Informationen',subs:['Sicherheitshinweise','Mitteilungen aus der Schulleitung: Leistungsbewertungskonzept','Mitteilungen aus der Schulleitung: MS-Teams-Struktur']},
-  {title:'Organisation der fachschaftlichen Arbeit',subs:['Raumverteilung','Arbeiten an den Schulcurricula: Technik (Kernunterricht)','Arbeiten an den Schulcurricula: WP WiAw','Arbeiten an den Schulcurricula: MINT']},
-  {title:'Jahresplanungen',subs:['Unterrichtsreihen und Projekte','Materialbestellung','SRL und pädagogische Tage']},
+  {title:'Organisation der fachschaftlichen Arbeit',subs:['Raumverteilung (Zuständigkeit, wenn Plan vorliegt)','Arbeiten am Schulcurruculum: Technik (Kernunterricht)','Arbeiten am Schulcurruculum: WP WiAw (gemeinsam mit FK Hauswirtschaft)','Arbeiten am Schulcurruculum: MINT']},
+  {title:'Jahresplanungen',subs:['Unterrichtsreihen und Projekte','Materialbestellung (Restbudget 2026: 1.125,37 €)','SRL und pädagogische Tage']},
   {title:'Verschiedenes',subs:['Catering auf pädagogischen Tagen','Planung Lehrendenausflug']}
 ];
 
@@ -198,7 +198,21 @@ let state={
   timer:{seconds:0}
 };
 
-function load(){try{const s=localStorage.getItem(SKEY);if(s){const p=JSON.parse(s);Object.assign(state,p)}}catch(e){}}
+function migrateStoredAgenda(){
+  if(!Array.isArray(state.tops))return;
+  const replacements={
+    'Raumverteilung':'Raumverteilung (Zuständigkeit, wenn Plan vorliegt)',
+    'Arbeiten an den Schulcurricula: Technik (Kernunterricht)':'Arbeiten am Schulcurruculum: Technik (Kernunterricht)',
+    'Arbeiten an den Schulcurricula: WP WiAw':'Arbeiten am Schulcurruculum: WP WiAw (gemeinsam mit FK Hauswirtschaft)',
+    'Arbeiten an den Schulcurricula: MINT':'Arbeiten am Schulcurruculum: MINT',
+    'Materialbestellung':'Materialbestellung (Restbudget 2026: 1.125,37 €)'
+  };
+  state.tops.forEach(top=>{
+    if(!Array.isArray(top.subs))return;
+    top.subs=top.subs.map(s=>replacements[s]||s);
+  });
+}
+function load(){try{const s=localStorage.getItem(SKEY);if(s){const p=JSON.parse(s);Object.assign(state,p);migrateStoredAgenda();save()}}catch(e){}}
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(state))}catch(e){}}
 
 // ========== RENDER ALL ==========
