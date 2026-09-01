@@ -177,8 +177,8 @@ const SKEY='db_technik_v2';
 const COLORS=['#3E5668','#B5613A','#5A9A4E','#5A7A8F','#9E4E22','#4D8B3F','#2C3E4D','#C17B00'];
 
 const DEFAULT_TOPS=[
-  {title:'Informationen',subs:['Sicherheitshinweise','Mitteilungen aus der Schulleitung']},
-  {title:'Organisation der fachschaftlichen Arbeit',subs:['Räume','Termine','Arbeit am schulinternen Lehrplan']},
+  {title:'Informationen',subs:['Sicherheitshinweise','Mitteilungen aus der Schulleitung: Leistungsbewertungskonzept','Mitteilungen aus der Schulleitung: MS-Teams-Struktur']},
+  {title:'Organisation der fachschaftlichen Arbeit',subs:['Raumverteilung','Arbeiten an den Schulcurricula: Technik (Kernunterricht)','Arbeiten an den Schulcurricula: WP WiAw','Arbeiten an den Schulcurricula: MINT']},
   {title:'Jahresplanungen',subs:['Unterrichtsreihen und Projekte','Materialbestellung','SRL und pädagogische Tage']},
   {title:'Verschiedenes',subs:['Catering auf pädagogischen Tagen','Planung Lehrendenausflug']}
 ];
@@ -315,6 +315,11 @@ function renderEditAgenda(){
     h+=`<div class="edit-sub"><span style="min-width:20px"></span><button class="btn-ghost btn-sm" onclick="state.tops[${i}].subs.push('Neuer Unterpunkt');save();renderAll()" style="font-size:.74rem">+ Unterpunkt</button></div>`;
   });
   h+=`<button class="btn-ghost mt-sm" onclick="state.tops.push({title:'Neuer TOP',subs:[]});save();renderAll()" style="width:100%">+ Tagesordnungspunkt</button>`;
+  h+=`<div class="flex gap-sm mt-md" style="justify-content:center">
+    <button class="btn-ghost btn-sm" onclick="exportJSON()">💾 JSON-Export</button>
+    <button class="btn-ghost btn-sm" onclick="document.getElementById('jsonFileEdit').click()">📂 JSON-Import</button>
+    <input type="file" id="jsonFileEdit" accept=".json" style="display:none" onchange="importJSON(event)">
+  </div>`;
   h+='</div>';
   return h;
 }
@@ -355,15 +360,23 @@ function renderProtoScreen(){
     </div>
   </div>`;
 
-  // Notes per TOP
-  h+='<div class="card proto-section"><h3>Sitzungsnotizen</h3>';
-  let hasNotes=false;
+  // TOPs with subs and notes
   state.tops.forEach((t,i)=>{
     const txt=state.notes['top_'+i]||'';
-    if(txt.trim()){hasNotes=true;h+=`<div class="summary-note"><h5>TOP ${i+1}: ${esc(t.title)}</h5><p>${esc(txt)}</p></div>`}
+    h+=`<div class="card proto-section">
+      <h3 style="margin-bottom:4px">TOP ${i+1}: ${esc(t.title)}</h3>`;
+    if(t.subs.length){
+      h+='<div style="margin:4px 0 8px;padding-left:4px">';
+      t.subs.forEach(s=>h+=`<div style="font-size:.84rem;color:var(--text-l);padding:2px 0">· ${esc(s)}</div>`);
+      h+='</div>';
+    }
+    if(txt.trim()){
+      h+=`<div class="summary-note" style="margin-top:6px"><h5>Notizen</h5><p>${esc(txt)}</p></div>`;
+    }else{
+      h+='<p class="text-sm text-muted" style="font-style:italic;margin-top:4px">Keine Notizen.</p>';
+    }
+    h+='</div>';
   });
-  if(!hasNotes)h+='<p class="text-sm text-muted">Keine Notizen aus den TOPs.</p>';
-  h+='</div>';
 
   // Beschlüsse
   h+=`<div class="card proto-section">
@@ -376,6 +389,9 @@ function renderProtoScreen(){
     <button class="btn-ghost" onclick="goScreen(${state.tops.length})">← TOP ${state.tops.length}</button>
     <button class="btn-secondary" onclick="window.print()">🖨 Drucken / PDF</button>
     <button class="btn-ghost" onclick="showPlaintext()">📄 Rohtext</button>
+    <button class="btn-ghost" onclick="exportJSON()">💾 JSON-Export</button>
+    <button class="btn-ghost" onclick="document.getElementById('jsonFileInput').click()">📂 JSON-Import</button>
+    <input type="file" id="jsonFileInput" accept=".json" style="display:none" onchange="importJSON(event)">
     <button class="btn-ghost" onclick="goScreen(0)">← Agenda</button>
   </div>`;
   return h;
@@ -486,6 +502,55 @@ function generatePlaintext(){
   t+=`\n${'─'.repeat(40)}\n`;
   t+=`Protokoll erstellt am ${formatDate(new Date().toISOString().slice(0,10))}\n`;
   return t;
+}
+
+// ========== JSON EXPORT / IMPORT ==========
+function exportJSON(){
+  const exportData={
+    title:state.title,
+    date:state.date,
+    location:state.location,
+    timeStart:state.timeStart,
+    timeEnd:state.timeEnd,
+    attendees:state.attendees,
+    tops:state.tops,
+    notes:state.notes,
+    beschluesse:state.beschluesse
+  };
+  const blob=new Blob([JSON.stringify(exportData,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const slug=(state.title||'db').replace(/[^a-zA-Z0-9äöüÄÖÜß]/g,'_').substring(0,30);
+  a.download=`${slug}_${state.date||'export'}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importJSON(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.tops||!Array.isArray(data.tops)){alert('Ungültige Datei: Keine Tagesordnung gefunden.');return}
+      if(!confirm('Aktuelle Sitzung durch Import ersetzen?'))return;
+      if(data.title)state.title=data.title;
+      if(data.date)state.date=data.date;
+      if(data.location)state.location=data.location;
+      if(data.timeStart)state.timeStart=data.timeStart;
+      if(data.timeEnd)state.timeEnd=data.timeEnd;
+      if(data.attendees)state.attendees=data.attendees;
+      state.tops=data.tops;
+      if(data.notes)state.notes=data.notes;
+      if(data.beschluesse)state.beschluesse=data.beschluesse;
+      state.screen=0;
+      state.editMode=false;
+      save();renderAll();
+    }catch(err){alert('Fehler beim Lesen der Datei: '+err.message)}
+  };
+  reader.readAsText(file);
+  event.target.value='';
 }
 
 // ========== HELPERS ==========
