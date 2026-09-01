@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Dienstbesprechung Technik – 01.09.2026</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blau:#3E5668;--blau-d:#2C3E4D;--blau-l:#5A7A8F;
+  --orange:#D97A4A;--orange-d:#B5613A;--orange-l:#E6A070;
+  --gruen:#7DBB6F;--gruen-d:#5A9A4E;--gruen-l:#A5D69A;
+  --offwhite:#F5F4F1;--weiss:#FFFFFF;
+  --text:#2C3E4D;--text-l:#6B7F8E;--border:#D1D9E0;
+  --rad:10px;--rad-s:6px;
+}
+html{font-size:16px}
+body{font-family:-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif;background:var(--offwhite);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* Nav */
+nav{background:var(--blau);color:#fff;display:flex;align-items:center;padding:0 16px;height:52px;gap:6px;flex-shrink:0;z-index:100}
+nav .logo{font-weight:700;font-size:.95rem;margin-right:auto;white-space:nowrap}
+nav .logo span{color:var(--orange);font-weight:800}
+.nav-tabs{display:flex;gap:3px;overflow-x:auto}
+.nav-tab{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.7);padding:6px 10px;border-radius:var(--rad-s);font-size:.74rem;cursor:pointer;font-weight:600;transition:.2s;white-space:nowrap;flex-shrink:0}
+.nav-tab:hover{background:rgba(255,255,255,.2)}
+.nav-tab.active{background:var(--orange);color:#fff}
+.timer-area{display:flex;align-items:center;gap:4px;margin-left:8px;flex-shrink:0}
+.timer-display{font-variant-numeric:tabular-nums;font-weight:700;font-size:.9rem;color:var(--orange-l);min-width:40px;text-align:center}
+.timer-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center}
+.timer-btn:hover{background:rgba(255,255,255,.25)}
+
+/* Main */
+main{flex:1;overflow-y:auto;padding:18px 22px 32px}
+.screen{display:none;max-width:960px;margin:0 auto;animation:fadeIn .2s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* Typography */
+h2{font-size:1.35rem;font-weight:700;color:var(--blau);margin-bottom:4px;letter-spacing:-.3px}
+h3{font-size:1rem;font-weight:700;color:var(--blau);margin-bottom:6px}
+.subtitle{color:var(--text-l);font-size:.85rem;margin-bottom:16px}
+
+/* Buttons */
+button{min-height:44px;padding:10px 18px;border-radius:var(--rad-s);font-size:.88rem;cursor:pointer;border:none;font-weight:600;transition:.15s}
+button:active{transform:scale(.97)}
+.btn-primary{background:var(--orange);color:#fff}.btn-primary:hover{background:var(--orange-d)}
+.btn-secondary{background:var(--blau);color:#fff}.btn-secondary:hover{background:var(--blau-d)}
+.btn-ghost{background:transparent;color:var(--blau);border:2px solid var(--border)}.btn-ghost:hover{border-color:var(--blau)}
+.btn-sm{min-height:32px;padding:4px 10px;font-size:.78rem}
+.btn-danger{background:transparent;color:#c0392b;border:2px solid rgba(192,57,43,.2);min-height:32px;padding:4px 10px;font-size:.78rem}
+.btn-danger:hover{background:rgba(192,57,43,.06)}
+
+/* Cards & Inputs */
+.card{background:var(--weiss);border-radius:var(--rad);padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px}
+input,textarea{font-size:16px;padding:9px 12px;border:2px solid var(--border);border-radius:var(--rad-s);width:100%;font-family:inherit;color:var(--text)}
+input:focus,textarea:focus{outline:none;border-color:var(--blau)}
+textarea{resize:vertical;min-height:80px;font-size:.88rem;line-height:1.5}
+
+/* Start / Agenda */
+.start-hero{text-align:center;padding:28px 16px 12px}
+.start-hero h2{font-size:1.6rem;margin-bottom:6px}
+.meta-bar{display:flex;justify-content:center;gap:16px;margin-bottom:20px;font-size:.85rem;color:var(--text-l);flex-wrap:wrap}
+.meta-bar .meta-item{display:flex;align-items:center;gap:4px}
+.edit-toggle{position:absolute;top:14px;right:16px}
+
+/* Agenda items */
+.agenda-list{max-width:640px;margin:0 auto 24px;text-align:left}
+.agenda-item{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--weiss);border-radius:var(--rad-s);margin-bottom:6px;cursor:pointer;border-left:4px solid var(--blau-l);transition:.15s}
+.agenda-item:hover{transform:translateX(3px);box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.agenda-item .top-num{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-l);min-width:38px;padding-top:2px}
+.agenda-item h4{font-size:.88rem;color:var(--blau);margin-bottom:2px}
+.agenda-item .sub{font-size:.76rem;color:var(--text-l);line-height:1.35}
+
+/* Edit mode agenda */
+.edit-item{display:flex;align-items:center;gap:6px;padding:10px 12px;background:var(--weiss);border-radius:var(--rad-s);margin-bottom:6px;border:1px solid var(--border)}
+.edit-item .drag-handle{cursor:grab;color:var(--text-l);font-size:1.1rem;padding:0 4px;user-select:none}
+.edit-item input{flex:1;font-size:.88rem;padding:6px 10px;min-height:auto}
+.edit-item .move-btns{display:flex;flex-direction:column;gap:2px}
+.edit-item .move-btn{min-height:24px;padding:0 6px;font-size:.65rem;background:var(--offwhite);border:1px solid var(--border);color:var(--text-l);border-radius:3px;cursor:pointer;line-height:1}
+.edit-item .move-btn:hover{background:var(--border)}
+.edit-sub{margin:4px 0 4px 36px;display:flex;gap:4px;align-items:center}
+.edit-sub input{font-size:.82rem;padding:5px 8px;min-height:auto}
+.edit-sub button{min-height:28px;font-size:.72rem}
+
+/* Attendance */
+.attendance-area{max-width:640px;margin:0 auto 16px;text-align:left}
+.attendance-chips{display:flex;flex-wrap:wrap;gap:6px;min-height:36px;margin-top:6px}
+.att-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;background:var(--blau);color:#fff;border-radius:14px;font-size:.78rem;font-weight:600}
+.att-chip .att-rm{cursor:pointer;opacity:.7;font-size:.7rem}.att-chip .att-rm:hover{opacity:1}
+.att-add-row{display:flex;gap:6px;margin-top:8px}
+.att-add-row input{flex:1;font-size:.88rem;padding:8px 12px}
+
+/* TOP screen */
+.top-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.top-badge{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;font-weight:800;font-size:.85rem;color:#fff;background:var(--blau);flex-shrink:0}
+.sub-card{padding:10px 14px;background:var(--weiss);border-radius:var(--rad-s);margin-bottom:6px;border-left:3px solid var(--border)}
+.sub-card h4{font-size:.88rem;font-weight:700;color:var(--blau);margin-bottom:2px}
+.notes-section{margin-top:14px}
+.notes-section label{display:block;font-weight:600;font-size:.84rem;color:var(--blau);margin-bottom:5px}
+
+/* Protocol */
+.proto-section{margin-bottom:14px}
+.proto-header{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.proto-meta{font-size:.84rem;color:var(--text-l);line-height:1.6}
+.summary-note{padding:10px 14px;background:var(--offwhite);border-radius:var(--rad-s);margin-bottom:8px;border-left:3px solid var(--blau-l)}
+.summary-note h5{font-size:.78rem;color:var(--blau);margin-bottom:3px;font-weight:700}
+.summary-note p{font-size:.82rem;line-height:1.5;white-space:pre-wrap;margin:0}
+.beschluss-list{list-style:none}
+.beschluss-list li{display:flex;gap:6px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
+.beschluss-list li:last-child{border:none}
+.beschluss-list input{flex:1}
+.beschluss-list .person-input{max-width:120px}
+.time-inputs{display:flex;gap:12px;align-items:center;margin:8px 0;flex-wrap:wrap}
+.time-inputs label{font-size:.84rem;font-weight:600;color:var(--blau)}
+.time-inputs input{width:100px;text-align:center;font-size:.92rem;padding:6px 8px}
+.export-bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+
+/* Plaintext overlay */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;justify-content:center;align-items:center;padding:20px}
+.overlay.open{display:flex}
+.overlay-box{background:var(--weiss);border-radius:var(--rad);padding:20px;max-width:700px;width:100%;max-height:80vh;overflow-y:auto}
+.overlay-box textarea{min-height:300px;font-family:'Courier New',monospace;font-size:.82rem;line-height:1.5}
+
+/* Helpers */
+.flex{display:flex}.gap-sm{gap:8px}.items-center{align-items:center}.justify-between{justify-content:space-between}
+.mt-sm{margin-top:8px}.mt-md{margin-top:14px}.mt-lg{margin-top:20px}.mb-sm{margin-bottom:8px}.mb-md{margin-bottom:14px}
+.text-sm{font-size:.82rem}.text-muted{color:var(--text-l)}
+
+@media print{
+  nav,.timer-area,button,.att-add-row,.edit-toggle,.export-bar,.overlay{display:none!important}
+  main{overflow:visible;padding:12px}
+  .screen{max-width:100%}
+  .screen:not(.active){display:none!important}
+  .screen.active{display:block!important}
+  body{background:#fff;height:auto;overflow:visible}
+  .card{box-shadow:none;border:1px solid #ddd}
+}
+@media(max-width:768px){
+  .meta-bar{flex-direction:column;gap:4px;align-items:center}
+  .nav-tab{padding:5px 8px;font-size:.7rem}
+  .time-inputs{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">DB <span>Technik</span></div>
+  <div class="nav-tabs" id="navTabs"></div>
+  <div class="timer-area">
+    <button class="timer-btn" id="timerToggle" title="Timer">⏱</button>
+    <span class="timer-display" id="timerDisplay">--:--</span>
+    <button class="timer-btn" id="timerReset" title="Reset">↺</button>
+  </div>
+</nav>
+<main>
+  <div id="screensContainer"></div>
+</main>
+
+<!-- Plaintext overlay -->
+<div class="overlay" id="plaintextOverlay">
+  <div class="overlay-box">
+    <div class="flex justify-between items-center mb-md">
+      <h3>Protokoll als Rohtext</h3>
+      <button class="btn-sm btn-ghost" onclick="closeOverlay()">✕ Schließen</button>
+    </div>
+    <textarea id="plaintextArea" readonly></textarea>
+    <div class="flex justify-between mt-sm">
+      <button class="btn-primary btn-sm" onclick="copyPlaintext()">📋 In Zwischenablage kopieren</button>
+      <span class="text-sm text-muted" id="copyFeedback"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+const SKEY='db_technik_v2';
+const COLORS=['#3E5668','#B5613A','#5A9A4E','#5A7A8F','#9E4E22','#4D8B3F','#2C3E4D','#C17B00'];
+
+const DEFAULT_TOPS=[
+  {title:'Informationen',subs:['Sicherheitshinweise','Mitteilungen aus der Schulleitung']},
+  {title:'Organisation der fachschaftlichen Arbeit',subs:['Räume','Termine','Arbeit am schulinternen Lehrplan']},
+  {title:'Jahresplanungen',subs:['Unterrichtsreihen und Projekte','Materialbestellung','SRL und pädagogische Tage']},
+  {title:'Verschiedenes',subs:['Catering auf pädagogischen Tagen','Planung Lehrendenausflug']}
+];
+
+let state={
+  screen:0,
+  editMode:false,
+  title:'Dienstbesprechung Fachschaft Technik',
+  date:'2026-09-01',
+  location:'Technik A3',
+  timeStart:'10:15',
+  timeEnd:'',
+  attendees:[],
+  tops:JSON.parse(JSON.stringify(DEFAULT_TOPS)),
+  notes:{},    // 'top_0' -> text
+  beschluesse:[{text:'',person:'',bis:''}],
+  timer:{seconds:0}
+};
+
+function load(){try{const s=localStorage.getItem(SKEY);if(s){const p=JSON.parse(s);Object.assign(state,p)}}catch(e){}}
+function save(){try{localStorage.setItem(SKEY,JSON.stringify(state))}catch(e){}}
+
+// ========== RENDER ALL ==========
+function renderAll(){
+  renderNav();
+  renderScreens();
+  restoreNotes();
+}
+
+// ========== NAV ==========
+function renderNav(){
+  const tabs=document.getElementById('navTabs');
+  let h='<button class="nav-tab '+(state.screen===0?'active':'')+'" onclick="goScreen(0)">Agenda</button>';
+  state.tops.forEach((_,i)=>h+=`<button class="nav-tab ${state.screen===i+1?'active':''}" onclick="goScreen(${i+1})">TOP ${i+1}</button>`);
+  h+=`<button class="nav-tab ${state.screen===state.tops.length+1?'active':''}" onclick="goScreen(${state.tops.length+1})">Protokoll</button>`;
+  tabs.innerHTML=h;
+}
+
+function goScreen(n){
+  state.screen=n;save();
+  document.querySelectorAll('.screen').forEach((s,i)=>s.classList.toggle('active',i===n));
+  renderNav();
+  if(n===state.tops.length+1)renderProtocol();
+  document.querySelector('main').scrollTop=0;
+}
+
+// ========== SCREENS ==========
+function renderScreens(){
+  const c=document.getElementById('screensContainer');
+  let h='';
+  // S0: Agenda
+  h+=`<div class="screen ${state.screen===0?'active':''}" id="screen0">${renderAgendaScreen()}</div>`;
+  // TOP screens
+  state.tops.forEach((_,i)=>{
+    h+=`<div class="screen ${state.screen===i+1?'active':''}" id="screen${i+1}">${renderTopScreen(i)}</div>`;
+  });
+  // Protocol screen
+  h+=`<div class="screen ${state.screen===state.tops.length+1?'active':''}" id="screenProto">${renderProtoScreen()}</div>`;
+  c.innerHTML=h;
+}
+
+// ========== AGENDA SCREEN ==========
+function renderAgendaScreen(){
+  const dateStr=formatDate(state.date);
+  let h=`<div class="start-hero" style="position:relative">
+    <button class="btn-sm ${state.editMode?'btn-primary':'btn-ghost'}" style="position:absolute;top:0;right:0" onclick="toggleEdit()">
+      ${state.editMode?'✓ Fertig':'✏️ Bearbeiten'}
+    </button>
+    ${state.editMode?renderEditAgenda():`
+    <h2>${esc(state.title)}</h2>
+    <div class="meta-bar">
+      <div class="meta-item">📅 ${dateStr}</div>
+      <div class="meta-item">🕙 ${esc(state.timeStart)||'--:--'} Uhr</div>
+      <div class="meta-item">📍 ${esc(state.location)}</div>
+    </div>
+    `}
+  </div>`;
+
+  // Attendance
+  h+=`<div class="attendance-area">
+    <h3>Anwesende</h3>
+    <div class="attendance-chips" id="attChips">${state.attendees.map((a,i)=>`<span class="att-chip">${esc(a)}<span class="att-rm" onclick="rmAtt(${i})">✕</span></span>`).join('')}${state.attendees.length===0?'<span class="text-sm text-muted">Noch keine eingetragen.</span>':''}</div>
+    <div class="att-add-row"><input type="text" id="attInput" placeholder="Name eingeben…" onkeydown="if(event.key==='Enter')addAtt()"><button class="btn-primary btn-sm" onclick="addAtt()">+</button></div>
+  </div>`;
+
+  if(!state.editMode){
+    // Agenda list
+    h+='<div class="agenda-list">';
+    state.tops.forEach((t,i)=>{
+      h+=`<div class="agenda-item" onclick="goScreen(${i+1})" style="border-left-color:${COLORS[i%COLORS.length]}">
+        <div class="top-num">TOP ${i+1}</div>
+        <div><h4>${esc(t.title)}</h4><div class="sub">${t.subs.map(s=>esc(s)).join(' · ')}</div></div>
+      </div>`;
+    });
+    h+='</div>';
+    h+=`<div style="text-align:center"><button class="btn-primary" onclick="goScreen(1)" style="font-size:.95rem;padding:12px 32px;border-radius:var(--rad)">Sitzung starten →</button></div>`;
+  }
+
+  h+=`<div class="mt-lg text-sm text-muted" style="text-align:center">
+    <button class="btn-ghost btn-sm" onclick="if(confirm('Alle Daten löschen?')){localStorage.removeItem('${SKEY}');location.reload()}" style="font-size:.74rem">Sitzung zurücksetzen</button>
+  </div>`;
+  return h;
+}
+
+function renderEditAgenda(){
+  let h=`<div style="text-align:left;max-width:640px;margin:0 auto">
+    <div class="card">
+      <label class="text-sm" style="font-weight:600;display:block;margin-bottom:4px">Titel</label>
+      <input value="${esc(state.title)}" onchange="state.title=this.value;save()">
+      <div class="flex gap-sm mt-sm" style="flex-wrap:wrap">
+        <div style="flex:1;min-width:140px"><label class="text-sm" style="font-weight:600;display:block;margin-bottom:4px">Datum</label><input type="date" value="${state.date}" onchange="state.date=this.value;save()"></div>
+        <div style="flex:1;min-width:100px"><label class="text-sm" style="font-weight:600;display:block;margin-bottom:4px">Beginn</label><input type="time" value="${state.timeStart}" onchange="state.timeStart=this.value;save()"></div>
+        <div style="flex:1;min-width:140px"><label class="text-sm" style="font-weight:600;display:block;margin-bottom:4px">Ort</label><input value="${esc(state.location)}" onchange="state.location=this.value;save()"></div>
+      </div>
+    </div>
+    <h3 class="mt-md">Tagesordnungspunkte</h3>`;
+  state.tops.forEach((t,i)=>{
+    h+=`<div class="edit-item">
+      <div class="move-btns">
+        <button class="move-btn" onclick="moveTop(${i},-1)" ${i===0?'disabled':''}>▲</button>
+        <button class="move-btn" onclick="moveTop(${i},1)" ${i===state.tops.length-1?'disabled':''}>▼</button>
+      </div>
+      <span class="text-sm text-muted" style="min-width:36px;font-weight:700">TOP ${i+1}</span>
+      <input value="${esc(t.title)}" onchange="state.tops[${i}].title=this.value;save()">
+      <button class="btn-danger btn-sm" onclick="rmTop(${i})" title="Löschen">✕</button>
+    </div>`;
+    t.subs.forEach((s,si)=>{
+      h+=`<div class="edit-sub">
+        <span class="text-muted" style="min-width:20px;font-size:.72rem">·</span>
+        <input value="${esc(s)}" onchange="state.tops[${i}].subs[${si}]=this.value;save()">
+        <button class="btn-danger btn-sm" onclick="state.tops[${i}].subs.splice(${si},1);save();renderAll()" style="min-height:26px;padding:2px 6px">✕</button>
+      </div>`;
+    });
+    h+=`<div class="edit-sub"><span style="min-width:20px"></span><button class="btn-ghost btn-sm" onclick="state.tops[${i}].subs.push('Neuer Unterpunkt');save();renderAll()" style="font-size:.74rem">+ Unterpunkt</button></div>`;
+  });
+  h+=`<button class="btn-ghost mt-sm" onclick="state.tops.push({title:'Neuer TOP',subs:[]});save();renderAll()" style="width:100%">+ Tagesordnungspunkt</button>`;
+  h+='</div>';
+  return h;
+}
+
+// ========== TOP SCREEN ==========
+function renderTopScreen(i){
+  const t=state.tops[i];
+  const col=COLORS[i%COLORS.length];
+  const nk='top_'+i;
+  let h=`<div class="top-header"><span class="top-badge" style="background:${col}">TOP ${i+1}</span><div><h2>${esc(t.title)}</h2></div></div>`;
+  t.subs.forEach(s=>{
+    h+=`<div class="sub-card"><h4>${esc(s)}</h4></div>`;
+  });
+  if(t.subs.length===0)h+='<p class="text-sm text-muted">Keine Unterpunkte.</p>';
+  h+=`<div class="notes-section"><label>📝 Notizen zu TOP ${i+1}</label><textarea id="notes_${nk}" placeholder="Notizen, Beschlüsse, Ergebnisse…" oninput="state.notes['${nk}']=this.value;save()"></textarea></div>`;
+  h+=`<div class="flex justify-between mt-lg">`;
+  if(i===0)h+=`<button class="btn-ghost" onclick="goScreen(0)">← Agenda</button>`;
+  else h+=`<button class="btn-ghost" onclick="goScreen(${i})">← TOP ${i}</button>`;
+  if(i<state.tops.length-1)h+=`<button class="btn-primary" onclick="goScreen(${i+2})">TOP ${i+2} →</button>`;
+  else h+=`<button class="btn-primary" onclick="goScreen(${state.tops.length+1})">Protokoll →</button>`;
+  h+='</div>';
+  return h;
+}
+
+// ========== PROTOCOL SCREEN ==========
+function renderProtoScreen(){
+  const dateStr=formatDate(state.date);
+  let h=`<h2>Protokoll</h2><p class="subtitle">${esc(state.title)}</p>`;
+  h+=`<div class="card proto-section">
+    <div class="proto-meta">
+      <strong>Datum:</strong> ${dateStr}<br>
+      <strong>Ort:</strong> ${esc(state.location)}<br>
+      <strong>Anwesende:</strong> ${state.attendees.length?state.attendees.map(a=>esc(a)).join(', '):'<em>keine eingetragen</em>'}
+    </div>
+    <div class="time-inputs mt-sm">
+      <label>Beginn:</label><input type="time" value="${state.timeStart}" onchange="state.timeStart=this.value;save()">
+      <label>Ende:</label><input type="time" value="${state.timeEnd||''}" onchange="state.timeEnd=this.value;save()">
+    </div>
+  </div>`;
+
+  // Notes per TOP
+  h+='<div class="card proto-section"><h3>Sitzungsnotizen</h3>';
+  let hasNotes=false;
+  state.tops.forEach((t,i)=>{
+    const txt=state.notes['top_'+i]||'';
+    if(txt.trim()){hasNotes=true;h+=`<div class="summary-note"><h5>TOP ${i+1}: ${esc(t.title)}</h5><p>${esc(txt)}</p></div>`}
+  });
+  if(!hasNotes)h+='<p class="text-sm text-muted">Keine Notizen aus den TOPs.</p>';
+  h+='</div>';
+
+  // Beschlüsse
+  h+=`<div class="card proto-section">
+    <div class="flex justify-between items-center mb-sm"><h3>Beschlüsse & Arbeitsaufträge</h3><button class="btn-ghost btn-sm" onclick="addB()">+ Aufgabe</button></div>
+    <ul class="beschluss-list" id="beschlussList"></ul>
+  </div>`;
+
+  // Export
+  h+=`<div class="export-bar">
+    <button class="btn-ghost" onclick="goScreen(${state.tops.length})">← TOP ${state.tops.length}</button>
+    <button class="btn-secondary" onclick="window.print()">🖨 Drucken / PDF</button>
+    <button class="btn-ghost" onclick="showPlaintext()">📄 Rohtext</button>
+    <button class="btn-ghost" onclick="goScreen(0)">← Agenda</button>
+  </div>`;
+  return h;
+}
+
+function renderProtocol(){
+  // Re-render protocol content
+  const protoScreen=document.getElementById('screenProto');
+  if(protoScreen)protoScreen.innerHTML=renderProtoScreen();
+  renderB();
+  restoreNotes();
+}
+
+// ========== BESCHLÜSSE ==========
+function renderB(){
+  const el=document.getElementById('beschlussList');
+  if(!el)return;
+  if(!state.beschluesse.length)state.beschluesse=[{text:'',person:'',bis:''}];
+  el.innerHTML=state.beschluesse.map((b,i)=>`<li>
+    <span class="text-sm text-muted" style="min-width:20px">${i+1}.</span>
+    <input placeholder="Beschluss / Auftrag" value="${esc(b.text)}" onchange="state.beschluesse[${i}].text=this.value;save()">
+    <input class="person-input" placeholder="Wer?" value="${esc(b.person)}" onchange="state.beschluesse[${i}].person=this.value;save()">
+    <input type="date" style="max-width:120px" value="${b.bis||''}" onchange="state.beschluesse[${i}].bis=this.value;save()">
+    <button class="btn-danger" onclick="state.beschluesse.splice(${i},1);renderB();save()" style="min-height:28px;padding:2px 6px">✕</button>
+  </li>`).join('');
+}
+function addB(){state.beschluesse.push({text:'',person:'',bis:''});renderB();save()}
+
+// ========== ATTENDANCE ==========
+function addAtt(){
+  const inp=document.getElementById('attInput');
+  if(!inp)return;
+  const v=inp.value.trim();
+  if(!v)return;
+  state.attendees.push(v);
+  inp.value='';
+  save();renderAll();
+}
+function rmAtt(i){state.attendees.splice(i,1);save();renderAll()}
+
+// ========== EDIT MODE ==========
+function toggleEdit(){state.editMode=!state.editMode;save();renderAll()}
+function moveTop(i,dir){
+  const j=i+dir;
+  if(j<0||j>=state.tops.length)return;
+  // Swap notes too
+  const nA=state.notes['top_'+i]||'';
+  const nB=state.notes['top_'+j]||'';
+  [state.tops[i],state.tops[j]]=[state.tops[j],state.tops[i]];
+  state.notes['top_'+i]=nB;
+  state.notes['top_'+j]=nA;
+  save();renderAll();
+}
+function rmTop(i){
+  if(state.tops.length<=1){alert('Mindestens ein TOP erforderlich.');return}
+  if(!confirm(`TOP ${i+1} „${state.tops[i].title}" löschen?`))return;
+  state.tops.splice(i,1);
+  // Reindex notes
+  const newNotes={};
+  state.tops.forEach((_,ni)=>{newNotes['top_'+ni]=state.notes['top_'+(ni>=i?ni+1:ni)]||''});
+  state.notes=newNotes;
+  save();renderAll();
+}
+
+// ========== PLAINTEXT ==========
+function showPlaintext(){
+  const ta=document.getElementById('plaintextArea');
+  ta.value=generatePlaintext();
+  document.getElementById('plaintextOverlay').classList.add('open');
+}
+function closeOverlay(){document.getElementById('plaintextOverlay').classList.remove('open')}
+function copyPlaintext(){
+  const ta=document.getElementById('plaintextArea');
+  ta.select();
+  navigator.clipboard.writeText(ta.value).then(()=>{
+    document.getElementById('copyFeedback').textContent='✓ Kopiert!';
+    setTimeout(()=>document.getElementById('copyFeedback').textContent='',2000);
+  });
+}
+function generatePlaintext(){
+  const dateStr=formatDate(state.date);
+  let t=`PROTOKOLL\n${'='.repeat(40)}\n`;
+  t+=`${state.title}\n\n`;
+  t+=`Datum:     ${dateStr}\n`;
+  t+=`Ort:       ${state.location}\n`;
+  t+=`Beginn:    ${state.timeStart||'--:--'} Uhr\n`;
+  t+=`Ende:      ${state.timeEnd||'--:--'} Uhr\n`;
+  t+=`Anwesende: ${state.attendees.length?state.attendees.join(', '):'–'}\n`;
+  t+=`\n${'─'.repeat(40)}\n\n`;
+  state.tops.forEach((top,i)=>{
+    t+=`TOP ${i+1}: ${top.title}\n`;
+    top.subs.forEach(s=>t+=`  · ${s}\n`);
+    const notes=state.notes['top_'+i]||'';
+    if(notes.trim()){t+=`\n  Notizen:\n`;notes.split('\n').forEach(l=>t+=`  ${l}\n`)}
+    t+='\n';
+  });
+  t+=`${'─'.repeat(40)}\n\n`;
+  t+=`BESCHLÜSSE & ARBEITSAUFTRÄGE\n`;
+  const filled=state.beschluesse.filter(b=>b.text.trim());
+  if(filled.length){
+    filled.forEach((b,i)=>{
+      t+=`${i+1}. ${b.text}`;
+      if(b.person)t+=` → ${b.person}`;
+      if(b.bis)t+=` (bis ${b.bis})`;
+      t+='\n';
+    });
+  }else{t+='Keine.\n'}
+  t+=`\n${'─'.repeat(40)}\n`;
+  t+=`Protokoll erstellt am ${formatDate(new Date().toISOString().slice(0,10))}\n`;
+  return t;
+}
+
+// ========== HELPERS ==========
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
+function formatDate(d){
+  if(!d)return '–';
+  const days=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+  const months=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const dt=new Date(d+'T12:00:00');
+  return `${days[dt.getDay()]}, ${dt.getDate()}. ${months[dt.getMonth()]} ${dt.getFullYear()}`;
+}
+function restoreNotes(){
+  state.tops.forEach((_,i)=>{
+    const el=document.getElementById('notes_top_'+i);
+    if(el)el.value=state.notes['top_'+i]||'';
+  });
+}
+
+// ========== TIMER ==========
+let timerInt=null;const tDisp=document.getElementById('timerDisplay');
+document.getElementById('timerToggle').onclick=()=>{
+  if(timerInt){clearInterval(timerInt);timerInt=null;return}
+  if(state.timer.seconds<=0)state.timer.seconds=90*60;
+  timerInt=setInterval(()=>{state.timer.seconds--;if(state.timer.seconds<=0){clearInterval(timerInt);timerInt=null;state.timer.seconds=0}updTimer()},1000);
+};
+document.getElementById('timerReset').onclick=()=>{clearInterval(timerInt);timerInt=null;state.timer.seconds=90*60;updTimer()};
+function updTimer(){const s=Math.max(0,state.timer.seconds),m=Math.floor(s/60),sc=s%60;tDisp.textContent=`${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;tDisp.style.color=s<=300?'#ff6b6b':s<=600?'#ffd43b':''}
+
+// ========== INIT ==========
+load();
+if(!state.notes)state.notes={};
+if(!state.beschluesse)state.beschluesse=[{text:'',person:'',bis:''}];
+if(!state.attendees)state.attendees=[];
+if(!state.timeEnd)state.timeEnd='';
+renderAll();
+updTimer();
+</script>
+</body>
+</html>
