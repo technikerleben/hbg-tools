@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lautleseprotokoll – Diagnostik Lesegeschwindigkeit · HBG</title>
+<style>
+:root{
+  --col-slate-dark:#2C3D4C; --col-slate:#3E5668; --col-slate-mid:#6A8599;
+  --col-slate-pale:#D0DCE6; --col-slate-ghost:#EEF3F7;
+  --col-rust-dark:#9E4E22; --col-rust:#D97A4A; --col-rust-mid:#EBA882;
+  --col-rust-pale:#F5DDD1; --col-rust-ghost:#FBF0EB;
+  --col-sage-dark:#4D8B3F; --col-sage:#7DBB6F; --col-sage-mid:#A8D49D;
+  --col-sage-pale:#DDF0D8; --col-sage-ghost:#F0FAF0;
+  --col-warning:#C17B00; --col-warning-pale:#FFF3CC; --col-warning-text:#5C4400;
+  --col-error:#C0392B; --col-error-pale:#FDECEA; --col-error-text:#7A1B14;
+  --col-bg:#F5F4F1; --col-white:#FFFFFF; --col-text:#1E2A35; --col-text-muted:#5A6A78;
+  --col-border:#D4D0C8; --col-disabled-bg:#EBEBEA; --col-disabled-text:#7A7672;
+  --col-focus:#3E5668; --col-shadow:rgba(62,86,104,0.10);
+  --text-xs:0.694rem; --text-sm:0.833rem; --text-base:1rem; --text-md:1.2rem;
+  --text-lg:1.44rem; --text-xl:1.728rem; --text-2xl:2.074rem;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:var(--col-bg);
+  color:var(--col-text);font-size:var(--text-base);line-height:1.6;min-height:100vh;
+  display:flex;flex-direction:column;-webkit-text-size-adjust:100%;}
+:focus-visible{outline:3px solid var(--col-focus);outline-offset:3px;border-radius:4px;}
+.container{max-width:1100px;margin:0 auto;padding:0 24px;width:100%;}
+header{background:var(--col-slate);color:#fff;padding:12px 0 0;}
+header .head-row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;}
+header h1{font-size:var(--text-lg);font-weight:700;line-height:1.2;}
+.header-meta{font-size:var(--text-xs);color:var(--col-slate-pale);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+.hbg-wordmark{display:inline-flex;align-items:flex-end;gap:5px;}
+.hbg-wordmark__main{font-size:var(--text-lg);font-weight:800;color:#fff;}
+.hbg-wordmark__sub{font-size:var(--text-sm);color:#EBA882;margin-bottom:2px;}
+nav.tabs{display:flex;gap:4px;margin-top:12px;}
+nav.tabs button{background:transparent;border:none;color:var(--col-slate-pale);font-family:inherit;
+  font-size:var(--text-sm);font-weight:700;padding:10px 18px;border-radius:8px 8px 0 0;cursor:pointer;min-height:44px;}
+nav.tabs button:hover{background:rgba(255,255,255,.10);color:#fff;}
+nav.tabs button[aria-selected="true"]{background:var(--col-bg);color:var(--col-slate-dark);}
+main{flex:1;padding:20px 0 60px;}
+.card{background:var(--col-white);border-radius:12px;padding:18px 22px;margin-bottom:16px;box-shadow:0 2px 8px var(--col-shadow);}
+h2{font-size:var(--text-md);font-weight:700;color:var(--col-slate-dark);margin-bottom:10px;}
+h3{font-size:var(--text-base);font-weight:700;color:var(--col-slate-dark);margin-bottom:6px;}
+p.hint{font-size:var(--text-sm);color:var(--col-text-muted);}
+label{display:block;font-size:var(--text-xs);font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--col-text-muted);margin-bottom:4px;}
+input,textarea,select{font-size:1rem;font-family:inherit;padding:9px 12px;border:2px solid var(--col-border);
+  border-radius:8px;width:100%;background:var(--col-white);color:var(--col-text);}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none;border-color:var(--col-slate);box-shadow:0 0 0 3px var(--col-slate-pale);}
+textarea{resize:vertical;min-height:150px;line-height:1.5;}
+.grid{display:grid;gap:12px;}
+.grid-setup{grid-template-columns:1fr 1fr .6fr .8fr;}
+.grid-text{grid-template-columns:2fr .7fr;margin-top:12px;}
+@media(max-width:820px){.grid-setup,.grid-text{grid-template-columns:1fr 1fr;}}
+.btn-primary,.btn-success,.btn-secondary,.btn-danger{border-radius:8px;font-family:inherit;
+  font-size:var(--text-base);font-weight:600;min-height:44px;padding:9px 20px;cursor:pointer;transition:background .2s;}
+.btn-primary{background:var(--col-rust-dark);color:#fff;border:none;}
+.btn-primary:hover{background:#B55E2A;} .btn-primary:active{background:#7D3C18;}
+.btn-success{background:var(--col-sage-dark);color:#fff;border:none;} .btn-success:hover{background:#3D7032;}
+.btn-secondary{background:transparent;color:var(--col-slate);border:2px solid var(--col-slate);}
+.btn-secondary:hover{background:var(--col-slate-ghost);}
+.btn-danger{background:transparent;color:var(--col-error);border:2px solid var(--col-error);}
+.btn-danger:hover{background:var(--col-error-pale);}
+button:disabled{background:var(--col-disabled-bg)!important;color:var(--col-disabled-text)!important;
+  border-color:var(--col-disabled-bg)!important;cursor:not-allowed;}
+.btn-sm{min-height:36px;padding:5px 12px;font-size:var(--text-sm);}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:var(--text-xs);
+  font-weight:700;text-transform:uppercase;letter-spacing:.07em;line-height:1.4;}
+.badge--slate{background:var(--col-slate);color:#fff;} .badge--rust{background:var(--col-rust-dark);color:#fff;}
+.badge--success{background:var(--col-sage-dark);color:#fff;} .badge--warning{background:var(--col-warning);color:#fff;}
+.badge--error{background:var(--col-error);color:#fff;}
+.badge--pale-slate{background:var(--col-slate-pale);color:var(--col-slate);}
+
+/* Steuerleiste */
+.controlbar{position:sticky;top:0;z-index:30;background:var(--col-white);border-radius:12px;
+  box-shadow:0 2px 12px var(--col-shadow);padding:12px 18px;margin-bottom:16px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;border:2px solid transparent;}
+.controlbar.is-running{border-color:var(--col-sage);}
+.controlbar.is-ende{border-color:var(--col-warning);}
+.timer{display:inline-flex;align-items:center;gap:10px;background:var(--col-slate-pale);border-radius:10px;
+  padding:6px 18px;font-size:var(--text-2xl);font-weight:800;font-variant-numeric:tabular-nums;color:var(--col-slate-dark);min-width:150px;justify-content:center;}
+.timer.warn{background:var(--col-warning-pale);color:var(--col-warning-text);}
+.timer.done{background:var(--col-error-pale);color:var(--col-error-text);}
+.livestat{display:flex;gap:18px;margin-left:auto;text-align:right;}
+.livestat div span{display:block;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;color:var(--col-text-muted);}
+.livestat div strong{font-size:var(--text-md);font-variant-numeric:tabular-nums;}
+.banner{border-radius:0 8px 8px 0;padding:11px 16px;margin-bottom:14px;font-weight:600;}
+.banner--tipp{background:var(--col-slate-pale);border-left:4px solid var(--col-slate-mid);color:var(--col-text);}
+.banner--warn{background:var(--col-warning-pale);border-left:4px solid var(--col-warning);color:var(--col-warning-text);}
+.banner--ok{background:var(--col-sage-pale);border-left:4px solid var(--col-sage-dark);color:#2D5C25;}
+
+/* Lesetext */
+.textmeta{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.lesetext{font-size:1.22rem;line-height:2.1;letter-spacing:.01em;}
+.lesetext .w{cursor:pointer;padding:1px 2px;border-radius:5px;-webkit-tap-highlight-color:transparent;
+  transition:background .12s;position:relative;}
+.lesetext .w:hover{background:var(--col-slate-ghost);}
+.lesetext .w.unread{color:#A6AEB5;}
+.lesetext .w.err{color:var(--col-error-text);background:var(--col-error-pale);
+  text-decoration:line-through;text-decoration-thickness:2px;font-weight:700;}
+.lesetext .w.endword{box-shadow:2px 0 0 0 var(--col-rust-dark);}
+.lesetext .w.endword::after{content:"▌";color:var(--col-rust-dark);font-weight:800;}
+.lesetext.mode-end .w{background:var(--col-rust-ghost);}
+.lesetext.mode-end .w:hover{background:var(--col-rust-pale);outline:2px solid var(--col-rust-dark);}
+.lesetext .w.head,.lesetext .punct.head{font-weight:800;font-size:1.12em;}
+.lesetext .brk{display:block;height:.5em;}
+.lesetext .punct{color:inherit;}
+.lesetext .punct.unread{color:#A6AEB5;}
+
+/* Ergebnis */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+@media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr);}}
+.kpi{border-radius:10px;padding:12px 14px;border:2px solid var(--col-border);background:var(--col-slate-ghost);}
+.kpi span{display:block;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;color:var(--col-text-muted);}
+.kpi strong{font-size:var(--text-xl);font-variant-numeric:tabular-nums;line-height:1.3;display:block;}
+.kpi small{font-size:var(--text-xs);color:var(--col-text-muted);}
+.kpi.ok{background:var(--col-sage-pale);border-color:var(--col-sage-dark);}
+.kpi.mid{background:var(--col-warning-pale);border-color:var(--col-warning);}
+.kpi.low{background:var(--col-error-pale);border-color:var(--col-error);}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+
+/* Tabelle */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:var(--text-sm);}
+th{background:var(--col-slate);color:#fff;text-align:left;padding:9px 10px;font-size:var(--text-xs);
+  text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+td{padding:8px 10px;border-bottom:1px solid var(--col-border);vertical-align:top;}
+tbody tr:nth-child(even){background:var(--col-slate-ghost);}
+td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:baseline;}
+.notiz-cell{min-width:150px;border-bottom:1px dashed var(--col-slate-mid);cursor:text;}
+.notiz-cell:focus{outline:2px solid var(--col-focus);background:var(--col-white);}
+.dot.ok{background:var(--col-sage-dark);} .dot.mid{background:var(--col-warning);} .dot.low{background:var(--col-error);}
+.filterbar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px;}
+.filterbar > div{min-width:150px;}
+.textlist{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:820px){.textlist{grid-template-columns:1fr;}}
+.textitem{border:2px solid var(--col-border);border-radius:10px;padding:12px 14px;background:var(--col-white);}
+.textitem.active{border-color:var(--col-sage-dark);background:var(--col-sage-ghost);}
+.textitem p{font-size:var(--text-sm);color:var(--col-text-muted);margin:4px 0 8px;}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--col-slate-dark);color:#fff;
+  padding:11px 20px;border-radius:10px;font-size:var(--text-sm);font-weight:600;z-index:100;box-shadow:0 6px 20px rgba(0,0,0,.2);}
+.foot{font-size:var(--text-xs);color:var(--col-text-muted);text-align:center;padding:10px 0 0;}
+details.tipp{background:var(--col-slate-pale);border-left:4px solid var(--col-slate-mid);border-radius:0 8px 8px 0;padding:10px 14px;margin:12px 0;}
+details.tipp summary{cursor:pointer;font-weight:700;font-size:var(--text-sm);color:var(--col-slate);list-style:none;}
+details.tipp summary::-webkit-details-marker{display:none;}
+details.tipp p,details.tipp li{font-size:var(--text-sm);margin-top:6px;}
+details.tipp ul{margin-left:18px;}
+
+/* ===== Druck ===== */
+#print-root{display:none;}
+@media print{
+  body{background:#fff;}
+  header,nav.tabs,main,.toast{display:none!important;}
+  #print-root{display:block;font-size:11pt;color:#000;}
+  .p-sheet{page-break-after:always;}
+  .p-sheet:last-child{page-break-after:auto;}
+  .p-head{border-bottom:2.5pt solid #3E5668;padding-bottom:5pt;margin-bottom:10pt;
+    display:flex;justify-content:space-between;align-items:flex-end;}
+  .p-head h1{font-size:15pt;color:#2C3D4C;}
+  .p-head .p-wm{font-size:12pt;font-weight:800;color:#3E5668;}
+  .p-fields{display:flex;gap:16pt;flex-wrap:wrap;font-size:10.5pt;margin-bottom:9pt;}
+  .p-fields b{color:#2C3D4C;}
+  .p-src{font-size:8.5pt;color:#444;margin-bottom:7pt;font-style:italic;}
+  .p-text{font-size:12pt;line-height:1.95;border:1pt solid #D4D0C8;border-radius:5pt;padding:8pt 10pt;margin-bottom:10pt;}
+  .p-text .err{text-decoration:line-through;text-decoration-thickness:1.5pt;font-weight:700;color:#C0392B;}
+  .p-text .unread{color:#9AA3AA;}
+  .p-text .phead{font-weight:800;}
+  .p-text .endmark{color:#9E4E22;font-weight:800;}
+  .p-res{border:1pt solid #D4D0C8;border-radius:5pt;padding:8pt 10pt;font-size:10.5pt;line-height:1.75;}
+  .p-res .p-val{font-weight:800;font-size:12pt;}
+  .p-note{margin-top:8pt;font-size:10pt;}
+  .p-sign{margin-top:16pt;display:flex;gap:30pt;font-size:9.5pt;}
+  .p-sign div{border-top:.8pt solid #000;padding-top:3pt;min-width:150pt;}
+  table.p-tab{width:100%;border-collapse:collapse;font-size:9pt;}
+  table.p-tab th{background:#D0DCE6!important;color:#1E2A35;border:.6pt solid #6A8599;padding:4pt;text-align:left;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  table.p-tab td{border:.6pt solid #B9C4CC;padding:3.5pt;}
+  .p-schueler{font-size:15pt;line-height:2.4;}
+  @page{size:A4;margin:14mm 15mm;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="head-row">
+      <div>
+        <h1>Lautleseprotokoll · Diagnostik</h1>
+        <div class="header-meta">Lesegeschwindigkeit &amp; Lesegenauigkeit · 1 Minute</div>
+      </div>
+      <div class="hbg-wordmark"><span class="hbg-wordmark__main">HBG</span><span class="hbg-wordmark__sub">SRL</span></div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" id="tab-test" aria-selected="true" data-view="test">▶ Test durchführen</button>
+      <button role="tab" id="tab-erg" aria-selected="false" data-view="erg">📊 Ergebnisse <span id="erg-count"></span></button>
+      <button role="tab" id="tab-texte" aria-selected="false" data-view="texte">⚙ Einstellungen</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="container">
+
+  <!-- ============ TEST ============ -->
+  <section id="view-test" role="tabpanel" aria-labelledby="tab-test">
+    <div class="card">
+      <div class="grid grid-setup">
+        <div><label for="f-vorname">Vorname</label><input id="f-vorname" list="dl-vornamen" autocomplete="off"></div>
+        <div><label for="f-nachname">Nachname</label><input id="f-nachname" list="dl-nachnamen" autocomplete="off"></div>
+        <div><label for="f-klasse">Klasse</label><input id="f-klasse" list="dl-klassen" autocomplete="off"></div>
+        <div><label for="f-datum">Datum</label><input id="f-datum" type="date"></div>
+      </div>
+      <div class="grid grid-text">
+        <div><label for="f-text-anzeige">Lesetext</label><input id="f-text-anzeige" value="Henrietta" readonly><select id="f-text" hidden></select></div>
+        <div><label for="f-dauer">Lesezeit</label><select id="f-dauer">
+          <option value="30">30 Sekunden</option>
+          <option value="60" selected>60 Sekunden (Standard)</option>
+          <option value="90">90 Sekunden</option>
+          <option value="120">120 Sekunden</option>
+        </select></div>
+      </div>
+      <datalist id="dl-vornamen"></datalist><datalist id="dl-nachnamen"></datalist><datalist id="dl-klassen"></datalist>
+    </div>
+
+    <div class="card" id="schnotiz-card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;">
+        <h2 style="margin:0;">Notizen zum Kind</h2>
+        <span class="badge badge--pale-slate" id="schnotiz-name">kein Kind ausgewählt</span>
+      </div>
+      <p class="hint" style="margin:4px 0 8px;">Bleibt dauerhaft bei diesem Kind – über alle Durchgänge hinweg
+        (z. B. Leseverhalten, Förderhinweise, Absprachen, Hilfsmittel). Wird gespeichert, sobald Name und Klasse stehen.</p>
+      <textarea id="f-schnotiz" style="min-height:80px;" placeholder="Freie Notizen …" disabled></textarea>
+      <p class="hint" id="schnotiz-status" style="margin-top:6px;"></p>
+    </div>
+
+    <div class="controlbar" id="controlbar">
+      <div class="timer" id="timer">⏱ <span id="timer-anzeige">01:00</span></div>
+      <button class="btn-primary" id="btn-start">▶ Start</button>
+      <button class="btn-secondary" id="btn-fertig" disabled>✓ Text zu Ende gelesen</button>
+      <button class="btn-secondary btn-sm" id="btn-reset">↺ Zurücksetzen</button>
+      <div class="livestat">
+        <div><span>Fehler</span><strong id="live-fehler">0</strong></div>
+        <div><span>Gelesen</span><strong id="live-gelesen">–</strong></div>
+      </div>
+    </div>
+
+    <div class="banner banner--tipp" id="banner" role="status" aria-live="polite">
+      Trage Name und Klasse ein und starte den Timer. Während des Lesens klickst du jedes falsch gelesene Wort an.
+    </div>
+
+    <div class="card">
+      <div class="textmeta">
+        <h2 id="text-titel">Lesetext</h2>
+        <span class="badge badge--pale-slate" id="text-woerter">0 Wörter</span>
+      </div>
+      <div class="lesetext" id="lesetext"></div>
+      <p class="hint" id="text-quelle" style="margin-top:12px;"></p>
+    </div>
+
+    <div class="card" id="ergebnis-card" hidden>
+      <h2>Auswertung</h2>
+      <div class="kpis">
+        <div class="kpi" id="kpi-wpm"><span>Lesegeschwindigkeit</span><strong>–</strong><small>Richtwert: &gt; 100 WpM</small></div>
+        <div class="kpi" id="kpi-gen"><span>Lesegenauigkeit</span><strong>–</strong><small>Richtwert: &gt; 95 %</small></div>
+        <div class="kpi" id="kpi-woerter"><span>Gelesene Wörter</span><strong>–</strong><small id="kpi-woerter-sub">–</small></div>
+        <div class="kpi" id="kpi-fehler"><span>Fehler</span><strong>–</strong><small id="kpi-fehler-sub">–</small></div>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label for="f-notiz">Beobachtungen zu diesem Durchgang (Betonung, Selbstkorrekturen, Lesefluss …)</label>
+        <textarea id="f-notiz" style="min-height:70px;"></textarea>
+      </div>
+      <div class="btnrow">
+        <button class="btn-success" id="btn-speichern">💾 Ergebnis speichern</button>
+        <button class="btn-secondary" id="btn-endekorr">✎ Endmarke neu setzen</button>
+        <button class="btn-secondary" id="btn-pdf-einzel">🖨 Protokoll als PDF</button>
+      </div>
+    </div>
+
+    <details class="tipp">
+      <summary>💡 So läuft der Test ab</summary>
+      <ul>
+        <li><b>Start:</b> Timer starten (oder Leertaste), das Kind liest laut vor.</li>
+        <li><b>Fehler:</b> Jedes falsch gelesene Wort antippen – nochmal antippen macht es rückgängig.</li>
+        <li><b>Zeit vorbei:</b> Signalton, dann auf das <b>letzte gelesene Wort</b> tippen.</li>
+        <li><b>Früher fertig:</b> „Text zu Ende gelesen“ – dann wird die WpM auf die tatsächliche Zeit hochgerechnet.</li>
+        <li>Alle Daten bleiben nur in diesem Browser auf diesem Gerät.</li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- ============ ERGEBNISSE ============ -->
+  <section id="view-erg" role="tabpanel" aria-labelledby="tab-erg" hidden>
+    <div class="card">
+      <div class="filterbar">
+        <div><label for="fl-klasse">Klasse</label><select id="fl-klasse"><option value="">alle</option></select></div>
+        <div><label for="fl-suche">Suche (Name / Text)</label><input id="fl-suche" type="search" placeholder="z. B. Mia"></div>
+        <div style="flex:1"></div>
+        <button class="btn-primary btn-sm" id="btn-xlsx">⬇ Excel (.xlsx)</button>
+        <button class="btn-secondary btn-sm" id="btn-csv">⬇ CSV</button>
+        <button class="btn-secondary btn-sm" id="btn-pdf-liste">🖨 Liste als PDF</button>
+      </div>
+      <div class="table-wrap"><table id="erg-tabelle">
+        <thead><tr>
+          <th>Datum</th><th>Name</th><th>Klasse</th><th>Text</th>
+          <th>WpM</th><th>Genauigkeit</th><th>Wörter</th><th>Fehler</th><th>Zeit</th><th>Notiz (bearbeitbar)</th><th></th>
+        </tr></thead>
+        <tbody id="erg-body"></tbody>
+      </table></div>
+      <p class="hint" id="erg-leer" style="margin-top:12px;">Noch keine Ergebnisse gespeichert.</p>
+      <div class="btnrow" style="margin-top:16px;">
+        <button class="btn-danger btn-sm" id="btn-alle-loeschen">🗑 Alle Ergebnisse löschen</button>
+        <button class="btn-secondary btn-sm" id="btn-backup">⬇ Datensicherung (JSON)</button>
+        <button class="btn-secondary btn-sm" id="btn-restore">⬆ Sicherung einlesen</button>
+        <input type="file" id="file-restore" accept="application/json" hidden>
+      </div>
+    </div>
+    <div class="card" id="klassenuebersicht"></div>
+  </section>
+
+  <!-- ============ TEXTE ============ -->
+  <section id="view-texte" role="tabpanel" aria-labelledby="tab-texte" hidden>
+    <div hidden aria-hidden="true">
+    <div class="card">
+      <h2>Lesetexte</h2>
+      <p class="hint" style="margin-bottom:12px;">Eigene Texte einfach hineinkopieren – die Wörter werden automatisch gezählt und anklickbar gemacht.</p>
+      <div class="textlist" id="textliste"></div>
+    </div>
+    </div>
+    <div class="card" hidden aria-hidden="true">
+      <h2 id="editor-titel">Neuen Text anlegen</h2>
+      <div class="grid" style="grid-template-columns:1fr 1fr;">
+        <div><label for="t-titel">Titel</label><input id="t-titel" placeholder="z. B. Henrietta"></div>
+        <div><label for="t-quelle">Quelle (erscheint im Protokoll)</label><input id="t-quelle" placeholder="Aus: … Verlag, Jahr, S. …"></div>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:9px;">
+        <input type="checkbox" id="t-titellesen" checked style="width:20px;height:20px;flex:none;">
+        <label for="t-titellesen" style="margin:0;text-transform:none;letter-spacing:0;font-size:var(--text-sm);color:var(--col-text);">
+          Überschrift wird mitgelesen und mitgezählt</label>
+      </div>
+      <div style="margin-top:12px;">
+        <label for="t-inhalt">Text <span id="t-count" style="text-transform:none;letter-spacing:0;font-weight:400;"></span></label>
+        <textarea id="t-inhalt" placeholder="Text hier einfügen …"></textarea>
+      </div>
+      <div class="btnrow" style="margin-top:12px;">
+        <button class="btn-success" id="btn-text-speichern">💾 Text speichern</button>
+        <button class="btn-secondary" id="btn-text-neu">+ Neuer Text</button>
+        <button class="btn-secondary" id="btn-vorlage">📄 Vorlage „Henrietta“</button>
+        <button class="btn-secondary" id="btn-txt-import">📎 aus .txt-Datei</button>
+        <input type="file" id="file-txt" accept=".txt,text/plain" hidden>
+        <button class="btn-secondary" id="btn-text-drucken">🖨 Lesetext für Kind drucken</button>
+        <button class="btn-danger btn-sm" id="btn-text-loeschen" hidden>🗑 Text löschen</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Einstellungen</h2>
+      <div class="grid" style="grid-template-columns:repeat(3,1fr);">
+        <div><label for="s-wpm">Richtwert WpM</label><input id="s-wpm" type="number" min="10" max="300" step="5"></div>
+        <div><label for="s-gen">Richtwert Genauigkeit (%)</label><input id="s-gen" type="number" min="50" max="100" step="1"></div>
+        <div><label for="s-ton">Signalton am Ende</label><select id="s-ton"><option value="1">an</option><option value="0">aus</option></select></div>
+      </div>
+      <p class="hint" style="margin-top:12px;">Die Daten liegen ausschließlich im lokalen Speicher dieses Browsers (keine Übertragung ins Netz). Bei Gerätewechsel vorher eine Datensicherung exportieren; nach Abschluss der Diagnostik die Ergebnisse löschen.</p>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<div class="container"><p class="foot">Lautleseprotokoll · HBG Dortmund · funktioniert offline</p></div>
+<div id="print-root"></div>
+
+<script>
+/* ============================================================
+   Speicher
+   ============================================================ */
+const KEYS={texte:'hbg_lautlese_texte',erg:'hbg_lautlese_ergebnisse',sess:'hbg_lautlese_session',set:'hbg_lautlese_settings',sch:'hbg_lautlese_schuelernotizen'};
+const save=(k,d)=>{try{localStorage.setItem(k,JSON.stringify(d));}catch(e){toast('Speicher voll oder blockiert');}};
+const load=(k,f)=>{try{const r=localStorage.getItem(k);return r?JSON.parse(r):f;}catch(e){return f;}};
+
+const STARTTEXTE=[{
+  id:'t-henrietta',
+  titel:'Henrietta',
+  titelLesen:true,
+  quelle:'Aus: Auer, M. (2016): Die Schule der magischen Tiere. Hamburg: Carlsen Verlag GmbH, S.62.',
+  inhalt:`Benni konnte es nicht fassen. Er hatte eine ganz normale Schildkröte bekommen!
+
+Dabei hatte er sich doch einen Beschützer gewünscht – einen gefährlichen Panther oder einen mutigen Wolf …
+
+Doch was hockte da in dem grauen Schuhkarton? Henrietta, eine stinknormale Schildkröte! Benni war so enttäuscht, dass er weinen musste. Plötzlich hörte er ein Scharren. „Lass mich endlich raus hier!“, bettelte ein Stimmchen. „Ich habe Hunger! Auf eine leckere, glibberige Qualle.“ Benni zuckte zusammen. Er hatte fast vergessen, dass sein magisches Tier sprechen konnte.
+
+Hastig stolperte er in die Küche und holte ein paar Scheiben Gurke. Diese aß er fast alle auf.`
+}];
+/* Für diese Fassung ist ausschließlich der Diagnosetext aus der PDF zugelassen. */
+let TEXTE=STARTTEXTE.map(t=>({...t}));
+save(KEYS.texte,TEXTE);
+let ERG=load(KEYS.erg,[]);
+let SET=Object.assign({zielWpm:100,zielGen:95,ton:1},load(KEYS.set,{}));
+let SCH=load(KEYS.sch,{});
+
+/* ============================================================
+   Hilfsfunktionen
+   ============================================================ */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2600);}
+function heute(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function deDate(iso){if(!iso)return'';const p=iso.split('-');return p.length===3?`${p[2]}.${p[1]}.${p[0]}`:iso;}
+const isWort=s=>/[\p{L}\p{N}]/u.test(s);
+
+function tokenize(text){
+  const out=[];const lines=String(text).replace(/\r/g,'').split('\n');
+  lines.forEach((line,li)=>{
+    line.split(/(\s+)/).forEach(p=>{
+      if(p==='')return;
+      if(/^\s+$/.test(p)){out.push({t:'sp',r:' '});return;}
+      out.push({t:isWort(p)?'w':'p',r:p});
+    });
+    if(li<lines.length-1)out.push({t:'br'});
+  });
+  return out;
+}
+function wortAnzahl(text){return tokenize(text).filter(t=>t.t==='w').length;}
+/* Vollständiger Lesestoff: Überschrift (falls mitgelesen) + Textkörper */
+function textTokens(t){
+  if(!t)return[];
+  let vor=[];
+  if(t.titelLesen!==false&&String(t.titel||'').trim()){
+    vor=tokenize(t.titel).map(x=>Object.assign({},x,{h:1}));
+    vor.push({t:'br',h:1});
+  }
+  return vor.concat(tokenize(t.inhalt));
+}
+function wortAnzahlText(t){return textTokens(t).filter(x=>x.t==='w').length;}
+
+/* ============================================================
+   Sitzung / Testlauf
+   ============================================================ */
+const S={vorname:'',nachname:'',klasse:'',datum:heute(),textId:null,dauer:60,
+  modus:'setup',fehler:[],endIndex:-1,sekunden:0,notiz:''};
+let tokens=[],wortIdx=[],tickHandle=null,startZeit=0;
+
+function sessionSpeichern(){save(KEYS.sess,S);}
+function sessionLaden(){
+  const s=load(KEYS.sess,null);if(!s)return;
+  Object.assign(S,s);
+  if(S.modus==='running'){S.modus='ende';}
+}
+
+function aktText(){return TEXTE.find(t=>t.id===S.textId)||TEXTE[0];}
+
+function renderText(){
+  const t=aktText();if(!t){$('lesetext').innerHTML='<p class="hint">Kein Text vorhanden – lege im Reiter „Texte“ einen an.</p>';return;}
+  tokens=textTokens(t);wortIdx=[];
+  let html='',w=0;
+  tokens.forEach((tok,i)=>{
+    if(tok.t==='br'){html+='<span class="brk"></span>';return;}
+    if(tok.t==='sp'){html+=' ';return;}
+    if(tok.t==='w'){wortIdx.push(i);html+=`<span class="w${tok.h?' head':''}" data-w="${w}" role="button" tabindex="0">${esc(tok.r)}</span>`;w++;}
+    else{html+=`<span class="punct${tok.h?' head':''}" data-after="${w-1}">${esc(tok.r)}</span>`;}
+  });
+  $('lesetext').innerHTML=html;
+  $('text-titel').textContent='Lesetext';
+  $('text-woerter').textContent=w+' Wörter'+(t.titelLesen!==false?' (mit Überschrift)':'');
+  $('text-quelle').textContent=t.quelle?t.quelle:'';
+  markierungenAnwenden();
+}
+
+function markierungenAnwenden(){
+  const box=$('lesetext');
+  box.classList.toggle('mode-end',S.modus==='ende');
+  box.querySelectorAll('.w').forEach(el=>{
+    const i=+el.dataset.w;
+    el.classList.toggle('err',S.fehler.includes(i));
+    el.classList.toggle('unread',S.endIndex>=0&&i>S.endIndex);
+    el.classList.toggle('endword',S.endIndex>=0&&i===S.endIndex);
+  });
+  box.querySelectorAll('.punct').forEach(el=>{
+    el.classList.toggle('unread',S.endIndex>=0&&(+el.dataset.after)>S.endIndex);
+  });
+  $('live-fehler').textContent=fehlerImBereich().length;
+  $('live-gelesen').textContent=S.endIndex>=0?(S.endIndex+1):(S.modus==='running'?'läuft':'–');
+}
+
+function fehlerImBereich(){return S.endIndex>=0?S.fehler.filter(i=>i<=S.endIndex):S.fehler.slice();}
+
+$('lesetext').addEventListener('click',e=>{
+  const el=e.target.closest('.w');if(!el)return;
+  const i=+el.dataset.w;
+  if(S.modus==='ende'){setzeEnde(i);return;}
+  if(S.modus==='setup'){toast('Starte zuerst den Timer.');return;}
+  const p=S.fehler.indexOf(i);
+  if(p>=0)S.fehler.splice(p,1);else S.fehler.push(i);
+  markierungenAnwenden();sessionSpeichern();
+  if(S.modus==='review')auswerten();
+});
+$('lesetext').addEventListener('keydown',e=>{
+  if((e.key===' '||e.key==='Enter')&&e.target.classList.contains('w')){e.preventDefault();e.target.click();}
+});
+
+/* --- Timer --- */
+function zeitAnzeige(sek){const m=String(Math.floor(Math.max(0,sek)/60)).padStart(2,'0');
+  const s=String(Math.max(0,sek)%60).padStart(2,'0');$('timer-anzeige').textContent=`${m}:${s}`;}
+
+function starten(){
+  if(!aktText()){toast('Bitte zuerst einen Text anlegen.');return;}
+  S.modus='running';S.fehler=[];S.endIndex=-1;S.sekunden=0;S.notiz='';
+  $('ergebnis-card').hidden=true;
+  $('f-notiz').value='';
+  startZeit=Date.now();
+  $('btn-start').disabled=true;$('btn-fertig').disabled=false;
+  $('f-text').disabled=true;$('f-dauer').disabled=true;
+  $('controlbar').className='controlbar is-running';
+  setBanner('ok','Läuft – klicke jedes falsch gelesene Wort an.');
+  markierungenAnwenden();sessionSpeichern();
+  tickHandle=setInterval(tick,200);
+  zeitAnzeige(S.dauer);
+}
+function tick(){
+  const verg=Math.floor((Date.now()-startZeit)/1000);
+  const rest=S.dauer-verg;
+  zeitAnzeige(rest);
+  const tm=$('timer');
+  tm.className='timer'+(rest<=10&&rest>0?' warn':'')+(rest<=0?' done':'');
+  if(rest<=0){zeitEnde();}
+}
+function zeitEnde(){
+  clearInterval(tickHandle);tickHandle=null;
+  S.sekunden=S.dauer;S.modus='ende';
+  if(SET.ton==='1'||SET.ton===1)piep();
+  $('btn-fertig').disabled=true;
+  $('controlbar').className='controlbar is-ende';
+  setBanner('warn','⏱ Zeit vorbei – tippe jetzt auf das <b>letzte gelesene Wort</b>.');
+  markierungenAnwenden();sessionSpeichern();
+}
+function frueherFertig(){
+  if(S.modus!=='running')return;
+  clearInterval(tickHandle);tickHandle=null;
+  S.sekunden=Math.max(1,Math.round((Date.now()-startZeit)/1000));
+  S.endIndex=wortIdx.length-1;S.modus='review';
+  $('btn-fertig').disabled=true;$('btn-start').disabled=false;
+  $('f-text').disabled=false;$('f-dauer').disabled=false;
+  $('controlbar').className='controlbar';
+  setBanner('ok',`Text vollständig gelesen in ${S.sekunden} Sekunden. Fehler lassen sich weiterhin anklicken.`);
+  markierungenAnwenden();auswerten();sessionSpeichern();
+}
+function setzeEnde(i){
+  S.endIndex=i;S.modus='review';
+  if(!S.sekunden)S.sekunden=S.dauer;
+  $('btn-start').disabled=false;$('f-text').disabled=false;$('f-dauer').disabled=false;
+  $('controlbar').className='controlbar';
+  setBanner('tipp','Endmarke gesetzt. Fehler kannst du weiterhin anklicken – die Auswertung aktualisiert sich automatisch.');
+  markierungenAnwenden();auswerten();sessionSpeichern();
+}
+function zuruecksetzen(){
+  clearInterval(tickHandle);tickHandle=null;
+  S.modus='setup';S.fehler=[];S.endIndex=-1;S.sekunden=0;S.notiz='';
+  $('f-notiz').value='';$('ergebnis-card').hidden=true;
+  $('btn-start').disabled=false;$('btn-fertig').disabled=true;
+  $('f-text').disabled=false;$('f-dauer').disabled=false;
+  $('timer').className='timer';zeitAnzeige(S.dauer);
+  $('controlbar').className='controlbar';
+  setBanner('tipp','Bereit für den nächsten Durchgang.');
+  markierungenAnwenden();sessionSpeichern();
+}
+function setBanner(typ,html){const b=$('banner');b.className='banner banner--'+typ;b.innerHTML=html;}
+function piep(){
+  try{const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.type='sine';o.frequency.value=880;o.connect(g);g.connect(ctx.destination);
+    g.gain.setValueAtTime(.0001,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.25,ctx.currentTime+.02);
+    g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.7);
+    o.start();o.stop(ctx.currentTime+.75);}catch(e){}
+}
+
+/* --- Auswertung --- */
+function werte(){
+  const gelesen=S.endIndex>=0?S.endIndex+1:0;
+  const fehler=fehlerImBereich().length;
+  const sek=S.sekunden||S.dauer;
+  const wpm=gelesen?Math.round(gelesen*60/sek):0;
+  const gen=gelesen?Math.round((gelesen-fehler)/gelesen*1000)/10:0;
+  return {gelesen,fehler,sek,wpm,gen,gesamt:wortIdx.length};
+}
+function stufe(wert,ziel){if(wert>=ziel)return'ok';if(wert>=ziel*0.8)return'mid';return'low';}
+function auswerten(){
+  const v=werte();
+  $('ergebnis-card').hidden=false;
+  const kw=$('kpi-wpm');kw.className='kpi '+stufe(v.wpm,SET.zielWpm);
+  kw.querySelector('strong').textContent=v.wpm+' WpM';
+  kw.querySelector('small').textContent=`Richtwert: > ${SET.zielWpm} WpM · ${v.sek} s`;
+  const kg=$('kpi-gen');kg.className='kpi '+(v.gen>=SET.zielGen?'ok':(v.gen>=SET.zielGen-10?'mid':'low'));
+  kg.querySelector('strong').textContent=v.gen.toLocaleString('de-DE')+' %';
+  kg.querySelector('small').textContent=`Richtwert: > ${SET.zielGen} %`;
+  $('kpi-woerter').querySelector('strong').textContent=v.gelesen;
+  $('kpi-woerter-sub').textContent=`von ${v.gesamt} Wörtern im Text`;
+  $('kpi-fehler').querySelector('strong').textContent=v.fehler;
+  $('kpi-fehler-sub').textContent=v.fehler?fehlerWoerter().slice(0,6).join(', ')+(v.fehler>6?' …':''):'keine markiert';
+  $('live-fehler').textContent=v.fehler;$('live-gelesen').textContent=v.gelesen;
+}
+function fehlerWoerter(){return fehlerImBereich().sort((a,b)=>a-b).map(i=>tokens[wortIdx[i]]?.r||'').filter(Boolean);}
+
+/* --- Speichern --- */
+function ergebnisSpeichern(){
+  if(S.endIndex<0){toast('Bitte zuerst die Endmarke setzen.');return;}
+  if(!$('f-vorname').value.trim()&&!$('f-nachname').value.trim()){toast('Bitte einen Namen eintragen.');$('f-vorname').focus();return;}
+  const v=werte(),t=aktText();
+  ERG.unshift({id:'e'+Date.now(),datum:S.datum,vorname:$('f-vorname').value.trim(),nachname:$('f-nachname').value.trim(),
+    klasse:$('f-klasse').value.trim(),textId:t.id,textTitel:t.titel,textQuelle:t.quelle||'',dauer:v.sek,
+    gelesen:v.gelesen,gesamt:v.gesamt,fehler:v.fehler,wpm:v.wpm,genauigkeit:v.gen,
+    fehlerWoerter:fehlerWoerter(),endIndex:S.endIndex,fehlerIdx:fehlerImBereich().sort((a,b)=>a-b),
+    notiz:$('f-notiz').value.trim()});
+  save(KEYS.erg,ERG);renderErgebnisse();
+  toast('Gespeichert – bereit für das nächste Kind.');
+  const kl=$('f-klasse').value;
+  $('f-vorname').value='';$('f-nachname').value='';
+  zuruecksetzen();$('f-klasse').value=kl;S.vorname='';S.nachname='';schNotizLaden();sessionSpeichern();
+  $('f-vorname').focus();
+}
+
+/* ============================================================
+   Freie Notizen pro Kind (durchgangsübergreifend)
+   ============================================================ */
+function schKeyAus(v,n,k){
+  const norm=x=>String(x||'').trim().toLowerCase().replace(/\s+/g,' ');
+  return `${norm(n)}|${norm(v)}|${norm(k)}`;
+}
+function schKeyAktuell(){return schKeyAus($('f-vorname').value,$('f-nachname').value,$('f-klasse').value);}
+function schNotizVon(e){return SCH[schKeyAus(e.vorname,e.nachname,e.klasse)]?.notiz||'';}
+function schNotizLaden(){
+  const hatName=$('f-vorname').value.trim()||$('f-nachname').value.trim();
+  const ta=$('f-schnotiz');
+  ta.disabled=!hatName;
+  if(!hatName){ta.value='';$('schnotiz-name').textContent='kein Kind ausgewählt';$('schnotiz-status').textContent='';return;}
+  const eintrag=SCH[schKeyAktuell()];
+  ta.value=eintrag?.notiz||'';
+  const name=`${$('f-nachname').value.trim()}${$('f-nachname').value.trim()&&$('f-vorname').value.trim()?', ':''}${$('f-vorname').value.trim()}`;
+  $('schnotiz-name').textContent=name+($('f-klasse').value.trim()?' · '+$('f-klasse').value.trim():'');
+  $('schnotiz-status').textContent=eintrag?.stand?'zuletzt geändert am '+deDate(eintrag.stand):'';
+}
+let schTimer;
+function schNotizSpeichern(){
+  const hatName=$('f-vorname').value.trim()||$('f-nachname').value.trim();
+  if(!hatName)return;
+  const k=schKeyAktuell(),txt=$('f-schnotiz').value;
+  if(txt.trim())SCH[k]={vorname:$('f-vorname').value.trim(),nachname:$('f-nachname').value.trim(),
+    klasse:$('f-klasse').value.trim(),notiz:txt,stand:heute()};
+  else delete SCH[k];
+  save(KEYS.sch,SCH);
+  $('schnotiz-status').textContent=txt.trim()?'gespeichert':'';
+}
+$('f-schnotiz').addEventListener('input',()=>{clearTimeout(schTimer);schTimer=setTimeout(schNotizSpeichern,400);});
+$('f-schnotiz').addEventListener('blur',schNotizSpeichern);
+
+/* ============================================================
+   Ergebnis-Tabelle
+   ============================================================ */
+function gefilterte(){
+  const k=$('fl-klasse').value,q=$('fl-suche').value.trim().toLowerCase();
+  return ERG.filter(e=>(!k||e.klasse===k)&&(!q||(`${e.vorname} ${e.nachname} ${e.textTitel}`).toLowerCase().includes(q)));
+}
+function renderErgebnisse(){
+  const klassen=[...new Set(ERG.map(e=>e.klasse).filter(Boolean))].sort();
+  const sel=$('fl-klasse'),alt=sel.value;
+  sel.innerHTML='<option value="">alle</option>'+klassen.map(k=>`<option>${esc(k)}</option>`).join('');
+  if(klassen.includes(alt))sel.value=alt;
+  const rows=gefilterte();
+  $('erg-body').innerHTML=rows.map(e=>{
+    const sw=e.wpm>=SET.zielWpm?'ok':(e.wpm>=SET.zielWpm*.8?'mid':'low');
+    const sg=e.genauigkeit>=SET.zielGen?'ok':(e.genauigkeit>=SET.zielGen-10?'mid':'low');
+    return `<tr><td>${deDate(e.datum)}</td><td><b>${esc(e.nachname)}</b>${e.nachname&&e.vorname?', ':''}${esc(e.vorname)}</td>
+      <td>${esc(e.klasse)}</td><td>${esc(e.textTitel)}</td>
+      <td class="num"><span class="dot ${sw}"></span>${e.wpm}</td>
+      <td class="num"><span class="dot ${sg}"></span>${e.genauigkeit.toLocaleString('de-DE')} %</td>
+      <td class="num">${e.gelesen}</td><td class="num">${e.fehler}</td><td class="num">${e.dauer} s</td>
+      <td class="notiz-cell" contenteditable="true" data-note="${e.id}" title="Zum Bearbeiten hier hineinklicken">${esc(e.notiz)}</td>
+      <td style="white-space:nowrap"><button class="btn-secondary btn-sm" data-print="${e.id}">🖨</button>
+      <button class="btn-danger btn-sm" data-del="${e.id}">🗑</button></td></tr>`;
+  }).join('');
+  $('erg-leer').hidden=rows.length>0;
+  $('erg-count').textContent=ERG.length?`(${ERG.length})`:'';
+  fuelleDatalists();renderKlassenuebersicht(rows);
+}
+function renderKlassenuebersicht(rows){
+  const box=$('klassenuebersicht');
+  if(!rows.length){box.hidden=true;return;}
+  box.hidden=false;
+  const n=rows.length,mw=Math.round(rows.reduce((s,e)=>s+e.wpm,0)/n);
+  const mg=Math.round(rows.reduce((s,e)=>s+e.genauigkeit,0)/n*10)/10;
+  const okW=rows.filter(e=>e.wpm>=SET.zielWpm).length,okG=rows.filter(e=>e.genauigkeit>=SET.zielGen).length;
+  box.innerHTML=`<h2>Überblick (${n} Messung${n===1?'':'en'})</h2>
+    <div class="kpis">
+      <div class="kpi"><span>Ø Lesegeschwindigkeit</span><strong>${mw} WpM</strong><small>Richtwert &gt; ${SET.zielWpm}</small></div>
+      <div class="kpi"><span>Ø Lesegenauigkeit</span><strong>${mg.toLocaleString('de-DE')} %</strong><small>Richtwert &gt; ${SET.zielGen}</small></div>
+      <div class="kpi"><span>Richtwert WpM erreicht</span><strong>${okW} / ${n}</strong><small>${Math.round(okW/n*100)} %</small></div>
+      <div class="kpi"><span>Richtwert Genauigkeit erreicht</span><strong>${okG} / ${n}</strong><small>${Math.round(okG/n*100)} %</small></div>
+    </div>`;
+}
+$('erg-body').addEventListener('blur',e=>{
+  const c=e.target.closest?.('[data-note]');if(!c)return;
+  const eintrag=ERG.find(x=>x.id===c.dataset.note);if(!eintrag)return;
+  const neu=c.textContent.trim();
+  if(neu!==eintrag.notiz){eintrag.notiz=neu;save(KEYS.erg,ERG);toast('Notiz gespeichert.');}
+},true);
+$('erg-body').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.hasAttribute?.('data-note')){e.preventDefault();e.target.blur();}
+});
+$('erg-body').addEventListener('click',e=>{
+  const del=e.target.closest('[data-del]'),pr=e.target.closest('[data-print]');
+  if(del){const id=del.dataset.del;if(confirm('Diesen Eintrag löschen?')){ERG=ERG.filter(x=>x.id!==id);save(KEYS.erg,ERG);renderErgebnisse();}}
+  if(pr){const e2=ERG.find(x=>x.id===pr.dataset.print);if(e2)druckeProtokollAusErgebnis(e2);}
+});
+function fuelleDatalists(){
+  const v=[...new Set(ERG.map(e=>e.vorname).filter(Boolean))].sort();
+  const n=[...new Set(ERG.map(e=>e.nachname).filter(Boolean))].sort();
+  const k=[...new Set(ERG.map(e=>e.klasse).filter(Boolean))].sort();
+  $('dl-vornamen').innerHTML=v.map(x=>`<option value="${esc(x)}">`).join('');
+  $('dl-nachnamen').innerHTML=n.map(x=>`<option value="${esc(x)}">`).join('');
+  $('dl-klassen').innerHTML=k.map(x=>`<option value="${esc(x)}">`).join('');
+}
+
+/* ============================================================
+   Export: CSV + XLSX (eigener ZIP-Writer, kein externes Skript)
+   ============================================================ */
+const SPALTEN=['Datum','Vorname','Nachname','Klasse','Text','Lesezeit (s)','Gelesene Wörter','Wörter im Text',
+  'Fehler','WpM','Genauigkeit (%)','WpM-Ziel erreicht','Genauigkeitsziel erreicht','Fehlerwörter','Notiz zum Durchgang','Notiz zum Kind'];
+function zeile(e){return [deDate(e.datum),e.vorname,e.nachname,e.klasse,e.textTitel,e.dauer,e.gelesen,e.gesamt,
+  e.fehler,e.wpm,e.genauigkeit,e.wpm>=SET.zielWpm?'ja':'nein',e.genauigkeit>=SET.zielGen?'ja':'nein',
+  (e.fehlerWoerter||[]).join(', '),e.notiz,schNotizVon(e)];}
+function dateiname(ext){return `Lautleseprotokoll_${heute()}.${ext}`;}
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);}
+
+function exportCSV(){
+  const rows=gefilterte();if(!rows.length){toast('Keine Daten zum Export.');return;}
+  const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+  const txt='\uFEFF'+[SPALTEN.map(q).join(';')].concat(rows.map(e=>zeile(e).map(q).join(';'))).join('\r\n');
+  download(new Blob([txt],{type:'text/csv;charset=utf-8'}),dateiname('csv'));
+}
+
+const crcTab=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;
+  for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=crcTab[(c^u8[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipStore(files){
+  const enc=new TextEncoder(),local=[],central=[];let off=0;
+  files.forEach(f=>{
+    const nb=enc.encode(f.name),data=f.data,crc=crc32(data);
+    const h=new DataView(new ArrayBuffer(30));
+    h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0,true);h.setUint16(8,0,true);
+    h.setUint16(10,0,true);h.setUint16(12,0,true);h.setUint32(14,crc,true);
+    h.setUint32(18,data.length,true);h.setUint32(22,data.length,true);
+    h.setUint16(26,nb.length,true);h.setUint16(28,0,true);
+    local.push(new Uint8Array(h.buffer),nb,data);
+    const c=new DataView(new ArrayBuffer(46));
+    c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0,true);
+    c.setUint16(10,0,true);c.setUint16(12,0,true);c.setUint16(14,0,true);c.setUint32(16,crc,true);
+    c.setUint32(20,data.length,true);c.setUint32(24,data.length,true);c.setUint16(28,nb.length,true);
+    c.setUint16(30,0,true);c.setUint16(32,0,true);c.setUint16(34,0,true);c.setUint16(36,0,true);
+    c.setUint32(38,0,true);c.setUint32(42,off,true);
+    central.push(new Uint8Array(c.buffer),nb);
+    off+=30+nb.length+data.length;
+  });
+  const cdSize=central.reduce((s,a)=>s+a.length,0);
+  const e=new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true);e.setUint16(4,0,true);e.setUint16(6,0,true);
+  e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);
+  e.setUint32(12,cdSize,true);e.setUint32(16,off,true);e.setUint16(20,0,true);
+  return new Blob([...local,...central,new Uint8Array(e.buffer)],
+    {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function colName(n){let s='';while(n>=0){s=String.fromCharCode(65+(n%26))+s;n=Math.floor(n/26)-1;}return s;}
+function exportXLSX(){
+  const rows=gefilterte();if(!rows.length){toast('Keine Daten zum Export.');return;}
+  const data=[SPALTEN].concat(rows.map(zeile));
+  const sheetRows=data.map((r,ri)=>{
+    const cells=r.map((val,ci)=>{
+      const ref=colName(ci)+(ri+1);
+      if(ri>0&&typeof val==='number'&&isFinite(val))return `<c r="${ref}" s="1"><v>${val}</v></c>`;
+      return `<c r="${ref}" t="inlineStr" s="${ri===0?'2':'1'}"><is><t xml:space="preserve">${esc(val)}</t></is></c>`;
+    }).join('');
+    return `<row r="${ri+1}">${cells}</row>`;
+  }).join('');
+  const widths=[12,14,16,8,26,11,14,14,8,8,14,14,16,34,40,40]
+    .map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('');
+  const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><outlinePr/></sheetPr>
+<sheetViews><sheetView workbookViewId="0" tabSelected="1"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>
+<cols>${widths}</cols><sheetData>${sheetRows}</sheetData>
+<autoFilter ref="A1:${colName(SPALTEN.length-1)}${data.length}"/></worksheet>`;
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<fonts count="3"><font><sz val="11"/><name val="Calibri"/></font>
+<font><sz val="11"/><name val="Calibri"/></font>
+<font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts>
+<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FF3E5668"/><bgColor indexed="64"/></patternFill></fill></fills>
+<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="2" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/></cellXfs>
+<cellStyles count="1"><cellStyle name="Standard" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+  const enc=new TextEncoder();
+  const files=[
+    {name:'[Content_Types].xml',data:enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`)},
+    {name:'_rels/.rels',data:enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`)},
+    {name:'xl/workbook.xml',data:enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<sheets><sheet name="Lautlesen" sheetId="1" r:id="rId1"/></sheets></workbook>`)},
+    {name:'xl/_rels/workbook.xml.rels',data:enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`)},
+    {name:'xl/styles.xml',data:enc.encode(styles)},
+    {name:'xl/worksheets/sheet1.xml',data:enc.encode(sheet)}
+  ];
+  download(zipStore(files),dateiname('xlsx'));
+}
+
+/* ============================================================
+   Druck / PDF
+   ============================================================ */
+function protokollHTML(e,textTokens){
+  let body='';
+  if(textTokens){
+    let w=0;
+    textTokens.forEach(tok=>{
+      if(tok.t==='br'){body+='<br>';return;}
+      if(tok.t==='sp'){body+=' ';return;}
+      if(tok.t!=='w'){body+=esc(tok.r);return;}
+      const i=w++;
+      const cls=[];
+      if(tok.h)cls.push('phead');
+      if((e._fehlerIdx||[]).includes(i))cls.push('err');
+      if(e._endIndex>=0&&i>e._endIndex)cls.push('unread');
+      body+=`<span class="${cls.join(' ')}">${esc(tok.r)}</span>`;
+      if(e._endIndex>=0&&i===e._endIndex)body+='<span class="endmark">▌</span>';
+    });
+  }else{
+    body=`<i>Fehler markiert: ${esc((e.fehlerWoerter||[]).join(', ')||'keine')}</i>`;
+  }
+  const zielW=e.wpm>=SET.zielWpm?'✔ erreicht':'✘ nicht erreicht';
+  const zielG=e.genauigkeit>=SET.zielGen?'✔ erreicht':'✘ nicht erreicht';
+  return `<div class="p-sheet">
+    <div class="p-head"><h1>Diagnostik – Lautleseprotokoll</h1><div class="p-wm">HBG Dortmund</div></div>
+    <div class="p-fields"><div><b>Vorname:</b> ${esc(e.vorname)||'____________'}</div>
+      <div><b>Nachname:</b> ${esc(e.nachname)||'____________'}</div>
+      <div><b>Klasse:</b> ${esc(e.klasse)||'______'}</div>
+      <div><b>Datum:</b> ${deDate(e.datum)}</div>
+      <div><b>Lesezeit:</b> ${e.dauer} s</div></div>
+    <div><b>Text:</b> ${esc(e.textTitel)}</div>
+    ${e.textQuelle?`<div class="p-src">${esc(e.textQuelle)}</div>`:'<div class="p-src"></div>'}
+    <div class="p-text">${body}</div>
+    <div class="p-res">
+      Lesegeschwindigkeit: <span class="p-val">${e.wpm} WpM</span> &nbsp;(Richtwert &gt; ${SET.zielWpm} WpM · ${zielW})<br>
+      Lesegenauigkeit: <span class="p-val">${e.genauigkeit.toLocaleString('de-DE')} %</span>
+        &nbsp;= ${e.gelesen-e.fehler} richtig gelesene : ${e.gelesen} gelesene Wörter × 100 &nbsp;(Richtwert &gt; ${SET.zielGen} % · ${zielG})<br>
+      Gelesene Wörter: <b>${e.gelesen}</b> von ${e.gesamt} · Fehler: <b>${e.fehler}</b><br>
+      Fehlerwörter: ${esc((e.fehlerWoerter||[]).join(', ')||'–')}
+      ${e.notiz?`<div class="p-note"><b>Beobachtungen zum Durchgang:</b> ${esc(e.notiz)}</div>`:'<div class="p-note"><b>Beobachtungen zum Durchgang:</b> ______________________________________________________________</div>'}
+      ${e._schnotiz?`<div class="p-note"><b>Notizen zum Kind:</b> ${esc(e._schnotiz).replace(/\n/g,'<br>')}</div>`:''}
+    </div>
+    <div class="p-sign"><div>Datum</div><div>Unterschrift der Lehrkraft</div></div>
+  </div>`;
+}
+function drucke(html){
+  $('print-root').innerHTML=html;
+  window.print();
+  setTimeout(()=>{$('print-root').innerHTML='';},1200);
+}
+function druckeProtokollAktuell(){
+  if(S.endIndex<0){toast('Bitte zuerst die Endmarke setzen.');return;}
+  const v=werte(),t=aktText();
+  const e={datum:S.datum,vorname:$('f-vorname').value.trim(),nachname:$('f-nachname').value.trim(),
+    klasse:$('f-klasse').value.trim(),textTitel:t.titel,textQuelle:t.quelle||'',dauer:v.sek,gelesen:v.gelesen,
+    gesamt:v.gesamt,fehler:v.fehler,wpm:v.wpm,genauigkeit:v.gen,fehlerWoerter:fehlerWoerter(),
+    notiz:$('f-notiz').value.trim(),_fehlerIdx:fehlerImBereich(),_endIndex:S.endIndex,
+    _schnotiz:$('f-schnotiz').value.trim()};
+  drucke(protokollHTML(e,tokens));
+}
+function druckeProtokollAusErgebnis(e){
+  const t=TEXTE.find(x=>x.id===e.textId)||TEXTE.find(x=>x.titel===e.textTitel);
+  drucke(protokollHTML(Object.assign({},e,{_endIndex:e.endIndex??-1,_fehlerIdx:e.fehlerIdx||[],_schnotiz:schNotizVon(e)}),
+    t?textTokens(t):null));
+}
+function druckeListe(){
+  const rows=gefilterte();if(!rows.length){toast('Keine Daten.');return;}
+  const kopf=['Datum','Name','Klasse','Text','WpM','Genauigkeit','Gelesen','Fehler','Zeit','Notiz'];
+  const trs=rows.map(e=>`<tr><td>${deDate(e.datum)}</td><td>${esc(e.nachname)}${e.nachname&&e.vorname?', ':''}${esc(e.vorname)}</td>
+    <td>${esc(e.klasse)}</td><td>${esc(e.textTitel)}</td><td>${e.wpm}</td>
+    <td>${e.genauigkeit.toLocaleString('de-DE')} %</td><td>${e.gelesen}</td><td>${e.fehler}</td><td>${e.dauer} s</td>
+    <td>${esc(e.notiz)}</td></tr>`).join('');
+  const n=rows.length,mw=Math.round(rows.reduce((s,e)=>s+e.wpm,0)/n);
+  const mg=Math.round(rows.reduce((s,e)=>s+e.genauigkeit,0)/n*10)/10;
+  drucke(`<div class="p-sheet"><div class="p-head"><h1>Lautlesen – Übersicht</h1><div class="p-wm">HBG Dortmund</div></div>
+    <div class="p-fields"><div><b>Stand:</b> ${deDate(heute())}</div><div><b>Messungen:</b> ${n}</div>
+    <div><b>Ø WpM:</b> ${mw}</div><div><b>Ø Genauigkeit:</b> ${mg.toLocaleString('de-DE')} %</div></div>
+    <table class="p-tab"><thead><tr>${kopf.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${trs}</tbody></table></div>`);
+}
+function druckeLesetext(){
+  const t=aktText();if(!t)return;
+  drucke(`<div class="p-sheet"><div class="p-head"><h1>${esc(t.titel)}</h1><div class="p-wm">HBG</div></div>
+    <div class="p-schueler">${esc(t.inhalt).replace(/\n/g,'<br>')}</div>
+    ${t.quelle?`<div class="p-src" style="margin-top:12pt">${esc(t.quelle)}</div>`:''}</div>`);
+}
+
+/* ============================================================
+   Texte verwalten
+   ============================================================ */
+let editId=null;
+function renderTextliste(){
+  $('textliste').innerHTML=TEXTE.map(t=>`<div class="textitem ${t.id===S.textId?'active':''}">
+    <h3>${esc(t.titel)}</h3><p>${wortAnzahlText(t)} Wörter${t.titelLesen!==false?' (mit Überschrift)':''}${t.quelle?' · '+esc(t.quelle):''}</p>
+    <div class="btnrow"><button class="btn-secondary btn-sm" data-use="${t.id}">Für Test wählen</button>
+    <button class="btn-secondary btn-sm" data-edit="${t.id}">Bearbeiten</button></div></div>`).join('');
+  const sel=$('f-text');
+  sel.innerHTML=TEXTE.map(t=>`<option value="${t.id}">${esc(t.titel)} (${wortAnzahlText(t)} W.)</option>`).join('');
+  if(!TEXTE.find(t=>t.id===S.textId))S.textId=TEXTE[0]?.id||null;
+  sel.value=S.textId||'';
+}
+$('textliste').addEventListener('click',e=>{
+  const u=e.target.closest('[data-use]'),ed=e.target.closest('[data-edit]');
+  if(u){S.textId=u.dataset.use;sessionSpeichern();renderTextliste();renderText();zuruecksetzen();
+    wechsle('test');toast('Text ausgewählt.');}
+  if(ed){const t=TEXTE.find(x=>x.id===ed.dataset.edit);if(!t)return;
+    editId=t.id;$('editor-titel').textContent='Text bearbeiten';$('t-titel').value=t.titel;
+    $('t-quelle').value=t.quelle||'';$('t-inhalt').value=t.inhalt;$('t-titellesen').checked=t.titelLesen!==false;
+    $('btn-text-loeschen').hidden=false;
+    zaehleEditor();$('t-titel').scrollIntoView({behavior:'smooth',block:'center'});}
+});
+function zaehleEditor(){
+  const n=wortAnzahlText({titel:$('t-titel').value,inhalt:$('t-inhalt').value,titelLesen:$('t-titellesen').checked});
+  $('t-count').textContent='· '+n+' Wörter'+($('t-titellesen').checked?' (inkl. Überschrift)':'');
+}
+$('t-inhalt').addEventListener('input',zaehleEditor);
+$('t-titel').addEventListener('input',zaehleEditor);
+$('t-titellesen').addEventListener('change',zaehleEditor);
+$('btn-text-speichern').addEventListener('click',()=>{
+  const titel=$('t-titel').value.trim(),inhalt=$('t-inhalt').value.trim();
+  if(!titel||!inhalt){toast('Titel und Text ausfüllen.');return;}
+  const tl=$('t-titellesen').checked;
+  if(editId){const t=TEXTE.find(x=>x.id===editId);t.titel=titel;t.quelle=$('t-quelle').value.trim();t.inhalt=inhalt;t.titelLesen=tl;}
+  else{const id='t'+Date.now();TEXTE.push({id,titel,quelle:$('t-quelle').value.trim(),inhalt,titelLesen:tl});S.textId=id;}
+  save(KEYS.texte,TEXTE);renderTextliste();renderText();neuerText();toast('Text gespeichert.');
+});
+function neuerText(){editId=null;$('editor-titel').textContent='Neuen Text anlegen';
+  $('t-titel').value='';$('t-quelle').value='';$('t-inhalt').value='';$('t-titellesen').checked=true;
+  $('btn-text-loeschen').hidden=true;zaehleEditor();}
+$('btn-text-neu').addEventListener('click',neuerText);
+$('btn-text-loeschen').addEventListener('click',()=>{
+  if(TEXTE.length<=1){toast('Mindestens ein Text muss bleiben.');return;}
+  if(!confirm('Diesen Text löschen?'))return;
+  TEXTE=TEXTE.filter(t=>t.id!==editId);save(KEYS.texte,TEXTE);
+  if(S.textId===editId)S.textId=TEXTE[0].id;
+  neuerText();renderTextliste();renderText();
+});
+$('btn-text-drucken').addEventListener('click',druckeLesetext);
+$('btn-vorlage').addEventListener('click',()=>{
+  neuerText();
+  $('t-titel').value='Henrietta';
+  $('t-quelle').value='Aus: Auer, M. (2016): Die Schule der magischen Tiere. Hamburg: Carlsen Verlag GmbH, S. 62.';
+  $('t-inhalt').focus();
+  toast('Titel und Quelle stehen – jetzt den Abschnitt aus dem PDF einfügen.');
+});
+$('btn-txt-import').addEventListener('click',()=>$('file-txt').click());
+$('file-txt').addEventListener('change',ev=>{
+  const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{$('t-inhalt').value=String(r.result).trim();zaehleEditor();
+    if(!$('t-titel').value.trim())$('t-titel').value=f.name.replace(/\.txt$/i,'');
+    toast('Text eingelesen – noch speichern.');};
+  r.readAsText(f,'utf-8');ev.target.value='';
+});
+
+/* ============================================================
+   Navigation, Events, Start
+   ============================================================ */
+function wechsle(v){
+  ['test','erg','texte'].forEach(x=>{
+    $('view-'+x).hidden=(x!==v);
+    const b=document.querySelector(`nav.tabs button[data-view="${x}"]`);
+    b.setAttribute('aria-selected',String(x===v));
+  });
+  if(v==='erg')renderErgebnisse();
+  if(v==='texte')renderTextliste();
+  window.scrollTo({top:0});
+}
+document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>wechsle(b.dataset.view)));
+
+$('btn-start').addEventListener('click',starten);
+$('btn-fertig').addEventListener('click',frueherFertig);
+$('btn-reset').addEventListener('click',()=>{if(S.modus!=='setup'&&!confirm('Aktuellen Durchgang verwerfen?'))return;zuruecksetzen();});
+$('btn-speichern').addEventListener('click',ergebnisSpeichern);
+$('btn-endekorr').addEventListener('click',()=>{S.modus='ende';setBanner('warn','Tippe auf das <b>letzte gelesene Wort</b>.');markierungenAnwenden();});
+$('btn-pdf-einzel').addEventListener('click',druckeProtokollAktuell);
+$('btn-xlsx').addEventListener('click',exportXLSX);
+$('btn-csv').addEventListener('click',exportCSV);
+$('btn-pdf-liste').addEventListener('click',druckeListe);
+$('fl-klasse').addEventListener('change',renderErgebnisse);
+$('fl-suche').addEventListener('input',renderErgebnisse);
+$('btn-alle-loeschen').addEventListener('click',()=>{
+  if(!ERG.length)return;
+  if(confirm(`Wirklich alle ${ERG.length} Ergebnisse endgültig löschen?`)){ERG=[];save(KEYS.erg,ERG);renderErgebnisse();toast('Alle Ergebnisse gelöscht.');}
+});
+$('btn-backup').addEventListener('click',()=>{
+  download(new Blob([JSON.stringify({texte:TEXTE,ergebnisse:ERG,settings:SET,schuelernotizen:SCH},null,2)],{type:'application/json'}),
+    `Lautlesen_Sicherung_${heute()}.json`);
+});
+$('btn-restore').addEventListener('click',()=>$('file-restore').click());
+$('file-restore').addEventListener('change',ev=>{
+  const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);
+    if(Array.isArray(d.ergebnisse)){ERG=d.ergebnisse.concat(ERG);save(KEYS.erg,ERG);}
+    /* Lesetexte aus Sicherungen werden bewusst nicht übernommen: Henrietta bleibt der einzige Text. */
+    if(d.schuelernotizen&&typeof d.schuelernotizen==='object'){
+      Object.entries(d.schuelernotizen).forEach(([k,v])=>{if(!SCH[k])SCH[k]=v;});save(KEYS.sch,SCH);}
+    renderErgebnisse();renderTextliste();schNotizLaden();toast('Sicherung eingelesen.');
+  }catch(e){toast('Datei konnte nicht gelesen werden.');}};
+  r.readAsText(f);ev.target.value='';
+});
+['f-vorname','f-nachname','f-klasse','f-datum'].forEach(id=>$(id).addEventListener('input',()=>{
+  S.vorname=$('f-vorname').value;S.nachname=$('f-nachname').value;S.klasse=$('f-klasse').value;S.datum=$('f-datum').value;
+  schNotizLaden();sessionSpeichern();}));
+$('f-notiz').addEventListener('input',()=>{S.notiz=$('f-notiz').value;sessionSpeichern();});
+$('f-text').addEventListener('change',()=>{S.textId=$('f-text').value;renderText();zuruecksetzen();sessionSpeichern();});
+$('f-dauer').addEventListener('change',()=>{S.dauer=+$('f-dauer').value;zeitAnzeige(S.dauer);sessionSpeichern();});
+['s-wpm','s-gen','s-ton'].forEach(id=>$(id).addEventListener('change',()=>{
+  SET.zielWpm=Math.max(10,+$('s-wpm').value||100);SET.zielGen=Math.max(50,+$('s-gen').value||95);SET.ton=$('s-ton').value;
+  save(KEYS.set,SET);if(S.endIndex>=0)auswerten();renderErgebnisse();}));
+document.addEventListener('keydown',e=>{
+  if(e.code!=='Space')return;
+  const tag=(e.target.tagName||'').toLowerCase();
+  if(tag==='input'||tag==='textarea'||tag==='select'||e.target.classList.contains('w'))return;
+  e.preventDefault();
+  if(S.modus==='setup')starten(); else if(S.modus==='running')frueherFertig();
+});
+
+/* Init */
+sessionLaden();
+S.textId='t-henrietta';
+$('f-vorname').value=S.vorname||'';$('f-nachname').value=S.nachname||'';$('f-klasse').value=S.klasse||'';
+$('f-datum').value=S.datum||heute();$('f-notiz').value=S.notiz||'';
+$('f-dauer').value=String(S.dauer||60);
+$('s-wpm').value=SET.zielWpm;$('s-gen').value=SET.zielGen;$('s-ton').value=String(SET.ton);
+renderTextliste();renderText();zeitAnzeige(S.dauer);
+if(S.endIndex>=0){S.modus='review';auswerten();setBanner('tipp','Vorheriger Durchgang wiederhergestellt.');}
+else if(S.modus==='ende'){setBanner('warn','Zeit war abgelaufen – tippe auf das <b>letzte gelesene Wort</b>.');}
+markierungenAnwenden();schNotizLaden();renderErgebnisse();
+</script>
+</body>
+</html>
