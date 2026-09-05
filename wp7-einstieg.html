@@ -75,7 +75,6 @@ label{display:block;font-weight:600;margin-bottom:6px;}
 
 .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:var(--text-xs);
   font-weight:700;text-transform:uppercase;letter-spacing:.07em;line-height:1.4;}
-.badge--slate{background:var(--col-slate);color:#fff;}
 .badge--rust{background:var(--col-rust-dark);color:#fff;}
 .badge--success{background:var(--col-sage-dark);color:#fff;}
 .badge--pale-slate{background:var(--col-slate-pale);color:var(--col-slate);}
@@ -87,22 +86,27 @@ label{display:block;font-weight:600;margin-bottom:6px;}
 .step{display:none;}
 .step.active{display:block;animation:fade .25s ease;}
 @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
-
 .nav{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;}
 
-/* Szene */
+/* ---------- Szene ---------- */
 .szene-wrap{background:var(--col-white);border-radius:12px;padding:8px;box-shadow:0 2px 8px var(--col-shadow);}
-svg.szene{width:100%;height:auto;display:block;touch-action:manipulation;}
+svg.szene{width:100%;height:auto;display:block;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 .hit{fill:transparent;cursor:pointer;}
-.hit:hover{fill:rgba(217,122,74,.18);}
+.hit:hover{fill:rgba(217,122,74,.16);}
+.hazard.found .hit{fill:rgba(125,187,111,.22);cursor:default;}
 .marker{opacity:0;transition:opacity .3s;pointer-events:none;}
 .marker.on{opacity:1;}
+.hint{opacity:0;pointer-events:none;}
+.hint.on{animation:pulse 0.9s ease-in-out 3;}
+@keyframes pulse{0%,100%{opacity:0;transform:scale(.9);}50%{opacity:1;transform:scale(1.1);}}
+.hazard .hint{transform-box:fill-box;transform-origin:center;}
+.szene-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;}
 .fundliste{list-style:none;margin-top:10px;}
 .fundliste li{background:var(--col-sage-pale);border-left:4px solid var(--col-sage-dark);border-radius:0 8px 8px 0;
   padding:8px 12px;margin-bottom:8px;font-size:var(--text-sm);color:#2D5C25;}
 .fundliste li b{display:block;}
 
-/* Karten-Sortierung */
+/* ---------- Sortieren ---------- */
 .sort-item{background:var(--col-white);border:2px solid var(--col-border);border-radius:10px;padding:12px 14px;margin-bottom:10px;}
 .sort-item p{font-weight:600;margin-bottom:8px;}
 .sort-btns{display:flex;gap:8px;flex-wrap:wrap;}
@@ -110,22 +114,38 @@ svg.szene{width:100%;height:auto;display:block;touch-action:manipulation;}
   font-weight:600;cursor:pointer;border:2px solid var(--col-slate);background:transparent;color:var(--col-slate);}
 .sort-btns button:disabled{cursor:default;}
 .sort-item .fb{margin-top:10px;}
-
-/* Situationen */
 .antworten{display:flex;flex-direction:column;gap:8px;}
 .antwort-btn{text-align:left;background:transparent;border:2px solid var(--col-slate);color:var(--col-slate);
   padding:10px 14px;border-radius:8px;font-family:inherit;font-size:var(--text-base);font-weight:600;min-height:44px;cursor:pointer;}
 
-/* Ausweis */
-.ausweis{background:var(--col-white);border:3px solid var(--col-slate);border-radius:14px;padding:20px 22px;box-shadow:0 4px 14px var(--col-shadow);}
-.ausweis-kopf{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:3px solid var(--col-rust);padding-bottom:10px;margin-bottom:14px;}
-.ausweis-titel{font-size:var(--text-xl);font-weight:800;color:var(--col-slate-dark);line-height:1.1;}
-.ausweis-zeile{display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed var(--col-border);font-size:var(--text-sm);}
-.ausweis-zeile span:first-child{min-width:120px;color:var(--col-text-muted);font-weight:600;}
-.unterschrift{margin-top:22px;display:flex;gap:24px;flex-wrap:wrap;}
-.unterschrift div{flex:1 1 180px;border-top:1.5px solid var(--col-slate-mid);padding-top:4px;font-size:var(--text-xs);color:var(--col-text-muted);}
+/* ---------- Urkunde (Vorschau) ---------- */
+.urkunde{background:var(--col-white);border:3px double var(--col-slate);border-radius:6px;padding:26px 28px;text-align:center;box-shadow:0 4px 14px var(--col-shadow);}
+.urkunde .titel{font-size:var(--text-2xl);font-weight:800;letter-spacing:.12em;color:var(--col-slate-dark);line-height:1.1;}
+.urkunde .sub{color:var(--col-rust-dark);font-weight:700;letter-spacing:.06em;font-size:var(--text-sm);text-transform:uppercase;margin-top:4px;}
+.urkunde .name{font-size:var(--text-xl);font-weight:800;margin:14px 0 6px;color:var(--col-slate);}
+.urkunde .linie{width:80px;height:3px;background:var(--col-rust);margin:14px auto;}
+.urkunde .fuss{margin-top:16px;font-size:var(--text-sm);color:var(--col-text-muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 
-/* Lehrer-Overlay */
+/* ---------- Spiel ---------- */
+.spiel-wrap{background:var(--col-white);border-radius:12px;padding:10px;box-shadow:0 2px 8px var(--col-shadow);}
+canvas#spiel{width:100%;height:auto;display:block;border-radius:8px;touch-action:none;background:var(--col-slate-ghost);}
+.spiel-hud{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px 0;font-weight:600;flex-wrap:wrap;}
+.tempo{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 10px;}
+.tempo-label{font-size:var(--text-sm);color:var(--col-text-muted);font-weight:600;margin-right:2px;}
+.tempo button{border:2px solid var(--col-slate-pale);background:var(--col-white);color:var(--col-slate);
+  border-radius:999px;padding:6px 14px;min-height:40px;font-family:inherit;font-size:var(--text-sm);font-weight:600;cursor:pointer;}
+.tempo button:hover{background:var(--col-slate-ghost);}
+.tempo button.aktiv{background:var(--col-slate);border-color:var(--col-slate);color:#fff;}
+.dpad{display:grid;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(2,56px);gap:6px;justify-content:center;margin:10px auto 0;}
+.dpad button{width:56px;height:56px;border-radius:12px;border:2px solid var(--col-slate);background:var(--col-white);color:var(--col-slate);
+  font-size:var(--text-lg);font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.dpad button:active{background:var(--col-slate-pale);}
+.dpad .up{grid-column:2;grid-row:1;}
+.dpad .left{grid-column:1;grid-row:2;}
+.dpad .down{grid-column:2;grid-row:2;}
+.dpad .right{grid-column:3;grid-row:2;}
+
+/* ---------- Overlay ---------- */
 .overlay{position:fixed;inset:0;background:rgba(30,42,53,.6);display:none;z-index:50;padding:16px;overflow-y:auto;}
 .overlay.on{display:block;}
 .overlay-inner{max-width:720px;margin:24px auto;background:var(--col-white);border-radius:14px;padding:22px;}
@@ -136,7 +156,7 @@ svg.szene{width:100%;height:auto;display:block;touch-action:manipulation;}
 @media print{
   header,.nav,.overlay,.no-print{display:none !important;}
   body{background:#fff;}
-  .ausweis{box-shadow:none;page-break-inside:avoid;}
+  .urkunde{box-shadow:none;page-break-inside:avoid;}
 }
 </style>
 </head>
@@ -149,7 +169,7 @@ svg.szene{width:100%;height:auto;display:block;touch-action:manipulation;}
       <div class="header-meta">HBG Dortmund · WP Technik · Klasse 7</div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;">
-      <button class="btn-ghost" id="btn-lehrer">Für die Lehrkraft</button>
+      <button class="btn-ghost" id="btn-lehrer">Für die Vertretung</button>
       <div class="hbg-wordmark"><span class="hbg-wordmark__main">HBG</span><span class="hbg-wordmark__sub">SRL</span></div>
     </div>
   </div>
@@ -160,8 +180,8 @@ svg.szene{width:100%;height:auto;display:block;touch-action:manipulation;}
 
   <div id="fortschritt-box" hidden>
     <div class="progress-label">
-      <span>Schritt <span id="p-aktuell">1</span> von 6</span>
-      <span id="p-punkte">0 von 17 Punkten</span>
+      <span>Schritt <span id="p-aktuell">1</span> von 7</span>
+      <span id="p-punkte">0 von 18 Punkten</span>
     </div>
     <div class="progress-bar"><div class="progress-bar__fill" id="p-fill" style="width:0%"></div></div>
   </div>
@@ -172,13 +192,13 @@ svg.szene{width:100%;height:auto;display:block;touch-action:manipulation;}
       <span class="badge badge--rust">Erste Stunde</span>
       <h2 style="margin-top:10px;">Willkommen im Technikraum!</h2>
       <p>Du hast Technik gewählt. Ab jetzt wirst du sägen, bohren, löten und bauen.</p>
-      <p>Damit das gut klappt, brauchen wir Regeln. Heute machst du deinen <b>Werkstatt-Führerschein</b>. Am Ende bekommst du deinen eigenen Ausweis.</p>
+      <p>Damit das gut klappt, brauchen wir Regeln. Heute machst du deinen <b>Werkstatt-Führerschein</b>. Am Ende bekommst du eine Urkunde – und darfst ein kleines Spiel spielen.</p>
       <p class="muted" style="margin-top:10px;">Du arbeitest allein am iPad. Es dauert ungefähr 25 Minuten. Du kannst nichts falsch machen – du sammelst nur Punkte.</p>
     </div>
     <div class="task-card">
       <label for="name">Wie heißt du?</label>
       <input type="text" id="name" placeholder="Vorname und Nachname" autocomplete="off">
-      <p class="muted" style="margin-top:8px;">Dein Name wird nur auf deinem Ausweis angezeigt und nicht gespeichert.</p>
+      <p class="muted" style="margin-top:8px;">Dein Name steht nur auf deiner Urkunde und wird nicht gespeichert.</p>
       <div class="nav"><span></span><button class="btn-primary" data-goto="1">Los geht's →</button></div>
     </div>
   </section>
@@ -214,107 +234,216 @@ svg.szene{width:100%;height:auto;display:block;touch-action:manipulation;}
     <div class="card">
       <span class="badge badge--pale-slate">Schritt 2</span>
       <h2 style="margin-top:8px;">Finde die Gefahren</h2>
-      <p>Im Bild sind <b>5 Gefahren</b> versteckt. Tippe sie an. Zu jeder Gefahr bekommst du eine Erklärung.</p>
-      <p class="muted">Gefunden: <b><span id="gef-zahl">0</span> von 5</b></p>
+      <p>Im Technikraum sind <b>6 Gefahren</b> versteckt. Tippe sie an. Zu jeder Gefahr bekommst du eine Erklärung. Du kannst auch andere Dinge antippen und erfährst, wozu sie da sind.</p>
     </div>
 
     <div class="szene-wrap">
-      <svg class="szene" viewBox="0 0 800 430" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Zeichnung eines Technikraums mit versteckten Gefahren">
-        <!-- Wand + Boden -->
-        <rect x="0" y="0" width="800" height="320" fill="#EEF3F7"/>
-        <rect x="0" y="320" width="800" height="110" fill="#D0DCE6"/>
-        <line x1="0" y1="320" x2="800" y2="320" stroke="#6A8599" stroke-width="2"/>
+      <svg class="szene" viewBox="0 0 900 540" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Zeichnung eines Technikraums mit versteckten Gefahren">
+        <defs>
+          <pattern id="holz" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#E0895A"/><line x1="0" y1="5" x2="10" y2="5" stroke="#C86A3B" stroke-width="1.2"/></pattern>
+          <pattern id="fliesen" width="45" height="45" patternUnits="userSpaceOnUse"><rect width="45" height="45" fill="#DCE6EE"/><path d="M45 0 V45 H0" fill="none" stroke="#C3D1DC" stroke-width="2"/></pattern>
+          <pattern id="loch" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#FBF0EB"/><circle cx="8" cy="8" r="1.8" fill="#E5B79C"/></pattern>
+        </defs>
 
-        <!-- Fenster (ok) -->
-        <g class="ok" data-titel="Fenster" data-text="Alles gut. Frische Luft ist im Technikraum wichtig.">
-          <rect x="40" y="40" width="130" height="90" fill="#FFFFFF" stroke="#6A8599" stroke-width="3"/>
-          <line x1="105" y1="40" x2="105" y2="130" stroke="#6A8599" stroke-width="3"/>
-          <line x1="40" y1="85" x2="170" y2="85" stroke="#6A8599" stroke-width="3"/>
-          <rect class="hit" x="40" y="40" width="130" height="90"/>
+        <!-- Raum -->
+        <rect id="hintergrund" x="0" y="0" width="900" height="366" fill="#F2F7FA"/>
+        <rect x="0" y="366" width="900" height="174" fill="url(#fliesen)"/>
+        <rect x="0" y="354" width="900" height="14" fill="#6A8599"/>
+        <rect x="0" y="0" width="900" height="16" fill="#C9D8E2"/>
+        <rect x="360" y="16" width="180" height="12" rx="4" fill="#FFFFFF" stroke="#6A8599" stroke-width="2"/>
+        <line x1="450" y1="0" x2="450" y2="16" stroke="#6A8599" stroke-width="3"/>
+
+        <!-- Fenster -->
+        <g class="ok" data-titel="Fenster" data-text="Frische Luft ist im Technikraum wichtig – besonders beim Löten oder Kleben.">
+          <rect x="30" y="44" width="150" height="112" fill="#FFFFFF" stroke="#3E5668" stroke-width="5"/>
+          <rect x="38" y="52" width="134" height="96" fill="#DBEAF5"/>
+          <path d="M38 148 L86 52 M86 148 L134 52" stroke="#FFFFFF" stroke-width="9" opacity=".7"/>
+          <line x1="105" y1="44" x2="105" y2="156" stroke="#3E5668" stroke-width="5"/>
+          <line x1="30" y1="100" x2="180" y2="100" stroke="#3E5668" stroke-width="5"/>
+          <rect x="22" y="156" width="166" height="10" rx="2" fill="#6A8599"/>
+          <rect class="hit" x="22" y="38" width="166" height="132"/>
         </g>
 
-        <!-- Erste-Hilfe-Kasten (ok) -->
-        <g class="ok" data-titel="Erste-Hilfe-Kasten" data-text="Sehr gut, dass du ihn gefunden hast! Merke dir, wo er hängt.">
-          <rect x="620" y="50" width="70" height="60" rx="6" fill="#FFFFFF" stroke="#C0392B" stroke-width="3"/>
-          <rect x="647" y="65" width="16" height="30" fill="#C0392B"/>
-          <rect x="640" y="72" width="30" height="16" fill="#C0392B"/>
-          <rect class="hit" x="620" y="50" width="70" height="60"/>
+        <!-- Werkzeugwand -->
+        <g class="ok" data-titel="Werkzeugwand" data-text="Jedes Werkzeug hat hier seinen festen Platz. So sieht man sofort, ob etwas fehlt.">
+          <rect x="222" y="44" width="228" height="132" rx="5" fill="url(#loch)" stroke="#9E4E22" stroke-width="4"/>
+          <rect x="246" y="68" width="10" height="80" rx="4" fill="#9E4E22"/><rect x="234" y="56" width="34" height="18" rx="4" fill="#3E5668"/>
+          <path d="M302 62 l7 34 l-7 48 M314 62 l-7 34 l7 48" stroke="#3E5668" stroke-width="8" fill="none" stroke-linecap="round"/>
+          <rect x="352" y="58" width="14" height="44" rx="5" fill="#C0392B"/><rect x="357" y="102" width="5" height="48" fill="#8FA1B0"/>
+          <rect x="400" y="58" width="14" height="30" rx="5" fill="#9E4E22"/>
+          <path d="M407 88 v62 l9 -7 l-9 -6 l9 -7 l-9 -6 l9 -7 l-9 -6 l9 -7 l-9 -6 l9 -7" fill="#C4D0DA" stroke="#6A8599" stroke-width="1.6"/>
+          <circle cx="434" cy="76" r="11" fill="none" stroke="#D97A4A" stroke-width="2.5" stroke-dasharray="4 4"/>
+          <rect class="hit" x="216" y="38" width="240" height="144"/>
         </g>
 
-        <!-- Besen an der Wand (ok) -->
-        <g class="ok" data-titel="Besen" data-text="Ordentlich! Nach dem Arbeiten wird immer aufgeräumt und gefegt.">
-          <line x1="740" y1="150" x2="740" y2="315" stroke="#9E4E22" stroke-width="6"/>
-          <rect x="722" y="300" width="36" height="18" rx="3" fill="#6A8599"/>
-          <rect class="hit" x="712" y="145" width="56" height="180"/>
+        <!-- Erste-Hilfe-Kasten -->
+        <g class="ok" data-titel="Erste-Hilfe-Kasten" data-text="Sehr gut, dass du ihn gefunden hast! Merke dir, wo er hängt. Trotzdem gilt: Verletzungen immer der Lehrkraft melden.">
+          <rect x="592" y="44" width="88" height="70" rx="7" fill="#FFFFFF" stroke="#C0392B" stroke-width="5"/>
+          <rect x="628" y="60" width="18" height="38" fill="#C0392B"/>
+          <rect x="618" y="70" width="38" height="18" fill="#C0392B"/>
+          <rect x="626" y="114" width="22" height="7" rx="2" fill="#8FA1B0"/>
+          <rect class="hit" x="586" y="38" width="100" height="88"/>
+        </g>
+
+        <!-- Not-Aus -->
+        <g class="ok" data-titel="Not-Aus-Schalter" data-text="Der rote Knopf schaltet alle Maschinen im Raum sofort aus. Nur im Notfall drücken!">
+          <rect x="726" y="46" width="66" height="76" rx="7" fill="#FFF3CC" stroke="#C17B00" stroke-width="4"/>
+          <circle cx="759" cy="80" r="19" fill="#C0392B" stroke="#7A1B14" stroke-width="4"/>
+          <text x="759" y="112" font-size="11" font-family="Arial" font-weight="700" text-anchor="middle" fill="#5C4400">NOT-AUS</text>
+          <rect class="hit" x="720" y="40" width="78" height="88"/>
         </g>
 
         <!-- Werkbank -->
-        <rect x="60" y="230" width="300" height="16" fill="#D97A4A"/>
-        <rect x="72" y="246" width="14" height="74" fill="#9E4E22"/>
-        <rect x="334" y="246" width="14" height="74" fill="#9E4E22"/>
+        <ellipse cx="215" cy="360" rx="180" ry="9" fill="#000" opacity=".07"/>
+        <rect x="40" y="256" width="350" height="20" rx="3" fill="url(#holz)" stroke="#9E4E22" stroke-width="2.5"/>
+        <rect x="52" y="276" width="16" height="82" fill="#7D3C18"/>
+        <rect x="362" y="276" width="16" height="82" fill="#7D3C18"/>
 
-        <!-- GEFAHR 1: Hammer an der Tischkante -->
-        <g class="hazard" data-id="h1" data-titel="Werkzeug liegt an der Tischkante"
-           data-text="Der Hammer kann herunterfallen und dir auf den Fuß treffen. Werkzeug gehört in die Mitte des Tisches oder zurück an seinen Platz.">
-          <rect x="330" y="214" width="44" height="8" rx="2" fill="#5A6A78"/>
-          <rect x="366" y="204" width="16" height="26" rx="3" fill="#2C3D4C"/>
-          <g class="marker" id="m-h1"><circle cx="356" cy="200" r="16" fill="none" stroke="#4D8B3F" stroke-width="4"/><path d="M348 200 l6 7 l12 -14" stroke="#4D8B3F" stroke-width="4" fill="none" stroke-linecap="round"/></g>
-          <rect class="hit" x="318" y="192" width="76" height="48"/>
+        <!-- Schraubstock -->
+        <g class="ok" data-titel="Schraubstock" data-text="Der Schraubstock hält dein Werkstück fest. Dann hast du beide Hände frei und sägst sicher.">
+          <rect x="58" y="224" width="54" height="32" rx="4" fill="#3E5668"/>
+          <rect x="74" y="234" width="22" height="12" fill="#EEF3F7"/>
+          <line x1="34" y1="240" x2="60" y2="240" stroke="#2C3D4C" stroke-width="6"/>
+          <circle cx="34" cy="240" r="8" fill="#2C3D4C"/>
+          <rect class="hit" x="26" y="216" width="92" height="44"/>
         </g>
 
-        <!-- GEFAHR 2: Getränk und Essen auf der Werkbank -->
+        <!-- Schrank -->
+        <rect x="78" y="282" width="272" height="76" fill="#C4D0DA" stroke="#6A8599" stroke-width="2.5"/>
+        <rect x="86" y="288" width="256" height="20" rx="2" fill="#F2F7FA" stroke="#6A8599" stroke-width="2"/>
+        <rect x="196" y="295" width="36" height="6" rx="3" fill="#3E5668"/>
+        <rect x="86" y="330" width="256" height="22" rx="2" fill="#F2F7FA" stroke="#6A8599" stroke-width="2"/>
+        <rect x="196" y="338" width="36" height="6" rx="3" fill="#3E5668"/>
+
+        <!-- GEFAHR 6: offene Schublade -->
+        <g class="hazard" data-id="h6" data-titel="Schublade steht offen"
+           data-text="Eine offene Schublade in Kniehöhe sieht man leicht nicht. Man stößt sich oder stolpert darüber. Schubladen und Schranktüren immer sofort schließen.">
+          <rect x="86" y="310" width="264" height="26" fill="#7A8D9B" stroke="#3E5668" stroke-width="2"/>
+          <path d="M350 300 L438 292 L438 318 L350 310 Z" fill="#B9C6D1" stroke="#3E5668" stroke-width="2.5"/>
+          <path d="M350 310 L438 318 L438 348 L350 336 Z" fill="#E8EEF3" stroke="#3E5668" stroke-width="2.5"/>
+          <rect x="368" y="304" width="30" height="9" rx="3" fill="#9E4E22" transform="rotate(-5 383 308)"/>
+          <rect x="402" y="302" width="22" height="8" rx="3" fill="#C0392B" transform="rotate(-5 413 306)"/>
+          <rect x="406" y="328" width="26" height="8" rx="4" fill="#3E5668"/>
+          <circle class="hint" cx="392" cy="320" r="30" fill="none" stroke="#C17B00" stroke-width="5"/>
+          <g class="marker" id="m-h6"><circle cx="440" cy="286" r="15" fill="#FFFFFF" stroke="#4D8B3F" stroke-width="4"/><path d="M433 286 l5 6 l10 -12" stroke="#4D8B3F" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+          <rect class="hit" x="344" y="296" width="94" height="48"/>
+        </g>
+
+        <!-- GEFAHR 2: Essen und Trinken -->
         <g class="hazard" data-id="h2" data-titel="Essen und Trinken auf der Werkbank"
-           data-text="Auf der Werkbank liegen Späne, Staub und Öl. Essen und Trinken gehören deshalb nicht in den Technikraum. Umgekippte Flaschen machen den Boden außerdem rutschig.">
-          <rect x="120" y="196" width="22" height="34" rx="4" fill="#7DBB6F"/>
-          <rect x="126" y="186" width="10" height="12" fill="#4D8B3F"/>
-          <rect x="152" y="208" width="34" height="22" rx="3" fill="#EBA882" stroke="#9E4E22" stroke-width="2"/>
-          <g class="marker" id="m-h2"><circle cx="152" cy="180" r="16" fill="none" stroke="#4D8B3F" stroke-width="4"/><path d="M144 180 l6 7 l12 -14" stroke="#4D8B3F" stroke-width="4" fill="none" stroke-linecap="round"/></g>
-          <rect class="hit" x="110" y="180" width="90" height="56"/>
+           data-text="Auf der Werkbank liegen Späne, Staub und Öl. Essen und Trinken gehören deshalb nicht in den Technikraum. Eine umgekippte Flasche macht außerdem den Boden rutschig.">
+          <rect x="132" y="198" width="30" height="58" rx="6" fill="#7DBB6F" stroke="#3D7032" stroke-width="2.5"/>
+          <rect x="140" y="184" width="14" height="16" rx="3" fill="#3D7032"/>
+          <rect x="136" y="216" width="22" height="18" rx="2" fill="#FFFFFF" opacity=".85"/>
+          <rect x="180" y="220" width="52" height="36" rx="5" fill="#EBA882" stroke="#9E4E22" stroke-width="2.5"/>
+          <path d="M188 236 q10 -12 17 0 q10 -12 17 0" stroke="#9E4E22" stroke-width="2.5" fill="none"/>
+          <circle cx="196" cy="228" r="3" fill="#9E4E22"/><circle cx="216" cy="230" r="3" fill="#9E4E22"/>
+          <circle class="hint" cx="180" cy="220" r="44" fill="none" stroke="#C17B00" stroke-width="5"/>
+          <g class="marker" id="m-h2"><circle cx="244" cy="198" r="15" fill="#FFFFFF" stroke="#4D8B3F" stroke-width="4"/><path d="M237 198 l5 6 l10 -12" stroke="#4D8B3F" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+          <rect class="hit" x="124" y="178" width="114" height="80"/>
         </g>
 
-        <!-- Ständerbohrmaschine -->
-        <rect x="470" y="296" width="120" height="24" rx="4" fill="#3E5668"/>
-        <rect x="566" y="120" width="18" height="180" fill="#6A8599"/>
-        <rect x="500" y="120" width="86" height="40" rx="8" fill="#3E5668"/>
-        <line x1="530" y1="160" x2="530" y2="215" stroke="#2C3D4C" stroke-width="6"/>
-        <rect x="496" y="215" width="70" height="10" fill="#6A8599"/>
+        <!-- GEFAHR 1: Hammer an der Kante -->
+        <g class="hazard" data-id="h1" data-titel="Werkzeug liegt an der Tischkante"
+           data-text="Der Hammer ragt über die Kante. Er kann herunterfallen und dich am Fuß treffen. Werkzeug gehört in die Mitte des Tisches oder zurück an die Werkzeugwand.">
+          <g transform="rotate(-7 350 240)">
+            <rect x="290" y="238" width="72" height="11" rx="4" fill="#9E4E22" stroke="#7D3C18" stroke-width="1.5"/>
+            <rect x="356" y="222" width="26" height="38" rx="5" fill="#3E5668" stroke="#2C3D4C" stroke-width="2"/>
+            <rect x="376" y="228" width="12" height="26" rx="4" fill="#2C3D4C"/>
+          </g>
+          <circle class="hint" cx="344" cy="240" r="40" fill="none" stroke="#C17B00" stroke-width="5"/>
+          <g class="marker" id="m-h1"><circle cx="400" cy="212" r="15" fill="#FFFFFF" stroke="#4D8B3F" stroke-width="4"/><path d="M393 212 l5 6 l10 -12" stroke="#4D8B3F" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+          <rect class="hit" x="284" y="206" width="112" height="52"/>
+        </g>
 
-        <!-- GEFAHR 3: Person ohne Schutzbrille, offene lange Haare -->
+        <!-- Bohrmaschine -->
+        <g class="ok" data-titel="Ständerbohrmaschine" data-text="Die Bohrmaschine benutzt du erst nach einer Einweisung – und nur mit Erlaubnis der Lehrkraft.">
+          <ellipse cx="646" cy="360" rx="86" ry="9" fill="#000" opacity=".08"/>
+          <rect x="576" y="330" width="140" height="28" rx="6" fill="#2C3D4C"/>
+          <rect x="678" y="120" width="24" height="212" fill="#8FA1B0" stroke="#6A8599" stroke-width="2"/>
+          <rect x="598" y="112" width="108" height="52" rx="12" fill="#3E5668" stroke="#2C3D4C" stroke-width="2"/>
+          <rect x="608" y="122" width="34" height="14" rx="4" fill="#7DBB6F"/>
+          <path d="M706 138 l26 -14 l7 7" stroke="#2C3D4C" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <line x1="638" y1="164" x2="638" y2="216" stroke="#2C3D4C" stroke-width="10"/>
+          <rect x="626" y="216" width="24" height="18" rx="3" fill="#C4D0DA" stroke="#6A8599" stroke-width="2"/>
+          <line x1="638" y1="234" x2="638" y2="262" stroke="#8FA1B0" stroke-width="5"/>
+          <rect x="590" y="262" width="100" height="14" rx="3" fill="#6A8599" stroke="#3E5668" stroke-width="2"/>
+          <rect class="hit" x="592" y="106" width="150" height="64"/>
+          <rect class="hit" x="660" y="170" width="60" height="170"/>
+        </g>
+
+        <!-- GEFAHR 3: Person -->
         <g class="hazard" data-id="h3" data-titel="Keine Schutzbrille, lange Haare offen"
-           data-text="An der Bohrmaschine trägst du immer eine Schutzbrille. Lange Haare bindest du zusammen. Sonst können sich Haare in der Maschine verfangen.">
-          <circle cx="450" cy="170" r="24" fill="#F5DDD1" stroke="#9E4E22" stroke-width="2"/>
-          <path d="M426 168 q-12 40 -2 72 q10 -30 6 -60 z" fill="#5A6A78"/>
-          <path d="M474 168 q12 40 2 72 q-10 -30 -6 -60 z" fill="#5A6A78"/>
-          <path d="M426 162 q24 -26 48 0 q-24 -12 -48 0 z" fill="#5A6A78"/>
-          <rect x="428" y="194" width="44" height="72" rx="10" fill="#D97A4A"/>
-          <line x1="472" y1="212" x2="516" y2="216" stroke="#D97A4A" stroke-width="12" stroke-linecap="round"/>
-          <rect x="436" y="266" width="14" height="54" fill="#3E5668"/>
-          <rect x="452" y="266" width="14" height="54" fill="#3E5668"/>
-          <g class="marker" id="m-h3"><circle cx="404" cy="150" r="16" fill="none" stroke="#4D8B3F" stroke-width="4"/><path d="M396 150 l6 7 l12 -14" stroke="#4D8B3F" stroke-width="4" fill="none" stroke-linecap="round"/></g>
-          <rect class="hit" x="416" y="140" width="76" height="185"/>
+           data-text="An der Bohrmaschine trägst du immer eine Schutzbrille. Lange Haare bindest du zusammen, weite Ärmel krempelst du hoch. Sonst kann sich etwas in der Maschine verfangen.">
+          <ellipse cx="500" cy="360" rx="52" ry="8" fill="#000" opacity=".08"/>
+          <path d="M470 184 q-22 44 -9 106 q11 -38 7 -78 z" fill="#6B5340"/>
+          <path d="M526 184 q22 44 9 106 q-11 -38 -7 -78 z" fill="#6B5340"/>
+          <circle cx="498" cy="184" r="29" fill="#F7E2D2" stroke="#B07A55" stroke-width="2.5"/>
+          <path d="M470 178 q28 -34 56 0 q-28 -16 -56 0 z" fill="#6B5340"/>
+          <circle cx="487" cy="184" r="3" fill="#2C3D4C"/><circle cx="509" cy="184" r="3" fill="#2C3D4C"/>
+          <path d="M490 197 q8 7 17 0" stroke="#2C3D4C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <rect x="470" y="214" width="58" height="82" rx="14" fill="#D97A4A" stroke="#9E4E22" stroke-width="2.5"/>
+          <path d="M528 236 q34 -8 58 12" stroke="#D97A4A" stroke-width="16" fill="none" stroke-linecap="round"/>
+          <circle cx="592" cy="252" r="10" fill="#F7E2D2" stroke="#B07A55" stroke-width="2"/>
+          <rect x="476" y="296" width="20" height="58" rx="3" fill="#3E5668"/>
+          <rect x="502" y="296" width="20" height="58" rx="3" fill="#3E5668"/>
+          <rect x="470" y="346" width="30" height="12" rx="4" fill="#2C3D4C"/>
+          <rect x="498" y="346" width="30" height="12" rx="4" fill="#2C3D4C"/>
+          <circle class="hint" cx="498" cy="200" r="46" fill="none" stroke="#C17B00" stroke-width="5"/>
+          <g class="marker" id="m-h3"><circle cx="452" cy="152" r="15" fill="#FFFFFF" stroke="#4D8B3F" stroke-width="4"/><path d="M445 152 l5 6 l10 -12" stroke="#4D8B3F" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+          <rect class="hit" x="456" y="150" width="86" height="212"/>
         </g>
 
-        <!-- GEFAHR 4: Rucksack auf dem Boden -->
+        <!-- Feuerlöscher -->
+        <g class="ok" data-titel="Feuerlöscher" data-text="Bei einem Brand ruft die Lehrkraft, alle gehen ruhig raus. Den Feuerlöscher bedient die Lehrkraft.">
+          <rect x="800" y="230" width="34" height="92" rx="11" fill="#C0392B" stroke="#7A1B14" stroke-width="2.5"/>
+          <rect x="810" y="216" width="16" height="16" rx="3" fill="#2C3D4C"/>
+          <path d="M810 224 q-18 8 -14 30" stroke="#2C3D4C" stroke-width="5" fill="none"/>
+          <rect x="804" y="256" width="26" height="20" fill="#FFFFFF" opacity=".8"/>
+          <rect x="794" y="322" width="46" height="10" rx="3" fill="#8FA1B0"/>
+          <rect class="hit" x="788" y="210" width="58" height="128"/>
+        </g>
+
+        <!-- Besen -->
+        <g class="ok" data-titel="Besen und Kehrblech" data-text="Ordentlich! Nach dem Arbeiten wird der Platz immer gefegt.">
+          <line x1="866" y1="160" x2="866" y2="342" stroke="#9E4E22" stroke-width="7"/>
+          <path d="M846 342 h40 l8 24 h-56 z" fill="#6A8599" stroke="#3E5668" stroke-width="2"/>
+          <rect class="hit" x="838" y="154" width="60" height="216"/>
+        </g>
+
+        <!-- GEFAHR 4: Rucksack -->
         <g class="hazard" data-id="h4" data-titel="Rucksack liegt im Weg"
-           data-text="Über einen Rucksack im Gang stolpert man leicht – besonders mit Werkzeug in der Hand. Taschen gehören an den Rand oder in das Regal.">
-          <rect x="230" y="346" width="72" height="56" rx="12" fill="#9E4E22"/>
-          <rect x="248" y="336" width="36" height="16" rx="8" fill="#7D3C18"/>
-          <rect x="244" y="366" width="44" height="18" rx="4" fill="#EBA882"/>
-          <g class="marker" id="m-h4"><circle cx="216" cy="336" r="16" fill="none" stroke="#4D8B3F" stroke-width="4"/><path d="M208 336 l6 7 l12 -14" stroke="#4D8B3F" stroke-width="4" fill="none" stroke-linecap="round"/></g>
-          <rect class="hit" x="222" y="330" width="92" height="80"/>
+           data-text="Über einen Rucksack im Gang stolpert man leicht – besonders mit Werkzeug in der Hand. Taschen gehören an den Rand des Raums oder in das Regal.">
+          <ellipse cx="290" cy="472" rx="60" ry="10" fill="#000" opacity=".1"/>
+          <rect x="242" y="398" width="96" height="74" rx="18" fill="#9E4E22" stroke="#7D3C18" stroke-width="2.5"/>
+          <rect x="266" y="384" width="50" height="20" rx="10" fill="#7D3C18"/>
+          <rect x="258" y="428" width="64" height="30" rx="7" fill="#EBA882" stroke="#9E4E22" stroke-width="2"/>
+          <rect x="280" y="438" width="20" height="5" rx="2" fill="#9E4E22"/>
+          <path d="M250 416 q-20 14 -8 46" stroke="#7D3C18" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <circle class="hint" cx="290" cy="428" r="56" fill="none" stroke="#C17B00" stroke-width="5"/>
+          <g class="marker" id="m-h4"><circle cx="228" cy="384" r="15" fill="#FFFFFF" stroke="#4D8B3F" stroke-width="4"/><path d="M221 384 l5 6 l10 -12" stroke="#4D8B3F" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+          <rect class="hit" x="232" y="378" width="116" height="100"/>
         </g>
 
-        <!-- GEFAHR 5: Kabel quer über den Boden -->
+        <!-- GEFAHR 5: Kabel -->
         <g class="hazard" data-id="h5" data-titel="Kabel liegt quer über den Boden"
-           data-text="Ein Kabel im Gang ist eine Stolperfalle. Kabel werden immer am Rand verlegt oder abgedeckt. Ein kaputtes Kabel meldest du sofort.">
-          <path d="M600 400 q-90 -26 -180 6 q-90 30 -170 2" stroke="#2C3D4C" stroke-width="7" fill="none" stroke-linecap="round"/>
-          <g class="marker" id="m-h5"><circle cx="640" cy="386" r="16" fill="none" stroke="#4D8B3F" stroke-width="4"/><path d="M632 386 l6 7 l12 -14" stroke="#4D8B3F" stroke-width="4" fill="none" stroke-linecap="round"/></g>
-          <rect class="hit" x="240" y="380" width="380" height="42"/>
+           data-text="Ein Kabel im Gang ist eine Stolperfalle. Kabel werden am Rand verlegt oder mit einer Kabelbrücke abgedeckt. Ein beschädigtes Kabel meldest du sofort.">
+          <rect x="742" y="472" width="34" height="24" rx="4" fill="#FFFFFF" stroke="#3E5668" stroke-width="2.5"/>
+          <circle cx="753" cy="484" r="2.6" fill="#3E5668"/><circle cx="765" cy="484" r="2.6" fill="#3E5668"/>
+          <path d="M742 484 q-80 -34 -160 6 q-70 34 -140 8 q-56 -22 -80 22" stroke="#2C3D4C" stroke-width="9" fill="none" stroke-linecap="round"/>
+          <path d="M742 484 q-80 -34 -160 6 q-70 34 -140 8 q-56 -22 -80 22" stroke="#8FA1B0" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="7 12"/>
+          <circle class="hint" cx="500" cy="488" r="48" fill="none" stroke="#C17B00" stroke-width="5"/>
+          <g class="marker" id="m-h5"><circle cx="612" cy="452" r="15" fill="#FFFFFF" stroke="#4D8B3F" stroke-width="4"/><path d="M605 452 l5 6 l10 -12" stroke="#4D8B3F" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+          <rect class="hit" x="380" y="456" width="380" height="54"/>
         </g>
       </svg>
     </div>
 
-    <div id="gef-fb" class="feedback-tipp" style="margin-top:12px;">Tippe auf etwas im Bild, das gefährlich sein könnte.</div>
+    <div class="szene-tools">
+      <div class="muted">Gefunden: <b><span id="gef-zahl">0</span> von 6</b></div>
+      <button class="btn-secondary" id="btn-tipp" style="min-height:40px;padding:6px 16px;">💡 Tipp anzeigen</button>
+    </div>
+    <div id="gef-fb" class="feedback-tipp" style="margin-top:10px;" aria-live="polite">Tippe auf etwas im Bild, das gefährlich sein könnte.</div>
     <ul class="fundliste" id="gef-liste"></ul>
 
     <div class="nav">
@@ -356,7 +485,7 @@ svg.szene{width:100%;height:auto;display:block;touch-action:manipulation;}
     <div class="card">
       <span class="badge badge--pale-slate">Schritt 5</span>
       <h2 style="margin-top:8px;">Deine eigene Regel</h2>
-      <p>Jetzt bist du dran. Schreibe eine Regel auf, die dir für unseren Technikraum wichtig ist.</p>
+      <p>Jetzt bist du dran. Schreibe eine Regel auf, die dir für unseren Technikraum wichtig ist. Sie kommt auf deine Urkunde.</p>
     </div>
     <div class="task-card">
       <label for="regel">Meine Regel für den Technikraum:</label>
@@ -369,45 +498,81 @@ svg.szene{width:100%;height:auto;display:block;touch-action:manipulation;}
     </div>
     <div class="nav">
       <button class="btn-secondary" data-goto="4">← Zurück</button>
-      <button class="btn-success" id="btn-ausweis">Meinen Ausweis erstellen 🎉</button>
+      <button class="btn-success" id="btn-urkunde">Meine Urkunde erstellen 🎉</button>
     </div>
   </section>
 
-  <!-- 6 AUSWEIS -->
+  <!-- 6 URKUNDE -->
   <section class="step" id="step6">
     <div class="card no-print">
-      <h2>Geschafft! 🎉</h2>
+      <span class="badge badge--success">Geschafft</span>
+      <h2 style="margin-top:8px;" id="ergebnis-titel">Herzlichen Glückwunsch!</h2>
       <p id="ergebnis-text">Du hast deinen Werkstatt-Führerschein gemacht.</p>
-      <p class="muted">Zeige deinen Ausweis deiner Lehrkraft. Du kannst ihn ausdrucken oder einen Screenshot machen.</p>
     </div>
 
-    <div class="ausweis" id="ausweis">
-      <div class="ausweis-kopf">
-        <div>
-          <div class="ausweis-titel">WERKSTATT-<br>FÜHRERSCHEIN</div>
-          <div class="muted" style="letter-spacing:.06em;">HBG Dortmund · WP Technik · Klasse 7</div>
-        </div>
-        <div style="font-size:44px;line-height:1;" aria-hidden="true">🔧</div>
-      </div>
-      <div class="ausweis-zeile"><span>Name</span><span id="aw-name">—</span></div>
-      <div class="ausweis-zeile"><span>Datum</span><span id="aw-datum">—</span></div>
-      <div class="ausweis-zeile"><span>Punkte</span><span id="aw-punkte">—</span></div>
-      <div class="ausweis-zeile"><span>Meine Regel</span><span id="aw-regel">—</span></div>
-      <div class="ausweis-zeile" style="border:none;"><span>Ich verspreche</span><span>Ich arbeite im Technikraum vorsichtig, ordentlich und rücksichtsvoll.</span></div>
-      <div class="unterschrift">
-        <div>Unterschrift Schüler:in</div>
-        <div>Unterschrift Lehrkraft</div>
-      </div>
+    <div class="urkunde" id="urkunde">
+      <div class="titel">URKUNDE</div>
+      <div class="sub">Werkstatt-Führerschein · WP Technik</div>
+      <div class="linie"></div>
+      <p>Hiermit wird bestätigt, dass</p>
+      <div class="name" id="uk-name">—</div>
+      <p>den Werkstatt-Führerschein der Heinrich-Böll-Gesamtschule Dortmund erfolgreich abgeschlossen hat.</p>
+      <p style="margin-top:10px;"><b>Ergebnis:</b> <span id="uk-punkte">—</span></p>
+      <p style="margin-top:6px;"><b>Meine Regel:</b> <span id="uk-regel">—</span></p>
+      <div class="fuss"><span id="uk-datum">Dortmund, —</span><span>HBG Dortmund · WP Technik 7</span></div>
     </div>
 
     <div class="nav no-print" style="margin-top:16px;">
       <button class="btn-secondary" data-goto="5">← Zurück</button>
-      <button class="btn-primary" onclick="window.print()">Ausweis drucken 🖨</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-primary" id="btn-pdf">Urkunde als PDF speichern</button>
+        <button class="btn-success" data-goto="7">Zum Mini-Spiel 🎮</button>
+      </div>
+    </div>
+    <p class="muted no-print" style="margin-top:8px;">Auf dem iPad öffnet sich die PDF-Datei – tippe oben auf „Teilen", um sie zu sichern oder zu drucken.</p>
+  </section>
+
+  <!-- 7 SPIEL -->
+  <section class="step" id="step7">
+    <div class="card">
+      <span class="badge badge--pale-slate">Bonus</span>
+      <h2 style="margin-top:8px;">Werkstatt-Runde 🎮</h2>
+      <p>Sammle <b>8 Werkzeuge</b> ein und bringe sie zur Werkzeugwand. Aber Vorsicht: Weiche Werkbank, Bohrmaschine, Rucksack und Kabel aus! Mit jedem Werkzeug wird deine Schlange länger.</p>
+      <p class="muted">Steuerung: Wischen auf dem Spielfeld, die Pfeiltasten unten oder die Tastatur. Das Tempo kannst du jederzeit umstellen – auch mitten im Spiel.</p>
     </div>
 
-    <div class="card no-print" style="margin-top:16px;">
+    <div class="spiel-wrap">
+      <div class="spiel-hud">
+        <span>🔧 Werkzeuge: <span id="sp-score">0</span> / 8</span>
+        <span class="muted">Bestes Ergebnis: <span id="sp-best">0</span></span>
+      </div>
+      <div class="tempo" role="group" aria-label="Geschwindigkeit">
+        <span class="tempo-label">Tempo:</span>
+        <button data-speed="420">🐌 Ganz langsam</button>
+        <button data-speed="320">🚶 Langsam</button>
+        <button data-speed="240">🏃 Mittel</button>
+        <button data-speed="170">⚡ Schnell</button>
+      </div>
+      <canvas id="spiel" width="640" height="400" aria-label="Spielfeld Werkstatt-Runde"></canvas>
+      <div id="sp-msg" class="feedback-tipp" style="margin-top:10px;" aria-live="polite">Tippe auf „Start", dann losgehen!</div>
+      <div style="display:flex;justify-content:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+        <button class="btn-primary" id="sp-start">▶ Start</button>
+      </div>
+      <div class="dpad" aria-label="Steuerung">
+        <button class="up" data-dir="up" aria-label="hoch">▲</button>
+        <button class="left" data-dir="left" aria-label="links">◀</button>
+        <button class="down" data-dir="down" aria-label="runter">▼</button>
+        <button class="right" data-dir="right" aria-label="rechts">▶</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
       <h3>Fertig und noch Zeit übrig?</h3>
-      <p>Zeichne auf ein Blatt Papier deinen <b>perfekten Technikraum</b>. Wo stehen die Tische? Wo liegt das Werkzeug? Wo ist Platz zum Laufen? Wir schauen uns die Ideen in der nächsten Stunde an.</p>
+      <p>Zeichne auf ein Blatt Papier deinen <b>perfekten Technikraum</b>. Wo stehen die Tische? Wo liegt das Werkzeug? Wo ist Platz zum Laufen?</p>
+    </div>
+    <div class="nav">
+      <button class="btn-secondary" data-goto="6">← Zur Urkunde</button>
+      <span></span>
     </div>
   </section>
 
@@ -415,46 +580,44 @@ svg.szene{width:100%;height:auto;display:block;touch-action:manipulation;}
 </main>
 
 <!-- LEHRER-OVERLAY -->
-<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-label="Hinweise für die Lehrkraft">
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-label="Hinweise für die Vertretungslehrkraft">
   <div class="overlay-inner">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
-      <h2>Hinweise für die Lehrkraft</h2>
+      <h2>Hinweise für dich als Vertretung</h2>
       <button class="btn-secondary" id="btn-close" style="padding:6px 14px;min-height:38px;">Schließen</button>
     </div>
-    <div class="feedback-warnung" style="margin:14px 0;">Sie brauchen <b>kein Technik-Fachwissen</b>. Die App erklärt alles selbst. Es werden keine Maschinen benutzt und der Technikraum wird nicht betreten.</div>
+    <div class="feedback-warnung" style="margin:14px 0;">Du brauchst <b>kein Technik-Fachwissen</b>. Die App erklärt alles selbst. Es werden keine Maschinen benutzt und der Technikraum wird nicht betreten.</div>
 
     <h3>Worum geht es?</h3>
-    <p>Erste Stunde im neuen WP-Kurs Technik. Die Klasse denkt über das Arbeiten im Technikraum und über Sicherheitsregeln nach. Die Fachlehrkraft knüpft in der nächsten Stunde daran an.</p>
+    <p>Es ist die erste Stunde im neuen WP-Kurs Technik. Die Klasse denkt über das Arbeiten im Technikraum und über Sicherheitsregeln nach. Die Fachlehrkraft knüpft in der nächsten Stunde daran an.</p>
 
-    <h3>Ablauf (45 Minuten)</h3>
+    <h3>Dein Ablauf (45 Minuten)</h3>
     <ol>
-      <li><b>0–5 Min.</b> Begrüßung. Ansage: „Ihr macht heute euren Werkstatt-Führerschein am iPad. Am Ende bekommt ihr einen Ausweis."</li>
-      <li><b>5–10 Min.</b> Link/QR-Code austeilen, alle öffnen die Seite und geben ihren Namen ein.</li>
-      <li><b>10–35 Min.</b> Einzelarbeit am iPad. Sie gehen herum und helfen nur bei technischen Problemen.</li>
-      <li><b>35–43 Min.</b> Kurze Runde: 4–5 Schüler:innen lesen ihre eigene Regel vor (Schritt 5 in der App).</li>
-      <li><b>43–45 Min.</b> Ansage: „Bringt euren Ausweis oder das Ergebnis mit in die nächste Technikstunde."</li>
+      <li><b>0–5 Min.</b> Begrüße die Klasse und sag: „Ihr macht heute euren Werkstatt-Führerschein am iPad. Am Ende bekommt ihr eine Urkunde."</li>
+      <li><b>5–10 Min.</b> Teile den Link bzw. QR-Code aus. Alle öffnen die Seite und geben ihren Namen ein.</li>
+      <li><b>10–35 Min.</b> Einzelarbeit am iPad. Geh herum und hilf nur bei technischen Problemen. Wer fertig ist, darf das Mini-Spiel spielen.</li>
+      <li><b>35–43 Min.</b> Mach eine kurze Runde: Lass 4–5 Schüler:innen ihre eigene Regel vorlesen (Schritt 5 in der App).</li>
+      <li><b>43–45 Min.</b> Sag zum Schluss: „Sichert eure Urkunde und bringt sie mit in die nächste Technikstunde."</li>
     </ol>
 
-    <h3>Wenn jemand früher fertig ist</h3>
-    <p>Zusatzauftrag steht am Ende der App: den perfekten Technikraum auf Papier zeichnen.</p>
-
-    <h3>Häufige Fragen</h3>
-    <p><b>„Ich habe nicht alle Gefahren gefunden."</b> → Das ist in Ordnung, sie können weiterklicken.<br>
-    <b>„Meine Seite ist weg."</b> → Seite neu laden, die Antworten sind gespeichert. Der Name muss neu eingegeben werden.<br>
+    <h3>Was du hören wirst</h3>
+    <p><b>„Ich habe nicht alle Gefahren gefunden."</b> → Es gibt einen Tipp-Button. Weiterklicken ist auch in Ordnung.<br>
+    <b>„Meine Seite ist weg."</b> → Seite neu laden, die Antworten sind gespeichert. Nur der Name muss neu eingegeben werden.<br>
+    <b>„Die PDF öffnet sich nicht."</b> → Ein Screenshot der Urkunde reicht völlig.<br>
     <b>„Kann ich zurück?"</b> → Ja, mit dem Zurück-Button unten links.</p>
 
     <h3>Nach der Stunde</h3>
-    <p>Nichts einsammeln, nichts korrigieren. Notieren Sie sich gern, welche Regeln vorgelesen wurden, und geben Sie die Notiz an die Fachlehrkraft weiter.</p>
-  </div>
+    <p>Du musst nichts einsammeln und nichts korrigieren. Notier dir gern, welche Regeln vorgelesen wurden, und gib die Notiz an die Fachlehrkraft weiter.</p>
+    </div>
 </div>
 
 <script>
 /* ---------- Speichern (ohne Namen) ---------- */
-var KEY='hbg_technik7_wfs';
+var KEY='hbg_technik7_wfs_v2';
 function save(d){try{localStorage.setItem(KEY,JSON.stringify(d));}catch(e){}}
 function load(){try{var r=localStorage.getItem(KEY);return r?JSON.parse(r):null;}catch(e){return null;}}
-
-var state={schritt:0,gefunden:[],sort:{},sit:{},texte:{}};
+var MAXP=18;
+var state={schritt:0,gefunden:[],sort:{},sit:{},texte:{},best:0,tempo:320};
 var gespeichert=load();
 if(gespeichert){state=Object.assign(state,gespeichert);}
 
@@ -469,27 +632,18 @@ var SORT=[
  {t:'Lange Haare zusammenbinden und Ärmel hochkrempeln.',ok:true,e:'Richtig! Nichts darf in eine Maschine gezogen werden.'},
  {t:'Ein kaputtes Kabel einfach weiter benutzen.',ok:false,e:'Verboten. Kaputte Geräte sofort melden – es besteht Stromschlaggefahr.'}
 ];
-
 var SIT=[
  {f:'Deine Nachbarin schneidet sich beim Arbeiten in den Finger. Es blutet.',
-  a:[{t:'Ich sage sofort der Lehrkraft Bescheid.',ok:true},
-     {t:'Ich hole schnell selbst ein Pflaster und sage nichts.',ok:false},
-     {t:'Ich arbeite weiter, es ist ja nur klein.',ok:false}],
+  a:[{t:'Ich sage sofort der Lehrkraft Bescheid.',ok:true},{t:'Ich hole schnell selbst ein Pflaster und sage nichts.',ok:false},{t:'Ich arbeite weiter, es ist ja nur klein.',ok:false}],
   e:'Richtig. Jede Verletzung wird gemeldet – auch eine kleine. Nur die Lehrkraft entscheidet, was zu tun ist.'},
  {f:'Du willst bohren, findest aber keine Schutzbrille mehr.',
-  a:[{t:'Ich bohre kurz ohne Brille, das geht schnell.',ok:false},
-     {t:'Ich frage die Lehrkraft nach einer Brille und warte.',ok:true},
-     {t:'Ich leihe mir die Brille von jemandem, der gerade bohrt.',ok:false}],
+  a:[{t:'Ich bohre kurz ohne Brille, das geht schnell.',ok:false},{t:'Ich frage die Lehrkraft nach einer Brille und warte.',ok:true},{t:'Ich leihe mir die Brille von jemandem, der gerade bohrt.',ok:false}],
   e:'Richtig. Ohne Schutzbrille wird nicht gebohrt. Fragen und warten ist die sichere Lösung.'},
  {f:'Auf dem Boden liegt Werkzeug, weil eine Gruppe schnell zur Pause wollte.',
-  a:[{t:'Ich gehe einfach drum herum.',ok:false},
-     {t:'Ich hebe es auf und lege es zurück.',ok:true},
-     {t:'Ich schiebe es mit dem Fuß unter den Tisch.',ok:false}],
+  a:[{t:'Ich gehe einfach drum herum.',ok:false},{t:'Ich hebe es auf und lege es zurück.',ok:true},{t:'Ich schiebe es mit dem Fuß unter den Tisch.',ok:false}],
   e:'Richtig. Werkzeug auf dem Boden ist eine Stolperfalle. Aufheben hilft allen.'},
  {f:'Die Stunde ist fast vorbei, dein Platz sieht noch wild aus.',
-  a:[{t:'Ich packe ein und gehe, die nächste Gruppe räumt auf.',ok:false},
-     {t:'Ich räume auf, fege und melde mich dann ab.',ok:true},
-     {t:'Ich schiebe alles in die Ecke des Tisches.',ok:false}],
+  a:[{t:'Ich packe ein und gehe, die nächste Gruppe räumt auf.',ok:false},{t:'Ich räume auf, fege und melde mich dann ab.',ok:true},{t:'Ich schiebe alles in die Ecke des Tisches.',ok:false}],
   e:'Richtig. Aufräumen gehört zur Arbeit dazu. Ein sauberer Platz ist ein sicherer Platz.'}
 ];
 
@@ -500,23 +654,22 @@ function zeige(n){
   state.schritt=n; save(state);
   document.getElementById('fortschritt-box').hidden=(n===0);
   document.getElementById('p-aktuell').textContent=n;
-  document.getElementById('p-fill').style.width=Math.round(n/6*100)+'%';
+  document.getElementById('p-fill').style.width=Math.round(n/7*100)+'%';
   punkteAnzeigen();
+  if(n!==7) Spiel.stop();
+  if(n===7) Spiel.init();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 document.querySelectorAll('[data-goto]').forEach(function(b){
   b.addEventListener('click',function(){zeige(parseInt(this.dataset.goto,10));});
 });
-
 function punkte(){
   var p=state.gefunden.length;
   for(var k in state.sort){if(state.sort[k])p++;}
   for(var j in state.sit){if(state.sit[j])p++;}
   return p;
 }
-function punkteAnzeigen(){
-  document.getElementById('p-punkte').textContent=punkte()+' von 17 Punkten';
-}
+function punkteAnzeigen(){document.getElementById('p-punkte').textContent=punkte()+' von '+MAXP+' Punkten';}
 
 /* ---------- Schritt 2: Gefahren ---------- */
 function gefahrEintrag(titel,text){
@@ -526,34 +679,34 @@ function gefahrEintrag(titel,text){
   li.querySelector('span').textContent=text;
   document.getElementById('gef-liste').appendChild(li);
 }
+function fb(typ,text){var f=document.getElementById('gef-fb');f.className='feedback-'+typ;f.textContent=text;}
 document.querySelectorAll('svg.szene .hazard .hit').forEach(function(hit){
   hit.addEventListener('click',function(){
     var g=this.closest('.hazard'), id=g.dataset.id;
-    var fb=document.getElementById('gef-fb');
-    if(state.gefunden.indexOf(id)>-1){
-      fb.className='feedback-tipp'; fb.textContent='Diese Gefahr hast du schon gefunden. Suche weiter!';
-      return;
-    }
+    if(state.gefunden.indexOf(id)>-1){fb('tipp','Diese Gefahr hast du schon gefunden. Suche weiter!');return;}
     state.gefunden.push(id); save(state);
+    g.classList.add('found');
     document.getElementById('m-'+id).classList.add('on');
     gefahrEintrag(g.dataset.titel,g.dataset.text);
     document.getElementById('gef-zahl').textContent=state.gefunden.length;
     punkteAnzeigen();
-    fb.className='feedback-richtig';
-    fb.textContent=state.gefunden.length===5
-      ? 'Super! Du hast alle 5 Gefahren gefunden.'
-      : 'Gut gesehen! Noch '+(5-state.gefunden.length)+' Gefahren fehlen.';
+    fb('richtig',state.gefunden.length===6?'Super! Du hast alle 6 Gefahren gefunden.':'Gut gesehen! Noch '+(6-state.gefunden.length)+' Gefahren fehlen.');
   });
 });
 document.querySelectorAll('svg.szene .ok .hit').forEach(function(hit){
-  hit.addEventListener('click',function(){
-    var g=this.closest('.ok'), fb=document.getElementById('gef-fb');
-    fb.className='feedback-tipp';
-    fb.textContent=g.dataset.titel+': '+g.dataset.text;
+  hit.addEventListener('click',function(){var g=this.closest('.ok');fb('tipp',g.dataset.titel+': '+g.dataset.text);});
+});
+document.getElementById('hintergrund').addEventListener('click',function(){fb('tipp','Hier ist alles in Ordnung. Schau genauer hin: Was liegt herum? Wer arbeitet wie?');});
+document.getElementById('btn-tipp').addEventListener('click',function(){
+  var offen=0;
+  document.querySelectorAll('svg.szene .hazard').forEach(function(g){
+    if(state.gefunden.indexOf(g.dataset.id)>-1)return;
+    offen++; var h=g.querySelector('.hint'); h.classList.remove('on'); void h.offsetWidth; h.classList.add('on');
   });
+  fb('warnung',offen?'Die gelben Kreise zeigen dir, wo noch Gefahren sind.':'Du hast schon alle Gefahren gefunden!');
 });
 
-/* ---------- Schritt 3: Erlaubt / Verboten ---------- */
+/* ---------- Schritt 3 ---------- */
 var sc=document.getElementById('sort-container');
 SORT.forEach(function(item,i){
   var d=document.createElement('div'); d.className='sort-item';
@@ -565,8 +718,8 @@ SORT.forEach(function(item,i){
     box.appendChild(b);
   });
   d.appendChild(box);
-  var fb=document.createElement('div'); fb.className='fb'; fb.hidden=true; fb.setAttribute('aria-live','polite');
-  d.appendChild(fb); sc.appendChild(d);
+  var f=document.createElement('div'); f.className='fb'; f.hidden=true; f.setAttribute('aria-live','polite');
+  d.appendChild(f); sc.appendChild(d);
 });
 function antwortSort(el,i,gewaehltErlaubt){
   var korrekt=(gewaehltErlaubt===SORT[i].ok);
@@ -576,13 +729,13 @@ function antwortSort(el,i,gewaehltErlaubt){
   gew.style.background=korrekt?'var(--col-sage-pale)':'var(--col-error-pale)';
   gew.style.borderColor=korrekt?'var(--col-sage-dark)':'var(--col-error)';
   gew.style.color=korrekt?'#2D5C25':'var(--col-error-text)';
-  var fb=el.querySelector('.fb'); fb.hidden=false;
-  fb.className='fb '+(korrekt?'feedback-richtig':'feedback-falsch');
-  fb.textContent=korrekt?SORT[i].e:('Nicht ganz. Richtig ist: '+(SORT[i].ok?'erlaubt':'verboten')+'. '+SORT[i].e);
+  var f=el.querySelector('.fb'); f.hidden=false;
+  f.className='fb '+(korrekt?'feedback-richtig':'feedback-falsch');
+  f.textContent=korrekt?SORT[i].e:('Nicht ganz. Richtig ist: '+(SORT[i].ok?'erlaubt':'verboten')+'. '+SORT[i].e);
   state.sort[i]=korrekt; save(state); punkteAnzeigen();
 }
 
-/* ---------- Schritt 4: Situationen ---------- */
+/* ---------- Schritt 4 ---------- */
 var stc=document.getElementById('sit-container');
 SIT.forEach(function(q,i){
   var d=document.createElement('div'); d.className='task-card';
@@ -595,8 +748,8 @@ SIT.forEach(function(q,i){
     box.appendChild(b);
   });
   d.appendChild(box);
-  var fb=document.createElement('div'); fb.hidden=true; fb.style.marginTop='12px'; fb.setAttribute('aria-live','polite');
-  d.appendChild(fb); stc.appendChild(d);
+  var f=document.createElement('div'); f.hidden=true; f.style.marginTop='12px'; f.setAttribute('aria-live','polite');
+  d.appendChild(f); stc.appendChild(d);
 });
 function antwortSit(el,i,korrekt,btn){
   el.querySelectorAll('.antwort-btn').forEach(function(b){b.disabled=true;b.style.opacity='.55';});
@@ -604,37 +757,288 @@ function antwortSit(el,i,korrekt,btn){
   btn.style.background=korrekt?'var(--col-sage-pale)':'var(--col-error-pale)';
   btn.style.borderColor=korrekt?'var(--col-sage-dark)':'var(--col-error)';
   btn.style.color=korrekt?'#2D5C25':'var(--col-error-text)';
-  var fb=el.lastElementChild; fb.hidden=false;
-  fb.className=korrekt?'feedback-richtig':'feedback-falsch';
-  fb.textContent=korrekt?SIT[i].e:('Das ist nicht die beste Lösung. '+SIT[i].e);
+  var f=el.lastElementChild; f.hidden=false;
+  f.className=korrekt?'feedback-richtig':'feedback-falsch';
+  f.textContent=korrekt?SIT[i].e:('Das ist nicht die beste Lösung. '+SIT[i].e);
   state.sit[i]=korrekt; save(state); punkteAnzeigen();
 }
 
-/* ---------- Texte speichern ---------- */
+/* ---------- Texte ---------- */
 ['a1','a2','a3','regel','wichtig'].forEach(function(id){
   var el=document.getElementById(id);
   if(state.texte[id]) el.value=state.texte[id];
   el.addEventListener('input',function(){state.texte[id]=this.value;save(state);});
 });
 
-/* ---------- Ausweis ---------- */
-document.getElementById('btn-ausweis').addEventListener('click',function(){
-  var name=document.getElementById('name').value.trim();
-  document.getElementById('aw-name').textContent=name||'________________________';
-  var d=new Date();
-  document.getElementById('aw-datum').textContent=
-    String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();
-  var p=punkte();
-  document.getElementById('aw-punkte').textContent=p+' von 17';
-  var regel=(state.texte.regel||'').trim();
-  document.getElementById('aw-regel').textContent=regel||'________________________';
-  var t;
-  if(p>=15) t='Stark! '+p+' von 17 Punkten. Du weißt schon sehr genau, worauf es im Technikraum ankommt.';
-  else if(p>=10) t='Gut gemacht! '+p+' von 17 Punkten. Den Rest üben wir gemeinsam.';
-  else t='Du hast '+p+' von 17 Punkten. Kein Problem – die Regeln lernen wir in den nächsten Stunden zusammen.';
+/* ---------- Urkunde ---------- */
+function datumText(){var d=new Date();return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();}
+function urkundeDaten(){
+  return {
+    name:document.getElementById('name').value.trim()||'________________',
+    punkte:punkte(),
+    regel:(state.texte.regel||'').trim()||'—',
+    datum:datumText()
+  };
+}
+document.getElementById('btn-urkunde').addEventListener('click',function(){
+  var u=urkundeDaten();
+  document.getElementById('uk-name').textContent=u.name;
+  document.getElementById('uk-punkte').textContent=u.punkte+' von '+MAXP+' Punkten';
+  document.getElementById('uk-regel').textContent=u.regel;
+  document.getElementById('uk-datum').textContent='Dortmund, '+u.datum;
+  var p=u.punkte,t;
+  if(p>=15) t='Stark! '+p+' von '+MAXP+' Punkten. Du weißt schon sehr genau, worauf es im Technikraum ankommt.';
+  else if(p>=10) t='Gut gemacht! '+p+' von '+MAXP+' Punkten. Den Rest üben wir gemeinsam.';
+  else t='Du hast '+p+' von '+MAXP+' Punkten. Kein Problem – die Regeln lernen wir in den nächsten Stunden zusammen.';
   document.getElementById('ergebnis-text').textContent=t;
   zeige(6);
 });
+
+/* ---------- Mini-PDF-Writer (ohne Bibliothek) ---------- */
+function pdfEsc(s){return s.replace(/[^\u0000-\u00ff]/g,'?').replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');}
+function tw(s,size,bold){return s.length*size*(bold?0.62:0.52);}
+function wrap(s,size,bold,maxW){
+  var words=s.split(/\s+/),lines=[],cur='';
+  words.forEach(function(w){
+    var t=cur?cur+' '+w:w;
+    if(tw(t,size,bold)>maxW&&cur){lines.push(cur);cur=w;}else cur=t;
+  });
+  if(cur)lines.push(cur); return lines;
+}
+function bauePdf(u){
+  var W=842,H=595,c=[];
+  var SL='0.243 0.337 0.408', SD='0.173 0.239 0.298', RU='0.851 0.478 0.290', RD='0.620 0.306 0.133', SG='0.302 0.545 0.247', TX='0.118 0.165 0.208', MU='0.353 0.416 0.471', PALE='0.816 0.863 0.902';
+  function text(str,x,y,size,bold,col,align){
+    var w=tw(str,size,bold); if(align==='c')x=x-w/2; if(align==='r')x=x-w;
+    c.push('BT /'+(bold?'F1':'F2')+' '+size+' Tf '+col+' rg '+x.toFixed(1)+' '+y.toFixed(1)+' Td ('+pdfEsc(str)+') Tj ET');
+  }
+  function rectS(x,y,w,h,col,lw){c.push(col+' RG '+lw+' w '+x+' '+y+' '+w+' '+h+' re S');}
+  function rectF(x,y,w,h,col){c.push(col+' rg '+x+' '+y+' '+w+' '+h+' re f');}
+  function circ(cx,cy,r,col,lw,fill){
+    var k=0.5523*r;
+    c.push((fill?col+' rg ':col+' RG '+lw+' w ')+
+      (cx+r)+' '+cy+' m '+
+      (cx+r)+' '+(cy+k)+' '+(cx+k)+' '+(cy+r)+' '+cx+' '+(cy+r)+' c '+
+      (cx-k)+' '+(cy+r)+' '+(cx-r)+' '+(cy+k)+' '+(cx-r)+' '+cy+' c '+
+      (cx-r)+' '+(cy-k)+' '+(cx-k)+' '+(cy-r)+' '+cx+' '+(cy-r)+' c '+
+      (cx+k)+' '+(cy-r)+' '+(cx+r)+' '+(cy-k)+' '+(cx+r)+' '+cy+' c '+(fill?'f':'S'));
+  }
+  // Rahmen
+  rectS(28,28,W-56,H-56,SL,3);
+  rectS(38,38,W-76,H-76,RU,1);
+  // Zahnrad-Dekor (Ecken)
+  [[80,H-80],[W-80,H-80],[80,80],[W-80,80]].forEach(function(p){
+    circ(p[0],p[1],18,PALE,2,false); circ(p[0],p[1],7,PALE,0,true);
+    for(var a=0;a<8;a++){var r=Math.PI/4*a;rectF(p[0]+Math.cos(r)*20-2,p[1]+Math.sin(r)*20-2,4,4,PALE);}
+  });
+  // Kopf
+  text('HEINRICH-BÖLL-GESAMTSCHULE DORTMUND',W/2,H-78,10,false,MU,'c');
+  text('URKUNDE',W/2,H-130,44,true,SD,'c');
+  rectF(W/2-40,H-146,80,3,RU);
+  text('Werkstatt-Führerschein · Wahlpflichtkurs Technik · Klasse 7',W/2,H-170,13,true,RD,'c');
+  text('Hiermit wird bestätigt, dass',W/2,H-215,13,false,TX,'c');
+  text(u.name,W/2,H-256,30,true,SL,'c');
+  rectF(W/2-160,H-266,320,1,PALE);
+  var y=H-296;
+  wrap('den Werkstatt-Führerschein erfolgreich abgeschlossen hat und die wichtigsten Regeln für sicheres Arbeiten im Technikraum kennt.',13,false,600).forEach(function(l){text(l,W/2,y,13,false,TX,'c');y-=19;});
+  y-=8;
+  text('Ergebnis: '+u.punkte+' von '+MAXP+' Punkten',W/2,y,14,true,SG,'c'); y-=34;
+  text('Meine Regel für den Technikraum:',W/2,y,11,true,MU,'c'); y-=20;
+  wrap('"'+u.regel+'"',15,false,640).slice(0,3).forEach(function(l){text(l,W/2,y,15,false,SD,'c');y-=21;});
+  // Fuß
+  rectF(60,84,W-120,1,PALE);
+  text('Dortmund, '+u.datum,64,64,11,false,MU,'l');
+  text('HBG Dortmund · WP Technik',W-64,64,11,false,MU,'r');
+
+  var stream=c.join('\n');
+  var objs=[
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+W+' '+H+'] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>',
+    '<< /Length '+stream.length+' >>\nstream\n'+stream+'\nendstream',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>'
+  ];
+  var out='%PDF-1.4\n%\u00e2\u00e3\u00cf\u00d3\n',offs=[];
+  objs.forEach(function(o,i){offs.push(out.length);out+=(i+1)+' 0 obj\n'+o+'\nendobj\n';});
+  var xref=out.length;
+  out+='xref\n0 '+(objs.length+1)+'\n0000000000 65535 f \n';
+  offs.forEach(function(o){out+=String(o).padStart(10,'0')+' 00000 n \n';});
+  out+='trailer\n<< /Size '+(objs.length+1)+' /Root 1 0 R /Info << /Title (Urkunde Werkstatt-F\u00fchrerschein) >> >>\nstartxref\n'+xref+'\n%%EOF';
+  var bytes=new Uint8Array(out.length);
+  for(var i=0;i<out.length;i++){bytes[i]=out.charCodeAt(i)&255;}
+  return new Blob([bytes],{type:'application/pdf'});
+}
+document.getElementById('btn-pdf').addEventListener('click',function(){
+  var u=urkundeDaten();
+  var blob=bauePdf(u), url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url;
+  a.download='Urkunde-Werkstattfuehrerschein.pdf'; a.target='_blank'; a.rel='noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},60000);
+});
+
+/* ---------- Mini-Spiel: Werkstatt-Runde ---------- */
+var Spiel=(function(){
+  var cv=document.getElementById('spiel'),ctx=cv.getContext('2d');
+  var COLS=16,ROWS=10,CELL=40,ZIEL=8;
+  var hind={}; // "x,y" -> typ
+  function setH(x,y,t){hind[x+','+y]=t;}
+  // Raum-Layout
+  for(var x=2;x<=6;x++){setH(x,2,'bank');}
+  setH(12,3,'bohr');setH(12,4,'bohr');
+  setH(5,6,'rucksack');
+  for(x=8;x<=11;x++){setH(x,7,'kabel');}
+  setH(13,0,'wand');setH(14,0,'wand');setH(15,0,'wand');
+  setH(1,8,'eimer');
+  var NAMEN={bank:'die Werkbank gerannt',bohr:'die Bohrmaschine gerannt',rucksack:'den Rucksack gestolpert',kabel:'das Kabel gestolpert',wand:'die Werkzeugwand gelaufen',eimer:'den Späne-Eimer gefallen'};
+  var TOOLS=['🔧','🔨','📏','🪛','🔩','✂️','🪚','🧰'];
+  var snake,dir,nextDir,tool,score,timer,running,over,tick;
+  var speed=state.tempo||320;
+
+  function frei(x,y){
+    if(hind[x+','+y])return false;
+    return !snake.some(function(s){return s.x===x&&s.y===y;});
+  }
+  function neuesTool(){
+    var x,y,n=0;
+    do{x=Math.floor(Math.random()*COLS);y=Math.floor(Math.random()*ROWS);n++;}while(!frei(x,y)&&n<500);
+    tool={x:x,y:y,icon:TOOLS[score%TOOLS.length]};
+  }
+  function reset(){
+    snake=[{x:3,y:5},{x:2,y:5},{x:1,y:5}];
+    dir={x:1,y:0};nextDir=dir;score=0;over=false;tick=0;
+    neuesTool(); hud(); draw();
+  }
+  function hud(){
+    document.getElementById('sp-score').textContent=score;
+    document.getElementById('sp-best').textContent=state.best||0;
+  }
+  function msg(typ,t){var m=document.getElementById('sp-msg');m.className='feedback-'+typ;m.textContent=t;}
+  function step(){
+    dir=nextDir;
+    var h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
+    var typ=null;
+    if(h.x<0||h.x>=COLS||h.y<0||h.y>=ROWS)typ='wandStoss';
+    else if(hind[h.x+','+h.y])typ=hind[h.x+','+h.y];
+    else if(snake.some(function(s){return s.x===h.x&&s.y===h.y;}))typ='selbst';
+    if(typ){
+      ende(typ);return;
+    }
+    snake.unshift(h);
+    if(h.x===tool.x&&h.y===tool.y){
+      score++; hud();
+      if(score>(state.best||0)){state.best=score;save(state);hud();}
+      if(score>=ZIEL){gewonnen();return;}
+      msg('richtig','Werkzeug eingesammelt! Noch '+(ZIEL-score)+'.');
+      neuesTool();
+    }else{snake.pop();}
+    draw();
+  }
+  function ende(typ){
+    stop(); over=true; draw(true);
+    var t;
+    if(typ==='wandStoss')t='Autsch! Du bist gegen die Wand gelaufen.';
+    else if(typ==='selbst')t='Du hast dich selbst umgerannt. Langsam und mit Übersicht gehen!';
+    else t='Autsch! Du bist über '+NAMEN[typ]+'. Genau deshalb muss der Weg im Technikraum frei sein.';
+    msg('falsch',t+' Tippe auf Start für eine neue Runde.');
+    document.getElementById('sp-start').textContent='↻ Nochmal';
+  }
+  function gewonnen(){
+    stop(); over=true; draw(false);
+    msg('richtig','Alle 8 Werkzeuge sicher eingesammelt! So sieht ordentliches Arbeiten aus. 🎉');
+    document.getElementById('sp-start').textContent='↻ Nochmal';
+  }
+  function draw(crash){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    // Boden
+    ctx.fillStyle='#EEF3F7';ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.strokeStyle='#E0E7ED';ctx.lineWidth=1;
+    for(var x=0;x<=COLS;x++){ctx.beginPath();ctx.moveTo(x*CELL,0);ctx.lineTo(x*CELL,cv.height);ctx.stroke();}
+    for(var y=0;y<=ROWS;y++){ctx.beginPath();ctx.moveTo(0,y*CELL);ctx.lineTo(cv.width,y*CELL);ctx.stroke();}
+    // Hindernisse
+    for(var k in hind){
+      var p=k.split(',').map(Number),t=hind[k],px=p[0]*CELL,py=p[1]*CELL;
+      if(t==='bank'){ctx.fillStyle='#D97A4A';ctx.fillRect(px,py+6,CELL,CELL-12);ctx.fillStyle='#9E4E22';ctx.fillRect(px,py+6,CELL,4);}
+      else if(t==='bohr'){ctx.fillStyle='#3E5668';roundRect(px+6,py+4,CELL-12,CELL-8,6);ctx.fill();}
+      else if(t==='rucksack'){ctx.fillStyle='#9E4E22';roundRect(px+6,py+8,CELL-12,CELL-12,10);ctx.fill();ctx.fillStyle='#EBA882';ctx.fillRect(px+12,py+22,CELL-24,8);}
+      else if(t==='kabel'){ctx.strokeStyle='#2C3D4C';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(px,py+CELL/2);ctx.quadraticCurveTo(px+CELL/2,py+CELL/2-10,px+CELL,py+CELL/2);ctx.stroke();}
+      else if(t==='wand'){ctx.fillStyle='#F5DDD1';ctx.fillRect(px,py,CELL,CELL);ctx.strokeStyle='#9E4E22';ctx.lineWidth=2;ctx.strokeRect(px+1,py+1,CELL-2,CELL-2);ctx.fillStyle='#9E4E22';ctx.font='20px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🧰',px+CELL/2,py+CELL/2+1);}
+      else if(t==='eimer'){ctx.fillStyle='#6A8599';ctx.fillRect(px+10,py+12,CELL-20,CELL-14);ctx.fillStyle='#B8C4CE';ctx.fillRect(px+8,py+10,CELL-16,5);}
+    }
+    // Werkzeug
+    ctx.font='24px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(tool.icon,tool.x*CELL+CELL/2,tool.y*CELL+CELL/2+1);
+    // Schlange
+    snake.forEach(function(s,i){
+      var sx=s.x*CELL,sy=s.y*CELL;
+      if(i===0){
+        ctx.fillStyle=crash?'#C0392B':'#3E5668';
+        ctx.beginPath();ctx.arc(sx+CELL/2,sy+CELL/2,CELL/2-4,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#fff';
+        ctx.beginPath();ctx.arc(sx+CELL/2+dir.x*7-dir.y*6,sy+CELL/2+dir.y*7+dir.x*6,3.5,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.arc(sx+CELL/2+dir.x*7+dir.y*6,sy+CELL/2+dir.y*7-dir.x*6,3.5,0,Math.PI*2);ctx.fill();
+      }else{
+        ctx.fillStyle=i%2?'#EBA882':'#D97A4A';roundRect(sx+6,sy+6,CELL-12,CELL-12,8);ctx.fill();
+      }
+    });
+  }
+  function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+  function setDir(d){
+    var m={up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}}[d];
+    if(!m)return;
+    if(m.x===-dir.x&&m.y===-dir.y&&snake.length>1)return;
+    nextDir=m;
+    if(!running&&!over)start();
+  }
+  function start(){
+    if(over)reset();
+    running=true; document.getElementById('sp-start').textContent='⏸ Pause';
+    msg('tipp','Los! Sammle die Werkzeuge ein.');
+    timer=setInterval(step,speed);
+  }
+  function stop(){running=false;clearInterval(timer);}
+  function toggle(){
+    if(running){stop();document.getElementById('sp-start').textContent='▶ Weiter';msg('tipp','Pause.');}
+    else start();
+  }
+  // Eingaben
+  document.querySelectorAll('.dpad button').forEach(function(b){
+    b.addEventListener('click',function(){setDir(this.dataset.dir);});
+  });
+  document.addEventListener('keydown',function(e){
+    if(!document.getElementById('step7').classList.contains('active'))return;
+    var map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+    if(map[e.key]){e.preventDefault();setDir(map[e.key]);}
+  });
+  var t0=null;
+  cv.addEventListener('touchstart',function(e){var t=e.touches[0];t0={x:t.clientX,y:t.clientY};},{passive:true});
+  cv.addEventListener('touchend',function(e){
+    if(!t0)return;var t=e.changedTouches[0],dx=t.clientX-t0.x,dy=t.clientY-t0.y;t0=null;
+    if(Math.abs(dx)<18&&Math.abs(dy)<18)return;
+    setDir(Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up'));
+  },{passive:true});
+  document.getElementById('sp-start').addEventListener('click',toggle);
+  function tempoMarkieren(){
+    document.querySelectorAll('.tempo button').forEach(function(b){
+      b.classList.toggle('aktiv',parseInt(b.dataset.speed,10)===speed);
+    });
+  }
+  document.querySelectorAll('.tempo button').forEach(function(b){
+    b.addEventListener('click',function(){
+      speed=parseInt(this.dataset.speed,10);
+      state.tempo=speed; save(state); tempoMarkieren();
+      if(running){clearInterval(timer);timer=setInterval(step,speed);}
+      msg('tipp','Tempo geändert: '+this.textContent.replace(/^\S+\s/,'')+'.');
+    });
+  });
+  tempoMarkieren();
+  var initDone=false;
+  return {
+    init:function(){if(!initDone){reset();initDone=true;}else{hud();draw();}},
+    stop:function(){if(running){stop();document.getElementById('sp-start').textContent='▶ Weiter';}}
+  };
+})();
 
 /* ---------- Overlay ---------- */
 document.getElementById('btn-lehrer').addEventListener('click',function(){document.getElementById('overlay').classList.add('on');});
@@ -647,19 +1051,16 @@ document.getElementById('overlay').addEventListener('click',function(e){if(e.tar
     var m=document.getElementById('m-'+id);
     var g=document.querySelector('.hazard[data-id="'+id+'"]');
     if(m) m.classList.add('on');
-    if(g) gefahrEintrag(g.dataset.titel,g.dataset.text);
+    if(g){g.classList.add('found');gefahrEintrag(g.dataset.titel,g.dataset.text);}
   });
   document.getElementById('gef-zahl').textContent=state.gefunden.length;
   Object.keys(state.sort).forEach(function(i){
     var el=sc.children[i]; if(!el)return;
-    var korrekt=state.sort[i]; var erlaubtGewaehlt=(korrekt===SORT[i].ok);
-    antwortSort(el,i,erlaubtGewaehlt);
+    antwortSort(el,i,(state.sort[i]===SORT[i].ok));
   });
   Object.keys(state.sit).forEach(function(i){
     var el=stc.children[i]; if(!el)return;
-    var korrekt=state.sit[i];
-    var btns=el.querySelectorAll('.antwort-btn');
-    var ziel=null;
+    var korrekt=state.sit[i],btns=el.querySelectorAll('.antwort-btn'),ziel=null;
     SIT[i].a.forEach(function(o,k){if(o.ok===korrekt&&!ziel)ziel=btns[k];});
     if(ziel) antwortSit(el,i,korrekt,ziel);
   });
@@ -668,3 +1069,4 @@ document.getElementById('overlay').addEventListener('click',function(e){if(e.tar
 </script>
 </body>
 </html>
+b7c3ade9ec1f80430bb38da8c6fa5cef5465baeae6a16229fd7bd162caae22ce  upload/wp7-einstieg.html
