@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101828" />
+  <title>Keine Panik! – Per Anhalter durch die Technikvertretung</title>
+  <style>
+    :root{
+      --bg:#0f172a;
+      --bg2:#16213e;
+      --panel:#ffffff;
+      --panel-soft:#f7f9fc;
+      --text:#142033;
+      --muted:#667085;
+      --accent:#f6c453;
+      --accent2:#8fd3ff;
+      --green:#9be28f;
+      --orange:#ffb86b;
+      --red:#ff8f8f;
+      --border:#dfe5ee;
+      --shadow:0 18px 50px rgba(0,0,0,.18);
+      --radius:24px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(143,211,255,.15), transparent 25%),
+        radial-gradient(circle at 85% 18%, rgba(246,196,83,.12), transparent 23%),
+        linear-gradient(180deg,var(--bg),var(--bg2));
+      color:white;
+      min-height:100vh;
+    }
+
+    button,select{font:inherit}
+    button{cursor:pointer}
+
+    .wrap{
+      width:min(1180px, calc(100% - 28px));
+      margin:auto;
+    }
+
+    header{
+      padding:36px 0 18px;
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      border-radius:32px;
+      padding:clamp(28px,5vw,60px);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+      border:1px solid rgba(255,255,255,.15);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+    }
+
+    .hero:before,
+    .hero:after{
+      content:"";
+      position:absolute;
+      border-radius:50%;
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .hero:before{
+      width:260px;height:260px;
+      right:-80px;top:-90px;
+    }
+    .hero:after{
+      width:140px;height:140px;
+      right:60px;bottom:-70px;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:7px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.09);
+      color:#dbe8ff;
+      font-size:.9rem;
+      margin-bottom:14px;
+    }
+
+    h1{
+      margin:0;
+      font-size:clamp(3rem,8vw,7rem);
+      letter-spacing:-.06em;
+      line-height:.9;
+      color:var(--accent);
+      text-transform:uppercase;
+      text-shadow:0 4px 18px rgba(0,0,0,.25);
+    }
+
+    .subtitle{
+      margin:14px 0 10px;
+      font-size:clamp(1.4rem,3vw,2.5rem);
+      font-weight:800;
+      letter-spacing:-.03em;
+    }
+
+    .intro{
+      max-width:820px;
+      margin:18px 0 0;
+      color:#dbe5f2;
+      font-size:1.08rem;
+      line-height:1.65;
+    }
+
+    .claim{
+      display:inline-block;
+      margin-top:22px;
+      padding:10px 14px;
+      border-radius:12px;
+      background:rgba(155,226,143,.13);
+      border:1px solid rgba(155,226,143,.35);
+      color:#dff8da;
+      font-weight:800;
+    }
+
+    main{padding:18px 0 64px}
+
+    .section-title{
+      margin:34px 0 14px;
+      font-size:clamp(1.7rem,3vw,2.5rem);
+    }
+
+    .year-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+    }
+
+    .year-card{
+      border:0;
+      text-align:left;
+      padding:24px;
+      border-radius:var(--radius);
+      background:var(--panel);
+      color:var(--text);
+      box-shadow:0 10px 30px rgba(0,0,0,.15);
+      transition:.2s ease;
+      min-height:190px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+
+    .year-card:hover,
+    .year-card:focus-visible{
+      transform:translateY(-4px);
+      outline:3px solid var(--accent);
+      outline-offset:2px;
+    }
+
+    .year-card .big{
+      font-size:2rem;
+      font-weight:900;
+      margin-bottom:10px;
+    }
+    .year-card p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.5;
+    }
+    .go{
+      margin-top:18px;
+      font-weight:800;
+      color:#234a75;
+    }
+
+    .safety{
+      margin-top:26px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
+
+    .safety-item{
+      padding:16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.11);
+      color:#eef4fb;
+      line-height:1.45;
+    }
+    .safety-item strong{display:block;color:white;margin-bottom:4px}
+
+    .panel{
+      margin-top:28px;
+      background:var(--panel);
+      color:var(--text);
+      border-radius:30px;
+      padding:clamp(20px,4vw,36px);
+      box-shadow:var(--shadow);
+    }
+
+    .panel[hidden]{display:none}
+
+    .toolbar{
+      display:grid;
+      grid-template-columns:1.2fr repeat(3,minmax(150px,.7fr)) auto;
+      gap:10px;
+      margin:18px 0 22px;
+      align-items:end;
+    }
+
+    .field label{
+      display:block;
+      font-size:.82rem;
+      font-weight:800;
+      margin-bottom:6px;
+      color:#475467;
+    }
+
+    select,.random-btn{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px 14px;
+      background:white;
+      color:var(--text);
+    }
+
+    .random-btn{
+      background:#101828;
+      color:white;
+      border-color:#101828;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .task-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:14px;
+    }
+
+    .task{
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:20px;
+      background:var(--panel-soft);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .task h3{
+      margin:0;
+      font-size:1.25rem;
+    }
+
+    .meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:7px;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      padding:6px 9px;
+      border-radius:999px;
+      background:#e9eff8;
+      color:#30445f;
+      font-size:.78rem;
+      font-weight:800;
+    }
+
+    .task p{
+      margin:0;
+      color:#526071;
+      line-height:1.55;
+    }
+
+    .task button{
+      margin-top:auto;
+      border:0;
+      border-radius:13px;
+      padding:11px 14px;
+      background:#245688;
+      color:white;
+      font-weight:800;
+    }
+
+    .back{
+      border:0;
+      background:transparent;
+      color:#245688;
+      font-weight:800;
+      padding:0;
+      margin-bottom:10px;
+    }
+
+    .detail{
+      max-width:860px;
+      margin:auto;
+    }
+
+    .detail h2{
+      font-size:clamp(2rem,5vw,3.2rem);
+      margin:.2em 0;
+    }
+
+    .detail-card{
+      margin-top:18px;
+      border-radius:22px;
+      background:#f8fafc;
+      border:1px solid var(--border);
+      padding:22px;
+    }
+
+    .detail-card h3{margin-top:0}
+    .detail ol{padding-left:1.25rem}
+    .detail li{margin:.6rem 0;line-height:1.5}
+
+    .teacher-note{
+      margin-top:30px;
+      background:#fff7df;
+      border:1px solid #f2d783;
+      border-radius:18px;
+      padding:18px;
+      color:#5d4a10;
+    }
+
+    .footer{
+      color:#b9c4d1;
+      text-align:center;
+      padding:8px 0 28px;
+      font-size:.9rem;
+    }
+
+    @media (max-width:900px){
+      .year-grid{grid-template-columns:1fr}
+      .safety{grid-template-columns:1fr 1fr}
+      .toolbar{grid-template-columns:1fr 1fr}
+      .task-grid{grid-template-columns:1fr}
+    }
+
+    @media (max-width:560px){
+      .wrap{width:min(100% - 18px,1180px)}
+      .hero{border-radius:22px;padding:26px 20px}
+      .safety{grid-template-columns:1fr}
+      .toolbar{grid-template-columns:1fr}
+      .panel{padding:18px;border-radius:22px}
+      .year-card{min-height:160px}
+    }
+  </style>
+</head>
+<body>
+  <header class="wrap">
+    <section class="hero">
+      <div class="eyebrow">🧭 Vertretungshilfe Technik</div>
+      <h1>Keine Panik!</h1>
+      <div class="subtitle">Per Anhalter durch die Technikvertretung</div>
+      <p class="intro">
+        Du vertrittst heute Technik und es liegen keine Aufgaben bereit?
+        Hier findest du sichere, einfache und fachlich sinnvolle Angebote,
+        die ohne Maschinen und ohne besondere Vorbereitung funktionieren.
+      </p>
+      <div class="claim">Keine Maschinen. Kein Werkstattchaos. Nur Technik.</div>
+    </section>
+  </header>
+
+  <main class="wrap">
+    <h2 class="section-title">Wähle den Jahrgang</h2>
+
+    <section class="year-grid" id="yearGrid">
+      <button class="year-card" data-year="56">
+        <div>
+          <div class="big">Jahrgang 5/6</div>
+          <p>Entdecken · Messen · Ausprobieren</p>
+        </div>
+        <div class="go">Aufgaben öffnen →</div>
+      </button>
+
+      <button class="year-card" data-year="78">
+        <div>
+          <div class="big">Jahrgang 7/8</div>
+          <p>Untersuchen · Vergleichen · Konstruieren</p>
+        </div>
+        <div class="go">Aufgaben öffnen →</div>
+      </button>
+
+      <button class="year-card" data-year="910">
+        <div>
+          <div class="big">Jahrgang 9/10</div>
+          <p>Analysieren · Bewerten · Optimieren</p>
+        </div>
+        <div class="go">Aufgaben öffnen →</div>
+      </button>
+    </section>
+
+    <section class="safety">
+      <div class="safety-item"><strong>🚫 Keine Maschinen</strong>Werkzeugmaschinen bleiben heute aus.</div>
+      <div class="safety-item"><strong>🪵 Keine Holzbearbeitung</strong>Es wird nicht gesägt, gebohrt, gefeilt oder geschliffen.</div>
+      <div class="safety-item"><strong>📏 Einfache Werkzeuge</strong>Nur die bei der Aufgabe genannten Materialien werden genutzt.</div>
+      <div class="safety-item"><strong>🧠 Selbstständig arbeiten</strong>Die Aufgaben erklären sich möglichst selbst.</div>
+    </section>
+
+    <section class="panel" id="taskPanel" hidden>
+      <button class="back" id="backToYears">← Zur Jahrgangsauswahl</button>
+      <h2 id="panelTitle">Aufgaben</h2>
+      <p id="panelSubtitle"></p>
+
+      <div class="toolbar">
+        <div class="field">
+          <label for="duration">Dauer</label>
+          <select id="duration">
+            <option value="all">Alle</option>
+            <option value="20">bis 20 Minuten</option>
+            <option value="30">bis 30 Minuten</option>
+            <option value="45">bis 45 Minuten</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="material">Material</label>
+          <select id="material">
+            <option value="all">Alle</option>
+            <option value="none">kein Material</option>
+            <option value="paper">Papier</option>
+            <option value="measure">Messwerkzeuge</option>
+            <option value="lupe">Lupe</option>
+            <option value="ipad">iPad</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="mode">Arbeitsform</label>
+          <select id="mode">
+            <option value="all">Alle</option>
+            <option value="solo">allein</option>
+            <option value="pair">zu zweit</option>
+            <option value="group">Gruppe</option>
+          </select>
+        </div>
+        <div></div>
+        <button class="random-btn" id="randomBtn">🎲 Überrasch mich!</button>
+      </div>
+
+      <div class="task-grid" id="taskGrid"></div>
+    </section>
+
+    <section class="panel detail" id="detailPanel" hidden>
+      <button class="back" id="backToTasks">← Zur Aufgabenübersicht</button>
+      <div id="detailContent"></div>
+    </section>
+
+    <section class="teacher-note">
+      <strong>Hinweis für Vertretungslehrkräfte:</strong>
+      Die Aufgaben sind so angelegt, dass keine Werkstattfreigabe und keine Nutzung von Maschinen erforderlich ist.
+      Ergebnisse können auf Papier oder – falls vorhanden – auf dem iPad dokumentiert werden.
+    </section>
+  </main>
+
+  <footer class="footer wrap">
+    Technikvertretung · sicher · fachlich sinnvoll · ohne Werkstattbetrieb
+  </footer>
+
+<script>
+const tasks = [
+  {
+    id:"messen56", year:"56", title:"📏 Messmeister",
+    duration:30, material:["measure"], mode:["solo","pair"],
+    teaser:"Schätzen, messen und vergleichen: Wie gut liegst du mit deinem Augenmaß?",
+    need:"Gliedermaßstab oder Stahlmaß, Papier oder iPad",
+    steps:[
+      "Wähle fünf Gegenstände im Raum aus.",
+      "Schätze zuerst Länge, Breite oder Höhe und notiere deine Vermutung.",
+      "Wähle ein passendes Messwerkzeug.",
+      "Miss genau nach und notiere den Wert.",
+      "Vergleiche Schätzung und Messung. Bei welchem Gegenstand lagst du am besten?"
+    ],
+    extra:"Berechne bei zwei Gegenständen die Differenz zwischen Schätzung und Messwert."
+  },
+  {
+    id:"technikdetektiv56", year:"56", title:"🔍 Technikdetektive",
+    duration:30, material:["lupe","ipad"], mode:["solo","pair"],
+    teaser:"Suche technische Lösungen im Klassenraum und dokumentiere sie.",
+    need:"Lupe oder iPad, Papier",
+    steps:[
+      "Suche im Raum fünf technische Details, zum Beispiel Gelenk, Rolle, Schraube, Verschluss oder Führung.",
+      "Betrachte jedes Detail genau.",
+      "Zeichne oder fotografiere es.",
+      "Schreibe dazu, welche Aufgabe das Bauteil erfüllt.",
+      "Wähle am Ende dein interessantestes Fundstück aus."
+    ],
+    extra:"Finde ein Bauteil, dessen Form besonders wichtig für seine Funktion ist."
+  },
+  {
+    id:"papier56", year:"56", title:"📄 Papierlabor",
+    duration:45, material:["paper"], mode:["pair","group"],
+    teaser:"Wie wird aus einem weichen Blatt Papier eine stabile Konstruktion?",
+    need:"A4-Papier, Schere",
+    steps:[
+      "Nimm ein Blatt Papier.",
+      "Forme daraus mindestens drei unterschiedliche Profile, zum Beispiel Rolle, U-Form oder Ziehharmonika.",
+      "Teste vorsichtig, welches Profil am stabilsten ist.",
+      "Skizziere deine Formen.",
+      "Erkläre, warum eine Form besser trägt als eine andere."
+    ],
+    extra:"Baue aus einem Blatt Papier eine möglichst hohe freistehende Konstruktion."
+  },
+  {
+    id:"messschieber78", year:"78", title:"🧰 Messschieber-Challenge",
+    duration:30, material:["measure"], mode:["solo","pair"],
+    teaser:"Außenmaß, Innenmaß und Tiefe gezielt messen.",
+    need:"Messschieber, drei geeignete Gegenstände",
+    steps:[
+      "Suche drei kleine Gegenstände.",
+      "Miss an jedem Gegenstand mindestens zwei Maße.",
+      "Nutze – wenn möglich – Außenmessung, Innenmessung oder Tiefenmessung.",
+      "Notiere die Werte mit Einheit.",
+      "Vergleiche: Welches Maß war am schwierigsten zu bestimmen?"
+    ],
+    extra:"Miss denselben Gegenstand zweimal unabhängig voneinander und vergleiche die Werte."
+  },
+  {
+    id:"raum78", year:"78", title:"📐 Maßaufnahme",
+    duration:45, material:["measure","paper"], mode:["pair"],
+    teaser:"Vermesse einen Gegenstand oder einen kleinen Bereich und fertige eine bemaßte Skizze an.",
+    need:"Gliedermaßstab oder Stahlmaß, Papier",
+    steps:[
+      "Wähle einen Tisch, Schrank oder einen kleinen Bereich des Raumes.",
+      "Erstelle zuerst eine einfache Skizze.",
+      "Lege fest, welche Maße du brauchst.",
+      "Miss sorgfältig nach.",
+      "Trage die Maße sauber in die Skizze ein."
+    ],
+    extra:"Überlege, welche Maße jemand bräuchte, um den Gegenstand möglichst genau nachzubauen."
+  },
+  {
+    id:"verbindung78", year:"78", title:"🔗 Verbindung gesucht",
+    duration:30, material:["ipad","none"], mode:["solo","pair"],
+    teaser:"Finde lösbare und unlösbare Verbindungen in deiner Umgebung.",
+    need:"Papier oder iPad",
+    steps:[
+      "Suche mindestens sechs Verbindungen im Raum.",
+      "Ordne sie in lösbar und unlösbar ein.",
+      "Beschreibe, wie die Verbindung hergestellt wurde.",
+      "Erkläre bei zwei Beispielen, warum diese Verbindungsart sinnvoll ist.",
+      "Dokumentiere deine Ergebnisse als Tabelle oder Fotoreihe."
+    ],
+    extra:"Finde eine Verbindung, die du technisch verbessern würdest, und begründe deinen Vorschlag."
+  },
+  {
+    id:"toleranz910", year:"910", title:"🎯 Toleranz und Genauigkeit",
+    duration:30, material:["measure"], mode:["pair"],
+    teaser:"Sind scheinbar gleiche Dinge wirklich gleich groß?",
+    need:"Messschieber oder Stahlmaß, mehrere ähnliche Gegenstände",
+    steps:[
+      "Wähle mindestens fünf möglichst ähnliche Gegenstände.",
+      "Lege ein sinnvolles Maß fest.",
+      "Miss alle Gegenstände möglichst gleich.",
+      "Trage die Werte in eine Tabelle ein.",
+      "Bestimme größten und kleinsten Wert und beschreibe die Streuung."
+    ],
+    extra:"Überlege, wann kleine Maßabweichungen technisch problematisch werden könnten."
+  },
+  {
+    id:"produkt910", year:"910", title:"🪑 Produkt unter der Lupe",
+    duration:45, material:["ipad","none"], mode:["solo","pair"],
+    teaser:"Analysiere einen Alltagsgegenstand wie ein technisches Produkt.",
+    need:"Papier oder iPad",
+    steps:[
+      "Wähle einen Alltagsgegenstand.",
+      "Beschreibe seine Hauptfunktion.",
+      "Untersuche Form, Material und Bedienung.",
+      "Nenne mindestens zwei Stärken und zwei Schwächen.",
+      "Entwickle einen konkreten Verbesserungsvorschlag."
+    ],
+    extra:"Bewerte zusätzlich, wie leicht sich das Produkt reparieren, recyceln oder lange nutzen lässt."
+  },
+  {
+    id:"blackbox910", year:"910", title:"🕵️ Blackbox Technik",
+    duration:30, material:["paper"], mode:["solo","pair"],
+    teaser:"Was könnte im Inneren eines Mechanismus passieren?",
+    need:"Ein einfacher Alltagsgegenstand, Papier",
+    steps:[
+      "Wähle einen Gegenstand mit Mechanismus, zum Beispiel Kugelschreiber, Locher oder Wäscheklammer.",
+      "Betätige ihn mehrmals, ohne ihn zu zerlegen.",
+      "Beobachte genau, was sich außen bewegt.",
+      "Zeichne deine Vermutung zum inneren Aufbau.",
+      "Beschreibe, welche Teile Kräfte oder Bewegungen übertragen könnten."
+    ],
+    extra:"Zeichne eine zweite mögliche Lösung und vergleiche beide Ideen."
+  }
+];
+
+const yearInfo = {
+  "56":["Jahrgang 5/6","Entdecken · Messen · Ausprobieren"],
+  "78":["Jahrgang 7/8","Untersuchen · Vergleichen · Konstruieren"],
+  "910":["Jahrgang 9/10","Analysieren · Bewerten · Optimieren"]
+};
+
+let currentYear = null;
+let currentFiltered = [];
+
+const yearGrid = document.getElementById("yearGrid");
+const taskPanel = document.getElementById("taskPanel");
+const detailPanel = document.getElementById("detailPanel");
+const taskGrid = document.getElementById("taskGrid");
+const panelTitle = document.getElementById("panelTitle");
+const panelSubtitle = document.getElementById("panelSubtitle");
+const duration = document.getElementById("duration");
+const material = document.getElementById("material");
+const mode = document.getElementById("mode");
+
+function openYear(year){
+  currentYear = year;
+  panelTitle.textContent = yearInfo[year][0];
+  panelSubtitle.textContent = yearInfo[year][1];
+  duration.value = "all";
+  material.value = "all";
+  mode.value = "all";
+  renderTasks();
+  taskPanel.hidden = false;
+  detailPanel.hidden = true;
+  taskPanel.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function renderTasks(){
+  const d = duration.value;
+  const m = material.value;
+  const a = mode.value;
+
+  currentFiltered = tasks.filter(t =>
+    t.year === currentYear &&
+    (d === "all" || t.duration <= Number(d)) &&
+    (m === "all" || t.material.includes(m)) &&
+    (a === "all" || t.mode.includes(a))
+  );
+
+  taskGrid.innerHTML = "";
+
+  if(!currentFiltered.length){
+    taskGrid.innerHTML = `<p>Für diese Filterkombination gibt es gerade keine passende Aufgabe. Ändere einen Filter.</p>`;
+    return;
+  }
+
+  currentFiltered.forEach(t=>{
+    const card = document.createElement("article");
+    card.className = "task";
+    card.innerHTML = `
+      <h3>${t.title}</h3>
+      <div class="meta">
+        <span class="chip">⏱️ ${t.duration} Min.</span>
+        <span class="chip">${t.mode.includes("solo")?"👤":""}${t.mode.includes("pair")?" 👥":""}${t.mode.includes("group")?" 👨‍👩‍👧":""}</span>
+      </div>
+      <p>${t.teaser}</p>
+      <button type="button">Aufgabe starten</button>
+    `;
+    card.querySelector("button").addEventListener("click",()=>openTask(t.id));
+    taskGrid.appendChild(card);
+  });
+}
+
+function openTask(id){
+  const t = tasks.find(x=>x.id===id);
+  if(!t) return;
+
+  document.getElementById("detailContent").innerHTML = `
+    <h2>${t.title}</h2>
+    <div class="meta">
+      <span class="chip">⏱️ ${t.duration} Minuten</span>
+    </div>
+    <p style="font-size:1.08rem;line-height:1.6;color:#526071">${t.teaser}</p>
+
+    <div class="detail-card">
+      <h3>🎯 Deine Mission</h3>
+      <p>${t.teaser}</p>
+    </div>
+
+    <div class="detail-card">
+      <h3>🧰 Du brauchst</h3>
+      <p>${t.need}</p>
+    </div>
+
+    <div class="detail-card">
+      <h3>🛠️ So gehst du vor</h3>
+      <ol>${t.steps.map(s=>`<li>${s}</li>`).join("")}</ol>
+    </div>
+
+    <div class="detail-card">
+      <h3>🚀 Wenn du schneller fertig bist …</h3>
+      <p>${t.extra}</p>
+    </div>
+  `;
+
+  taskPanel.hidden = true;
+  detailPanel.hidden = false;
+  detailPanel.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+document.querySelectorAll(".year-card").forEach(btn=>{
+  btn.addEventListener("click",()=>openYear(btn.dataset.year));
+});
+
+[duration,material,mode].forEach(el=>el.addEventListener("change",renderTasks));
+
+document.getElementById("randomBtn").addEventListener("click",()=>{
+  if(!currentFiltered.length) return;
+  const pick = currentFiltered[Math.floor(Math.random()*currentFiltered.length)];
+  openTask(pick.id);
+});
+
+document.getElementById("backToYears").addEventListener("click",()=>{
+  taskPanel.hidden = true;
+  detailPanel.hidden = true;
+  document.getElementById("yearGrid").scrollIntoView({behavior:"smooth", block:"center"});
+});
+
+document.getElementById("backToTasks").addEventListener("click",()=>{
+  detailPanel.hidden = true;
+  taskPanel.hidden = false;
+  taskPanel.scrollIntoView({behavior:"smooth", block:"start"});
+});
+</script>
+</body>
+</html>
