@@ -253,13 +253,13 @@ footer{max-width:1500px;margin:auto;padding:8px 18px 30px;color:var(--muted);fon
     <section class="panel sim-panel" aria-labelledby="sim-heading">
       <div class="panel-head"><h2 id="sim-heading">Simulation</h2></div>
       <div class="sim-toolbar">
-        <div class="status-pill" id="scan-status"><span class="status-dot" aria-hidden="true"></span><span id="scan-status-text">Steuerung läuft</span></div>
+        <div class="status-pill running" id="scan-status"><span class="status-dot" aria-hidden="true"></span><span id="scan-status-text">Steuerung läuft</span></div>
         <div class="small-actions">
           <button class="btn btn-quiet" id="reset-outputs" type="button">Ausgänge zurücksetzen</button>
           <button class="btn btn-secondary" id="reset-mission" type="button">Aufgabe neu starten</button>
         </div>
       </div>
-      <div class="sim-stage" id="sim-stage" aria-live="polite"></div>
+      <div class="sim-stage" id="sim-stage"></div>
       <div class="control-deck">
         <h3>Eingänge der Anlage</h3>
         <div class="input-row" id="input-row"></div>
@@ -365,7 +365,8 @@ var MISSIONS = [
     ],
     initialOutputs:{m1:false},
     scene:"belt",
-    sequenceTests:true
+    sequenceTests:true,
+    latch:true
   },
   {
     id:"ampel",
@@ -456,7 +457,7 @@ function loadStorage(){
   }
 }
 function saveStorage(){
-  localStorage.setItem("hbg-sps-werkstatt-v1",JSON.stringify({rules:state.rules,completed:state.completed}));
+  try{ localStorage.setItem("hbg-sps-werkstatt-v1",JSON.stringify({rules:state.rules,completed:state.completed})); }catch(e){}
 }
 function missionRules(){
   var id=current().id;
@@ -503,7 +504,7 @@ function switchMission(index){
   state.missionIndex=index;
   initMissionState();
   renderAll();
-  window.scrollTo({top:0,behavior:"smooth"});
+  window.scrollTo(0,0);
 }
 
 function renderMission(){
@@ -568,7 +569,7 @@ function renderInputs(){
     wrap.className="input-control";
     var html='<strong>'+input.label+'</strong><small>'+input.help+'</small>';
     if(input.type==="toggle"){
-      html+='<button type="button" class="toggle-btn" data-input="'+input.id+'" aria-pressed="'+String(!!state.inputs[input.id])+'">'+(state.inputs[input.id]?"aktiv":"einschalten")+'</button>'+
+      html+='<button type="button" class="toggle-btn" data-input="'+input.id+'" aria-pressed="'+String(!!state.inputs[input.id])+'">'+(state.inputs[input.id]?"ausschalten":"einschalten")+'</button>'+
         '<div class="signal-state" id="state-'+input.id+'">'+(state.inputs[input.id]?"Signal: 1 · aktiv":"Signal: 0 · aus")+'</div>';
     }else if(input.type==="pulse"){
       html+='<button type="button" class="pulse-btn" data-input="'+input.id+'">Taster drücken</button>'+
@@ -629,7 +630,8 @@ function applyRules(inputs,previousOutputs,rules){
 }
 
 function runScan(){
-  state.outputs=applyRules(state.inputs,state.outputs,missionRules());
+  var base=current().latch ? state.outputs : clone(current().initialOutputs);
+  state.outputs=applyRules(state.inputs,base,missionRules());
   updateScene();
 }
 
