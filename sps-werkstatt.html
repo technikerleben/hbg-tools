@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#3E5668">
+<title>SPS-Werkstatt – HBG Technik</title>
+<style>
+:root{
+  --slate-dark:#2C3D4C;--slate:#3E5668;--slate-mid:#6A8599;--slate-pale:#D0DCE6;--slate-ghost:#EEF3F7;
+  --rust-dark:#9E4E22;--rust:#D97A4A;--rust-pale:#F5DDD1;--rust-ghost:#FBF0EB;
+  --sage-dark:#4D8B3F;--sage:#7DBB6F;--sage-pale:#DDF0D8;--sage-ghost:#F0FAF0;
+  --amber:#B97700;--amber-pale:#FFF0C2;--blue:#216A8C;--blue-pale:#DCEEF7;
+  --danger:#A43B32;--danger-pale:#F8DFDC;--bg:#F5F4F1;--white:#fff;--text:#1E2A35;--muted:#5A6A78;
+  --border:#D4D0C8;--shadow:rgba(44,61,76,.14);--focus:#1E5D7A;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+button,select{font:inherit}
+button{touch-action:manipulation}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+header{background:linear-gradient(115deg,var(--slate-dark),var(--slate));color:#fff;padding:18px 22px;border-bottom:5px solid var(--rust)}
+.header-inner{max-width:1500px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:20px}
+.brand h1{margin:0;font-size:clamp(1.55rem,3vw,2.15rem);line-height:1.05}
+.brand p{margin:.45rem 0 0;color:var(--slate-pale);font-size:.95rem}
+.level-chip{flex:0 0 auto;background:#fff;color:var(--slate-dark);font-weight:800;border-radius:999px;padding:7px 12px;font-size:.82rem}
+
+main{max-width:1500px;margin:auto;padding:18px}
+.intro-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.intro-step{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 14px;box-shadow:0 1px 4px var(--shadow)}
+.intro-step strong{display:block;color:var(--slate-dark);font-size:.82rem;text-transform:uppercase;letter-spacing:.04em}
+.intro-step span{font-size:.91rem;color:var(--muted)}
+
+.mission-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 12px;scrollbar-width:thin}
+.mission-tab{min-height:45px;white-space:nowrap;border:2px solid var(--slate-pale);background:#fff;color:var(--slate-dark);border-radius:10px;padding:8px 14px;font-weight:800;cursor:pointer}
+.mission-tab:hover{border-color:var(--slate-mid);background:var(--slate-ghost)}
+.mission-tab[aria-selected="true"]{background:var(--slate);border-color:var(--slate);color:#fff}
+.mission-tab .done-mark{font-size:.75rem;margin-left:5px}
+
+.workspace{display:grid;grid-template-columns:minmax(240px,.72fr) minmax(420px,1.5fr) minmax(300px,1fr);gap:14px;align-items:start}
+.panel{background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 2px 8px var(--shadow);overflow:hidden}
+.panel-head{padding:13px 16px;background:var(--slate-ghost);border-bottom:1px solid var(--border)}
+.panel-head h2{font-size:1.05rem;margin:0;color:var(--slate-dark)}
+.panel-body{padding:16px}
+.mission-kicker{text-transform:uppercase;letter-spacing:.07em;color:var(--rust-dark);font-size:.72rem;font-weight:900}
+.mission-title{margin:.2rem 0 .45rem;font-size:1.35rem;line-height:1.2}
+.mission-text{margin:0 0 12px;color:var(--muted)}
+.goal-list{margin:10px 0 0;padding-left:20px}
+.goal-list li{margin:7px 0}
+.word-help{margin-top:14px}
+.word-help details{border-top:1px solid var(--border);padding:10px 0}
+.word-help summary{font-weight:800;cursor:pointer;color:var(--slate-dark)}
+.word-help p{margin:6px 0 0;color:var(--muted);font-size:.9rem}
+
+.sim-panel{min-width:0}
+.sim-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;background:#fff;border-bottom:1px solid var(--border)}
+.status-pill{display:inline-flex;align-items:center;gap:7px;background:var(--slate-ghost);border:1px solid var(--slate-pale);border-radius:999px;padding:6px 10px;font-size:.82rem;font-weight:800}
+.status-dot{width:10px;height:10px;border-radius:50%;background:var(--slate-mid);border:2px solid #fff;box-shadow:0 0 0 1px var(--slate-mid)}
+.status-pill.running .status-dot{background:var(--sage-dark);box-shadow:0 0 0 1px var(--sage-dark)}
+.small-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{min-height:42px;border-radius:9px;padding:8px 12px;font-weight:800;cursor:pointer;border:2px solid transparent}
+.btn-primary{background:var(--rust-dark);color:#fff}
+.btn-primary:hover{background:#B35C2B}
+.btn-secondary{background:#fff;border-color:var(--slate);color:var(--slate)}
+.btn-secondary:hover{background:var(--slate-ghost)}
+.btn-quiet{background:var(--slate-ghost);border-color:var(--slate-pale);color:var(--slate-dark)}
+.btn-quiet:hover{background:var(--slate-pale)}
+.btn-danger{background:#fff;border-color:var(--danger);color:var(--danger)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+
+.sim-stage{position:relative;min-height:430px;overflow:hidden;background:
+  linear-gradient(rgba(255,255,255,.3),rgba(255,255,255,.1)),
+  radial-gradient(circle at 60% 10%,#fff 0,#e9eef1 34%,#d5dde1 100%);
+perspective:1000px}
+.sim-stage::before{content:"";position:absolute;inset:48% -10% -25% -10%;background:
+  linear-gradient(90deg,rgba(62,86,104,.10) 1px,transparent 1px),
+  linear-gradient(rgba(62,86,104,.10) 1px,transparent 1px);
+background-size:34px 34px;transform:rotateX(64deg) rotateZ(-9deg);transform-origin:center top}
+.scene{position:absolute;inset:0;transform-style:preserve-3d}
+.machine-shadow{position:absolute;background:rgba(36,48,58,.16);filter:blur(9px);border-radius:50%;transform:rotate(-10deg)}
+.scene-label{position:absolute;left:18px;top:16px;background:rgba(255,255,255,.92);border:1px solid var(--border);border-radius:10px;padding:8px 11px;font-size:.82rem;color:var(--muted);z-index:20}
+.scene-label strong{display:block;color:var(--slate-dark);font-size:.92rem}
+
+.control-deck{border-top:1px solid var(--border);padding:13px 14px;background:#fff}
+.control-deck h3{font-size:.88rem;text-transform:uppercase;letter-spacing:.05em;margin:0 0 9px;color:var(--slate)}
+.input-row{display:flex;gap:9px;flex-wrap:wrap}
+.input-control{min-width:145px;flex:1;background:var(--slate-ghost);border:2px solid var(--slate-pale);border-radius:10px;padding:9px 10px}
+.input-control strong{display:block;font-size:.82rem;color:var(--slate-dark)}
+.input-control small{display:block;color:var(--muted);margin-bottom:7px}
+.toggle-btn,.pulse-btn{width:100%;min-height:42px;border-radius:8px;border:2px solid var(--slate);background:#fff;color:var(--slate);font-weight:900;cursor:pointer}
+.toggle-btn[aria-pressed="true"],.pulse-btn.is-active{background:var(--slate);color:#fff}
+.signal-state{font-size:.78rem;font-weight:800;margin-top:5px;color:var(--muted)}
+
+.program-panel{position:sticky;top:10px}
+.program-intro{font-size:.9rem;color:var(--muted);margin:0 0 10px}
+.rule-builder{background:var(--slate-ghost);border:1px solid var(--slate-pale);border-radius:11px;padding:11px}
+.rule-builder label{display:block;font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:8px 0 3px}
+.rule-builder label:first-child{margin-top:0}
+.rule-builder select{width:100%;min-height:42px;padding:7px 9px;border:2px solid var(--slate-pale);border-radius:8px;background:#fff;color:var(--text)}
+.rule-builder select:focus{border-color:var(--slate)}
+.rule-builder .logic-word{display:block;margin:9px 0 0;color:var(--rust-dark);font-weight:900;font-size:.78rem}
+.rule-builder .btn{width:100%;margin-top:11px}
+.rules-title{display:flex;justify-content:space-between;align-items:baseline;margin:15px 0 8px}
+.rules-title h3{font-size:.95rem;margin:0;color:var(--slate-dark)}
+.rules-title span{font-size:.76rem;color:var(--muted)}
+.rules-list{display:grid;gap:8px}
+.rule{border:1px solid var(--border);border-left:5px solid var(--slate);border-radius:9px;padding:9px 8px 9px 10px;background:#fff}
+.rule-line{font-size:.87rem;line-height:1.45}
+.rule-line b{color:var(--rust-dark)}
+.rule-actions{display:flex;gap:5px;justify-content:flex-end;margin-top:7px}
+.icon-btn{min-width:34px;min-height:34px;border:1px solid var(--slate-pale);background:var(--slate-ghost);color:var(--slate-dark);border-radius:7px;font-weight:900;cursor:pointer}
+.icon-btn:hover{background:var(--slate-pale)}
+.empty-rules{border:1px dashed var(--slate-mid);border-radius:9px;padding:14px;text-align:center;color:var(--muted);font-size:.86rem}
+.program-note{font-size:.78rem;color:var(--muted);margin:9px 0 0}
+.check-area{margin-top:13px;border-top:1px solid var(--border);padding-top:12px}
+.check-area .btn{width:100%}
+.feedback{margin-top:10px;padding:10px 12px;border-radius:9px;font-size:.88rem;border-left:5px solid var(--slate-mid);background:var(--slate-ghost)}
+.feedback.ok{background:var(--sage-pale);border-color:var(--sage-dark);color:#315D29}
+.feedback.warn{background:var(--amber-pale);border-color:var(--amber);color:#5F4300}
+.feedback strong{display:block;margin-bottom:2px}
+
+.progress-wrap{margin-top:14px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.progress-head{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:.82rem;font-weight:800;color:var(--slate-dark)}
+.progress-track{height:10px;border-radius:999px;background:var(--slate-pale);overflow:hidden;margin-top:7px}
+.progress-bar{height:100%;width:0;background:var(--sage-dark);transition:width .35s}
+
+footer{max-width:1500px;margin:auto;padding:8px 18px 30px;color:var(--muted);font-size:.78rem;text-align:center}
+
+/* Licht */
+.light-console{position:absolute;left:50%;top:51%;width:300px;height:170px;transform:translate(-50%,-50%) rotateX(7deg) rotateY(-12deg);background:linear-gradient(145deg,#657a89,#334755);border:8px solid #263945;border-radius:18px;box-shadow:28px 28px 0 rgba(44,61,76,.15),0 25px 45px rgba(44,61,76,.25);transform-style:preserve-3d}
+.light-console::before{content:"SIGNALSTATION";position:absolute;left:24px;top:18px;color:#dce5ea;font-size:.74rem;font-weight:900;letter-spacing:.1em}
+.big-lamp{position:absolute;right:45px;top:55px;width:82px;height:82px;border-radius:50%;background:#25333c;border:9px solid #1b272e;box-shadow:inset 0 0 0 3px #70818c}
+.big-lamp::after{content:"LICHT";position:absolute;inset:0;display:grid;place-items:center;color:#bdc8ce;font-size:.72rem;font-weight:900}
+.big-lamp.on{background:#d7f0f4;box-shadow:0 0 28px rgba(71,162,190,.8),inset 0 0 0 5px #4a91a8}
+.big-lamp.on::after{content:"EIN";color:#173f4e}
+.sensor-box{position:absolute;left:36px;bottom:35px;width:70px;height:44px;border-radius:8px;background:#c8d2d8;border:4px solid #273a46;box-shadow:8px 8px 0 rgba(0,0,0,.12)}
+.sensor-box::after{content:"B1";position:absolute;inset:0;display:grid;place-items:center;font-size:.8rem;font-weight:900;color:#273a46}
+
+/* Förderband */
+.conveyor{position:absolute;left:50%;top:56%;width:min(78%,620px);height:120px;transform:translate(-50%,-50%) rotateX(6deg) rotateZ(-3deg);transform-style:preserve-3d}
+.belt-frame{position:absolute;inset:20px 0 25px;background:#536673;border:10px solid #2f424f;border-radius:18px;box-shadow:22px 28px 0 rgba(44,61,76,.16)}
+.belt-surface{position:absolute;inset:29px 9px 34px;border-radius:9px;overflow:hidden;background:repeating-linear-gradient(90deg,#293943 0 34px,#435763 34px 43px)}
+.scene.motor-on .belt-surface{animation:beltMove .8s linear infinite}
+@keyframes beltMove{to{background-position:86px 0}}
+.roller{position:absolute;bottom:8px;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,#c1cbd0 0 15%,#627580 16% 40%,#2d3e48 41%);border:4px solid #253640}
+.roller.r1{left:32px}.roller.r2{right:32px}
+.package{position:absolute;left:9%;top:-12px;width:74px;height:62px;background:linear-gradient(135deg,#c98d4f,#8f5d2f);border:3px solid #724822;border-radius:5px;box-shadow:10px 12px 0 rgba(0,0,0,.12)}
+.package::after{content:"KISTE";position:absolute;inset:0;display:grid;place-items:center;font-size:.7rem;font-weight:900;color:#4b2d14}
+.scene.motor-on .package{animation:boxTravel 4s linear infinite}
+@keyframes boxTravel{0%{left:8%}90%,100%{left:80%}}
+.end-sensor{position:absolute;right:5%;top:-15px;width:18px;height:92px;background:#243742;border-radius:5px}
+.end-sensor::after{content:"B2";position:absolute;top:-28px;left:-9px;background:#fff;border:2px solid var(--slate);border-radius:6px;padding:2px 5px;font-size:.65rem;font-weight:900;color:var(--slate)}
+.motor-cube{position:absolute;left:45%;bottom:-34px;width:98px;height:58px;background:linear-gradient(135deg,#718995,#354a56);border:4px solid #263943;border-radius:8px;box-shadow:10px 10px 0 rgba(0,0,0,.12)}
+.motor-cube::after{content:"MOTOR M1";position:absolute;inset:0;display:grid;place-items:center;color:#eef4f7;font-size:.68rem;font-weight:900}
+.scene.motor-on .motor-cube{box-shadow:10px 10px 0 rgba(0,0,0,.12),0 0 24px rgba(77,139,63,.55)}
+
+/* Ampel */
+.traffic-wrap{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:330px;height:360px}
+.traffic-pole{position:absolute;left:150px;top:205px;width:30px;height:150px;background:linear-gradient(90deg,#384b57,#738995,#344651);border-radius:6px;box-shadow:18px 18px 0 rgba(44,61,76,.12)}
+.traffic-head{position:absolute;left:86px;top:0;width:160px;height:245px;background:linear-gradient(145deg,#293b46,#17262f);border:8px solid #132029;border-radius:26px;box-shadow:22px 28px 0 rgba(44,61,76,.16),inset 0 0 0 3px #50636f;transform:rotateY(-8deg)}
+.signal-lamp{position:relative;width:105px;height:62px;margin:12px auto;border-radius:50%;background:#111a1f;border:5px solid #53636b;display:grid;place-items:center;color:#88959b;font-weight:900;font-size:.68rem;text-align:center;line-height:1.05}
+.signal-lamp.red.on{background:#cf4b43;color:#fff;box-shadow:0 0 22px rgba(207,75,67,.8)}
+.signal-lamp.yellow.on{background:#e0ad36;color:#292010;box-shadow:0 0 22px rgba(224,173,54,.75)}
+.signal-lamp.green.on{background:#43866f;color:#fff;box-shadow:0 0 22px rgba(67,134,111,.75)}
+.phase-board{position:absolute;right:24px;bottom:22px;background:#fff;border:2px solid var(--slate);border-radius:9px;padding:7px 9px;font-size:.76rem;font-weight:900;color:var(--slate-dark);min-width:130px;text-align:center}
+
+/* Schranke */
+.road{position:absolute;left:50%;top:62%;width:620px;height:150px;transform:translate(-50%,-50%) rotateZ(-7deg);background:#47535a;border:10px solid #b5bec3;border-radius:10px;box-shadow:24px 26px 0 rgba(44,61,76,.12);overflow:hidden}
+.road::before{content:"";position:absolute;left:0;right:0;top:69px;border-top:7px dashed #eef0e8}
+.car{position:absolute;left:18%;top:39px;width:130px;height:65px;background:linear-gradient(145deg,#49748a,#234b61);border-radius:24px 34px 12px 12px;box-shadow:7px 8px 0 rgba(0,0,0,.15);transition:left .7s}
+.car::before,.car::after{content:"";position:absolute;bottom:-10px;width:26px;height:26px;border-radius:50%;background:#17252d;border:5px solid #5e6e77}
+.car::before{left:18px}.car::after{right:18px}
+.scene.car-present .car{left:43%}
+.barrier-base{position:absolute;right:17%;top:37%;width:72px;height:125px;background:linear-gradient(145deg,#536976,#293c48);border:5px solid #24343e;border-radius:10px;box-shadow:14px 16px 0 rgba(0,0,0,.13)}
+.barrier-arm{position:absolute;right:20%;top:40%;width:245px;height:25px;transform-origin:right center;transform:rotate(0deg);transition:transform .7s;background:repeating-linear-gradient(90deg,#f5f5ed 0 38px,#a74238 38px 76px);border:3px solid #283a45;border-radius:10px;box-shadow:7px 7px 0 rgba(0,0,0,.10)}
+.scene.barrier-open .barrier-arm{transform:rotate(-72deg)}
+.warning-lamp{position:absolute;right:20.5%;top:32%;width:35px;height:35px;border-radius:50%;background:#26343c;border:4px solid #17242b;color:#aab5ba;display:grid;place-items:center;font-size:.55rem;font-weight:900}
+.warning-lamp.on{background:#d69530;color:#2e250f;box-shadow:0 0 20px rgba(214,149,48,.8)}
+
+@media(max-width:1180px){
+  .workspace{grid-template-columns:minmax(230px,.75fr) minmax(430px,1.4fr)}
+  .program-panel{grid-column:1/-1;position:static}
+  .program-panel .panel-body{display:grid;grid-template-columns:1fr 1.2fr;gap:16px}
+  .check-area{grid-column:1/-1}
+}
+@media(max-width:760px){
+  main{padding:12px}
+  .header-inner{align-items:flex-start}
+  .intro-strip{grid-template-columns:1fr}
+  .workspace{grid-template-columns:1fr}
+  .program-panel{grid-column:auto}
+  .program-panel .panel-body{display:block}
+  .sim-stage{min-height:360px}
+  .conveyor{width:92%;transform:translate(-50%,-50%) scale(.8)}
+  .traffic-wrap{transform:translate(-50%,-50%) scale(.82)}
+  .road{transform:translate(-50%,-50%) rotateZ(-7deg) scale(.68)}
+  .barrier-base{right:10%}.barrier-arm{right:13%;width:205px}.warning-lamp{right:14%}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <h1>SPS-Werkstatt</h1>
+      <p>Eingänge lesen · Regeln bauen · Anlagen steuern</p>
+    </div>
+    <div class="level-chip">Technik · ab Klasse 7</div>
+  </div>
+</header>
+
+<main>
+  <section class="intro-strip" aria-label="So arbeitest du">
+    <div class="intro-step"><strong>1 · Beobachten</strong><span>Was ist der Eingang? Was soll die Anlage tun?</span></div>
+    <div class="intro-step"><strong>2 · Programmieren</strong><span>Baue Regeln mit WENN und DANN.</span></div>
+    <div class="intro-step"><strong>3 · Testen</strong><span>Probiere die Anlage aus. Verbessere dein Programm.</span></div>
+  </section>
+
+  <nav class="mission-tabs" id="mission-tabs" aria-label="Anlagen auswählen"></nav>
+
+  <div class="workspace">
+    <section class="panel" aria-labelledby="mission-heading">
+      <div class="panel-head"><h2 id="mission-heading">Dein Auftrag</h2></div>
+      <div class="panel-body">
+        <div class="mission-kicker" id="mission-kicker"></div>
+        <h3 class="mission-title" id="mission-title"></h3>
+        <p class="mission-text" id="mission-text"></p>
+        <strong>Die Anlage soll:</strong>
+        <ul class="goal-list" id="goal-list"></ul>
+        <div class="word-help">
+          <details>
+            <summary>Was ist ein Eingang?</summary>
+            <p>Ein Eingang gibt der Steuerung eine Information. Beispiele: Ein Taster wird gedrückt. Ein Sensor erkennt eine Kiste.</p>
+          </details>
+          <details>
+            <summary>Was ist ein Ausgang?</summary>
+            <p>Ein Ausgang wird von der Steuerung geschaltet. Beispiele: Ein Motor läuft. Eine Lampe leuchtet.</p>
+          </details>
+          <details>
+            <summary>Was macht eine SPS?</summary>
+            <p>Eine SPS liest Eingänge, prüft Regeln und schaltet Ausgänge. Das passiert immer wieder sehr schnell.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel sim-panel" aria-labelledby="sim-heading">
+      <div class="panel-head"><h2 id="sim-heading">Simulation</h2></div>
+      <div class="sim-toolbar">
+        <div class="status-pill" id="scan-status"><span class="status-dot" aria-hidden="true"></span><span id="scan-status-text">Steuerung läuft</span></div>
+        <div class="small-actions">
+          <button class="btn btn-quiet" id="reset-outputs" type="button">Ausgänge zurücksetzen</button>
+          <button class="btn btn-secondary" id="reset-mission" type="button">Aufgabe neu starten</button>
+        </div>
+      </div>
+      <div class="sim-stage" id="sim-stage" aria-live="polite"></div>
+      <div class="control-deck">
+        <h3>Eingänge der Anlage</h3>
+        <div class="input-row" id="input-row"></div>
+      </div>
+    </section>
+
+    <section class="panel program-panel" aria-labelledby="program-heading">
+      <div class="panel-head"><h2 id="program-heading">Dein SPS-Programm</h2></div>
+      <div class="panel-body">
+        <div>
+          <p class="program-intro">Baue eine Regel. Die SPS prüft deine Regeln immer wieder.</p>
+          <div class="rule-builder">
+            <span class="logic-word">WENN</span>
+            <label for="rule-input">Eingang</label>
+            <select id="rule-input"></select>
+            <label for="rule-state">Zustand</label>
+            <select id="rule-state">
+              <option value="true">ist aktiv</option>
+              <option value="false">ist nicht aktiv</option>
+            </select>
+            <span class="logic-word">DANN</span>
+            <label for="rule-output">Ausgang</label>
+            <select id="rule-output"></select>
+            <label for="rule-action">schalten</label>
+            <select id="rule-action">
+              <option value="true">EIN</option>
+              <option value="false">AUS</option>
+            </select>
+            <button class="btn btn-primary" id="add-rule" type="button">Regel hinzufügen</button>
+          </div>
+          <p class="program-note">Sicherheitsregel: Wenn gleichzeitig EIN und AUS gelten, hat AUS Vorrang.</p>
+        </div>
+
+        <div>
+          <div class="rules-title"><h3>Regeln</h3><span id="rule-count">0 Regeln</span></div>
+          <div class="rules-list" id="rules-list"></div>
+        </div>
+
+        <div class="check-area">
+          <button class="btn btn-primary" id="check-program" type="button">Programm prüfen</button>
+          <div class="feedback" id="feedback" aria-live="polite">
+            <strong>Noch nicht geprüft</strong>
+            Baue Regeln und teste deine Anlage.
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="progress-wrap" aria-label="Lernfortschritt">
+    <div class="progress-head"><span>Dein Fortschritt auf diesem Gerät</span><span id="progress-text">0 von 4 geschafft</span></div>
+    <div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progress-bar"></div></div>
+  </section>
+</main>
+<footer>HBG Dortmund · Technik · SPS-Werkstatt · Die Daten bleiben nur in diesem Browser.</footer>
+
+<script>
+(function(){
+"use strict";
+
+var MISSIONS = [
+  {
+    id:"licht",
+    tab:"1 · Signallampe",
+    kicker:"Mission 1 · Einstieg",
+    title:"Sensor schaltet Licht",
+    text:"Ein Sensor erkennt ein Werkstück. Dann soll die Signallampe leuchten.",
+    goals:[
+      "Wenn Sensor B1 aktiv ist, leuchtet Lampe H1.",
+      "Wenn Sensor B1 nicht aktiv ist, ist Lampe H1 aus."
+    ],
+    inputs:[
+      {id:"b1",label:"Sensor B1",type:"toggle",help:"Werkstück erkannt"}
+    ],
+    outputs:[
+      {id:"h1",label:"Lampe H1"}
+    ],
+    initialOutputs:{h1:false},
+    scene:"light",
+    tests:[
+      {name:"kein Werkstück",inputs:{b1:false},expect:{h1:false}},
+      {name:"Werkstück erkannt",inputs:{b1:true},expect:{h1:true}}
+    ]
+  },
+  {
+    id:"band",
+    tab:"2 · Förderband",
+    kicker:"Mission 2 · Speichern und Stoppen",
+    title:"Förderband steuern",
+    text:"Das Band soll mit einem Taster starten. Es muss mit dem Stopptaster und am Endsensor sicher anhalten.",
+    goals:[
+      "Starttaster S1 startet Motor M1.",
+      "Stopptaster S0 stoppt Motor M1.",
+      "Sensor B2 am Ende stoppt Motor M1."
+    ],
+    inputs:[
+      {id:"s1",label:"Starttaster S1",type:"pulse",help:"kurzer Tastendruck"},
+      {id:"s0",label:"Stopptaster S0",type:"pulse",help:"kurzer Tastendruck"},
+      {id:"b2",label:"Endsensor B2",type:"toggle",help:"Kiste am Ende"}
+    ],
+    outputs:[
+      {id:"m1",label:"Motor M1"}
+    ],
+    initialOutputs:{m1:false},
+    scene:"belt",
+    sequenceTests:true
+  },
+  {
+    id:"ampel",
+    tab:"3 · Ampel",
+    kicker:"Mission 3 · Mehrere Signale",
+    title:"Ampelphasen programmieren",
+    text:"Die Zeitsteuerung gibt immer genau eine Phase vor. Deine SPS soll daraus die drei Lampen der Ampel schalten.",
+    goals:[
+      "Phase ROT: nur Rot leuchtet.",
+      "Phase ROT-GELB: Rot und Gelb leuchten.",
+      "Phase GRÜN: nur Grün leuchtet.",
+      "Phase GELB: nur Gelb leuchtet."
+    ],
+    inputs:[
+      {id:"p0",label:"Phase ROT",type:"phase",help:"Zeitstufe T0"},
+      {id:"p1",label:"Phase ROT-GELB",type:"phase",help:"Zeitstufe T1"},
+      {id:"p2",label:"Phase GRÜN",type:"phase",help:"Zeitstufe T2"},
+      {id:"p3",label:"Phase GELB",type:"phase",help:"Zeitstufe T3"}
+    ],
+    outputs:[
+      {id:"red",label:"Lampe ROT"},
+      {id:"yellow",label:"Lampe GELB"},
+      {id:"green",label:"Lampe GRÜN"}
+    ],
+    initialOutputs:{red:false,yellow:false,green:false},
+    scene:"traffic",
+    phaseCycle:true,
+    tests:[
+      {name:"Phase ROT",inputs:{p0:true,p1:false,p2:false,p3:false},expect:{red:true,yellow:false,green:false}},
+      {name:"Phase ROT-GELB",inputs:{p0:false,p1:true,p2:false,p3:false},expect:{red:true,yellow:true,green:false}},
+      {name:"Phase GRÜN",inputs:{p0:false,p1:false,p2:true,p3:false},expect:{red:false,yellow:false,green:true}},
+      {name:"Phase GELB",inputs:{p0:false,p1:false,p2:false,p3:true},expect:{red:false,yellow:true,green:false}}
+    ]
+  },
+  {
+    id:"schranke",
+    tab:"4 · Schranke",
+    kicker:"Mission 4 · Anlage mit Bewegung",
+    title:"Automatische Schranke",
+    text:"Ein Sensor erkennt ein Fahrzeug. Dann soll die Schranke öffnen. Eine Warnlampe zeigt die Bewegung an.",
+    goals:[
+      "Ohne Fahrzeug ist die Schranke geschlossen und die Warnlampe aus.",
+      "Mit Fahrzeug öffnet die Schranke.",
+      "Mit Fahrzeug leuchtet die Warnlampe."
+    ],
+    inputs:[
+      {id:"car",label:"Fahrzeugsensor B1",type:"toggle",help:"Fahrzeug erkannt"}
+    ],
+    outputs:[
+      {id:"barrier",label:"Schranke M1"},
+      {id:"warn",label:"Warnlampe H1"}
+    ],
+    initialOutputs:{barrier:false,warn:false},
+    scene:"barrier",
+    tests:[
+      {name:"kein Fahrzeug",inputs:{car:false},expect:{barrier:false,warn:false}},
+      {name:"Fahrzeug erkannt",inputs:{car:true},expect:{barrier:true,warn:true}}
+    ]
+  }
+];
+
+var state = {
+  missionIndex:0,
+  rules:{},
+  inputs:{},
+  outputs:{},
+  completed:{},
+  phaseIndex:0,
+  phaseTimer:null
+};
+
+var el = {};
+["mission-tabs","mission-kicker","mission-title","mission-text","goal-list","sim-stage","input-row","rule-input","rule-output","rule-state","rule-action","add-rule","rules-list","rule-count","check-program","feedback","reset-outputs","reset-mission","progress-text","progress-bar","scan-status","scan-status-text"].forEach(function(id){
+  el[id] = document.getElementById(id);
+});
+
+function current(){ return MISSIONS[state.missionIndex]; }
+function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+
+function loadStorage(){
+  try{
+    var saved = JSON.parse(localStorage.getItem("hbg-sps-werkstatt-v1") || "{}");
+    state.rules = saved.rules || {};
+    state.completed = saved.completed || {};
+  }catch(e){
+    state.rules = {};
+    state.completed = {};
+  }
+}
+function saveStorage(){
+  localStorage.setItem("hbg-sps-werkstatt-v1",JSON.stringify({rules:state.rules,completed:state.completed}));
+}
+function missionRules(){
+  var id=current().id;
+  if(!state.rules[id]) state.rules[id]=[];
+  return state.rules[id];
+}
+function labelsById(list,id){
+  for(var i=0;i<list.length;i++) if(list[i].id===id) return list[i].label;
+  return id;
+}
+
+function initMissionState(){
+  var m=current();
+  state.inputs={};
+  m.inputs.forEach(function(input){state.inputs[input.id]=false;});
+  if(m.phaseCycle) state.inputs.p0=true;
+  state.outputs=clone(m.initialOutputs);
+  state.phaseIndex=0;
+  stopPhaseTimer();
+  if(m.phaseCycle) startPhaseTimer();
+}
+
+function buildTabs(){
+  el["mission-tabs"].innerHTML="";
+  MISSIONS.forEach(function(m,i){
+    var b=document.createElement("button");
+    b.type="button";
+    b.className="mission-tab";
+    b.setAttribute("aria-selected",String(i===state.missionIndex));
+    b.textContent=m.tab;
+    if(state.completed[m.id]){
+      var mark=document.createElement("span");
+      mark.className="done-mark";
+      mark.textContent=" ✓";
+      mark.setAttribute("aria-label"," geschafft");
+      b.appendChild(mark);
+    }
+    b.addEventListener("click",function(){switchMission(i);});
+    el["mission-tabs"].appendChild(b);
+  });
+}
+
+function switchMission(index){
+  state.missionIndex=index;
+  initMissionState();
+  renderAll();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function renderMission(){
+  var m=current();
+  el["mission-kicker"].textContent=m.kicker;
+  el["mission-title"].textContent=m.title;
+  el["mission-text"].textContent=m.text;
+  el["goal-list"].innerHTML="";
+  m.goals.forEach(function(g){
+    var li=document.createElement("li"); li.textContent=g; el["goal-list"].appendChild(li);
+  });
+  var inputOptions="";
+  m.inputs.forEach(function(i){inputOptions+='<option value="'+i.id+'">'+i.label+'</option>';});
+  var outputOptions="";
+  m.outputs.forEach(function(o){outputOptions+='<option value="'+o.id+'">'+o.label+'</option>';});
+  el["rule-input"].innerHTML=inputOptions;
+  el["rule-output"].innerHTML=outputOptions;
+}
+
+function sceneHTML(){
+  var m=current();
+  if(m.scene==="light"){
+    return '<div class="scene light-scene" id="machine-scene">'+
+      '<div class="scene-label"><strong>Signalanlage</strong>Eingang B1 → Ausgang H1</div>'+
+      '<div class="machine-shadow" style="left:34%;top:70%;width:360px;height:70px"></div>'+
+      '<div class="light-console"><div class="sensor-box"></div><div class="big-lamp" id="lamp-h1"></div></div>'+
+      '</div>';
+  }
+  if(m.scene==="belt"){
+    return '<div class="scene belt-scene" id="machine-scene">'+
+      '<div class="scene-label"><strong>Förderanlage</strong>Motor M1 bewegt das Band</div>'+
+      '<div class="machine-shadow" style="left:22%;top:72%;width:56%;height:70px"></div>'+
+      '<div class="conveyor"><div class="belt-frame"></div><div class="belt-surface"></div><div class="roller r1"></div><div class="roller r2"></div><div class="package"></div><div class="end-sensor"></div><div class="motor-cube"></div></div>'+
+      '</div>';
+  }
+  if(m.scene==="traffic"){
+    return '<div class="scene traffic-scene" id="machine-scene">'+
+      '<div class="scene-label"><strong>Verkehrsampel</strong>Jede Zeitphase ist ein SPS-Eingang</div>'+
+      '<div class="machine-shadow" style="left:38%;top:82%;width:290px;height:55px"></div>'+
+      '<div class="traffic-wrap"><div class="traffic-pole"></div><div class="traffic-head">'+
+      '<div class="signal-lamp red" id="lamp-red">STOP</div>'+
+      '<div class="signal-lamp yellow" id="lamp-yellow">WARTEN</div>'+
+      '<div class="signal-lamp green" id="lamp-green">FAHREN</div>'+
+      '</div></div><div class="phase-board" id="phase-board">Phase: ROT</div></div>';
+  }
+  return '<div class="scene barrier-scene" id="machine-scene">'+
+    '<div class="scene-label"><strong>Zufahrt</strong>Sensor B1 erkennt ein Fahrzeug</div>'+
+    '<div class="road"><div class="car"></div></div><div class="barrier-base"></div><div class="barrier-arm"></div><div class="warning-lamp" id="warn-lamp">H1</div>'+
+    '</div>';
+}
+
+function renderScene(){
+  el["sim-stage"].innerHTML=sceneHTML();
+  updateScene();
+}
+
+function renderInputs(){
+  var m=current();
+  el["input-row"].innerHTML="";
+  m.inputs.forEach(function(input){
+    var wrap=document.createElement("div");
+    wrap.className="input-control";
+    var html='<strong>'+input.label+'</strong><small>'+input.help+'</small>';
+    if(input.type==="toggle"){
+      html+='<button type="button" class="toggle-btn" data-input="'+input.id+'" aria-pressed="'+String(!!state.inputs[input.id])+'">'+(state.inputs[input.id]?"aktiv":"einschalten")+'</button>'+
+        '<div class="signal-state" id="state-'+input.id+'">'+(state.inputs[input.id]?"Signal: 1 · aktiv":"Signal: 0 · aus")+'</div>';
+    }else if(input.type==="pulse"){
+      html+='<button type="button" class="pulse-btn" data-input="'+input.id+'">Taster drücken</button>'+
+        '<div class="signal-state" id="state-'+input.id+'">Signal: 0 · aus</div>';
+    }else{
+      html+='<div class="signal-state" id="state-'+input.id+'">'+(state.inputs[input.id]?"Signal: 1 · aktiv":"Signal: 0 · aus")+'</div>';
+    }
+    wrap.innerHTML=html;
+    el["input-row"].appendChild(wrap);
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll(".toggle-btn"),function(btn){
+    btn.addEventListener("click",function(){
+      var id=btn.getAttribute("data-input");
+      state.inputs[id]=!state.inputs[id];
+      runScan();
+      renderInputs();
+      updateScene();
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".pulse-btn"),function(btn){
+    btn.addEventListener("click",function(){
+      var id=btn.getAttribute("data-input");
+      state.inputs[id]=true;
+      btn.classList.add("is-active");
+      btn.textContent="gedrückt";
+      var label=document.getElementById("state-"+id);
+      if(label) label.textContent="Signal: 1 · aktiv";
+      runScan();
+      updateScene();
+      setTimeout(function(){
+        state.inputs[id]=false;
+        btn.classList.remove("is-active");
+        btn.textContent="Taster drücken";
+        var l=document.getElementById("state-"+id);
+        if(l) l.textContent="Signal: 0 · aus";
+        runScan();
+        updateScene();
+      },420);
+    });
+  });
+}
+
+function applyRules(inputs,previousOutputs,rules){
+  var out=clone(previousOutputs);
+  var requests={};
+  rules.forEach(function(rule){
+    if(Boolean(inputs[rule.input])===rule.state){
+      if(!requests[rule.output]) requests[rule.output]=[];
+      requests[rule.output].push(rule.action);
+    }
+  });
+  Object.keys(requests).forEach(function(key){
+    var arr=requests[key];
+    out[key]=arr.indexOf(false)!==-1 ? false : true;
+  });
+  return out;
+}
+
+function runScan(){
+  state.outputs=applyRules(state.inputs,state.outputs,missionRules());
+  updateScene();
+}
+
+function updateScene(){
+  var m=current();
+  var scene=document.getElementById("machine-scene");
+  if(!scene) return;
+  if(m.scene==="light"){
+    var lamp=document.getElementById("lamp-h1");
+    if(lamp) lamp.classList.toggle("on",!!state.outputs.h1);
+    scene.classList.toggle("sensor-active",!!state.inputs.b1);
+  }else if(m.scene==="belt"){
+    scene.classList.toggle("motor-on",!!state.outputs.m1);
+    scene.classList.toggle("end-active",!!state.inputs.b2);
+  }else if(m.scene==="traffic"){
+    ["red","yellow","green"].forEach(function(id){
+      var lamp=document.getElementById("lamp-"+id);
+      if(lamp) lamp.classList.toggle("on",!!state.outputs[id]);
+    });
+    var phases=["ROT","ROT-GELB","GRÜN","GELB"];
+    var board=document.getElementById("phase-board");
+    if(board) board.textContent="Phase: "+phases[state.phaseIndex];
+  }else{
+    scene.classList.toggle("car-present",!!state.inputs.car);
+    scene.classList.toggle("barrier-open",!!state.outputs.barrier);
+    var warn=document.getElementById("warn-lamp");
+    if(warn) warn.classList.toggle("on",!!state.outputs.warn);
+  }
+}
+
+function startPhaseTimer(){
+  stopPhaseTimer();
+  state.phaseTimer=setInterval(function(){
+    if(current().id!=="ampel") return;
+    state.phaseIndex=(state.phaseIndex+1)%4;
+    ["p0","p1","p2","p3"].forEach(function(id,i){state.inputs[id]=(i===state.phaseIndex);});
+    runScan();
+    renderInputs();
+  },2500);
+}
+function stopPhaseTimer(){
+  if(state.phaseTimer){clearInterval(state.phaseTimer);state.phaseTimer=null;}
+}
+
+function renderRules(){
+  var m=current();
+  var rules=missionRules();
+  el["rule-count"].textContent=rules.length+" "+(rules.length===1?"Regel":"Regeln");
+  el["rules-list"].innerHTML="";
+  if(!rules.length){
+    el["rules-list"].innerHTML='<div class="empty-rules">Noch keine Regel. Baue oben deine erste WENN-DANN-Regel.</div>';
+    return;
+  }
+  rules.forEach(function(rule,index){
+    var card=document.createElement("div");
+    card.className="rule";
+    var inputLabel=labelsById(m.inputs,rule.input);
+    var outputLabel=labelsById(m.outputs,rule.output);
+    card.innerHTML='<div class="rule-line"><b>WENN</b> '+inputLabel+' '+(rule.state?"aktiv":"nicht aktiv")+
+      '<br><b>DANN</b> '+outputLabel+' '+(rule.action?"EIN":"AUS")+'</div>'+
+      '<div class="rule-actions">'+
+      '<button type="button" class="icon-btn move-up" data-i="'+index+'" aria-label="Regel nach oben">↑</button>'+
+      '<button type="button" class="icon-btn move-down" data-i="'+index+'" aria-label="Regel nach unten">↓</button>'+
+      '<button type="button" class="icon-btn delete-rule" data-i="'+index+'" aria-label="Regel löschen">×</button>'+
+      '</div>';
+    el["rules-list"].appendChild(card);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".delete-rule"),function(b){
+    b.addEventListener("click",function(){
+      missionRules().splice(Number(b.getAttribute("data-i")),1);
+      afterRuleChange();
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".move-up"),function(b){
+    b.addEventListener("click",function(){
+      var i=Number(b.getAttribute("data-i")); if(i<=0)return;
+      var r=missionRules(); var tmp=r[i-1];r[i-1]=r[i];r[i]=tmp;afterRuleChange();
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".move-down"),function(b){
+    b.addEventListener("click",function(){
+      var i=Number(b.getAttribute("data-i")); var r=missionRules(); if(i>=r.length-1)return;
+      var tmp=r[i+1];r[i+1]=r[i];r[i]=tmp;afterRuleChange();
+    });
+  });
+}
+function afterRuleChange(){
+  saveStorage();
+  renderRules();
+  state.outputs=clone(current().initialOutputs);
+  runScan();
+  setFeedback("neutral","Programm geändert","Teste deine Anlage und prüfe sie danach.");
+}
+
+el["add-rule"].addEventListener("click",function(){
+  missionRules().push({
+    input:el["rule-input"].value,
+    state:el["rule-state"].value==="true",
+    output:el["rule-output"].value,
+    action:el["rule-action"].value==="true"
+  });
+  afterRuleChange();
+});
+
+function compareOutputs(actual,expected){
+  var keys=Object.keys(expected);
+  for(var i=0;i<keys.length;i++) if(Boolean(actual[keys[i]])!==Boolean(expected[keys[i]])) return false;
+  return true;
+}
+
+function checkStandard(m){
+  var rules=missionRules();
+  var failed=[];
+  m.tests.forEach(function(t){
+    var start=clone(m.initialOutputs);
+    var out=applyRules(t.inputs,start,rules);
+    if(!compareOutputs(out,t.expect)) failed.push(t.name);
+  });
+  return failed;
+}
+
+function checkBand(){
+  var rules=missionRules();
+  var out={m1:false};
+  var failed=[];
+
+  out=applyRules({s1:true,s0:false,b2:false},out,rules);
+  out=applyRules({s1:false,s0:false,b2:false},out,rules);
+  if(!out.m1) failed.push("Starttaster startet den Motor nicht");
+
+  out=applyRules({s1:false,s0:true,b2:false},out,rules);
+  out=applyRules({s1:false,s0:false,b2:false},out,rules);
+  if(out.m1) failed.push("Stopptaster stoppt den Motor nicht");
+
+  out={m1:false};
+  out=applyRules({s1:true,s0:false,b2:false},out,rules);
+  out=applyRules({s1:false,s0:false,b2:false},out,rules);
+  out=applyRules({s1:false,s0:false,b2:true},out,rules);
+  if(out.m1) failed.push("Endsensor B2 stoppt den Motor nicht");
+
+  return failed;
+}
+
+function setFeedback(kind,title,text){
+  el["feedback"].className="feedback"+(kind==="ok"?" ok":kind==="warn"?" warn":"");
+  el["feedback"].innerHTML="<strong>"+title+"</strong>"+text;
+}
+
+el["check-program"].addEventListener("click",function(){
+  var m=current();
+  var failed=m.sequenceTests?checkBand():checkStandard(m);
+  if(failed.length===0 && missionRules().length>0){
+    state.completed[m.id]=true;
+    saveStorage();
+    setFeedback("ok","Geschafft","Dein Programm erfüllt alle Tests. Probiere die Anlage trotzdem noch einmal selbst aus.");
+    buildTabs();
+    updateProgress();
+  }else{
+    var text=missionRules().length===0?"Du brauchst zuerst mindestens eine Regel.":"Noch nicht passend: "+failed.join("; ")+".";
+    setFeedback("warn","Fast – prüfe deine Regeln",text);
+  }
+});
+
+el["reset-outputs"].addEventListener("click",function(){
+  state.outputs=clone(current().initialOutputs);
+  runScan();
+  setFeedback("neutral","Ausgänge zurückgesetzt","Deine Regeln bleiben erhalten.");
+});
+
+el["reset-mission"].addEventListener("click",function(){
+  var id=current().id;
+  state.rules[id]=[];
+  state.completed[id]=false;
+  saveStorage();
+  initMissionState();
+  renderAll();
+  setFeedback("neutral","Aufgabe neu gestartet","Alle Regeln dieser Aufgabe wurden gelöscht.");
+});
+
+function updateProgress(){
+  var done=0;
+  MISSIONS.forEach(function(m){if(state.completed[m.id])done++;});
+  el["progress-text"].textContent=done+" von "+MISSIONS.length+" geschafft";
+  el["progress-bar"].style.width=(done/MISSIONS.length*100)+"%";
+}
+
+function renderAll(){
+  buildTabs();
+  renderMission();
+  renderScene();
+  renderInputs();
+  renderRules();
+  updateProgress();
+  setFeedback("neutral","Noch nicht geprüft","Baue Regeln und teste deine Anlage.");
+  runScan();
+}
+
+loadStorage();
+initMissionState();
+renderAll();
+
+window.addEventListener("beforeunload",stopPhaseTimer);
+})();
+</script>
+</body>
+</html>
