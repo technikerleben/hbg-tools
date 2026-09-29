@@ -27,7 +27,15 @@ h1{font-size:clamp(30px,7vw,52px);margin:4px 0}.sub{font-size:clamp(16px,4vw,21p
 .actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.big{border:0;border-radius:18px;padding:13px 20px;font-size:19px;font-weight:900;cursor:pointer}
 #check{background:var(--good);color:white}#reset{background:#edf1f6;color:var(--ink)}#sound{background:var(--yellow);color:#4b3b00}
 .message{min-height:44px;text-align:center;font-size:22px;font-weight:900;padding:8px 0 2px}.stars{text-align:center;font-size:28px;letter-spacing:4px;margin:3px 0 10px}
-.help{text-align:center;font-size:14px;opacity:.78;margin-top:10px}.celebrate{animation:pop .45s}@keyframes pop{50%{transform:scale(1.07)}}
+.help{text-align:center;font-size:14px;opacity:.78;margin-top:10px}
+.pair-prompt{display:flex;justify-content:center;align-items:center;gap:16px;min-height:130px}
+.pair-letter{width:110px;height:110px;border-radius:24px;background:#fff;border:5px solid var(--accent);display:grid;place-items:center;font-size:64px;font-weight:900;box-shadow:0 7px 0 #c9d4e5}
+.pair-arrow{font-size:42px}
+.pair-options{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin:24px 0}
+.pair-option{width:82px;height:82px;border-radius:20px;border:0;background:white;color:var(--ink);font-size:46px;font-weight:900;box-shadow:0 5px 0 #c9d4e5;cursor:pointer}
+.pair-option.good{outline:5px solid var(--good);background:#eaf9ef}
+.pair-option.bad{outline:5px solid var(--bad);background:#fff0ec}
+.celebrate{animation:pop .45s}@keyframes pop{50%{transform:scale(1.07)}}
 @media(max-width:560px){.app{padding:10px}.panel{padding:12px}.engine{width:70px;height:62px;font-size:34px}.slot,.letter{width:61px;height:61px;font-size:36px;border-radius:15px}.slot::after{box-shadow:31px 0 0 #33445f;width:13px;height:13px}}
 </style>
 </head>
@@ -39,6 +47,7 @@ h1{font-size:clamp(30px,7vw,52px);margin:4px 0}.sub{font-size:clamp(16px,4vw,21p
 <button class="mode active" data-mode="upper">A B C</button>
 <button class="mode" data-mode="lower">a b c</button>
 <button class="mode" data-mode="mixed">A b C</button>
+<button class="mode" data-mode="pairs">A ↔ a</button>
 </div>
 <div class="progress" id="progress" aria-label="Fortschritt"></div>
 <div class="stars" id="stars">☆☆☆☆☆</div>
@@ -60,9 +69,59 @@ let mode="upper",target=[],placed=[],round=0,stars=0;
 const roundsTotal=5,train=document.getElementById("train"),cards=document.getElementById("cards"),message=document.getElementById("message"),starsEl=document.getElementById("stars"),progress=document.getElementById("progress");
 function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x}
 function visibleLetter(letter,index){if(mode==="upper")return letter;if(mode==="lower")return letter.toLowerCase();return index%2?letter.toLowerCase():letter}
-function newRound(){if(round>=roundsTotal){finishGame();return}placed=[];message.textContent="";const count=round<2?4:5;const start=Math.floor(Math.random()*(alphabet.length-count+1));target=alphabet.slice(start,start+count);renderProgress();render()}
+let pairBase="",pairUpperFirst=true,pairChoices=[];
+function newRound(){
+  if(round>=roundsTotal){finishGame();return}
+  placed=[];message.textContent="";
+  if(mode==="pairs"){
+    pairBase=alphabet[Math.floor(Math.random()*alphabet.length)];
+    pairUpperFirst=Math.random()<.5;
+    const pool=shuffle(alphabet.filter(x=>x!==pairBase)).slice(0,3);
+    pairChoices=shuffle([pairBase,...pool]);
+    renderProgress();renderPairs();return;
+  }
+  const count=round<2?4:5;
+  const start=Math.floor(Math.random()*(alphabet.length-count+1));
+  target=alphabet.slice(start,start+count);
+  renderProgress();render()
+}
 function renderProgress(){progress.innerHTML="";for(let i=0;i<roundsTotal;i++){const d=document.createElement("span");d.className="dot"+(i<round?" done":"");progress.appendChild(d)}starsEl.textContent="★".repeat(stars)+"☆".repeat(roundsTotal-stars)}
-function render(){train.innerHTML='<div class="engine" aria-hidden="true">🚂</div>';target.forEach((_,i)=>{const s=document.createElement("button");s.className="slot"+(placed[i]?" filled":"");s.dataset.index=i;s.textContent=placed[i]||"";s.setAttribute("aria-label",placed[i]?"Buchstabe "+placed[i]+" zurücknehmen":"Freier Platz");if(placed[i])s.onclick=()=>{placed.splice(i,1);render()};train.appendChild(s)});
+function renderPairs(){
+  document.querySelector(".instruction").textContent="Finde den passenden Buchstaben.";
+  train.innerHTML='<div class="pair-prompt"><div class="pair-letter">'+(pairUpperFirst?pairBase:pairBase.toLowerCase())+'</div><div class="pair-arrow">↔</div><div style="font-size:28px">?</div></div>';
+  cards.innerHTML="";
+  const wrap=document.createElement("div");wrap.className="pair-options";
+  pairChoices.forEach(letter=>{
+    const b=document.createElement("button");
+    b.className="pair-option";
+    b.textContent=pairUpperFirst?letter.toLowerCase():letter;
+    b.onclick=()=>{
+      if(letter===pairBase){
+        b.classList.add("good");
+        stars++;round++;
+        message.textContent="Richtig! Die beiden gehören zusammen. ⭐";
+        speak("Richtig! Die beiden gehören zusammen.");
+        setTimeout(()=>{window.currentOptions=null;newRound()},900);
+      }else{
+        b.classList.add("bad");
+        message.textContent="Noch nicht. Probiere einen anderen Buchstaben.";
+        speak("Noch nicht. Probiere einen anderen Buchstaben.");
+        setTimeout(()=>b.classList.remove("bad"),500);
+      }
+    };
+    wrap.appendChild(b);
+  });
+  cards.appendChild(wrap);
+  document.getElementById("check").style.display="none";
+  document.getElementById("reset").style.display="none";
+  document.querySelector(".help").textContent="Tippe auf den passenden Groß- oder Kleinbuchstaben.";
+}
+function render(){
+document.querySelector(".instruction").textContent="Tippe die Buchstaben in alphabetischer Reihenfolge an.";
+document.getElementById("check").style.display="";
+document.getElementById("reset").style.display="";
+document.querySelector(".help").textContent="Tipp: Du kannst einen gesetzten Buchstaben antippen, um ihn wieder zurückzunehmen.";
+train.innerHTML='<div class="engine" aria-hidden="true">🚂</div>';target.forEach((_,i)=>{const s=document.createElement("button");s.className="slot"+(placed[i]?" filled":"");s.dataset.index=i;s.textContent=placed[i]||"";s.setAttribute("aria-label",placed[i]?"Buchstabe "+placed[i]+" zurücknehmen":"Freier Platz");if(placed[i])s.onclick=()=>{placed.splice(i,1);render()};train.appendChild(s)});
 const options=shuffle(target.map((l,i)=>({base:l,show:visibleLetter(l,i)})));if(!window.currentOptions||window.currentTargetKey!==target.join("")+"-"+mode){window.currentOptions=options;window.currentTargetKey=target.join("")+"-"+mode}
 cards.innerHTML="";window.currentOptions.forEach(obj=>{const b=document.createElement("button");b.className="letter";b.textContent=obj.show;b.dataset.base=obj.base;if(placed.some(x=>x===obj.show))b.classList.add("used");b.onclick=()=>{if(placed.length<target.length){placed.push(obj.show);render()}};cards.appendChild(b)})}
 function normalize(ch){return ch.toUpperCase()}
@@ -70,8 +129,14 @@ function check(){if(placed.length!==target.length){message.textContent="Noch nic
 const ok=placed.every((ch,i)=>normalize(ch)===target[i]);if(ok){stars++;round++;message.textContent="Super! Der Zug fährt los! ⭐";document.querySelector(".panel").classList.add("celebrate");speak("Super! Das ist richtig.");setTimeout(()=>{document.querySelector(".panel").classList.remove("celebrate");window.currentOptions=null;newRound()},1100)}else{message.textContent="Fast! Schau noch einmal genau hin.";[...document.querySelectorAll(".slot")].forEach(x=>x.classList.add("bad"));speak("Fast. Versuch es noch einmal.");setTimeout(()=>[...document.querySelectorAll(".slot")].forEach(x=>x.classList.remove("bad")),400)}}
 function resetPlaced(){placed=[];message.textContent="";render()}
 function speak(text){if(!("speechSynthesis" in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="de-DE";u.rate=.85;u.pitch=1.1;speechSynthesis.speak(u)}
-function speakLetters(){speak("Sortiere diese Buchstaben: "+target.map((l,i)=>visibleLetter(l,i)).join(", "))}
-function finishGame(){renderProgress();train.innerHTML='<div style="text-align:center;font-size:70px;width:100%">🏁🚂🎉</div>';cards.innerHTML="";message.innerHTML="Geschafft! Du bist ein Alphabet-Profi! 🌟";speak("Geschafft! Du bist ein Alphabet Profi!")}
+function speakLetters(){
+  if(mode==="pairs"){
+    speak("Finde den passenden Buchstaben zu "+(pairUpperFirst?pairBase:pairBase.toLowerCase()));
+    return;
+  }
+  speak("Sortiere diese Buchstaben: "+target.map((l,i)=>visibleLetter(l,i)).join(", "))
+}
+function finishGame(){renderProgress();train.innerHTML='<div style="text-align:center;font-size:70px;width:100%">🏁🚂🎉</div>';cards.innerHTML="";message.innerHTML=mode==="pairs"?"Geschafft! Du kennst Groß- und Kleinbuchstaben! 🌟":"Geschafft! Du bist ein Alphabet-Profi! 🌟";speak(mode==="pairs"?"Geschafft! Du kennst Groß und Kleinbuchstaben!":"Geschafft! Du bist ein Alphabet Profi!")}
 document.getElementById("check").onclick=check;document.getElementById("reset").onclick=resetPlaced;document.getElementById("sound").onclick=speakLetters;
 document.querySelectorAll(".mode").forEach(btn=>{btn.onclick=()=>{document.querySelectorAll(".mode").forEach(b=>b.classList.remove("active"));btn.classList.add("active");mode=btn.dataset.mode;round=0;stars=0;window.currentOptions=null;newRound()}});
 newRound();
