@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#17345f">
+<title>Lernwörter 3 – Monster-Arena</title>
+<style>
+:root{
+  --ink:#172033;--muted:#64748b;--card:#fff;--blue:#245688;--mint:#48dccb;
+  --orange:#f0a66f;--green:#22c55e;--red:#ef4444;--line:#dbe4ee;
+  --shadow:0 14px 35px rgba(15,23,42,.16)
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;font-family:ui-rounded,"Arial Rounded MT Bold",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink)}
+body{
+  min-height:100dvh;display:flex;justify-content:center;
+  background:linear-gradient(180deg,#bfe7ff 0 43%,#b9efcf 43% 100%)
+}
+button,input{font:inherit}
+button{cursor:pointer}
+.app{width:min(100%,480px);min-height:100dvh;position:relative;overflow:hidden;background:linear-gradient(180deg,#dff3ff 0 44%,#cef5dc 44% 100%)}
+.screen{display:none;min-height:100dvh;padding:16px 14px calc(18px + env(safe-area-inset-bottom))}
+.screen.active{display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.brand{font-weight:1000;font-size:18px;letter-spacing:.2px}
+.pill{background:#ffffffd9;border:1px solid #ffffff;border-radius:999px;padding:7px 11px;font-size:13px;font-weight:900;box-shadow:0 5px 14px #0f172214}
+.card{background:#fffffff2;border:1px solid #ffffff;border-radius:24px;box-shadow:var(--shadow)}
+.hero{padding:20px 17px;margin:auto 0;text-align:center}
+.badge{display:inline-flex;align-items:center;gap:6px;background:#e8fbf7;color:#12675e;border:1px solid #9beadf;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:1000;margin-bottom:14px}
+h1{font-size:35px;line-height:1;margin:0 0 9px;letter-spacing:-.8px}
+.hero p{font-size:16px;line-height:1.45;color:#475569;margin:0 auto 18px;max-width:350px}
+.monsterLogo{width:124px;height:108px;margin:0 auto 15px;position:relative}
+.modeGrid{display:grid;gap:11px;margin-top:12px}
+.modeBtn{border:0;border-radius:20px;padding:15px 14px;text-align:left;background:#fff;box-shadow:0 6px 0 #dce7f0;display:grid;grid-template-columns:48px 1fr 24px;gap:10px;align-items:center}
+.modeBtn:active{transform:translateY(3px);box-shadow:0 3px 0 #dce7f0}
+.modeIcon{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;font-size:25px;background:#edf5ff}
+.modeBtn:nth-child(2) .modeIcon{background:#fff1e7}
+.modeBtn strong{display:block;font-size:17px}.modeBtn small{display:block;color:var(--muted);font-weight:700;margin-top:3px;line-height:1.3}
+.note{font-size:12px;color:var(--muted);margin-top:15px}
+.back{border:0;background:#ffffffd9;width:42px;height:42px;border-radius:14px;font-size:22px;font-weight:900;color:#334155}
+
+.battle{padding:10px 11px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(180deg,#dff3ff 0 45%,#cef5dc 45% 100%)}
+.battleHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+.arena{flex:1;min-height:360px;position:relative;border-radius:26px;overflow:hidden;border:2px solid #ffffffcc;
+  background:
+  radial-gradient(circle at 15% 16%,#ffffffcc 0 8%,transparent 9%),
+  radial-gradient(circle at 80% 20%,#ffffffaa 0 6%,transparent 7%),
+  linear-gradient(180deg,#9bd9ff 0 55%,#8fd990 55% 100%);
+  box-shadow:0 8px 22px #0f17221c,inset 0 -35px 60px #25743b18
+}
+.arena:after{content:"";position:absolute;left:7%;right:7%;bottom:19%;height:48px;border-radius:50%;background:#315f2b28;filter:blur(3px)}
+.status{position:absolute;z-index:5;background:#ffffffee;border:2px solid #496176;border-radius:14px;padding:8px 9px;width:56%;box-shadow:0 4px 0 #33415520}
+.status.enemy{top:13px;left:10px}.status.player{right:10px;bottom:12px}
+.statusRow{display:flex;justify-content:space-between;gap:6px;align-items:center;font-size:13px;font-weight:1000}
+.hpTrack{height:10px;background:#e2e8f0;border-radius:999px;overflow:hidden;border:1px solid #cbd5e1;margin-top:5px}
+.hpFill{height:100%;width:100%;background:var(--green);transition:width .42s ease,background .2s}.hpFill.mid{background:#f59e0b}.hpFill.low{background:var(--red)}
+.monster{position:absolute;z-index:3;transition:transform .2s ease,filter .2s ease}
+.monster svg{width:100%;height:100%;filter:drop-shadow(0 12px 2px #243b5324)}
+.monster.enemy{right:19px;top:83px;width:148px;height:148px}
+.monster.player{left:12px;bottom:65px;width:160px;height:160px}
+.monster.player.attack{transform:translate(45px,-18px) scale(1.08)}
+.monster.enemy.attack{transform:translate(-45px,18px) scale(1.08)}
+.monster.hit{animation:hit .42s ease}
+@keyframes hit{0%,100%{transform:translateX(0)}25%{transform:translateX(-13px);filter:brightness(1.8)}50%{transform:translateX(11px)}75%{transform:translateX(-6px)}}
+.fx{position:absolute;z-index:8;left:50%;top:48%;transform:translate(-50%,-50%) scale(.2);font-size:58px;opacity:0;pointer-events:none}
+.fx.show{animation:fx .65s ease}
+@keyframes fx{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-15deg)}35%{opacity:1;transform:translate(-50%,-50%) scale(1.35)}100%{opacity:0;transform:translate(-50%,-50%) scale(.7) rotate(12deg)}}
+.message{position:absolute;z-index:9;left:50%;top:50%;transform:translate(-50%,-50%);width:82%;background:#172033e8;color:#fff;border-radius:17px;padding:10px 12px;text-align:center;font-weight:1000;opacity:0;transition:opacity .18s;pointer-events:none}
+.message.show{opacity:1}
+
+.quiz{background:#fff;border-radius:23px;padding:12px;margin-top:8px;box-shadow:0 -4px 18px #0f17221a}
+.quizTop{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.streak{font-size:12px;font-weight:1000;background:#fff7dc;color:#995b00;border-radius:999px;padding:6px 9px}
+.counter{font-size:12px;font-weight:900;color:#64748b}
+.prompt{text-align:center;font-size:14px;color:#64748b;font-weight:800;margin:3px 0 4px}
+.clue{text-align:center;font-size:20px;line-height:1.25;font-weight:1000;min-height:50px;display:grid;place-items:center;margin:2px 0 9px}
+.spellRow{display:grid;grid-template-columns:1fr auto;gap:8px}
+.wordInput{width:100%;min-height:54px;border:2px solid #b8c9db;border-radius:16px;padding:0 13px;font-size:20px;font-weight:900;outline:0;background:#f8fbff}
+.wordInput:focus{border-color:var(--blue);box-shadow:0 0 0 4px #24568818}
+.attackBtn{border:0;border-radius:16px;padding:0 17px;background:var(--blue);color:#fff;font-weight:1000;box-shadow:0 5px 0 #173c65}
+.attackBtn:active{transform:translateY(2px);box-shadow:0 3px 0 #173c65}
+.answers{display:grid;grid-template-columns:1fr;gap:8px}
+.answer{min-height:51px;border:2px solid #d8e4ef;border-radius:16px;background:#f7fbff;font-size:17px;font-weight:1000;color:#26415f}
+.answer:active{transform:scale(.99)}
+.answer.correct{background:#dcfce7;border-color:#22c55e;color:#166534}.answer.wrong{background:#fee2e2;border-color:#ef4444;color:#991b1b}
+.feedback{min-height:25px;margin-top:7px;text-align:center;font-size:13px;font-weight:900;color:#475569}
+.hidden{display:none!important}
+
+.result{margin:auto 0;text-align:center;padding:21px 17px}
+.resultIcon{font-size:68px}.result h2{font-size:30px;margin:4px 0 7px}.result p{margin:0;color:#475569;line-height:1.45}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:15px 0}
+.stat{background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:10px 4px}.stat b{display:block;font-size:21px}.stat small{font-size:10px;color:#64748b;font-weight:800}
+.primary,.secondary{width:100%;border:0;border-radius:17px;padding:15px;font-size:17px;font-weight:1000}
+.primary{background:var(--blue);color:#fff;box-shadow:0 5px 0 #173c65}.secondary{background:#edf5ff;color:#234c78;margin-top:9px}
+.primary:active{transform:translateY(2px);box-shadow:0 3px 0 #173c65}
+@media(max-height:720px){
+ .arena{min-height:315px}.monster.enemy{top:70px;width:130px;height:130px}.monster.player{bottom:55px;width:140px;height:140px}
+ .clue{font-size:18px;min-height:42px}.quiz{padding:10px}.answer{min-height:47px}.wordInput{min-height:50px}
+}
+@media(min-width:700px){
+ body{padding:18px}.app{min-height:calc(100dvh - 36px);border-radius:30px;box-shadow:0 25px 70px #0f17223a}.screen{min-height:calc(100dvh - 36px)}
+}
+</style>
+</head>
+<body>
+<main class="app">
+<section id="home" class="screen active">
+  <div class="topbar"><div class="brand">⚔️ Lernwörter-Arena</div><div class="pill" id="bestPill">🏆 0 Siege</div></div>
+  <div class="hero card">
+    <div class="badge">Lernwörter 3 · Klasse 5</div>
+    <div class="monsterLogo" aria-hidden="true">
+      <svg viewBox="0 0 160 140">
+        <ellipse cx="80" cy="121" rx="54" ry="9" fill="#17203322"/>
+        <path d="M39 61Q35 24 58 35Q80 10 102 35Q126 23 121 63Q135 83 119 108Q101 126 79 122Q55 127 38 108Q23 84 39 61Z" fill="#48dccb" stroke="#fff" stroke-width="6"/>
+        <circle cx="62" cy="70" r="10" fill="#fff"/><circle cx="99" cy="70" r="10" fill="#fff"/>
+        <circle cx="64" cy="72" r="4" fill="#172033"/><circle cx="97" cy="72" r="4" fill="#172033"/>
+        <path d="M63 94Q80 105 98 93" fill="none" stroke="#172033" stroke-width="6" stroke-linecap="round"/>
+        <path d="M42 58L27 43M117 58L133 42" stroke="#245688" stroke-width="8" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1>Lernwörter 3</h1>
+    <p>Wähle einen Trainingsmodus. Jede richtige Antwort startet eine Attacke gegen das gegnerische Lernmonster.</p>
+    <div class="modeGrid">
+      <button class="modeBtn" onclick="startGame('spelling')">
+        <div class="modeIcon">✍️</div><div><strong>Schreibung</strong><small>Schreibe die Lernwörter selbst richtig.</small></div><div>›</div>
+      </button>
+      <button class="modeBtn" onclick="startGame('type')">
+        <div class="modeIcon">🔎</div><div><strong>Wortart</strong><small>Erkenne Nomen, Verb oder Adjektiv.</small></div><div>›</div>
+      </button>
+    </div>
+    <div class="note">Deine Siege werden nur auf diesem Gerät gespeichert.</div>
+  </div>
+</section>
+
+<section id="battle" class="screen battle">
+  <div class="battleHeader">
+    <button class="back" onclick="quitGame()" aria-label="Spiel verlassen">×</button>
+    <div class="brand" id="modeTitle">Schreibung</div>
+    <div class="pill" id="roundPill">Runde 1</div>
+  </div>
+  <div class="arena">
+    <div class="status enemy"><div class="statusRow"><span id="enemyName">Neblo</span><span>Gegner</span></div><div class="hpTrack"><div id="enemyHp" class="hpFill"></div></div></div>
+    <div class="monster enemy" id="enemyMonster"></div>
+    <div class="monster player" id="playerMonster"></div>
+    <div class="status player"><div class="statusRow"><span id="playerName">Minto</span><span>Du</span></div><div class="hpTrack"><div id="playerHp" class="hpFill"></div></div></div>
+    <div class="fx" id="fx">💥</div><div class="message" id="battleMessage">Treffer!</div>
+  </div>
+  <div class="quiz">
+    <div class="quizTop"><span class="streak" id="streak">🔥 Serie: 0</span><span class="counter" id="counter">0 richtig</span></div>
+    <div class="prompt" id="prompt"></div>
+    <div class="clue" id="clue"></div>
+    <div id="spellArea">
+      <div class="spellRow">
+        <input id="wordInput" class="wordInput" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" aria-label="Lernwort eingeben">
+        <button class="attackBtn" id="spellButton" onclick="submitSpelling()">ANGRIFF</button>
+      </div>
+    </div>
+    <div id="typeArea" class="answers hidden">
+      <button class="answer" data-type="Nomen" onclick="submitType(this)">Nomen</button>
+      <button class="answer" data-type="Verb" onclick="submitType(this)">Verb</button>
+      <button class="answer" data-type="Adjektiv" onclick="submitType(this)">Adjektiv</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+</section>
+
+<section id="result" class="screen">
+  <div class="topbar"><div class="brand">⚔️ Kampf beendet</div><div class="pill" id="resultWins">🏆 0 Siege</div></div>
+  <div class="result card">
+    <div class="resultIcon" id="resultIcon">🏆</div><h2 id="resultTitle">Gewonnen!</h2><p id="resultText"></p>
+    <div class="stats">
+      <div class="stat"><b id="statCorrect">0</b><small>RICHTIG</small></div>
+      <div class="stat"><b id="statWrong">0</b><small>NOCH ÜBEN</small></div>
+      <div class="stat"><b id="statStreak">0</b><small>BESTE SERIE</small></div>
+    </div>
+    <button class="primary" onclick="restartGame()">NOCH EIN KAMPF</button>
+    <button class="secondary" onclick="goHome()">ANDEREN MODUS WÄHLEN</button>
+  </div>
+</section>
+</main>
+
+<script>
+const WORDS=[
+ {display:"Bett",answer:"Bett",full:"das Bett",type:"Nomen",clue:"Darin schläfst du.",hint:"Artikel: das"},
+ {display:"erklären",answer:"erklären",full:"erklären",type:"Verb",clue:"Jemandem etwas verständlich machen.",hint:"Was kannst du tun?"},
+ {display:"voll",answer:"voll",full:"voll",type:"Adjektiv",clue:"Es passt nichts mehr hinein.",hint:"Wie ist etwas?"},
+ {display:"Handy",answer:"Handy",full:"das Handy",type:"Nomen",clue:"Damit kannst du telefonieren oder Nachrichten schreiben.",hint:"Artikel: das"},
+ {display:"antworten",answer:"antworten",full:"antworten",type:"Verb",clue:"Auf eine Frage etwas sagen oder schreiben.",hint:"Was kannst du tun?"},
+ {display:"leer",answer:"leer",full:"leer",type:"Adjektiv",clue:"Es ist nichts darin.",hint:"Wie ist etwas?"},
+ {display:"Jacke",answer:"Jacke",full:"die Jacke",type:"Nomen",clue:"Du ziehst sie über dein Oberteil.",hint:"Artikel: die"},
+ {display:"erzählen",answer:"erzählen",full:"erzählen",type:"Verb",clue:"Eine Geschichte oder ein Erlebnis berichten.",hint:"Was kannst du tun?"},
+ {display:"hungrig",answer:"hungrig",full:"hungrig",type:"Adjektiv",clue:"Du möchtest etwas essen.",hint:"Wie fühlst du dich?"},
+ {display:"durstig",answer:"durstig",full:"durstig",type:"Adjektiv",clue:"Du möchtest etwas trinken.",hint:"Wie fühlst du dich?"}
+];
+
+const MONSTERS=[
+ {name:"Minto",body:"#48dccb",accent:"#245688",shape:0},
+ {name:"Flammo",body:"#f0a66f",accent:"#c15c35",shape:1},
+ {name:"Lumo",body:"#f7d56a",accent:"#8e6b15",shape:2},
+ {name:"Neblo",body:"#a78bfa",accent:"#6344b5",shape:0},
+ {name:"Mox",body:"#7dd3fc",accent:"#27627b",shape:1},
+ {name:"Krusel",body:"#f9a8d4",accent:"#9d4772",shape:2}
+];
+
+let state={mode:"spelling",playerHp:100,enemyHp:100,streak:0,bestStreak:0,correct:0,wrong:0,round:0,current:null,busy:false,player:MONSTERS[0],enemy:MONSTERS[3]};
+
+function monsterSVG(m,flip=false){
+ const eyeX=m.shape===1?58:61, eyeX2=m.shape===1?100:98;
+ const horns=m.shape===2
+  ? '<path d="M47 48L34 24L61 38M111 48L126 24L99 38" fill="'+m.accent+'" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>'
+  : '<path d="M44 53Q32 27 50 29M115 53Q128 27 109 29" fill="none" stroke="'+m.accent+'" stroke-width="10" stroke-linecap="round"/>';
+ return '<svg viewBox="0 0 160 160" aria-hidden="true">'+
+ '<ellipse cx="80" cy="139" rx="52" ry="9" fill="#17203322"/>'+horns+
+ '<path d="M39 70Q34 42 58 38Q79 19 102 39Q126 42 121 72Q139 95 119 124Q101 143 79 138Q54 143 36 123Q21 94 39 70Z" fill="'+m.body+'" stroke="#fff" stroke-width="6"/>'+
+ '<circle cx="'+eyeX+'" cy="79" r="11" fill="#fff"/><circle cx="'+eyeX2+'" cy="79" r="11" fill="#fff"/>'+
+ '<circle cx="'+(eyeX+2)+'" cy="81" r="4" fill="#172033"/><circle cx="'+(eyeX2-2)+'" cy="81" r="4" fill="#172033"/>'+
+ '<path d="M63 105Q80 '+(m.shape===1?96:116)+' 98 104" fill="none" stroke="#172033" stroke-width="6" stroke-linecap="round"/>'+
+ '<circle cx="43" cy="98" r="7" fill="'+m.accent+'" opacity=".45"/><circle cx="116" cy="98" r="7" fill="'+m.accent+'" opacity=".45"/>'+
+ '</svg>';
+}
+
+function $(id){return document.getElementById(id)}
+function screen(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));$(id).classList.add("active")}
+function savedWins(){return Number(localStorage.getItem("lernwoerter3_wins")||0)}
+function updateWins(){const w=savedWins();$("bestPill").textContent="🏆 "+w+(w===1?" Sieg":" Siege");$("resultWins").textContent="🏆 "+w+(w===1?" Sieg":" Siege")}
+function goHome(){updateWins();screen("home")}
+function quitGame(){goHome()}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function pickMonster(exclude=-1){const ids=MONSTERS.map((_,i)=>i).filter(i=>i!==exclude);return ids[Math.floor(Math.random()*ids.length)]}
+function startGame(mode){
+ state.mode=mode;state.playerHp=100;state.enemyHp=100;state.streak=0;state.bestStreak=0;state.correct=0;state.wrong=0;state.round=0;state.busy=false;
+ const pi=pickMonster();let ei=pickMonster(pi);state.player=MONSTERS[pi];state.enemy=MONSTERS[ei];
+ $("playerMonster").innerHTML=monsterSVG(state.player);$("enemyMonster").innerHTML=monsterSVG(state.enemy,true);
+ $("playerName").textContent=state.player.name;$("enemyName").textContent=state.enemy.name;
+ $("modeTitle").textContent=mode==="spelling"?"✍️ Schreibung":"🔎 Wortart";
+ $("spellArea").classList.toggle("hidden",mode!=="spelling");$("typeArea").classList.toggle("hidden",mode!=="type");
+ setHp("player",100);setHp("enemy",100);screen("battle");nextQuestion();
+}
+function restartGame(){startGame(state.mode)}
+function nextQuestion(){
+ if(state.playerHp<=0||state.enemyHp<=0){finish();return}
+ state.busy=false;state.round++;
+ state.current=WORDS[Math.floor(Math.random()*WORDS.length)];
+ $("roundPill").textContent="Runde "+state.round;
+ $("feedback").textContent="";
+ $("streak").textContent="🔥 Serie: "+state.streak;
+ $("counter").textContent=state.correct+" richtig";
+ if(state.mode==="spelling"){
+   $("prompt").textContent=state.current.hint;
+   $("clue").textContent=state.current.clue;
+   $("wordInput").value="";$("wordInput").disabled=false;$("spellButton").disabled=false;
+   setTimeout(()=>$("wordInput").focus(),120);
+ }else{
+   $("prompt").textContent="Welche Wortart ist dieses Lernwort?";
+   $("clue").textContent=state.current.display;
+   document.querySelectorAll(".answer").forEach(b=>{b.disabled=false;b.classList.remove("correct","wrong")});
+ }
+}
+function normalize(s){return s.trim().replace(/\s+/g," ")}
+function submitSpelling(){
+ if(state.busy)return;
+ const input=normalize($("wordInput").value);
+ if(!input){$("feedback").textContent="Schreibe zuerst das Lernwort.";return}
+ state.busy=true;$("wordInput").disabled=true;$("spellButton").disabled=true;
+ const ok=input===state.current.answer;
+ resolve(ok, ok?"Richtig geschrieben!":"Richtig ist: "+state.current.answer);
+}
+function submitType(btn){
+ if(state.busy)return;state.busy=true;
+ document.querySelectorAll(".answer").forEach(b=>b.disabled=true);
+ const choice=btn.dataset.type,ok=choice===state.current.type;
+ document.querySelectorAll(".answer").forEach(b=>{if(b.dataset.type===state.current.type)b.classList.add("correct")});
+ if(!ok)btn.classList.add("wrong");
+ resolve(ok, ok?"Genau: "+state.current.type+".":"Das ist ein "+state.current.type+".");
+}
+function resolve(ok,text){
+ $("feedback").textContent=text;
+ if(ok){
+   state.correct++;state.streak++;state.bestStreak=Math.max(state.bestStreak,state.streak);
+   const damage=state.streak>0&&state.streak%3===0?18:10;
+   state.enemyHp=Math.max(0,state.enemyHp-damage);
+   setTimeout(()=>attack("player",damage===18?"SUPER-ATTACKE!":"Treffer!"),180);
+ }else{
+   state.wrong++;state.streak=0;state.playerHp=Math.max(0,state.playerHp-12);
+   setTimeout(()=>attack("enemy","Gegenattacke!"),180);
+ }
+ $("streak").textContent="🔥 Serie: "+state.streak;$("counter").textContent=state.correct+" richtig";
+ setTimeout(()=>{setHp("player",state.playerHp);setHp("enemy",state.enemyHp)},360);
+ setTimeout(()=>nextQuestion(),1300);
+}
+function attack(side,msg){
+ const attacker=$(side==="player"?"playerMonster":"enemyMonster");
+ const target=$(side==="player"?"enemyMonster":"playerMonster");
+ attacker.classList.add("attack");
+ setTimeout(()=>{attacker.classList.remove("attack");target.classList.add("hit");$("fx").textContent=side==="player"?"💥":"⚡";$("fx").classList.add("show");showMessage(msg);beep(side==="player"?620:220)},190);
+ setTimeout(()=>target.classList.remove("hit"),620);setTimeout(()=>$("fx").classList.remove("show"),760);
+}
+function showMessage(t){$("battleMessage").textContent=t;$("battleMessage").classList.add("show");setTimeout(()=>$("battleMessage").classList.remove("show"),720)}
+function setHp(side,val){
+ const el=$(side+"Hp");el.style.width=val+"%";el.classList.toggle("mid",val<=55&&val>25);el.classList.toggle("low",val<=25)
+}
+function finish(){
+ const won=state.enemyHp<=0;
+ if(won)localStorage.setItem("lernwoerter3_wins",savedWins()+1);
+ updateWins();
+ $("resultIcon").textContent=won?"🏆":"💪";
+ $("resultTitle").textContent=won?"Kampf gewonnen!":"Fast geschafft!";
+ $("resultText").textContent=won
+  ?"Deine Lernwörter haben richtig starke Attacken ausgelöst. Starte noch einen Kampf und festige sie."
+  :"Dein Lernmonster braucht noch etwas Training. Im nächsten Kampf kannst du die schwierigen Wörter wiederholen.";
+ $("statCorrect").textContent=state.correct;$("statWrong").textContent=state.wrong;$("statStreak").textContent=state.bestStreak;
+ screen("result");
+}
+function beep(freq){
+ try{
+  const C=window.AudioContext||window.webkitAudioContext,c=new C(),o=c.createOscillator(),g=c.createGain();
+  o.frequency.value=freq;o.type="sine";g.gain.setValueAtTime(.05,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.12);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.12)
+ }catch(e){}
+}
+$("wordInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();submitSpelling()}});
+updateWins();
+</script>
+</body>
+</html>
