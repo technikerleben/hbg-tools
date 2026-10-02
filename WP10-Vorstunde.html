@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Startklar für die Strom-Stunde</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#13324B; --paper:#F3F6F9; --card:#FFFFFF; --line:#D3DDE6; --muted:#566978;
+  --orange:#D9701A; --orange-soft:#FCEADB; --green:#24854C; --green-soft:#E1F3E8;
+  --red:#B8372A; --red-soft:#FBE2DE; --sun:#F2B705; --wire:#B5C3CF; --chip:#FFFFFF;
+  --brown:#7A4B26;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#E6EEF5; --paper:#0F1B26; --card:#172735; --line:#2A3F52; --muted:#9FB2C2;
+    --orange:#F08A33; --orange-soft:#3A2614; --green:#45B874; --green-soft:#12301F;
+    --red:#E3675A; --red-soft:#3A1915; --wire:#3B5468; --chip:#1E3345; --brown:#C08A5C;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#E6EEF5; --paper:#0F1B26; --card:#172735; --line:#2A3F52; --muted:#9FB2C2;
+  --orange:#F08A33; --orange-soft:#3A2614; --green:#45B874; --green-soft:#12301F;
+  --red:#E3675A; --red-soft:#3A1915; --wire:#3B5468; --chip:#1E3345; --brown:#C08A5C;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  font-size:19px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:900px;margin:0 auto;padding:20px 18px 48px}
+h1{font-size:1.7rem;line-height:1.2;margin:4px 0 2px}
+h2{font-size:1.45rem;line-height:1.25;margin:0 0 6px}
+p{margin:0 0 12px;max-width:68ch}
+.lead{color:var(--muted);margin-bottom:18px}
+
+/* Stromleitung als Fortschritt */
+.grid{display:flex;align-items:flex-start;margin:18px 0 26px;position:relative}
+.node{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;text-align:center;
+  font-size:.82rem;color:var(--muted);background:none;border:0;padding:0;font-family:inherit}
+.node::before{content:"";position:absolute;top:15px;left:-50%;width:100%;height:4px;background:var(--wire);z-index:0}
+.node:first-child::before{display:none}
+.node.lit::before{background:var(--sun);box-shadow:0 0 8px var(--sun)}
+.dot{width:34px;height:34px;border-radius:50%;border:4px solid var(--wire);background:var(--card);
+  position:relative;z-index:1;display:grid;place-items:center;font-weight:700;font-size:.95rem;color:var(--muted);
+  transition:background .4s,border-color .4s,box-shadow .4s}
+.node.now .dot{border-color:var(--orange);color:var(--orange)}
+.node.lit .dot{background:var(--sun);border-color:var(--sun);color:#3a2a00;box-shadow:0 0 0 6px rgba(242,183,5,.25)}
+.node span{margin-top:6px;max-width:11ch}
+.node.now span{color:var(--ink);font-weight:700}
+
+.screen[hidden]{display:none}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+
+/* Karten */
+.pool{display:flex;flex-wrap:wrap;gap:10px;min-height:64px;padding:12px;border:2px dashed var(--line);border-radius:12px;margin-bottom:16px}
+.pool:empty::after{content:"Alle Karten sind verteilt.";color:var(--muted);align-self:center}
+.chip{touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;
+  font:inherit;font-weight:700;color:var(--ink);background:var(--chip);border:2px solid var(--orange);
+  border-radius:10px;padding:10px 14px;min-height:48px;text-align:left;line-height:1.25}
+.chip.rule{border-color:var(--ink);font-weight:400;max-width:100%}
+.chip.sel{outline:4px solid var(--sun);outline-offset:2px}
+.chip.ok{border-color:var(--green);background:var(--green-soft)}
+.chip.bad{border-color:var(--red);background:var(--red-soft)}
+.chip.ghost{position:fixed;z-index:50;pointer-events:none;opacity:.92;box-shadow:0 10px 24px rgba(0,0,0,.25);transform:rotate(-2deg)}
+.chip.lift{opacity:.3}
+
+.table{display:grid;grid-template-columns:repeat(3,1fr);border:2px solid var(--orange);border-radius:12px;overflow:hidden}
+.col{display:flex;flex-direction:column;min-width:0}
+.col + .col{border-left:2px solid var(--orange)}
+.colhead{background:var(--orange);color:#fff;font-weight:700;padding:10px 12px;min-height:3.6em;display:flex;align-items:center;line-height:1.2}
+.zone{flex:1;min-height:170px;padding:10px;display:flex;flex-direction:column;gap:8px;transition:background .15s}
+.zone.hover{background:var(--orange-soft)}
+.pool.zone{flex:none;min-height:64px;flex-direction:row;flex-wrap:wrap;gap:10px}
+.pool.zone .chip{width:auto}
+.zone .chip{width:100%}
+.rules .table{grid-template-columns:repeat(3,1fr);border-color:var(--ink)}
+.rules .col + .col{border-left-color:var(--ink)}
+.rules .colhead{background:var(--ink);color:var(--paper)}
+.rules .zone.hover{background:var(--paper)}
+
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:18px}
+.btn{font:inherit;font-weight:700;border-radius:12px;padding:12px 20px;min-height:52px;cursor:pointer;border:2px solid var(--ink);background:var(--card);color:var(--ink)}
+.btn.main{background:var(--ink);color:var(--paper)}
+.btn.go{background:var(--green);border-color:var(--green);color:#fff}
+.btn[disabled]{opacity:.35;cursor:not-allowed}
+.btn:focus-visible,.chip:focus-visible,.opt:focus-visible{outline:4px solid var(--sun);outline-offset:2px}
+.msg{font-weight:700}
+.msg.good{color:var(--green)} .msg.warn{color:var(--red)}
+
+/* Leistung */
+.devices{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:6px 0 16px}
+.dev{border:2px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--card)}
+.dev b{display:block;font-size:1.25rem}
+.dev small{color:var(--muted)}
+.meter{height:10px;border-radius:5px;background:var(--line);margin-top:8px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--sun)}
+.formula{border-left:6px solid var(--sun);background:var(--card);padding:12px 14px;border-radius:0 10px 10px 0;margin:0 0 18px;outline:1px solid var(--line)}
+.sub{font-size:1.1rem;margin:0 0 8px}
+.calc{border:2px dashed var(--line);border-radius:12px;padding:14px;margin-bottom:8px}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.pick{font:inherit;padding:8px 14px;min-height:46px;border-radius:999px;border:2px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.pick[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--paper);font-weight:700}
+.result{font-size:1.25rem;font-weight:700}
+.result small{display:block;font-weight:400;font-size:.95rem;color:var(--muted)}
+/* Quiz */
+.balance{display:flex;gap:18px;align-items:center;margin:4px 0 18px;flex-wrap:wrap}
+.balance svg{flex:0 0 auto;max-width:100%}
+.balance p{flex:1 1 280px;margin:0}
+.q{border-top:1px solid var(--line);padding:16px 0}
+.q:first-of-type{border-top:0}
+.q h3{font-size:1.1rem;margin:0 0 10px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.opt{font:inherit;text-align:left;padding:12px 14px;min-height:52px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.opt.right{border-color:var(--green);background:var(--green-soft);font-weight:700}
+.opt.wrong{border-color:var(--red);background:var(--red-soft)}
+.opt[disabled]{cursor:default}
+.why{margin:10px 0 0;padding:10px 12px;border-left:4px solid var(--green);background:var(--green-soft);border-radius:0 8px 8px 0}
+.why.again{border-left-color:var(--red);background:var(--red-soft)}
+
+.open{display:inline-flex;align-items:center;gap:10px;text-decoration:none}
+.mission{border-top:1px solid var(--line);padding:16px 0}
+.hint{color:var(--muted);font-size:.9rem}
+
+.end{text-align:center;padding:30px 20px}
+.score{font-size:3.4rem;font-weight:700;line-height:1;margin:10px 0}
+.end p{margin-left:auto;margin-right:auto}
+
+@media (max-width:640px){
+  body{font-size:17px}
+  .table{grid-template-columns:1fr}
+  .col + .col{border-left:0;border-top:2px solid var(--orange)}
+  .rules .col + .col{border-top-color:var(--ink)}
+  .zone{min-height:90px}
+  .colhead{min-height:0}
+  .node span{font-size:.72rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Startklar für die Strom-Stunde</h1>
+  <p class="lead">Fünf kurze Stationen. Bring den Strom bis ans Ende der Leitung.</p>
+
+  <nav class="grid" aria-label="Fortschritt">
+    <div class="node now" id="n1"><div class="dot">1</div><span>Energie­träger</span></div>
+    <div class="node" id="n2"><div class="dot">2</div><span>Klima­neutral</span></div>
+    <div class="node" id="nL"><div class="dot">3</div><span>Leistung</span></div>
+    <div class="node" id="n3"><div class="dot">4</div><span>Fachraum</span></div>
+    <div class="node" id="n4"><div class="dot">5</div><span>Electricity Maps</span></div>
+  </nav>
+
+  <!-- Station 1 -->
+  <section class="screen" id="s1">
+    <div class="panel">
+      <h2>Ordne die Energieträger ein</h2>
+      <p>Zieh jede Karte in die richtige Spalte. Oder: Karte antippen, dann Spalte antippen.<br>
+      <span class="hint">Tipp: Einer passt weder zu „fossil“ noch zu „erneuerbar“.</span></p>
+      <div class="pool zone" id="pool1" data-cat="pool"></div>
+      <div class="table">
+        <div class="col"><div class="colhead">fossil</div><div class="zone" data-cat="fossil"></div></div>
+        <div class="col"><div class="colhead">erneuerbar (regenerativ)</div><div class="zone" data-cat="erneuerbar"></div></div>
+        <div class="col"><div class="colhead">weder noch</div><div class="zone" data-cat="weder"></div></div>
+      </div>
+      <div class="bar">
+        <button class="btn main" id="check1">Prüfen</button>
+        <span class="msg" id="msg1" role="status"></span>
+        <button class="btn go" id="next1" hidden>Weiter zu Station 2</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Station 2 -->
+  <section class="screen" id="s2" hidden>
+    <div class="panel">
+      <h2>Was hat Deutschland vor?</h2>
+      <div class="balance">
+        <svg width="210" height="130" viewBox="0 0 210 130" role="img" aria-label="Waage im Gleichgewicht: Ausstoß und Ausgleich gleich schwer">
+          <line x1="105" y1="20" x2="105" y2="112" stroke="currentColor" stroke-width="5"/>
+          <rect x="70" y="110" width="70" height="8" rx="3" fill="currentColor"/>
+          <line x1="25" y1="30" x2="185" y2="30" stroke="currentColor" stroke-width="5"/>
+          <circle cx="105" cy="26" r="7" fill="#F2B705"/>
+          <line x1="35" y1="30" x2="20" y2="70" stroke="currentColor" stroke-width="2"/>
+          <line x1="35" y1="30" x2="50" y2="70" stroke="currentColor" stroke-width="2"/>
+          <line x1="175" y1="30" x2="160" y2="70" stroke="currentColor" stroke-width="2"/>
+          <line x1="175" y1="30" x2="190" y2="70" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 70 h46 a23 14 0 0 1 -46 0z" fill="#B8372A"/>
+          <path d="M152 70 h46 a23 14 0 0 1 -46 0z" fill="#24854C"/>
+          <text x="35" y="104" text-anchor="middle" font-size="12" fill="currentColor" font-family="inherit">Ausstoß</text>
+          <text x="175" y="104" text-anchor="middle" font-size="12" fill="currentColor" font-family="inherit">Ausgleich</text>
+        </svg>
+        <p><strong>Klimaneutral</strong> heißt: Unterm Strich kommen keine Treibhausgase mehr dazu. Was noch ausgestoßen wird, muss ausgeglichen werden, zum Beispiel durch Wälder und Moore, die CO₂ speichern.</p>
+      </div>
+      <div id="quiz"></div>
+      <div class="bar">
+        <span class="msg" id="msg2" role="status"></span>
+        <button class="btn go" id="next2" hidden>Weiter zu Station 3</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Station Leistung -->
+  <section class="screen" id="sL" hidden>
+    <div class="panel">
+      <h2>Leistung und Kilowattstunde</h2>
+      <p><strong>Leistung</strong> sagt, wie viel Strom ein Gerät braucht, während es läuft. Man misst sie in <strong>Watt (W)</strong>. 1000 Watt sind <strong>1 Kilowatt (kW)</strong>.</p>
+      <div class="devices" id="devices"></div>
+      <div class="formula">
+        <strong>Leistung × Zeit = Energie</strong><br>
+        Ein Gerät mit <strong>1 kW</strong>, das <strong>1 Stunde</strong> läuft, verbraucht <strong>1 kWh</strong>.
+      </div>
+
+      <h3 class="sub">Probier es aus</h3>
+      <div class="calc">
+        <div class="row" id="pickDev" role="group" aria-label="Gerät"></div>
+        <div class="row" id="pickTime" role="group" aria-label="Zeit"></div>
+        <div class="result" id="calcOut" aria-live="polite"></div>
+      </div>
+
+      <div id="quizL"></div>
+      <div class="bar">
+        <span class="msg" id="msgL" role="status"></span>
+        <button class="btn go" id="nextL" hidden>Weiter zu Station 4</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Station 3 -->
+  <section class="screen rules" id="s3" hidden>
+    <div class="panel">
+      <h2>Regeln im Fachraum</h2>
+      <p>Wann gilt welche Regel? Sortiere die Karten.</p>
+      <div class="pool zone" id="pool3" data-cat="pool"></div>
+      <div class="table">
+        <div class="col"><div class="colhead">Vor der Stunde</div><div class="zone" data-cat="vor"></div></div>
+        <div class="col"><div class="colhead">In der Stunde</div><div class="zone" data-cat="in"></div></div>
+        <div class="col"><div class="colhead">Am Ende</div><div class="zone" data-cat="ende"></div></div>
+      </div>
+      <div class="bar">
+        <button class="btn main" id="check3">Prüfen</button>
+        <span class="msg" id="msg3" role="status"></span>
+        <button class="btn go" id="next3" hidden>Weiter zu Station 5</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Station 4 -->
+  <section class="screen" id="s4" hidden>
+    <div class="panel">
+      <h2>Erster Blick auf Electricity Maps</h2>
+      <p>Öffne die Seite. Sie geht in einem neuen Tab auf. Danach kommst du hierher zurück.</p>
+      <a class="btn main open" href="https://app.electricitymaps.com" target="_blank" rel="noopener">Electricity Maps öffnen</a>
+      <p class="hint" style="margin-top:10px">Unten rechts auf der Karte siehst du die Farbskala: grün = wenig CO₂, braun = viel CO₂.</p>
+
+      <div class="mission" id="m1">
+        <h3>Welche Farbe hat Deutschland gerade?</h3>
+        <div class="opts">
+          <button class="opt" data-any="1">grün</button>
+          <button class="opt" data-any="1">gelb</button>
+          <button class="opt" data-any="1">orange</button>
+          <button class="opt" data-any="1">braun</button>
+        </div>
+      </div>
+      <div class="mission" id="m2">
+        <h3>Finde ein Land, das grün ist. Welches?</h3>
+        <div class="opts">
+          <button class="opt" data-ok="1">Norwegen</button>
+          <button class="opt">Polen</button>
+          <button class="opt" data-ok="1">Frankreich</button>
+          <button class="opt">Tschechien</button>
+        </div>
+      </div>
+      <div class="mission" id="m3">
+        <h3>Welches Land ist dunkelbraun?</h3>
+        <div class="opts">
+          <button class="opt">Norwegen</button>
+          <button class="opt">Frankreich</button>
+          <button class="opt" data-ok="1">Polen</button>
+          <button class="opt">Schweden</button>
+        </div>
+      </div>
+      <div class="bar">
+        <span class="msg" id="msg4" role="status"></span>
+        <button class="btn go" id="next4" hidden>Fertig</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ende -->
+  <section class="screen" id="s5" hidden>
+    <div class="panel end">
+      <h2>Der Strom ist angekommen!</h2>
+      <div class="score" id="score"></div>
+      <p id="scoretext"></p>
+      <p class="hint">Zeig diesen Bildschirm deinem Lehrer.</p>
+      <div class="bar" style="justify-content:center"><button class="btn" id="restart">Nochmal von vorn</button></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const shuffle = a => { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+  const points = {s1:0,s2:0,sL:0,s3:0,s4:0};
+  const firstTry = {s1:true,s3:true};
+
+  /* ---------- Karten ziehen oder antippen ---------- */
+  let selected = null, drag = null, suppressClick = false;
+
+  function makeChip(text, cat, extra){
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip' + (extra ? ' ' + extra : '');
+    b.textContent = text; b.dataset.cat = cat;
+    b.addEventListener('pointerdown', startDrag);
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      if (suppressClick) { suppressClick = false; return; }
+      if (selected === b) { b.classList.remove('sel'); selected = null; return; }
+      if (selected && selected.parentElement !== b.parentElement) { place(selected, b.parentElement); return; }
+      if (selected) selected.classList.remove('sel');
+      selected = b; b.classList.add('sel');
+    });
+    return b;
+  }
+  function place(chip, zone){
+    chip.classList.remove('ok','bad','sel');
+    zone.appendChild(chip);
+    if (selected === chip) selected = null;
+  }
+  document.querySelectorAll('.zone').forEach(z => z.addEventListener('click', () => {
+    if (selected) place(selected, z);
+  }));
+
+  function startDrag(e){
+    if (e.button !== undefined && e.button !== 0) return;
+    const chip = e.currentTarget;
+    drag = {chip, x0:e.clientX, y0:e.clientY, ghost:null, over:null};
+    chip.setPointerCapture(e.pointerId);
+    chip.addEventListener('pointermove', moveDrag);
+    chip.addEventListener('pointerup', endDrag);
+    chip.addEventListener('pointercancel', endDrag);
+  }
+  function moveDrag(e){
+    if (!drag) return;
+    const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
+    if (!drag.ghost){
+      if (Math.hypot(dx,dy) < 8) return;
+      const r = drag.chip.getBoundingClientRect();
+      const g = drag.chip.cloneNode(true);
+      g.classList.add('ghost'); g.classList.remove('sel');
+      g.style.width = r.width + 'px';
+      drag.offX = drag.x0 - r.left; drag.offY = drag.y0 - r.top;
+      document.body.appendChild(g); drag.ghost = g;
+      drag.chip.classList.add('lift');
+    }
+    drag.ghost.style.left = (e.clientX - drag.offX) + 'px';
+    drag.ghost.style.top = (e.clientY - drag.offY) + 'px';
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const z = el && el.closest('.zone');
+    if (drag.over && drag.over !== z) drag.over.classList.remove('hover');
+    if (z) z.classList.add('hover');
+    drag.over = z;
+  }
+  function endDrag(e){
+    if (!drag) return;
+    const {chip, ghost, over} = drag;
+    chip.removeEventListener('pointermove', moveDrag);
+    chip.removeEventListener('pointerup', endDrag);
+    chip.removeEventListener('pointercancel', endDrag);
+    if (ghost){
+      ghost.remove(); chip.classList.remove('lift');
+      if (over){ over.classList.remove('hover'); place(chip, over); }
+      suppressClick = true; setTimeout(() => suppressClick = false, 50);
+    }
+    drag = null;
+  }
+
+  function fill(pool, items, extra){
+    pool.innerHTML = '';
+    shuffle(items.slice()).forEach(([t,c]) => pool.appendChild(makeChip(t,c,extra)));
+  }
+  function check(screen, pool, msg, next, key, total){
+    if (pool.children.length){
+      msg.className = 'msg warn';
+      msg.textContent = 'Noch ' + pool.children.length + (pool.children.length === 1 ? ' Karte' : ' Karten') + ' übrig.';
+      return;
+    }
+    let ok = 0;
+    screen.querySelectorAll('.zone:not(.pool) .chip').forEach(c => {
+      const good = c.dataset.cat === c.parentElement.dataset.cat;
+      c.classList.toggle('ok', good); c.classList.toggle('bad', !good);
+      if (good) ok++;
+    });
+    if (firstTry[key]) { points[key] = ok; firstTry[key] = false; }
+    if (ok === total){
+      msg.className = 'msg good'; msg.textContent = 'Alles richtig!';
+      next.hidden = false;
+    } else {
+      msg.className = 'msg warn';
+      msg.textContent = (total - ok) + ' noch falsch. Verschieb die roten Karten.';
+    }
+  }
+
+  /* ---------- Station 1 ---------- */
+  const s1items = [['Braunkohle','fossil'],['Steinkohle','fossil'],['Erdgas','fossil'],
+    ['Windkraft','erneuerbar'],['Sonnenenergie','erneuerbar'],['Biomasse','erneuerbar'],['Wasserkraft','erneuerbar'],['Geothermie','erneuerbar'],
+    ['Kernenergie (Uran)','weder']];
+  fill($('#pool1'), s1items);
+  $('#check1').onclick = () => check($('#s1'), $('#pool1'), $('#msg1'), $('#next1'), 's1', 9);
+
+  /* ---------- Station 2 ---------- */
+  const qs = [
+    {q:'Was bedeutet „klimaneutral“?', o:['Es wird gar kein Strom mehr verbraucht.','Unterm Strich kommen keine Treibhausgase mehr dazu.','Alle Autos fahren elektrisch.','Es gibt keine Kraftwerke mehr.'], a:1,
+     w:'Genau. Was noch ausgestoßen wird, muss ausgeglichen werden.'},
+    {q:'Bis wann will Deutschland klimaneutral sein?', o:['2030','2038','2045','2060'], a:2,
+     w:'Richtig: bis 2045.'},
+    {q:'Spätestens wann geht in Deutschland das letzte Kohlekraftwerk vom Netz?', o:['2023','2030','2038','2045'], a:2,
+     w:'Richtig: spätestens 2038. Das nennt man Kohleausstieg.'}
+  ];
+  let answered = 0;
+  const quiz = $('#quiz');
+  function buildQuiz(){
+    quiz.innerHTML = ''; answered = 0; points.s2 = 0; $('#next2').hidden = true; $('#msg2').textContent = '';
+    qs.forEach((item, qi) => {
+      const box = document.createElement('div'); box.className = 'q';
+      box.innerHTML = '<h3>' + (qi+1) + '. ' + item.q + '</h3>';
+      const opts = document.createElement('div'); opts.className = 'opts';
+      let tries = 0;
+      item.o.forEach((txt, oi) => {
+        const b = document.createElement('button'); b.className = 'opt'; b.type = 'button'; b.textContent = txt;
+        b.onclick = () => {
+          tries++;
+          let why = box.querySelector('.why');
+          if (!why){ why = document.createElement('p'); why.className = 'why'; box.appendChild(why); }
+          if (oi === item.a){
+            b.classList.add('right');
+            opts.querySelectorAll('.opt').forEach(x => x.disabled = true);
+            why.className = 'why'; why.textContent = item.w;
+            if (tries === 1) points.s2++;
+            answered++;
+            if (answered === qs.length){
+              $('#msg2').className = 'msg good';
+              $('#msg2').textContent = 'Geschafft: ' + points.s2 + ' von ' + qs.length + ' beim ersten Versuch.';
+              $('#next2').hidden = false;
+            }
+          } else {
+            b.classList.add('wrong'); b.disabled = true;
+            why.className = 'why again'; why.textContent = 'Leider nicht. Versuch es nochmal.';
+          }
+        };
+        opts.appendChild(b);
+      });
+      box.appendChild(opts); quiz.appendChild(box);
+    });
+  }
+  buildQuiz();
+
+  /* ---------- Station Leistung ---------- */
+  const devs = [['LED-Lampe',10],['Handy laden',20],['Fernseher',100],['Mikrowelle',800],['Föhn',2000]];
+  const fmt = n => (Math.round(n*100)/100).toString().replace('.', ',');
+  const wtxt = w => w >= 1000 ? fmt(w/1000) + ' kW' : w + ' W';
+  $('#devices').innerHTML = devs.map(([n,w]) =>
+    '<div class="dev">' + n + '<b>' + wtxt(w) + '</b><div class="meter"><i style="width:' + Math.max(2, w/20) + '%"></i></div></div>').join('');
+  let dSel = 4, tSel = 1;
+  const times = [[0.5,'½ Stunde'],[1,'1 Stunde'],[2,'2 Stunden'],[10,'10 Stunden']];
+  function drawCalc(){
+    $('#pickDev').innerHTML = devs.map(([n],i) => '<button class="pick" data-i="'+i+'" aria-pressed="'+(i===dSel)+'">'+n+'</button>').join('');
+    $('#pickTime').innerHTML = times.map(([h,l],i) => '<button class="pick" data-t="'+i+'" aria-pressed="'+(i===tSel)+'">'+l+'</button>').join('');
+    const [n,w] = devs[dSel], [h,l] = times[tSel];
+    const kwh = w/1000*h;
+    $('#calcOut').innerHTML = n + ' läuft ' + l + ': <span style="color:var(--orange)">' + fmt(kwh) + ' kWh</span>' +
+      '<small>' + fmt(w/1000) + ' kW × ' + fmt(h) + ' h = ' + fmt(kwh) + ' kWh</small>';
+    $('#pickDev').querySelectorAll('.pick').forEach(b => b.onclick = () => { dSel = +b.dataset.i; drawCalc(); });
+    $('#pickTime').querySelectorAll('.pick').forEach(b => b.onclick = () => { tSel = +b.dataset.t; drawCalc(); });
+  }
+  drawCalc();
+
+  const qL = [
+    {q:'Welches Gerät hat die größte Leistung?', o:['LED-Lampe','Fernseher','Föhn','Handy laden'], a:2, w:'Richtig: Der Föhn braucht 2000 Watt.'},
+    {q:'1000 Watt sind …', o:['1 W','1 kW','10 kW','100 kW'], a:1, w:'Richtig: 1000 W = 1 kW.'},
+    {q:'Der Föhn (2 kW) läuft 1 Stunde. Wie viel Energie braucht er?', o:['1 kWh','2 kWh','20 kWh','2000 kWh'], a:1, w:'Richtig: 2 kW × 1 h = 2 kWh.'},
+    {q:'Der Fernseher (100 W) läuft 10 Stunden. Wie viel Energie braucht er?', o:['1 kWh','10 kWh','100 kWh','1000 kWh'], a:0, w:'Richtig: 0,1 kW × 10 h = 1 kWh. Teste es oben im Rechner!'}
+  ];
+  points.sL = 0; let answeredL = 0;
+  qL.forEach((item, qi) => {
+    const box = document.createElement('div'); box.className = 'q';
+    box.innerHTML = '<h3>' + (qi+1) + '. ' + item.q + '</h3>';
+    const opts = document.createElement('div'); opts.className = 'opts';
+    let tries = 0;
+    item.o.forEach((txt, oi) => {
+      const b = document.createElement('button'); b.className = 'opt'; b.type = 'button'; b.textContent = txt;
+      b.onclick = () => {
+        tries++;
+        let why = box.querySelector('.why');
+        if (!why){ why = document.createElement('p'); box.appendChild(why); }
+        if (oi === item.a){
+          b.classList.add('right'); opts.querySelectorAll('.opt').forEach(x => x.disabled = true);
+          why.className = 'why'; why.textContent = item.w;
+          if (tries === 1) points.sL++;
+          if (++answeredL === qL.length){
+            $('#msgL').className = 'msg good';
+            $('#msgL').textContent = 'Geschafft: ' + points.sL + ' von ' + qL.length + ' beim ersten Versuch.';
+            $('#nextL').hidden = false;
+          }
+        } else {
+          b.classList.add('wrong'); b.disabled = true;
+          why.className = 'why again'; why.textContent = 'Leider nicht. Schau nochmal oben.';
+        }
+      };
+      opts.appendChild(b);
+    });
+    box.appendChild(opts); $('#quizL').appendChild(box);
+  });
+
+  /* ---------- Station 3 ---------- */
+  const s3items = [
+    ['Ich bin um 11:35 Uhr zum Unterricht da.','vor'],
+    ['Ich stelle Tasche und Jacke in die Garderoben-Ecke.','vor'],
+    ['Ich hole mein geladenes iPad und einen Stift aus der Tasche.','vor'],
+    ['Wir beginnen gemeinsam mit der Begrüßung.','in'],
+    ['In der Partnerarbeit flüstere ich nur mit meinem Nachbarn.','in'],
+    ['Ich melde mich und rufe nicht einfach rein.','in'],
+    ['Mir wird ein Partner zugeteilt. Ich fange nicht an zu diskutieren.','in'],
+    ['Ich kenne die Regeln für die einzelnen Arbeitsphasen.','in'],
+    ['Ich stelle meinen Stuhl hoch.','ende'],
+    ['Ich nehme meine Unterlagen mit nach Hause.','ende']
+  ];
+  fill($('#pool3'), s3items, 'rule');
+  $('#check3').onclick = () => check($('#s3'), $('#pool3'), $('#msg3'), $('#next3'), 's3', 10);
+
+  /* ---------- Station 4 ---------- */
+  let missions = 0;
+  ['#m1','#m2','#m3'].forEach(id => {
+    const m = $(id); let tries = 0; let done = false;
+    m.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+      if (done) return;
+      tries++;
+      let why = m.querySelector('.why');
+      if (!why){ why = document.createElement('p'); why.className = 'why'; m.appendChild(why); }
+      if (b.dataset.any || b.dataset.ok){
+        b.classList.add('right'); done = true;
+        m.querySelectorAll('.opt').forEach(x => x.disabled = true);
+        why.className = 'why';
+        why.textContent = b.dataset.any ? 'Merk dir die Farbe. In der nächsten Stunde schauen wir genauer hin.'
+          : (id === '#m2' ? 'Stimmt! Dort kommt viel Strom aus Wasserkraft oder Atomkraft.' : 'Stimmt! Polen macht sehr viel Strom aus Kohle.');
+        if (!b.dataset.any && tries === 1) points.s4++;
+        missions++;
+        if (missions === 3){ $('#msg4').className = 'msg good'; $('#msg4').textContent = 'Super, du kennst dich schon aus!'; $('#next4').hidden = false; }
+      } else {
+        b.classList.add('wrong'); b.disabled = true;
+        why.className = 'why again'; why.textContent = 'Schau nochmal auf die Karte.';
+      }
+    });
+  });
+
+  /* ---------- Navigation ---------- */
+  const order = ['s1','s2','sL','s3','s4','s5'];
+  const nodes = ['n1','n2','nL','n3','n4'];
+  function go(id){
+    const n = order.indexOf(id);
+    order.forEach(x => $('#'+x).hidden = (x !== id));
+    nodes.forEach((x,i) => { $('#'+x).classList.toggle('lit', i < n); $('#'+x).classList.toggle('now', i === n); });
+    window.scrollTo({top:0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+    if (id === 's5'){
+      const total = points.s1 + points.s2 + points.sL + points.s3 + points.s4, max = 9 + 3 + 4 + 10 + 2;
+      $('#score').textContent = total + ' / ' + max;
+      $('#scoretext').textContent = 'Punkte beim ersten Versuch. Energieträger ' + points.s1 + '/9 · Klimaneutral ' + points.s2 + '/3 · Leistung ' + points.sL + '/4 · Fachraum ' + points.s3 + '/10 · Karte ' + points.s4 + '/2';
+    }
+  }
+  $('#next1').onclick = () => go('s2');
+  $('#next2').onclick = () => go('sL');
+  $('#nextL').onclick = () => go('s3');
+  $('#next3').onclick = () => go('s4');
+  $('#next4').onclick = () => go('s5');
+  $('#restart').onclick = () => location.reload();
+})();
+</script>
+</body>
+</html>
