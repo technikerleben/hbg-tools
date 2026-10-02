@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Deutsch in der Schule – Schritt für Schritt</title>
+<style>
+:root{
+  --blue:#245688;--mint:#48DCCB;--orange:#F0A66F;--ink:#183044;--soft:#f5f7fa;
+  --ok:#2f8f68;--bad:#b74a4a;--card:#fff;--line:#dbe3ea;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#eef6fb,#fff 45%);color:var(--ink)}
+button{font:inherit}
+.wrap{max-width:900px;margin:auto;padding:18px 16px 90px}
+header{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.logo{width:54px;height:54px;border-radius:16px;background:var(--mint);display:grid;place-items:center;font-size:30px;box-shadow:0 8px 20px #0001}
+h1{font-size:clamp(24px,4vw,38px);margin:0;color:var(--blue);line-height:1.05}
+.sub{margin:4px 0 0;color:#53697a;font-size:14px}
+.progress{background:#dce8ef;border-radius:999px;height:14px;overflow:hidden;margin:14px 0 6px}
+.progress>div{height:100%;background:linear-gradient(90deg,var(--mint),var(--blue));width:0;transition:.35s}
+.progress-text{font-size:13px;color:#617381;text-align:right}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 10px 30px #18304412}
+.hero{padding:26px}
+.hero h2{font-size:28px;margin:0 0 8px}
+.tr{color:#5b6f7e}
+.bigbtn,.choice,.smallbtn{border:0;border-radius:16px;cursor:pointer;transition:.15s}
+.bigbtn{width:100%;padding:16px 18px;background:var(--blue);color:#fff;font-weight:800;margin-top:16px;box-shadow:0 8px 20px #24568833}
+.bigbtn:active,.choice:active,.smallbtn:active{transform:scale(.98)}
+.smallbtn{padding:10px 13px;background:#edf3f7;color:var(--blue);font-weight:700}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:18px 0}
+.step{min-height:68px;border:1px solid var(--line);border-radius:15px;padding:8px;background:#fff;text-align:center;font-size:12px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.step strong{font-size:18px;color:var(--blue)}
+.step.active{outline:3px solid var(--mint);border-color:transparent}
+.step.done{background:#edf9f5}
+.step.locked{opacity:.55}
+.badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:#eaf8f5;padding:7px 11px;font-weight:700;color:#276e5b;font-size:13px}
+.toprow{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.wordbox{text-align:center;padding:22px 8px}
+.emoji{font-size:72px;line-height:1.1}
+.de{font-size:38px;font-weight:900;color:var(--blue);margin:10px 0 2px}
+.article{font-size:18px;color:#72818d}
+.translation{font-size:25px;margin-top:12px;color:#374b5a}
+.hiddenword{filter:blur(8px);user-select:none}
+.actionrow{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.speaker{background:var(--orange);color:#422c1e}
+.navrow{display:flex;gap:10px;margin-top:18px}
+.navrow button{flex:1}
+.question{font-size:24px;font-weight:850;margin:8px 0 18px}
+.choices{display:grid;gap:10px}
+.choice{text-align:left;padding:15px;background:#f4f7f9;border:2px solid transparent;font-weight:750;color:var(--ink)}
+.choice:hover{border-color:#abc0d0}
+.choice.correct{background:#e8f7f1;border-color:#77c4a8}
+.choice.wrong{background:#fdeeee;border-color:#d98f8f}
+.feedback{min-height:54px;margin-top:12px;border-radius:14px;padding:12px 14px;background:#f6f8fa}
+.feedback.ok{background:#e8f7f1;color:#24674f}
+.feedback.bad{background:#fdeeee;color:#8c3030}
+.matchgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.matchitem{padding:14px;border-radius:14px;border:2px solid var(--line);background:#fff;cursor:pointer;min-height:54px;font-weight:750}
+.matchitem.sel{border-color:var(--orange);background:#fff6ee}
+.matchitem.gone{visibility:hidden}
+.leveldone{text-align:center;padding:18px}
+.leveldone .cup{font-size:72px}
+.stars{font-size:38px;letter-spacing:5px}
+.notice{font-size:14px;background:#eef5fa;padding:12px 14px;border-radius:14px;margin-top:12px}
+.footerbar{position:fixed;bottom:0;left:0;right:0;background:#ffffffeb;backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:10px 16px;z-index:10}
+.footerinner{max-width:900px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.xp{font-weight:800;color:var(--blue)}
+@media(max-width:620px){
+ .steps{grid-template-columns:repeat(5,90px);overflow-x:auto;padding-bottom:4px}
+ .card{padding:17px;border-radius:18px}
+ .de{font-size:32px}
+ .emoji{font-size:58px}
+ .matchgrid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo">🎒</div>
+  <div>
+    <h1>Deutsch in der Schule</h1>
+    <p class="sub">Okul Almancası · Schritt für Schritt</p>
+  </div>
+</header>
+
+<div class="progress"><div id="progressBar"></div></div>
+<div class="progress-text" id="progressText">0 % geschafft</div>
+<div class="steps" id="steps"></div>
+<main id="app"></main>
+</div>
+
+<div class="footerbar">
+ <div class="footerinner">
+   <span class="xp" id="xp">⭐ 0 Punkte</span>
+   <button class="smallbtn" onclick="resetProgress()">Neu starten</button>
+ </div>
+</div>
+
+<script>
+const lessons=[
+ {title:"Schulsachen",tr:"Okul eşyaları",icon:"✏️",words:[
+  ["das Heft","defter","📒"],["das Buch","kitap","📘"],["der Stift","kalem","✏️"],["der Radiergummi","silgi","🩹"],
+  ["das Lineal","cetvel","📏"],["die Schere","makas","✂️"],["der Kleber","yapıştırıcı","🧴"],["die Mappe","dosya","📁"],
+  ["der Tisch","masa","🟫"],["der Stuhl","sandalye","🪑"],["die Tafel","tahta","🧑‍🏫"],["das iPad","iPad","📱"]
+ ]},
+ {title:"Menschen",tr:"Okuldaki kişiler",icon:"👥",words:[
+  ["der Lehrer","erkek öğretmen","👨‍🏫"],["die Lehrerin","kadın öğretmen","👩‍🏫"],["der Schüler","erkek öğrenci","👦"],
+  ["die Schülerin","kız öğrenci","👧"],["die Klasse","sınıf","🏫"],["der Freund","erkek arkadaş","🙂"],
+  ["die Freundin","kız arkadaş","🙂"],["die Sekretärin","sekreter","🧑‍💼"]
+ ]},
+ {title:"Im Unterricht",tr:"Derste",icon:"🧭",words:[
+  ["lesen","okumak","📖"],["schreiben","yazmak","✍️"],["hören","dinlemek","👂"],["sprechen","konuşmak","🗣️"],
+  ["zeigen","göstermek","👉"],["öffnen","açmak","📂"],["schließen","kapatmak","📕"],["warten","beklemek","⏳"],
+  ["ankreuzen","işaretlemek","☑️"],["verbinden","birleştirmek","🔗"],["aufräumen","toplamak","🧹"],["arbeiten","çalışmak","🧠"]
+ ]},
+ {title:"Schultag",tr:"Okul günü",icon:"🕘",words:[
+  ["der Unterricht","ders","🧑‍🏫"],["die Pause","teneffüs","🍎"],["die Aufgabe","görev / alıştırma","📝"],["die Lösung","çözüm","✅"],
+  ["Deutsch","Almanca","🇩🇪"],["Mathematik","matematik","➗"],["Englisch","İngilizce","🇬🇧"],["Technik","teknoloji / teknik","🔧"],
+  ["Sport","spor","⚽"],["Musik","müzik","🎵"],["Kunst","resim / sanat","🎨"],["Hausaufgaben","ev ödevi","🏠"]
+ ]},
+ {title:"Hilfesätze",tr:"Yardım cümleleri",icon:"💬",phrases:[
+  ["Ich verstehe nicht.","Anlamıyorum."],["Bitte noch einmal.","Lütfen tekrar."],["Was bedeutet das?","Bu ne demek?"],
+  ["Ich brauche Hilfe.","Yardıma ihtiyacım var."],["Ich bin fertig.","Bitirdim."],["Wo ist meine Aufgabe?","Görevim nerede?"],
+  ["Darf ich zur Toilette?","Tuvalete gidebilir miyim?"],["Ich habe meinen Stift vergessen.","Kalemimi unuttum."],
+  ["Wie schreibt man das?","Bu nasıl yazılır?"],["Können Sie mir helfen?","Bana yardım edebilir misiniz?"]
+ ]}
+];
+
+let state=JSON.parse(localStorage.getItem("schuleDeutschTR")||'{"level":0,"xp":0,"mode":"intro"}');
+if(state.level<0||state.level>4) state={level:0,xp:0,mode:"intro"};
+
+function save(){localStorage.setItem("schuleDeutschTR",JSON.stringify(state));}
+function resetProgress(){if(confirm("Lernstand wirklich löschen? / İlerlemeyi silmek istiyor musun?")){localStorage.removeItem("schuleDeutschTR");location.reload();}}
+function addXP(n){state.xp+=n;save();document.getElementById("xp").textContent="⭐ "+state.xp+" Punkte";}
+function renderSteps(){
+ const el=document.getElementById("steps");el.innerHTML="";
+ lessons.forEach((l,i)=>{
+   const d=document.createElement("div");
+   d.className="step "+(i===state.level?"active ":"")+(i<state.level?"done ":"")+(i>state.level?"locked":"");
+   d.innerHTML="<strong>"+(i<state.level?"✓":l.icon)+"</strong><span>"+(i+1)+". "+l.title+"</span>";
+   el.appendChild(d);
+ });
+ const pct=Math.round((state.level/lessons.length)*100);
+ document.getElementById("progressBar").style.width=pct+"%";
+ document.getElementById("progressText").textContent=pct+" % geschafft";
+ document.getElementById("xp").textContent="⭐ "+state.xp+" Punkte";
+}
+
+function speech(text){
+ if(!("speechSynthesis" in window))return;
+ speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(text);u.lang="de-DE";u.rate=.82;speechSynthesis.speak(u);
+}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+
+function intro(){
+ const l=lessons[state.level];
+ document.getElementById("app").innerHTML=`
+ <section class="card hero">
+  <span class="badge">Etappe ${state.level+1} von 5 · ${l.icon}</span>
+  <h2 style="margin-top:14px">${l.title}</h2>
+  <p class="tr"><strong>${l.tr}</strong></p>
+  <p>Du lernst jetzt nur wenige Wörter auf einmal. Danach übst du sie direkt.</p>
+  <p class="tr">Şimdi az sayıda kelime öğreneceksin. Sonra hemen alıştırma yapacaksın.</p>
+  <div class="notice">💡 <strong>Tipp:</strong> Drücke auf 🔊 und sprich das deutsche Wort leise nach.<br><span class="tr">🔊 düğmesine bas ve Almanca kelimeyi sessizce tekrar et.</span></div>
+  <button class="bigbtn" onclick="startLearn()">Los geht's · Başla →</button>
+ </section>`;
+}
+let learnIndex=0;
+function itemsForLevel(){
+ const l=lessons[state.level];
+ return l.words||l.phrases.map(x=>[x[0],x[1],"💬"]);
+}
+function startLearn(){learnIndex=0;showLearn();}
+function showLearn(){
+ const items=itemsForLevel(),w=items[learnIndex];
+ document.getElementById("app").innerHTML=`
+ <section class="card">
+  <div class="toprow"><span class="badge">1 · Kennenlernen</span><span>${learnIndex+1} / ${items.length}</span></div>
+  <div class="wordbox">
+   <div class="emoji">${w[2]}</div>
+   <div class="de">${w[0]}</div>
+   <div class="translation">${w[1]}</div>
+   <div class="actionrow">
+    <button class="smallbtn speaker" onclick="speech('${w[0].replaceAll("'","\\'")}')">🔊 Anhören</button>
+   </div>
+  </div>
+  <div class="navrow">
+   <button class="smallbtn" onclick="prevLearn()" ${learnIndex===0?"disabled":""}>← zurück</button>
+   <button class="bigbtn" style="margin:0" onclick="nextLearn()">${learnIndex===items.length-1?"Jetzt üben →":"weiter →"}</button>
+  </div>
+ </section>`;
+}
+function prevLearn(){if(learnIndex>0){learnIndex--;showLearn()}}
+function nextLearn(){const items=itemsForLevel();if(learnIndex<items.length-1){learnIndex++;showLearn()}else startQuiz();}
+
+let quiz=[],qIndex=0,qCorrect=0,answered=false;
+function startQuiz(){
+ const items=itemsForLevel();
+ quiz=shuffle(items).slice(0,Math.min(8,items.length));qIndex=0;qCorrect=0;showQuiz();
+}
+function showQuiz(){
+ answered=false;
+ const item=quiz[qIndex],all=itemsForLevel();
+ const distract=shuffle(all.filter(x=>x[0]!==item[0])).slice(0,3);
+ const opts=shuffle([item,...distract]);
+ document.getElementById("app").innerHTML=`
+ <section class="card">
+  <div class="toprow"><span class="badge">2 · Erkennen</span><span>${qIndex+1} / ${quiz.length}</span></div>
+  <p class="tr">Doğru Almanca kelimeyi seç.</p>
+  <div class="question">${item[2]} &nbsp; ${item[1]}</div>
+  <div class="choices" id="choices">
+   ${opts.map(o=>`<button class="choice" data-v="${esc(o[0])}" onclick="answerQuiz(this,'${esc(item[0])}')">${o[0]}</button>`).join("")}
+  </div>
+  <div class="feedback" id="fb">Wähle eine Antwort. · Bir cevap seç.</div>
+  <button class="bigbtn" id="nextQ" style="display:none" onclick="nextQuiz()">weiter →</button>
+ </section>`;
+}
+function esc(s){return s.replaceAll("\\","\\\\").replaceAll("'","\\'").replaceAll('"',"&quot;")}
+function answerQuiz(btn,correct){
+ if(answered)return;answered=true;
+ const buttons=[...document.querySelectorAll(".choice")];
+ buttons.forEach(b=>{if(b.textContent===correct)b.classList.add("correct")});
+ if(btn.textContent===correct){qCorrect++;addXP(10);document.getElementById("fb").className="feedback ok";document.getElementById("fb").innerHTML="✅ Richtig! · <strong>Doğru!</strong>";speech(correct)}
+ else{btn.classList.add("wrong");document.getElementById("fb").className="feedback bad";document.getElementById("fb").innerHTML="Fast. Richtig ist: <strong>"+correct+"</strong><br><span class='tr'>Doğru cevap: "+correct+"</span>"}
+ document.getElementById("nextQ").style.display="block";
+}
+function nextQuiz(){qIndex++;if(qIndex<quiz.length)showQuiz();else startMatch();}
+
+let leftSel=null,rightSel=null,pairs=[],matched=0;
+function startMatch(){
+ const items=shuffle(itemsForLevel()).slice(0,5);
+ pairs=items;matched=0;leftSel=null;rightSel=null;
+ document.getElementById("app").innerHTML=`
+ <section class="card">
+  <div class="toprow"><span class="badge">3 · Verbinden</span><span>5 Paare</span></div>
+  <p>Verbinde Deutsch und Türkisch.</p><p class="tr">Almanca ve Türkçe kelimeleri eşleştir.</p>
+  <div class="matchgrid">
+    <div id="leftCol">${shuffle(items).map((x,i)=>`<button class="matchitem" data-side="l" data-key="${esc(x[0])}" onclick="pickMatch(this)">${x[0]}</button>`).join("")}</div>
+    <div id="rightCol">${shuffle(items).map((x,i)=>`<button class="matchitem" data-side="r" data-key="${esc(x[0])}" onclick="pickMatch(this)">${x[1]}</button>`).join("")}</div>
+  </div>
+  <div class="feedback" id="mfb">Wähle links und rechts je eine Karte.</div>
+ </section>`;
+}
+function pickMatch(el){
+ if(el.classList.contains("gone"))return;
+ const side=el.dataset.side;
+ document.querySelectorAll('[data-side="'+side+'"]').forEach(x=>x.classList.remove("sel"));
+ el.classList.add("sel");
+ if(side==="l")leftSel=el;else rightSel=el;
+ if(leftSel&&rightSel){
+   if(leftSel.dataset.key===rightSel.dataset.key){
+     addXP(10);document.getElementById("mfb").className="feedback ok";
+     document.getElementById("mfb").textContent="✅ Gut! · Harika!";
+     const a=leftSel,b=rightSel;speech(a.dataset.key);setTimeout(()=>{a.classList.add("gone");b.classList.add("gone")},300);
+     matched++;leftSel=null;rightSel=null;
+     if(matched===5)setTimeout(finishLevel,700);
+   }else{
+     document.getElementById("mfb").className="feedback bad";
+     document.getElementById("mfb").textContent="Noch nicht. Probiere ein anderes Paar. · Tekrar dene.";
+     leftSel.classList.remove("sel");rightSel.classList.remove("sel");leftSel=null;rightSel=null;
+   }
+ }
+}
+function finishLevel(){
+ const pct=Math.round((qCorrect/quiz.length)*100);
+ const pass=pct>=60; 
+ document.getElementById("app").innerHTML=`
+ <section class="card leveldone">
+  <div class="cup">${pass?"🏆":"🌱"}</div>
+  <h2>${pass?"Etappe geschafft!":"Du hast schon viel gelernt!"}</h2>
+  <div class="stars">${pct>=90?"⭐⭐⭐":pct>=70?"⭐⭐☆":"⭐☆☆"}</div>
+  <p>Im Erkennen-Test hattest du <strong>${qCorrect} von ${quiz.length}</strong> richtig.</p>
+  <p class="tr">Tanıma testinde <strong>${quiz.length} sorudan ${qCorrect}</strong> doğru yaptın.</p>
+  <p>${pass?"Sehr gut. Jetzt kommt der nächste kleine Schritt.":"Du darfst trotzdem weiter. Wiederhole diese Etappe später noch einmal."}</p>
+  <button class="bigbtn" onclick="advance()">${state.level===4?"Abschluss ansehen →":"Nächste Etappe →"}</button>
+  <button class="smallbtn" style="margin-top:10px;width:100%" onclick="startLearn()">Etappe noch einmal üben</button>
+ </section>`;
+}
+function advance(){
+ if(state.level<4){state.level++;state.mode="intro";save();renderSteps();intro();}
+ else completion();
+}
+function completion(){
+ state.level=5;save();renderSteps();
+ document.getElementById("progressBar").style.width="100%";
+ document.getElementById("progressText").textContent="100 % geschafft";
+ document.getElementById("app").innerHTML=`
+ <section class="card leveldone">
+  <div class="cup">🎉</div>
+  <h2>Du hast alle 5 Etappen geschafft!</h2>
+  <p class="tr"><strong>5 aşamayı da tamamladın!</strong></p>
+  <p>Du kennst jetzt wichtige Wörter und Sätze für deinen Schulalltag.</p>
+  <p class="tr">Artık okul hayatında kullanacağın önemli Almanca kelime ve cümleleri biliyorsun.</p>
+  <div class="notice">💬 Probiere heute drei deutsche Sätze in der Schule aus:<br><strong>„Bitte noch einmal.“ · „Ich brauche Hilfe.“ · „Ich bin fertig.“</strong></div>
+  <button class="bigbtn" onclick="state.level=0;save();renderSteps();intro()">Noch einmal von vorne üben</button>
+ </section>`;
+}
+
+renderSteps();
+if(state.level>=5)completion();else intro();
+</script>
+</body>
+</html>
