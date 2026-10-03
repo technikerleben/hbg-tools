@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2F7D3A">
+<title>Zoo-Arena – Das Einmaleins</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+if (window.tailwind) tailwind.config = { theme: { extend: {
+  colors: { zoo: { leaf:'#2F7D3A', leafdark:'#1F5A28', ink:'#1F3324', soft:'#4F6353',
+    honey:'#FFC23D', wood:'#8A5A2B', wooddark:'#5E3B19', grass:'#EAF6E4', line:'#DCE8D2' } },
+  fontFamily: { kid: ['"Baloo 2"','ui-rounded','"Arial Rounded MT Bold"','"Trebuchet MS"','system-ui','sans-serif'] }
+}}};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --leaf:#2F7D3A; --leaf-dark:#1F5A28; --ink:#1F3324; --soft:#4F6353;
+  --grass:#EAF6E4; --line:#DCE8D2; --card:#FFFFFF;
+  --honey:#FFC23D; --honey-deep:#C27A00; --honey-ink:#3B2A08;
+  --wood:#8A5A2B; --wood-dark:#5E3B19; --wood-light:#C9935A;
+  --poppy:#C8372D; --poppy-dark:#8E2019; --poppy-pale:#FDE3E1; --ok-pale:#DDF3DC;
+  --key:#E4EBDD;
+  --font:"Baloo 2", ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+/* Grundlayout auch ohne Tailwind-CDN */
+#picks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#g-stufen{display:flex;flex-direction:column;gap:8px}
+.flex-1{flex:1;min-width:0}
+.text-center{text-align:center}
+.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}.mt-5{margin-top:1.25rem}
+html,body{height:100%;margin:0}
+body{font-family:var(--font);background:var(--grass);color:var(--ink);-webkit-tap-highlight-color:transparent;overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+input{-webkit-user-select:text;user-select:text}
+:focus-visible{outline:3px solid var(--leaf-dark);outline-offset:3px;border-radius:12px}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+button:disabled{cursor:default}
+
+.app{position:fixed;inset:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);display:flex;flex-direction:column;max-width:1100px;margin:0 auto}
+.screen{display:none;flex:1;min-height:0;flex-direction:column}
+.screen.on{display:flex}
+.scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 28px}
+
+/* Typo */
+.title-xl{font-size:clamp(2.4rem,10vw,3.4rem);font-weight:800;line-height:.95;color:var(--leaf-dark);margin:0;letter-spacing:-.5px}
+.h2{font-size:1.3rem;font-weight:800;margin:20px 0 8px;line-height:1.15}
+.lead{font-size:1.12rem;line-height:1.3;color:var(--soft);margin:4px 0 0}
+.muted{color:var(--soft)}
+.lbl{display:block;font-weight:700;margin:16px 0 6px;font-size:1.05rem}
+.field{width:100%;font:inherit;font-size:1.1rem;padding:12px 14px;border:3px solid var(--line);border-radius:14px;background:#fff;color:var(--ink)}
+.field:focus{border-color:var(--leaf);outline:none}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:56px;padding:10px 24px;border:0;border-radius:18px;background:var(--leaf);color:#fff;font-weight:800;font-size:1.25rem;box-shadow:0 5px 0 var(--leaf-dark);transition:transform .08s,box-shadow .08s}
+.btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 1px 0 var(--leaf-dark)}
+.btn:disabled{background:#CBD3C4;box-shadow:0 5px 0 #AAB4A2;color:#4B5547}
+.btn.honey{background:var(--honey);color:var(--honey-ink);box-shadow:0 5px 0 var(--honey-deep)}
+.btn.danger{background:var(--poppy);box-shadow:0 5px 0 var(--poppy-dark)}
+.btn.wide{width:100%}
+.icon-btn{width:50px;height:50px;flex:none;border-radius:16px;border:0;background:#fff;box-shadow:0 3px 0 rgba(31,51,36,.16);font-size:1.45rem;display:grid;place-items:center;line-height:1}
+.icon-btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(31,51,36,.16)}
+.bar{display:flex;align-items:center;gap:10px;padding:10px 12px}
+.bar .title{flex:1;text-align:center;font-weight:800;font-size:1.12rem;line-height:1.15}
+.card{background:#fff;border-radius:20px;padding:14px 16px;box-shadow:0 3px 0 rgba(31,51,36,.12)}
+
+/* Bühne (3D oder Ersatzbilder) */
+.stage{position:relative;overflow:hidden;border-radius:26px;background:linear-gradient(#CFEAFF,#F0FFF0)}
+.stage canvas.gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stage-start{height:clamp(170px,30vh,250px);margin:14px 0 4px}
+.stage-geh{height:clamp(200px,38vh,320px)}
+.stage-c{height:clamp(200px,40vh,340px);width:100%;margin:6px 0}
+
+/* Startauswahl */
+.pick{border:3px solid transparent;background:#fff;border-radius:20px;padding:8px 6px 10px;display:flex;flex-direction:column;align-items:center;gap:0;box-shadow:0 4px 0 rgba(31,51,36,.14);line-height:1.1}
+.pick .emo{font-size:2.3rem;line-height:1.2}
+.pick b{font-size:1rem}
+.pick small{font-size:.82rem;color:var(--soft)}
+.pick[aria-pressed="true"]{border-color:var(--leaf);background:var(--ok-pale)}
+
+/* Zoo-Karte */
+.me-head{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--wood);color:#fff;box-shadow:0 4px 0 var(--wood-dark)}
+.me-head .frame{width:52px;height:52px;flex:none;border-radius:16px;background:#FFF4DE;display:grid;place-items:center;overflow:hidden;font-size:1.9rem}
+.me-head .frame img{width:100%;height:100%;object-fit:contain}
+.me-head .who{flex:1;min-width:0;line-height:1.1}
+.me-head .who b{display:block;font-size:1.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.me-head .who span{font-size:.9rem;color:#FFE9C7}
+.me-head .icon-btn{background:#FFF4DE;box-shadow:0 3px 0 var(--wood-dark)}
+.gate{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:2px 0 12px}
+.gate p{margin:0;font-size:1.05rem;line-height:1.25;color:var(--soft);max-width:34ch}
+
+.gehege-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (min-width:620px){.gehege-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (min-width:920px){.gehege-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.geh{position:relative;border:0;text-align:left;background:#fff;border-radius:20px;padding:8px 8px 10px;box-shadow:0 4px 0 rgba(31,51,36,.16);display:flex;flex-direction:column;gap:5px}
+.geh:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(31,51,36,.16)}
+.pic{position:relative;width:100%;height:104px;border-radius:14px;display:grid;place-items:center;overflow:hidden}
+.pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
+.pic .emo{font-size:3.1rem;line-height:1}
+.sign{position:absolute;left:6px;top:6px;background:var(--wood);color:#fff;font-weight:800;border-radius:10px;padding:0 9px;font-size:1.15rem;line-height:1.5;box-shadow:0 3px 0 var(--wood-dark);border:2px solid var(--wood-light)}
+.badge{position:absolute;right:6px;bottom:6px;font-weight:800;font-size:.8rem;border-radius:99px;padding:1px 8px;line-height:1.5}
+.badge.tipp{background:var(--honey);color:var(--honey-ink)}
+.badge.done{background:var(--leaf);color:#fff}
+.geh .nm{font-weight:800;line-height:1.1;font-size:1.02rem;padding:0 2px}
+.prog{display:flex;gap:3px;padding:0 2px}
+.prog span{flex:1;height:8px;border-radius:99px;background:var(--key)}
+.prog span.on{background:var(--leaf)}
+.geh .meta{font-size:.85rem;color:var(--soft);padding:0 2px;line-height:1.2}
+
+.wide-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:#fff;border-radius:20px;padding:10px;box-shadow:0 4px 0 rgba(31,51,36,.16);margin-top:14px}
+.wide-card .pic{width:92px;height:92px;flex:none}
+.wide-card b{display:block;font-size:1.15rem;line-height:1.15}
+.wide-card small{display:block;color:var(--soft);font-size:.92rem;line-height:1.25}
+.wide-card .go{font-size:1.4rem;padding:0 6px}
+.wide-card:disabled{opacity:.7}
+.wide-card:disabled .pic{filter:grayscale(.8)}
+
+/* Gehege-Stufen */
+.stufe{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:#fff;border-radius:18px;padding:10px 12px;box-shadow:0 4px 0 rgba(31,51,36,.14)}
+.stufe .num{width:44px;height:44px;flex:none;border-radius:14px;background:var(--wood);color:#fff;font-weight:800;font-size:1.35rem;display:grid;place-items:center;box-shadow:0 3px 0 var(--wood-dark)}
+.stufe b{display:block;font-size:1.1rem;line-height:1.15}
+.stufe small{display:block;color:var(--soft);font-size:.92rem}
+.stufe .stars{color:var(--honey-deep);letter-spacing:1px;font-size:1.05rem}
+.stufe:disabled{background:#F3F5F0;box-shadow:none}
+.stufe:disabled .num{background:#CBD3C4;box-shadow:none}
+
+/* Kampf */
+.battle{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding:0 12px 12px}
+.battle .stage{flex:1;min-height:180px}
+.side{display:flex;flex-direction:column;gap:10px}
+@media (orientation:landscape) and (min-width:640px){
+  .battle{flex-direction:row}
+  .battle .stage{flex:1.35}
+  .side{flex:1;max-width:440px;justify-content:center}
+}
+.hud{position:absolute;z-index:2;background:rgba(255,255,255,.93);border-radius:16px;padding:6px 12px 8px;box-shadow:0 3px 0 rgba(31,51,36,.14);min-width:150px;max-width:60%}
+.hud .nm{font-weight:800;line-height:1.1;font-size:1.02rem}
+.foe-card{left:10px;top:10px}
+.me-card{right:10px;bottom:10px;text-align:right}
+.hpwrap{display:flex;align-items:center;gap:8px;margin-top:4px}
+.hp{height:12px;background:var(--key);border-radius:99px;overflow:hidden;flex:1}
+.hp i{display:block;height:100%;width:100%;background:var(--leaf);border-radius:99px;transition:width .4s,background .4s}
+.hp i.mid{background:#D99A00}
+.hp i.low{background:var(--poppy)}
+.hpnum{font-weight:700;font-size:.9rem;font-variant-numeric:tabular-nums}
+.streak{font-size:.9rem;color:var(--soft);line-height:1.2}
+.streak .d{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--key);margin-left:3px;vertical-align:-1px;border:2px solid #C9D3C0}
+.streak .d.on{background:var(--honey);border-color:var(--honey-deep)}
+.pop{position:absolute;left:50%;top:40%;z-index:3;font-size:1.6rem;font-weight:800;color:#fff;background:var(--leaf-dark);padding:2px 18px;border-radius:99px;opacity:0;pointer-events:none;white-space:nowrap;transform:translate(-50%,-50%)}
+.pop.bad{background:var(--poppy)}
+.pop.show{animation:pop 1s ease-out}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}70%{opacity:1;transform:translate(-50%,-60%) scale(1)}100%{opacity:0;transform:translate(-50%,-80%) scale(1)}}
+
+.task{background:#fff;border-radius:20px;padding:10px 14px;text-align:center;box-shadow:0 3px 0 rgba(31,51,36,.12);min-height:78px;display:flex;flex-direction:column;justify-content:center}
+.task .pre{font-size:1.08rem;line-height:1.25;margin-bottom:4px;font-weight:600}
+.task .icons{display:block;font-size:1.2rem;letter-spacing:1px;line-height:1.3;margin-bottom:2px}
+.task .expr{font-size:clamp(1.9rem,8vw,2.6rem);font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums}
+.slot{display:inline-block;min-width:1.9em;padding:0 .2em;border-bottom:4px solid var(--leaf);color:var(--leaf-dark);background:#F1F8EE;border-radius:10px 10px 4px 4px}
+.slot.empty{color:#93A38F}
+.slot.ok{background:var(--ok-pale)}
+.slot.bad{background:var(--poppy-pale);border-color:var(--poppy);color:var(--poppy-dark);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.key{min-height:56px;border:0;border-radius:16px;background:#fff;font-size:1.65rem;font-weight:800;color:var(--ink);box-shadow:0 4px 0 rgba(31,51,36,.18)}
+.key:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 rgba(31,51,36,.18)}
+.key.del{background:var(--key);font-size:1.4rem}
+.key.ok{background:var(--leaf);color:#fff;box-shadow:0 4px 0 var(--leaf-dark);font-size:1.3rem}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.choices .key{min-height:76px;font-size:2rem}
+@media (max-height:660px){.key{min-height:46px;font-size:1.4rem}.task{min-height:66px}.choices .key{min-height:60px}}
+
+.sheet{position:absolute;left:12px;right:12px;bottom:12px;z-index:5;max-height:calc(100% - 24px);overflow:auto;background:#fff;border-radius:22px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.25),0 0 0 4px var(--honey)}
+@media (orientation:landscape) and (min-width:640px){.sheet{left:auto;width:min(440px,46%)}}
+.sheet h3{font-size:1.25rem;font-weight:800;margin:0 0 6px;line-height:1.2}
+.sheet p{font-size:1.1rem;line-height:1.35;margin:0 0 10px}
+.solution{font-size:2rem;font-weight:800;text-align:center;margin:6px 0 10px;font-variant-numeric:tabular-nums}
+.dots{display:grid;gap:4px;justify-content:center;margin:6px 0}
+.dots i{width:12px;height:12px;border-radius:50%;background:#E08E00;display:block}
+.dots s{display:block}
+.dots hr{grid-column:1/-1;border:0;border-top:2px dashed #C9BE9C;margin:2px 0}
+.sheet .dotcap{text-align:center;color:var(--soft);font-size:.95rem}
+
+/* Sieg / Entwicklung */
+.center{flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px 20px 24px;gap:6px}
+.center h1{font-size:clamp(2rem,9vw,2.8rem);font-weight:800;color:var(--leaf-dark);margin:0;line-height:1}
+.center p{font-size:1.15rem;line-height:1.35;margin:0;max-width:34ch}
+.bigstars{font-size:2.4rem;letter-spacing:4px;color:var(--honey-deep);line-height:1}
+
+/* Album + Tafel */
+.album{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (min-width:620px){.album{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (min-width:920px){.album{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.acard{background:#fff;border-radius:18px;padding:6px 6px 8px;text-align:center;box-shadow:0 3px 0 rgba(31,51,36,.12);line-height:1.15}
+.acard .pic{height:84px}
+.acard b{display:block;font-size:.98rem;margin-top:4px}
+.acard small{display:block;font-size:.8rem;color:var(--soft)}
+.acard.locked .pic>*{filter:brightness(0);opacity:.18}
+.tafel-wrap{overflow-x:auto;background:#fff;border-radius:20px;padding:10px 6px;box-shadow:0 3px 0 rgba(31,51,36,.12)}
+.tafel{border-collapse:separate;border-spacing:3px;margin:0 auto;font-variant-numeric:tabular-nums}
+.tafel th{font-size:.78rem;color:var(--soft);font-weight:700;padding:0 2px;white-space:nowrap}
+.tafel td{width:clamp(26px,7.4vw,48px);height:clamp(26px,7.4vw,40px);text-align:center;border-radius:8px;font-size:clamp(.72rem,2.7vw,1rem);font-weight:700;background:#EEF2EA;color:#66705F;position:relative}
+.tafel td.seen{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 2px var(--line)}
+.tafel td.ok{background:var(--ok-pale);color:var(--leaf-dark);box-shadow:inset 0 0 0 2px var(--leaf)}
+.tafel td.warn{background:#FFE7C2;color:#6E4000;box-shadow:inset 0 0 0 2px #E08E00}
+.tafel td.ok::after,.tafel td.warn::after{position:absolute;top:0;right:3px;font-size:.62rem;line-height:1.2}
+.tafel td.ok::after{content:'✓'}
+.tafel td.warn::after{content:'!'}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 4px 0;font-size:.92rem;color:var(--soft)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-grid;place-items:center;width:22px;height:18px;border-radius:5px;font-style:normal;font-size:.7rem;font-weight:800}
+.legend .ok{background:var(--ok-pale);box-shadow:inset 0 0 0 2px var(--leaf);color:var(--leaf-dark)}
+.legend .warn{background:#FFE7C2;box-shadow:inset 0 0 0 2px #E08E00;color:#6E4000}
+.legend .seen{background:#fff;box-shadow:inset 0 0 0 2px var(--line)}
+.legend .none{background:#EEF2EA}
+
+/* Training + Einstellungen */
+.kchips{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.kchip{min-height:58px;border:3px solid transparent;border-radius:16px;background:#fff;font-weight:800;font-size:1.25rem;box-shadow:0 3px 0 rgba(31,51,36,.14)}
+.kchip[aria-pressed="true"]{background:var(--wood);color:#fff;border-color:var(--wood-light);box-shadow:0 3px 0 var(--wood-dark)}
+.sets{display:flex;flex-direction:column;gap:10px}
+.sw{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border:0;border-radius:18px;padding:12px 14px;box-shadow:0 3px 0 rgba(31,51,36,.12)}
+.sw>span:first-child{flex:1}
+.sw b{display:block;font-size:1.08rem;line-height:1.2}
+.sw small{display:block;color:var(--soft);font-size:.92rem;line-height:1.25}
+.tg{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem}
+.tg i{width:52px;height:30px;border-radius:99px;background:#CBD3C4;position:relative;display:block;transition:background .2s}
+.tg i::after{content:'';position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .2s}
+.sw[aria-checked="true"] .tg i{background:var(--leaf)}
+.sw[aria-checked="true"] .tg i::after{left:25px}
+.sw:disabled{opacity:.55}
+
+/* Ersatzbilder ohne 3D */
+.s2d{position:absolute;inset:0;overflow:hidden}
+.s2d .ground{position:absolute;left:-15%;right:-15%;bottom:-34%;height:66%;border-radius:50%}
+.a2d{position:absolute;line-height:1}
+.a2d .fx,.a2d .flip,.a2d .em{display:block}
+.a2d .em{animation:bob2 1.8s ease-in-out infinite}
+.a2d .plat{position:absolute;left:50%;bottom:-.1em;width:1.3em;height:.3em;transform:translateX(-50%);border-radius:50%;background:rgba(0,0,0,.14)}
+.r-me{left:7%;bottom:7%;font-size:clamp(64px,22vmin,130px)}
+.r-me .flip{transform:scaleX(-1)}
+.r-foe{right:9%;top:16%;font-size:clamp(54px,17vmin,110px)}
+.r-c{left:50%;bottom:12%;margin-left:-.5em;font-size:clamp(80px,26vmin,160px)}
+.r-t0,.r-t1,.r-t2{bottom:16%;font-size:clamp(48px,14vmin,90px)}
+.r-t0{left:8%}.r-t1{left:50%;margin-left:-.5em}.r-t2{right:8%}
+.r-me .fx.lunge{animation:lungeR .5s ease-out}
+.r-foe .fx.lunge{animation:lungeL .5s ease-out}
+.fx.hurt{animation:hurt2 .5s}
+.fx.dodge{animation:dodge2 .5s ease-out}
+.fx.faint{animation:faint2 .9s forwards}
+.fx.cheer{animation:cheer2 1.2s}
+.fx.hop{animation:hop2 .5s}
+.fx.appear{animation:appear2 .6s}
+.fx.evo{animation:evo2 1.3s}
+@keyframes bob2{50%{transform:translateY(-5%)}}
+@keyframes lungeR{50%{transform:translate(45%,-30%)}}
+@keyframes lungeL{50%{transform:translate(-45%,30%)}}
+@keyframes hurt2{20%{transform:translateX(-9%)}40%{transform:translateX(9%)}60%{transform:translateX(-5%)}80%{transform:translateX(4%)}}
+@keyframes dodge2{50%{transform:translate(20%,-14%) rotate(12deg)}}
+@keyframes faint2{to{transform:translateY(25%) rotate(-80deg);opacity:.3}}
+@keyframes cheer2{25%,75%{transform:translateY(-24%)}50%{transform:none}}
+@keyframes hop2{50%{transform:translateY(-26%)}}
+@keyframes appear2{from{transform:scale(0)}70%{transform:scale(1.15)}}
+@keyframes evo2{20%,60%{transform:scale(1.2);filter:brightness(2)}40%,80%{transform:scale(.9)}}
+.spark{position:absolute;font-size:22px;pointer-events:none;animation:spark .8s ease-out forwards}
+@keyframes spark{to{transform:translate(var(--dx),var(--dy)) scale(.3);opacity:0}}
+@media (prefers-reduced-motion: reduce){.a2d .em{animation:none}}
+
+/* Insektenhaus (6er-Spiel) */
+.krabbel{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;background:#1E6B3A;padding-top:env(safe-area-inset-top,0px)}
+.krabbel.on{display:flex}
+.krabbel .kbar{display:flex;align-items:center;gap:10px;padding:6px 10px;color:#fff}
+.krabbel .kbar button{border:0;border-radius:12px;background:#fff;color:var(--leaf-dark);font-weight:800;padding:6px 14px;font-size:1rem;min-height:40px}
+.krabbel .kbar span{font-weight:700;font-size:1rem}
+.krabbel iframe{flex:1;width:100%;border:0;background:#FFF8E4}
+</style>
+</head>
+<body class="font-kid">
+<div class="app">
+
+  <!-- START -->
+  <section class="screen" id="scr-start" aria-label="Start">
+    <div class="scroll">
+      <div class="text-center pt-1">
+        <h1 class="title-xl">Zoo-Arena</h1>
+        <p class="lead">Übe das Einmaleins. Jede Reihe hat ihr eigenes Gehege.</p>
+      </div>
+      <div class="stage stage-start" id="start-stage"></div>
+      <h2 class="h2">Wähle dein Tierbaby</h2>
+      <div class="grid grid-cols-3 gap-2" id="picks"></div>
+      <label class="lbl" for="nick">Wie soll dein Tier heißen?</label>
+      <input class="field" id="nick" maxlength="14" autocomplete="off" placeholder="Du kannst das Feld leer lassen">
+      <div class="mt-5"><button class="btn wide" id="go" disabled>Los geht's!</button></div>
+    </div>
+  </section>
+
+  <!-- ZOO-KARTE -->
+  <section class="screen" id="scr-map" aria-label="Zookarte">
+    <header class="me-head">
+      <div class="frame" id="map-me" aria-hidden="true"></div>
+      <div class="who"><b id="map-name"></b><span id="map-lvl"></span></div>
+      <button class="icon-btn" id="to-train" aria-label="Training">🎯</button>
+      <button class="icon-btn" id="to-book" aria-label="Zoo-Album">📖</button>
+      <button class="icon-btn" id="to-set" aria-label="Einstellungen">⚙️</button>
+    </header>
+    <div class="scroll">
+      <div class="gate"><p>Tippe auf ein Gehege. Jedes Gehege ist eine Einmaleins-Reihe.</p></div>
+      <div class="gehege-grid" id="gehege"></div>
+      <div id="fest"></div>
+    </div>
+  </section>
+
+  <!-- GEHEGE -->
+  <section class="screen" id="scr-geh" aria-label="Gehege">
+    <div class="bar">
+      <button class="icon-btn to-map" aria-label="Zurück zur Zookarte">←</button>
+      <div class="title" id="g-title"></div>
+      <span style="width:50px"></span>
+    </div>
+    <div class="scroll" style="padding-top:0">
+      <div class="stage stage-geh" id="g-stage"></div>
+      <div class="card mt-3"><b class="text-lg" id="g-who"></b><p class="m-0 leading-snug text-[1.05rem]" id="g-fakt"></p></div>
+      <h2 class="h2">Stufen</h2>
+      <div class="flex flex-col gap-2" id="g-stufen"></div>
+    </div>
+  </section>
+
+  <!-- KAMPF -->
+  <section class="screen" id="scr-battle" aria-label="Wettkampf">
+    <div class="bar">
+      <button class="icon-btn" id="quit" aria-label="Wettkampf abbrechen">✕</button>
+      <div class="title" id="b-title"></div>
+      <button class="icon-btn" id="speak" aria-label="Aufgabe vorlesen">🔊</button>
+    </div>
+    <div class="battle">
+      <div class="stage" id="b-stage">
+        <div class="hud foe-card">
+          <div class="nm" id="foe-name"></div>
+          <div class="hpwrap"><div class="hp" role="progressbar" aria-label="Kraft vom Gegner" id="hpbar"><i id="foe-hp"></i></div><span class="hpnum" id="hpnum"></span></div>
+        </div>
+        <div class="hud me-card">
+          <div class="nm" id="me-name"></div>
+          <div class="streak" id="streak"></div>
+        </div>
+        <div class="pop" id="pop" aria-hidden="true"></div>
+      </div>
+      <div class="side">
+        <div class="task" id="task" aria-live="polite"></div>
+        <div class="pad" id="pad"></div>
+        <div class="choices" id="choices" hidden></div>
+      </div>
+      <div class="sheet" id="sheet" hidden role="dialog" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- SIEG -->
+  <section class="screen" id="scr-win" aria-label="Sieg">
+    <div class="center">
+      <h1 id="win-title"></h1>
+      <div class="stage stage-c" id="win-stage"></div>
+      <div class="bigstars" id="win-stars" role="img"></div>
+      <p id="win-text"></p>
+      <p class="muted" id="win-sub"></p>
+      <button class="btn mt-3" id="win-btn">Weiter</button>
+    </div>
+  </section>
+
+  <!-- ENTWICKLUNG -->
+  <section class="screen" id="scr-evo" aria-label="Verwandlung">
+    <div class="center">
+      <h1>Was passiert da?</h1>
+      <div class="stage stage-c" id="evo-stage"></div>
+      <p id="evo-text" aria-live="polite"></p>
+      <button class="btn mt-3" id="evo-btn" hidden>Zur Zookarte</button>
+    </div>
+  </section>
+
+  <!-- ALBUM -->
+  <section class="screen" id="scr-book" aria-label="Zoo-Album">
+    <div class="bar">
+      <button class="icon-btn to-map" aria-label="Zurück zur Zookarte">←</button>
+      <div class="title">Zoo-Album</div>
+      <span style="width:50px"></span>
+    </div>
+    <div class="scroll" style="padding-top:0">
+      <div class="album" id="album"></div>
+      <h2 class="h2">Meine Einmaleins-Tafel</h2>
+      <p class="muted m-0 mb-2 leading-snug" id="tafel-sum"></p>
+      <div class="tafel-wrap"><table class="tafel" id="tafel"></table></div>
+      <div class="legend">
+        <span><i class="ok">✓</i>sicher</span>
+        <span><i class="warn">!</i>übe ich noch</span>
+        <span><i class="seen"></i>schon gerechnet</span>
+        <span><i class="none"></i>noch nicht dran</span>
+      </div>
+      <p class="muted mt-3 leading-snug">Zeig diese Seite deiner Lehrerin oder deinem Lehrer.</p>
+    </div>
+  </section>
+
+  <!-- TRAINING -->
+  <section class="screen" id="scr-train" aria-label="Training">
+    <div class="bar">
+      <button class="icon-btn to-map" aria-label="Zurück zur Zookarte">←</button>
+      <div class="title">Training</div>
+      <span style="width:50px"></span>
+    </div>
+    <div class="scroll" style="padding-top:0">
+      <p class="lead mt-0">Wähle eine oder mehrere Reihen. Im Training gibt es keine Sterne. Du kannst in Ruhe üben.</p>
+      <h2 class="h2">Welche Reihen?</h2>
+      <div class="kchips" id="kchips"></div>
+      <div class="sets mt-4" id="train-sets"></div>
+      <div class="mt-5"><button class="btn wide" id="train-go" disabled>Training starten</button></div>
+    </div>
+  </section>
+
+  <!-- EINSTELLUNGEN -->
+  <section class="screen" id="scr-set" aria-label="Einstellungen">
+    <div class="bar">
+      <button class="icon-btn to-map" aria-label="Zurück zur Zookarte">←</button>
+      <div class="title">Einstellungen</div>
+      <span style="width:50px"></span>
+    </div>
+    <div class="scroll" style="padding-top:0">
+      <div class="sets" id="sets"></div>
+      <h2 class="h2">Für Lehrkräfte</h2>
+      <div class="card" id="teacher"></div>
+      <h2 class="h2">Neu anfangen</h2>
+      <p class="muted mt-0 mb-2 leading-snug">Löscht dein Tier, alle Sterne und das Zoo-Album. Das Insektenhaus (6er-Reihe) hat eigene Einstellungen.</p>
+      <button class="btn wide danger" id="reset">Alles löschen</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- INSEKTENHAUS: das bestehende 6er-Spiel (Krabbel-Arena) -->
+<div class="krabbel" id="krabbel" role="dialog" aria-label="Insektenhaus – Krabbel-Arena">
+  <div class="kbar">
+    <button id="k-back">← Zurück zum Zoo</button>
+    <span>Insektenhaus · 6er-Reihe</span>
+  </div>
+  <iframe id="k-frame" title="Krabbel-Arena – die 6er-Reihe"></iframe>
+</div>
+<script type="text/plain" id="krabbel-src">PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImRlIj4KPGhlYWQ+CjxtZXRhIGNoYXJzZXQ9IlVURi04Ij4KPG1ldGEgbmFtZT0idmlld3BvcnQiIGNvbnRlbnQ9IndpZHRoPWRldmljZS13aWR0aCwgaW5pdGlhbC1zY2FsZT0xLCB2aWV3cG9ydC1maXQ9Y292ZXIiPgo8bWV0YSBuYW1lPSJ0aGVtZS1jb2xvciIgY29udGVudD0iIzFFNkIzQSI+Cjx0aXRsZT5LcmFiYmVsLUFyZW5hIOKAkyBEaWUgNmVyLVJlaWhlPC90aXRsZT4KPGxpbmsgcmVsPSJwcmVjb25uZWN0IiBocmVmPSJodHRwczovL2ZvbnRzLmdvb2dsZWFwaXMuY29tIj4KPGxpbmsgcmVsPSJwcmVjb25uZWN0IiBocmVmPSJodHRwczovL2ZvbnRzLmdzdGF0aWMuY29tIiBjcm9zc29yaWdpbj4KPGxpbmsgaHJlZj0iaHR0cHM6Ly9mb250cy5nb29nbGVhcGlzLmNvbS9jc3MyP2ZhbWlseT1CYWxvbysyOndnaHRANTAwOzYwMDs3MDA7ODAwJmRpc3BsYXk9c3dhcCIgcmVsPSJzdHlsZXNoZWV0Ij4KPHN0eWxlPgo6cm9vdHsKICAtLXNreTojQ0ZFQUZGOyAtLXNreTI6I0VGRjhGRjsgLS1ncmFzczojQTRENDZDOyAtLWdyYXNzLWRhcms6IzZGQUU0NTsKICAtLXBhcGVyOiNGRkY4RTQ7IC0tY2FyZDojRkZGRkZGOyAtLWluazojMUQzNTI2OyAtLWluay1zb2Z0OiM0QTVFNTA7CiAgLS1sZWFmOiMxRTZCM0E7IC0tbGVhZi1pbms6I0ZGRkZGRjsKICAtLWhvbmV5OiNGRkMyM0Q7IC0taG9uZXktZGVlcDojRTA4RTAwOyAtLWhvbmV5LWluazojM0IyQTA4OwogIC0tcG9wcHk6I0Q5MzYzNjsgLS1wb3BweS1wYWxlOiNGREUzRTE7IC0tcG9wcHktaW5rOiM5RTFCMUI7CiAgLS1vazojMUU2QjNBOyAtLW9rLXBhbGU6I0RERjNEQzsgLS1saW5lOiNFNkRDQkQ7IC0ta2V5LWdyZXk6I0U5RTNEMjsKICAtLXNoYWRvdzowIDNweCAwIHJnYmEoMjksNTMsMzgsLjE2KTsKICAtLWZvbnQ6IkJhbG9vIDIiLCB1aS1yb3VuZGVkLCAiQXJpYWwgUm91bmRlZCBNVCBCb2xkIiwgIlRyZWJ1Y2hldCBNUyIsIHN5c3RlbS11aSwgc2Fucy1zZXJpZjsKICBib3gtc2l6aW5nOmJvcmRlci1ib3g7CiAgcGFkZGluZy10b3A6ZW52KHNhZmUtYXJlYS1pbnNldC10b3AsMHB4KTsKICBwYWRkaW5nLWJvdHRvbTplbnYoc2FmZS1hcmVhLWluc2V0LWJvdHRvbSwwcHgpOwogIGNvbG9yLXNjaGVtZTpsaWdodDsKfQpAbWVkaWEgKHByZWZlcnMtY29sb3Itc2NoZW1lOiBkYXJrKXsKICA6cm9vdDpub3QoW2RhdGEtdGhlbWU9ImxpZ2h0Il0pewogICAgLS1za3k6IzFEMkU0QTsgLS1za3kyOiMyNzM5NUE7IC0tZ3Jhc3M6IzJGNUIzNzsgLS1ncmFzcy1kYXJrOiMyMjQ1MkE7CiAgICAtLXBhcGVyOiMxMzFFMTg7IC0tY2FyZDojMUYyRjI2OyAtLWluazojRUVGNkVDOyAtLWluay1zb2Z0OiNCNkM4QkE7CiAgICAtLWxlYWY6IzRDQjY3MzsgLS1sZWFmLWluazojMEQxQTEyOwogICAgLS1wb3BweTojRkY2QjZCOyAtLXBvcHB5LXBhbGU6IzNCMUYxRjsgLS1wb3BweS1pbms6I0ZGQjRCNDsKICAgIC0tb2s6IzdCREI5ODsgLS1vay1wYWxlOiMxQzNBMjY7IC0tbGluZTojMzU0OTNDOyAtLWtleS1ncmV5OiMzQTRBNDA7CiAgICAtLXNoYWRvdzowIDNweCAwIHJnYmEoMCwwLDAsLjM1KTsKICAgIGNvbG9yLXNjaGVtZTpkYXJrOwogIH0KfQo6cm9vdFtkYXRhLXRoZW1lPSJkYXJrIl17CiAgLS1za3k6IzFEMkU0QTsgLS1za3kyOiMyNzM5NUE7IC0tZ3Jhc3M6IzJGNUIzNzsgLS1ncmFzcy1kYXJrOiMyMjQ1MkE7CiAgLS1wYXBlcjojMTMxRTE4OyAtLWNhcmQ6IzFGMkYyNjsgLS1pbms6I0VFRjZFQzsgLS1pbmstc29mdDojQjZDOEJBOwogIC0tbGVhZjojNENCNjczOyAtLWxlYWYtaW5rOiMwRDFBMTI7CiAgLS1wb3BweTojRkY2QjZCOyAtLXBvcHB5LXBhbGU6IzNCMUYxRjsgLS1wb3BweS1pbms6I0ZGQjRCNDsKICAtLW9rOiM3QkRCOTg7IC0tb2stcGFsZTojMUMzQTI2OyAtLWxpbmU6IzM1NDkzQzsgLS1rZXktZ3JleTojM0E0QTQwOwogIC0tc2hhZG93OjAgM3B4IDAgcmdiYSgwLDAsMCwuMzUpOwogIGNvbG9yLXNjaGVtZTpkYXJrOwp9CiosKjo6YmVmb3JlLCo6OmFmdGVye2JveC1zaXppbmc6Ym9yZGVyLWJveDttYXJnaW46MDtwYWRkaW5nOjB9Cmh0bWwsYm9keXtoZWlnaHQ6MTAwJX0KaHRtbHtiYWNrZ3JvdW5kOnZhcigtLXBhcGVyKTt0b3VjaC1hY3Rpb246bWFuaXB1bGF0aW9ufQpib2R5e2ZvbnQtZmFtaWx5OnZhcigtLWZvbnQpO2JhY2tncm91bmQ6dmFyKC0tcGFwZXIpO2NvbG9yOnZhcigtLWluayk7b3ZlcmZsb3c6aGlkZGVuOwogIC13ZWJraXQtdGFwLWhpZ2hsaWdodC1jb2xvcjp0cmFuc3BhcmVudDt1c2VyLXNlbGVjdDpub25lOy13ZWJraXQtdXNlci1zZWxlY3Q6bm9uZTtmb250LXNpemU6MTdweH0KYnV0dG9ue2ZvbnQ6aW5oZXJpdDtjb2xvcjppbmhlcml0O2JvcmRlcjowO2JhY2tncm91bmQ6bm9uZTtjdXJzb3I6cG9pbnRlcjt0b3VjaC1hY3Rpb246bWFuaXB1bGF0aW9ufQpidXR0b25bZGlzYWJsZWRde2N1cnNvcjpkZWZhdWx0fQo6Zm9jdXMtdmlzaWJsZXtvdXRsaW5lOjNweCBzb2xpZCB2YXIoLS1sZWFmKTtvdXRsaW5lLW9mZnNldDozcHg7Ym9yZGVyLXJhZGl1czoxMHB4fQpzdmd7ZGlzcGxheTpibG9ja30KLmFwcHtoZWlnaHQ6MTAwJTttYXgtd2lkdGg6NTIwcHg7bWFyZ2luOjAgYXV0bztkaXNwbGF5OmZsZXg7ZmxleC1kaXJlY3Rpb246Y29sdW1uO3Bvc2l0aW9uOnJlbGF0aXZlfQouc2NyZWVue2Rpc3BsYXk6bm9uZTtmbGV4OjE7bWluLWhlaWdodDowO2ZsZXgtZGlyZWN0aW9uOmNvbHVtbn0KLnNjcmVlbi5hY3RpdmV7ZGlzcGxheTpmbGV4fQouc2Nyb2xse2ZsZXg6MTttaW4taGVpZ2h0OjA7b3ZlcmZsb3cteTphdXRvOy13ZWJraXQtb3ZlcmZsb3ctc2Nyb2xsaW5nOnRvdWNoO3BhZGRpbmc6NHB4IDE2cHggMjRweH0KaDJ7Zm9udC1zaXplOjEuM3JlbTtmb250LXdlaWdodDo4MDA7bGluZS1oZWlnaHQ6MS4yO21hcmdpbjoxNnB4IDAgOHB4fQpwe2xpbmUtaGVpZ2h0OjEuNH0KLm11dGVke2NvbG9yOnZhcigtLWluay1zb2Z0KTtmb250LXNpemU6Ljk1cmVtfQoKLyogQnV0dG9ucyAqLwouYnRue2Rpc3BsYXk6aW5saW5lLWZsZXg7YWxpZ24taXRlbXM6Y2VudGVyO2p1c3RpZnktY29udGVudDpjZW50ZXI7bWluLWhlaWdodDo1OHB4O3BhZGRpbmc6MCAyNnB4O2JvcmRlci1yYWRpdXM6MjBweDsKICBiYWNrZ3JvdW5kOnZhcigtLWxlYWYpO2NvbG9yOnZhcigtLWxlYWYtaW5rKTtmb250LXdlaWdodDo4MDA7Zm9udC1zaXplOjEuM3JlbTtib3gtc2hhZG93OjAgNHB4IDAgcmdiYSgwLDAsMCwuMjgpfQouYnRuOmFjdGl2ZXt0cmFuc2Zvcm06dHJhbnNsYXRlWSgzcHgpO2JveC1zaGFkb3c6MCAxcHggMCByZ2JhKDAsMCwwLC4yOCl9Ci5idG5bZGlzYWJsZWRde29wYWNpdHk6LjQ1O3RyYW5zZm9ybTpub25lfQouYnRuLndpZGV7d2lkdGg6MTAwJX0KLmJ0bi5zb2Z0e2JhY2tncm91bmQ6dmFyKC0tY2FyZCk7Y29sb3I6dmFyKC0taW5rKTtib3gtc2hhZG93OnZhcigtLXNoYWRvdyl9Ci5pY29uLWJ0bnt3aWR0aDo1MHB4O2hlaWdodDo1MHB4O2JvcmRlci1yYWRpdXM6MTZweDtiYWNrZ3JvdW5kOnZhcigtLWNhcmQpO2JveC1zaGFkb3c6dmFyKC0tc2hhZG93KTsKICBkaXNwbGF5OmdyaWQ7cGxhY2UtaXRlbXM6Y2VudGVyO2ZvbnQtc2l6ZToxLjRyZW07ZmxleDpub25lfQouaWNvbi1idG46YWN0aXZle3RyYW5zZm9ybTp0cmFuc2xhdGVZKDJweCl9Ci5iYXJ7ZGlzcGxheTpmbGV4O2FsaWduLWl0ZW1zOmNlbnRlcjtnYXA6MTBweDtwYWRkaW5nOjEwcHggMTRweH0KLmJhciAudGl0bGV7ZmxleDoxO2ZvbnQtd2VpZ2h0OjgwMDtmb250LXNpemU6MS4xNXJlbTtsaW5lLWhlaWdodDoxLjE1O3RleHQtYWxpZ246Y2VudGVyfQouaGV4e2NsaXAtcGF0aDpwb2x5Z29uKDUwJSAwLDEwMCUgMjUlLDEwMCUgNzUlLDUwJSAxMDAlLDAgNzUlLDAgMjUlKX0KCi8qIFN0YXJ0ICovCi5oZXJve3RleHQtYWxpZ246Y2VudGVyO3BhZGRpbmc6MjJweCAxNnB4IDRweH0KLmhlcm8gaDF7Zm9udC1zaXplOjIuN3JlbTtmb250LXdlaWdodDo4MDA7bGluZS1oZWlnaHQ6MTtjb2xvcjp2YXIoLS1sZWFmKX0KLmhlcm8gLnN1Yntmb250LXNpemU6MS4xNXJlbTtmb250LXdlaWdodDo2MDA7bWFyZ2luLXRvcDo2cHh9Ci5sZWdzLW5vdGV7ZGlzcGxheTpmbGV4O2FsaWduLWl0ZW1zOmNlbnRlcjtnYXA6MTBweDtiYWNrZ3JvdW5kOnZhcigtLWNhcmQpO2JvcmRlci1yYWRpdXM6MThweDtwYWRkaW5nOjEwcHggMTRweDttYXJnaW4tdG9wOjE0cHg7Ym94LXNoYWRvdzp2YXIoLS1zaGFkb3cpfQoubGVncy1ub3RlIC5zaXh7d2lkdGg6NDRweDtoZWlnaHQ6NTBweDtiYWNrZ3JvdW5kOnZhcigtLWhvbmV5KTtjb2xvcjp2YXIoLS1ob25leS1pbmspO2Rpc3BsYXk6Z3JpZDtwbGFjZS1pdGVtczpjZW50ZXI7Zm9udC13ZWlnaHQ6ODAwO2ZvbnQtc2l6ZToxLjVyZW07ZmxleDpub25lfQoucGlja3N7ZGlzcGxheTpncmlkO2dyaWQtdGVtcGxhdGUtY29sdW1uczpyZXBlYXQoMywxZnIpO2dhcDo4cHh9Ci5waWNre2JhY2tncm91bmQ6dmFyKC0tY2FyZCk7Ym9yZGVyLXJhZGl1czoxOHB4O3BhZGRpbmc6OHB4IDRweCAxMHB4O2Rpc3BsYXk6ZmxleDtmbGV4LWRpcmVjdGlvbjpjb2x1bW47YWxpZ24taXRlbXM6Y2VudGVyO2dhcDowOwogIGJvcmRlcjozcHggc29saWQgdHJhbnNwYXJlbnQ7Ym94LXNoYWRvdzp2YXIoLS1zaGFkb3cpfQoucGljayBzdmd7aGVpZ2h0OjEwMHB4O3dpZHRoOmF1dG99Ci5waWNrIGJ7Zm9udC1zaXplOjEuMDJyZW07bGluZS1oZWlnaHQ6MS4yfQoucGljayBzcGFue2ZvbnQtc2l6ZTouODVyZW07Y29sb3I6dmFyKC0taW5rLXNvZnQpfQoucGlja1thcmlhLXByZXNzZWQ9InRydWUiXXtib3JkZXItY29sb3I6dmFyKC0tbGVhZik7YmFja2dyb3VuZDp2YXIoLS1vay1wYWxlKX0KbGFiZWwubGJse2Rpc3BsYXk6YmxvY2s7Zm9udC13ZWlnaHQ6NzAwO21hcmdpbjoxNnB4IDAgNnB4fQouZmllbGR7d2lkdGg6MTAwJTtmb250OmluaGVyaXQ7Zm9udC1zaXplOjEuMTVyZW07cGFkZGluZzoxMnB4IDE0cHg7Ym9yZGVyLXJhZGl1czoxNHB4O2JvcmRlcjoycHggc29saWQgdmFyKC0tbGluZSk7CiAgYmFja2dyb3VuZDp2YXIoLS1jYXJkKTtjb2xvcjp2YXIoLS1pbmspO3VzZXItc2VsZWN0OnRleHQ7LXdlYmtpdC11c2VyLXNlbGVjdDp0ZXh0fQouZmllbGQ6Zm9jdXMtdmlzaWJsZXtib3JkZXItY29sb3I6dmFyKC0tbGVhZil9CgovKiBNYXAgKi8KLm1lLWhlYWR7ZGlzcGxheTpmbGV4O2FsaWduLWl0ZW1zOmNlbnRlcjtnYXA6MTJweDtwYWRkaW5nOjEycHggMTRweCA2cHh9Ci5tZS1oZWFkIC5mcmFtZXt3aWR0aDo2MnB4O2hlaWdodDo3MnB4O2JhY2tncm91bmQ6dmFyKC0taG9uZXkpO2Rpc3BsYXk6Z3JpZDtwbGFjZS1pdGVtczpjZW50ZXI7ZmxleDpub25lfQoubWUtaGVhZCAuZnJhbWUgc3Zne2hlaWdodDo2MHB4O3dpZHRoOmF1dG99Ci5tZS1oZWFkIC53aG97ZmxleDoxO21pbi13aWR0aDowfQoubWUtaGVhZCAud2hvIGJ7ZGlzcGxheTpibG9jaztmb250LXNpemU6MS4zcmVtO2xpbmUtaGVpZ2h0OjEuMTtvdmVyZmxvdzpoaWRkZW47dGV4dC1vdmVyZmxvdzplbGxpcHNpczt3aGl0ZS1zcGFjZTpub3dyYXB9Ci5tZS1oZWFkIC53aG8gc3Bhbntjb2xvcjp2YXIoLS1pbmstc29mdCk7Zm9udC1zaXplOi45NXJlbX0KLnBhdGh7ZGlzcGxheTpmbGV4O2ZsZXgtZGlyZWN0aW9uOmNvbHVtbjtnYXA6MTBweDtwYWRkaW5nLXRvcDo4cHh9Ci5ub2Rle2Rpc3BsYXk6ZmxleDthbGlnbi1pdGVtczpjZW50ZXI7Z2FwOjEycHg7YmFja2dyb3VuZDp2YXIoLS1jYXJkKTtib3JkZXItcmFkaXVzOjIycHg7cGFkZGluZzoxMHB4IDEycHg7CiAgYm94LXNoYWRvdzp2YXIoLS1zaGFkb3cpO3RleHQtYWxpZ246bGVmdDttaW4taGVpZ2h0Ojg4cHg7d2lkdGg6OTAlfQoubm9kZTpudGgtY2hpbGQoZXZlbil7YWxpZ24tc2VsZjpmbGV4LWVuZDtmbGV4LWRpcmVjdGlvbjpyb3ctcmV2ZXJzZTt0ZXh0LWFsaWduOnJpZ2h0fQoubm9kZSAubnVte3dpZHRoOjQ4cHg7aGVpZ2h0OjU1cHg7YmFja2dyb3VuZDp2YXIoLS1ob25leSk7Y29sb3I6dmFyKC0taG9uZXktaW5rKTtkaXNwbGF5OmdyaWQ7cGxhY2UtaXRlbXM6Y2VudGVyO2ZvbnQtd2VpZ2h0OjgwMDtmb250LXNpemU6MS40NXJlbTtmbGV4Om5vbmV9Ci5ub2RlLmRvbmUgLm51bXtiYWNrZ3JvdW5kOnZhcigtLWxlYWYpO2NvbG9yOnZhcigtLWxlYWYtaW5rKX0KLm5vZGUgLnR4dHtmbGV4OjE7bWluLXdpZHRoOjA7ZGlzcGxheTpmbGV4O2ZsZXgtZGlyZWN0aW9uOmNvbHVtbjtsaW5lLWhlaWdodDoxLjJ9Ci5ub2RlIC50eHQgYntmb250LXNpemU6MS4xNXJlbX0KLm5vZGUgLnR4dCBzbWFsbHtmb250LXNpemU6LjkycmVtO2NvbG9yOnZhcigtLWluay1zb2Z0KX0KLm5vZGUgLnN0YXJze2NvbG9yOnZhcigtLWhvbmV5LWRlZXApO2ZvbnQtc2l6ZToxLjE1cmVtO2xldHRlci1zcGFjaW5nOjJweDttYXJnaW4tdG9wOjJweH0KLm5vZGUgLm1pbmkgc3Zne2hlaWdodDo2NnB4O3dpZHRoOmF1dG99Ci5ub2RlW2Rpc2FibGVkXXtvcGFjaXR5Oi41O2JveC1zaGFkb3c6bm9uZX0KLm5vZGUuYm9zc3tib3JkZXI6M3B4IHNvbGlkIHZhcigtLWhvbmV5KX0KLnVua25vd24gc3Zne2ZpbHRlcjpicmlnaHRuZXNzKDApO29wYWNpdHk6LjIyfQoubm9kZTphY3RpdmU6bm90KFtkaXNhYmxlZF0pe3RyYW5zZm9ybTp0cmFuc2xhdGVZKDJweCl9Ci5hbGx3b257dGV4dC1hbGlnbjpjZW50ZXI7bWFyZ2luLXRvcDoxNHB4O2ZvbnQtd2VpZ2h0OjcwMDtjb2xvcjp2YXIoLS1vayl9CgovKiBCYXR0bGUgKi8KLnNjZW5le3Bvc2l0aW9uOnJlbGF0aXZlO2ZsZXg6MTttaW4taGVpZ2h0OjE1MHB4O21hcmdpbjowIDEycHg7Ym9yZGVyLXJhZGl1czoyNnB4O292ZXJmbG93OmhpZGRlbjsKICBiYWNrZ3JvdW5kOmxpbmVhci1ncmFkaWVudCgxODBkZWcsdmFyKC0tc2t5MikgMCUsdmFyKC0tc2t5KSA1MCUsdmFyKC0tZ3Jhc3MpIDUwLjMlLHZhcigtLWdyYXNzLWRhcmspIDEwMCUpfQouZm9lLC5tZXtwb3NpdGlvbjphYnNvbHV0ZTthc3BlY3QtcmF0aW86MTA0LzE1Mn0KLmZvZXtyaWdodDo1JTt0b3A6NSU7aGVpZ2h0OjQ3JX0KLm1le2xlZnQ6NSU7Ym90dG9tOjMlO2hlaWdodDo1MiV9Ci5mb2U6OmFmdGVyLC5tZTo6YWZ0ZXJ7Y29udGVudDoiIjtwb3NpdGlvbjphYnNvbHV0ZTtsZWZ0OjEyJTtyaWdodDoxMiU7Ym90dG9tOi0yJTtoZWlnaHQ6MTAlO2JvcmRlci1yYWRpdXM6NTAlO2JhY2tncm91bmQ6cmdiYSgyMCw2MCwyMCwuMjgpO3otaW5kZXg6LTF9Ci5mb2Ugc3ZnLC5tZSBzdmd7d2lkdGg6MTAwJTtoZWlnaHQ6MTAwJX0KLmJvYnt3aWR0aDoxMDAlO2hlaWdodDoxMDAlO2FuaW1hdGlvbjpib2IgMi42cyBlYXNlLWluLW91dCBpbmZpbml0ZX0KLm1lIC5ib2J7YW5pbWF0aW9uLWRlbGF5Oi0xLjNzfQpAa2V5ZnJhbWVzIGJvYns1MCV7dHJhbnNmb3JtOnRyYW5zbGF0ZVkoLTQlKX19Ci5jYXJke3Bvc2l0aW9uOmFic29sdXRlO2JhY2tncm91bmQ6dmFyKC0tY2FyZCk7Ym9yZGVyLXJhZGl1czoxNHB4O3BhZGRpbmc6NnB4IDEwcHggOHB4O2JveC1zaGFkb3c6dmFyKC0tc2hhZG93KTtsaW5lLWhlaWdodDoxLjE1fQouY2FyZCAubm17Zm9udC13ZWlnaHQ6ODAwO2ZvbnQtc2l6ZToxcmVtO3doaXRlLXNwYWNlOm5vd3JhcDtvdmVyZmxvdzpoaWRkZW47dGV4dC1vdmVyZmxvdzplbGxpcHNpc30KLmZvZS1jYXJke2xlZnQ6MTBweDt0b3A6MTBweDt3aWR0aDo0OCV9Ci5tZS1jYXJke3JpZ2h0OjEwcHg7Ym90dG9tOjEycHg7d2lkdGg6NDQlfQouaHB3cmFwe2Rpc3BsYXk6ZmxleDthbGlnbi1pdGVtczpjZW50ZXI7Z2FwOjZweDttYXJnaW4tdG9wOjNweH0KLmhwe2ZsZXg6MTtoZWlnaHQ6MTJweDtib3JkZXItcmFkaXVzOjhweDtiYWNrZ3JvdW5kOnJnYmEoMCwwLDAsLjE0KTtvdmVyZmxvdzpoaWRkZW59Ci5ocCBpe2Rpc3BsYXk6YmxvY2s7aGVpZ2h0OjEwMCU7d2lkdGg6MTAwJTtiYWNrZ3JvdW5kOnZhcigtLXBvcHB5KTt0cmFuc2l0aW9uOndpZHRoIC40NXMgZWFzZX0KLmhwbnVte2ZvbnQtc2l6ZTouODVyZW07Zm9udC13ZWlnaHQ6NzAwO2NvbG9yOnZhcigtLWluay1zb2Z0KTtmb250LXZhcmlhbnQtbnVtZXJpYzp0YWJ1bGFyLW51bXN9Ci5zdHJlYWt7ZGlzcGxheTpmbGV4O2FsaWduLWl0ZW1zOmNlbnRlcjtnYXA6NHB4O21hcmdpbi10b3A6M3B4O2ZvbnQtc2l6ZTouODVyZW07Zm9udC13ZWlnaHQ6NzAwO2NvbG9yOnZhcigtLWluay1zb2Z0KX0KLnBpcHt3aWR0aDoxNXB4O2hlaWdodDoxN3B4O2JhY2tncm91bmQ6cmdiYSgwLDAsMCwuMTUpfQoucGlwLm9ue2JhY2tncm91bmQ6dmFyKC0taG9uZXktZGVlcCl9Ci5wb3B7cG9zaXRpb246YWJzb2x1dGU7cmlnaHQ6OCU7dG9wOjIwJTtmb250LXdlaWdodDo4MDA7Zm9udC1zaXplOjEuNXJlbTtjb2xvcjojZmZmO3BvaW50ZXItZXZlbnRzOm5vbmU7b3BhY2l0eTowOwogIHRleHQtc2hhZG93OjAgMnB4IDAgcmdiYSgwLDAsMCwuNDUpLDAgMCA2cHggcmdiYSgwLDAsMCwuMzUpO3otaW5kZXg6NDt3aGl0ZS1zcGFjZTpub3dyYXB9Ci5wb3Auc2hvd3thbmltYXRpb246cG9wIDEuMXMgZWFzZS1vdXR9CkBrZXlmcmFtZXMgcG9wezAle29wYWNpdHk6MDt0cmFuc2Zvcm06dHJhbnNsYXRlWSgxMHB4KSBzY2FsZSguOCl9MTUle29wYWNpdHk6MTt0cmFuc2Zvcm06dHJhbnNsYXRlWSgwKSBzY2FsZSgxLjEpfTcwJXtvcGFjaXR5OjF9MTAwJXtvcGFjaXR5OjA7dHJhbnNmb3JtOnRyYW5zbGF0ZVkoLTIycHgpfX0KLmx1bmdle2FuaW1hdGlvbjpsdW5nZSAuNXMgZWFzZX0KQGtleWZyYW1lcyBsdW5nZXs0MCV7dHJhbnNmb3JtOnRyYW5zbGF0ZSgyMiUsLTE2JSkgcm90YXRlKDZkZWcpfX0KLmh1cnR7YW5pbWF0aW9uOmh1cnQgLjU1cyBlYXNlfQpAa2V5ZnJhbWVzIGh1cnR7MTUlLDQ1JSw3NSV7dHJhbnNmb3JtOnRyYW5zbGF0ZVgoLTclKTtmaWx0ZXI6YnJpZ2h0bmVzcygxLjgpfTMwJSw2MCUsOTAle3RyYW5zZm9ybTp0cmFuc2xhdGVYKDclKX19Ci5kb2RnZXthbmltYXRpb246ZG9kZ2UgLjU1cyBlYXNlfQpAa2V5ZnJhbWVzIGRvZGdlezQwJXt0cmFuc2Zvcm06dHJhbnNsYXRlWCgyNCUpIHJvdGF0ZSg4ZGVnKX19Ci5mYWludHthbmltYXRpb246ZmFpbnQgLjlzIGVhc2UgZm9yd2FyZHN9CkBrZXlmcmFtZXMgZmFpbnR7dG97dHJhbnNmb3JtOnNjYWxlKC4yNSkgdHJhbnNsYXRlWSg0MCUpO29wYWNpdHk6MH19Ci5zaGVldHtwb3NpdGlvbjphYnNvbHV0ZTtpbnNldDo4cHg7YmFja2dyb3VuZDp2YXIoLS1jYXJkKTtib3JkZXItcmFkaXVzOjIwcHg7cGFkZGluZzoxNHB4IDE2cHg7b3ZlcmZsb3cteTphdXRvO3otaW5kZXg6NjsKICBkaXNwbGF5OmZsZXg7ZmxleC1kaXJlY3Rpb246Y29sdW1uO2dhcDo4cHg7Ym94LXNoYWRvdzowIDZweCAyMHB4IHJnYmEoMCwwLDAsLjE4KX0KLnNoZWV0W2hpZGRlbl17ZGlzcGxheTpub25lfQouc2hlZXQgaDN7Zm9udC1zaXplOjEuM3JlbTtmb250LXdlaWdodDo4MDA7bGluZS1oZWlnaHQ6MS4xNX0KLnNoZWV0IHB7Zm9udC1zaXplOjEuMDhyZW19Ci5zaGVldCAuYnRue21hcmdpbi10b3A6YXV0bzttaW4taGVpZ2h0OjUycHg7Zm9udC1zaXplOjEuMTVyZW19Ci5kb3Rze2Rpc3BsYXk6Z3JpZDtncmlkLXRlbXBsYXRlLWNvbHVtbnM6cmVwZWF0KDYsMTFweCk7Z2FwOjRweCA0cHg7anVzdGlmeS1jb250ZW50OmNlbnRlcjttYXJnaW46NHB4IDB9Ci5kb3RzIGl7d2lkdGg6MTFweDtoZWlnaHQ6MTFweDtib3JkZXItcmFkaXVzOjUwJTtiYWNrZ3JvdW5kOnZhcigtLWhvbmV5LWRlZXApfQouZG90cyBpOm50aC1jaGlsZCg2biszKXttYXJnaW4tcmlnaHQ6NHB4fQouZG90cyBocntncmlkLWNvbHVtbjoxLy0xO2JvcmRlcjowO2JvcmRlci10b3A6MnB4IGRhc2hlZCB2YXIoLS1pbmstc29mdCk7bWFyZ2luOjFweCAwO29wYWNpdHk6LjZ9Ci5kb3RjYXB7dGV4dC1hbGlnbjpjZW50ZXI7Zm9udC1zaXplOi45cmVtO2NvbG9yOnZhcigtLWluay1zb2Z0KX0KLnNvbHV0aW9ue2ZvbnQtc2l6ZToxLjlyZW07Zm9udC13ZWlnaHQ6ODAwO3RleHQtYWxpZ246Y2VudGVyO2NvbG9yOnZhcigtLW9rKX0KLnRhc2t7bWFyZ2luOjEwcHggMTJweCA0cHg7YmFja2dyb3VuZDp2YXIoLS1jYXJkKTtib3JkZXItcmFkaXVzOjIwcHg7cGFkZGluZzo2cHggMTJweCA4cHg7dGV4dC1hbGlnbjpjZW50ZXI7Ym94LXNoYWRvdzp2YXIoLS1zaGFkb3cpO21pbi1oZWlnaHQ6NjZweDsKICBkaXNwbGF5OmZsZXg7ZmxleC1kaXJlY3Rpb246Y29sdW1uO2p1c3RpZnktY29udGVudDpjZW50ZXJ9Ci50YXNrIC5wcmV7Zm9udC1zaXplOjEuMDJyZW07Zm9udC13ZWlnaHQ6NjAwO2xpbmUtaGVpZ2h0OjEuMjV9Ci50YXNrIC5idWdze2Rpc3BsYXk6YmxvY2s7Zm9udC1zaXplOjEuMDVyZW07bGV0dGVyLXNwYWNpbmc6MXB4O2xpbmUtaGVpZ2h0OjEuM30KLnRhc2sgLmV4cHJ7Zm9udC1zaXplOmNsYW1wKDEuOXJlbSw5LjV2dywyLjVyZW0pO2ZvbnQtd2VpZ2h0OjgwMDtsaW5lLWhlaWdodDoxLjE1O2ZvbnQtdmFyaWFudC1udW1lcmljOnRhYnVsYXItbnVtc30KLnNsb3R7ZGlzcGxheTppbmxpbmUtYmxvY2s7bWluLXdpZHRoOjIuMWNoO3BhZGRpbmc6MCA0cHg7Ym9yZGVyLWJvdHRvbTo0cHggZGFzaGVkIHZhcigtLWhvbmV5LWRlZXApO2NvbG9yOnZhcigtLWxlYWYpO3RleHQtYWxpZ246Y2VudGVyfQouc2xvdC5va3tib3JkZXItYm90dG9tLXN0eWxlOnNvbGlkO2JvcmRlci1jb2xvcjp2YXIoLS1vayk7YmFja2dyb3VuZDp2YXIoLS1vay1wYWxlKTtib3JkZXItcmFkaXVzOjhweCA4cHggMCAwfQouc2xvdC5iYWR7Ym9yZGVyLWJvdHRvbS1zdHlsZTpzb2xpZDtib3JkZXItY29sb3I6dmFyKC0tcG9wcHkpO2JhY2tncm91bmQ6dmFyKC0tcG9wcHktcGFsZSk7Y29sb3I6dmFyKC0tcG9wcHktaW5rKTtib3JkZXItcmFkaXVzOjhweCA4cHggMCAwfQoucGFkey0tdzptaW4oMjF2dyw5LjZ2aCw4OHB4KTstLWg6Y2FsYyh2YXIoLS13KSAqIDEuMTU0Nyk7ZGlzcGxheTpmbGV4O2ZsZXgtZGlyZWN0aW9uOmNvbHVtbjthbGlnbi1pdGVtczpjZW50ZXI7cGFkZGluZzo2cHggMCAxMHB4fQoucHJvd3tkaXNwbGF5OmZsZXg7Z2FwOjVweH0KLnByb3crLnByb3d7bWFyZ2luLXRvcDpjYWxjKHZhcigtLWgpICogLTAuMjUgKyA1cHgpfQoucHJvdzpudGgtY2hpbGQob2RkKXt0cmFuc2Zvcm06dHJhbnNsYXRlWChjYWxjKHZhcigtLXcpICogLTAuMjUgLSAxLjI1cHgpKX0KLnByb3c6bnRoLWNoaWxkKGV2ZW4pe3RyYW5zZm9ybTp0cmFuc2xhdGVYKGNhbGModmFyKC0tdykgKiAwLjI1ICsgMS4yNXB4KSl9Ci5rZXl7d2lkdGg6dmFyKC0tdyk7aGVpZ2h0OnZhcigtLWgpO2ZpbHRlcjpkcm9wLXNoYWRvdygwIDNweCAwIHJnYmEoMCwwLDAsLjIyKSk7Ym9yZGVyLXJhZGl1czowfQoua2V5IC5oeHtkaXNwbGF5OmdyaWQ7cGxhY2UtaXRlbXM6Y2VudGVyO3dpZHRoOjEwMCU7aGVpZ2h0OjEwMCU7YmFja2dyb3VuZDp2YXIoLS1ob25leSk7Y29sb3I6dmFyKC0taG9uZXktaW5rKTsKICBmb250LXNpemU6Y2FsYyh2YXIoLS13KSAqIC40NCk7Zm9udC13ZWlnaHQ6ODAwO2xpbmUtaGVpZ2h0OjF9Ci5rZXk6YWN0aXZlIC5oeHtiYWNrZ3JvdW5kOnZhcigtLWhvbmV5LWRlZXApfQoua2V5OmFjdGl2ZXt0cmFuc2Zvcm06dHJhbnNsYXRlWSgycHgpO2ZpbHRlcjpkcm9wLXNoYWRvdygwIDFweCAwIHJnYmEoMCwwLDAsLjIyKSl9Ci5rZXkuZGVsIC5oeHtiYWNrZ3JvdW5kOnZhcigtLWtleS1ncmV5KTtjb2xvcjp2YXIoLS1pbmspO2ZvbnQtc2l6ZTpjYWxjKHZhcigtLXcpICogLjM0KX0KLmtleS5vayAuaHh7YmFja2dyb3VuZDp2YXIoLS1sZWFmKTtjb2xvcjp2YXIoLS1sZWFmLWluayk7Zm9udC1zaXplOmNhbGModmFyKC0tdykgKiAuMzgpfQouY2hvaWNlc3stLXc6bWluKDI3dncsMTIuNXZoLDExMnB4KTstLWg6Y2FsYyh2YXIoLS13KSAqIDEuMTU0Nyk7ZGlzcGxheTpmbGV4O2p1c3RpZnktY29udGVudDpjZW50ZXI7Z2FwOjEwcHg7cGFkZGluZzoxMHB4IDAgMTZweH0KLmNob2ljZXNbaGlkZGVuXSwucGFkW2hpZGRlbl17ZGlzcGxheTpub25lfQoua2V5Lndyb25ne29wYWNpdHk6LjM1fQoKLyogV2luIC8gRXZvICovCi5jZW50ZXJ7ZmxleDoxO2Rpc3BsYXk6ZmxleDtmbGV4LWRpcmVjdGlvbjpjb2x1bW47YWxpZ24taXRlbXM6Y2VudGVyO2p1c3RpZnktY29udGVudDpjZW50ZXI7Z2FwOjEwcHg7cGFkZGluZzoyMHB4O3RleHQtYWxpZ246Y2VudGVyfQouY2VudGVyIGgxe2ZvbnQtc2l6ZToyLjRyZW07Zm9udC13ZWlnaHQ6ODAwO2xpbmUtaGVpZ2h0OjE7Y29sb3I6dmFyKC0tbGVhZil9Ci5qYXJ7d2lkdGg6bWluKDUydncsMTkwcHgpO2FzcGVjdC1yYXRpbzoxLzEuMTU0NztiYWNrZ3JvdW5kOnZhcigtLWhvbmV5KTtkaXNwbGF5OmdyaWQ7cGxhY2UtaXRlbXM6Y2VudGVyfQouamFyPmRpdnt3aWR0aDo4NiU7aGVpZ2h0Ojg2JTtiYWNrZ3JvdW5kOnZhcigtLWNhcmQpO2Rpc3BsYXk6Z3JpZDtwbGFjZS1pdGVtczpjZW50ZXJ9Ci5qYXIgc3Zne2hlaWdodDo4MiU7d2lkdGg6YXV0b30KLmphci5mbGFzaHthbmltYXRpb246Zmxhc2ggLjZzIGVhc2V9CkBrZXlmcmFtZXMgZmxhc2h7NTAle2ZpbHRlcjpicmlnaHRuZXNzKDMpIHNhdHVyYXRlKDApfX0KLmJpZ3N0YXJze2ZvbnQtc2l6ZToyLjZyZW07bGV0dGVyLXNwYWNpbmc6NnB4O2NvbG9yOnZhcigtLWhvbmV5LWRlZXApO2xpbmUtaGVpZ2h0OjF9Ci5jZW50ZXIgcHtmb250LXNpemU6MS4xMnJlbTttYXgtd2lkdGg6MzBjaH0KLmNlbnRlciAuYnRue21hcmdpbi10b3A6MTBweDttaW4td2lkdGg6MjIwcHh9CgovKiBCb29rICovCi5ncmlke2Rpc3BsYXk6Z3JpZDtncmlkLXRlbXBsYXRlLWNvbHVtbnM6cmVwZWF0KDIsMWZyKTtnYXA6MTBweH0KLmJjYXJke2JhY2tncm91bmQ6dmFyKC0tY2FyZCk7Ym9yZGVyLXJhZGl1czoxOHB4O3BhZGRpbmc6MTBweCA4cHg7ZGlzcGxheTpmbGV4O2ZsZXgtZGlyZWN0aW9uOmNvbHVtbjthbGlnbi1pdGVtczpjZW50ZXI7dGV4dC1hbGlnbjpjZW50ZXI7Ym94LXNoYWRvdzp2YXIoLS1zaGFkb3cpO2xpbmUtaGVpZ2h0OjEuMn0KLmJjYXJkIHN2Z3toZWlnaHQ6OTJweDt3aWR0aDphdXRvO21hcmdpbi1ib3R0b206NHB4fQouYmNhcmQgYntmb250LXNpemU6MS4wNXJlbX0KLmJjYXJkIHNtYWxse2ZvbnQtc2l6ZTouODhyZW07Y29sb3I6dmFyKC0taW5rLXNvZnQpfQouYmNhcmQubWluZXtncmlkLWNvbHVtbjoxLy0xO2ZsZXgtZGlyZWN0aW9uOnJvdztnYXA6MTRweDt0ZXh0LWFsaWduOmxlZnQ7Ym9yZGVyOjNweCBzb2xpZCB2YXIoLS1ob25leSl9Ci5iY2FyZC5taW5lIHN2Z3toZWlnaHQ6MTEwcHh9Ci5zdGFuZHtiYWNrZ3JvdW5kOnZhcigtLWNhcmQpO2JvcmRlci1yYWRpdXM6MThweDtwYWRkaW5nOjEycHggMTRweDtib3gtc2hhZG93OnZhcigtLXNoYWRvdyl9Ci5zdGFuZCBwe21hcmdpbjo0cHggMH0KLmNoaXBze2Rpc3BsYXk6ZmxleDtmbGV4LXdyYXA6d3JhcDtnYXA6NnB4O21hcmdpbjo0cHggMCA4cHh9Ci5jaGlwe3BhZGRpbmc6M3B4IDExcHg7Ym9yZGVyLXJhZGl1czo5OTlweDtiYWNrZ3JvdW5kOnZhcigtLW9rLXBhbGUpO2NvbG9yOnZhcigtLW9rKTtmb250LXdlaWdodDo3MDA7Zm9udC1zaXplOi45OHJlbX0KLmNoaXAud2FybntiYWNrZ3JvdW5kOnZhcigtLXBvcHB5LXBhbGUpO2NvbG9yOnZhcigtLXBvcHB5LWluayl9Ci5tZXRlcntoZWlnaHQ6MTRweDtib3JkZXItcmFkaXVzOjhweDtiYWNrZ3JvdW5kOnJnYmEoMCwwLDAsLjEyKTtvdmVyZmxvdzpoaWRkZW47bWFyZ2luOjRweCAwIDJweH0KLm1ldGVyIGl7ZGlzcGxheTpibG9jaztoZWlnaHQ6MTAwJTtiYWNrZ3JvdW5kOnZhcigtLWhvbmV5LWRlZXApfQoKLyogU2V0dGluZ3MgKi8KLnNldHN7ZGlzcGxheTpmbGV4O2ZsZXgtZGlyZWN0aW9uOmNvbHVtbjtnYXA6MTBweH0KLnN3e2Rpc3BsYXk6ZmxleDtqdXN0aWZ5LWNvbnRlbnQ6c3BhY2UtYmV0d2VlbjthbGlnbi1pdGVtczpjZW50ZXI7Z2FwOjEycHg7YmFja2dyb3VuZDp2YXIoLS1jYXJkKTtib3JkZXItcmFkaXVzOjE4cHg7CiAgcGFkZGluZzoxMnB4IDE0cHg7bWluLWhlaWdodDo2NnB4O3dpZHRoOjEwMCU7dGV4dC1hbGlnbjpsZWZ0O2JveC1zaGFkb3c6dmFyKC0tc2hhZG93KTtsaW5lLWhlaWdodDoxLjI1fQouc3cgYntkaXNwbGF5OmJsb2NrO2ZvbnQtc2l6ZToxLjA4cmVtfQouc3cgc21hbGx7Y29sb3I6dmFyKC0taW5rLXNvZnQpO2ZvbnQtc2l6ZTouOXJlbX0KLnRne2Rpc3BsYXk6ZmxleDthbGlnbi1pdGVtczpjZW50ZXI7Z2FwOjZweDtmbGV4Om5vbmU7Zm9udC13ZWlnaHQ6NzAwO2ZvbnQtc2l6ZTouOXJlbTtjb2xvcjp2YXIoLS1pbmstc29mdCl9Ci50ZyBpe3dpZHRoOjU2cHg7aGVpZ2h0OjMycHg7Ym9yZGVyLXJhZGl1czoxNnB4O2JhY2tncm91bmQ6I0JEQjZBMjtwb3NpdGlvbjpyZWxhdGl2ZX0KLnRnIGk6OmFmdGVye2NvbnRlbnQ6IiI7cG9zaXRpb246YWJzb2x1dGU7dG9wOjNweDtsZWZ0OjNweDt3aWR0aDoyNnB4O2hlaWdodDoyNnB4O2JvcmRlci1yYWRpdXM6NTAlO2JhY2tncm91bmQ6I2ZmZjt0cmFuc2l0aW9uOmxlZnQgLjJzfQouc3dbYXJpYS1jaGVja2VkPSJ0cnVlIl0gLnRnIGl7YmFja2dyb3VuZDp2YXIoLS1sZWFmKX0KLnN3W2FyaWEtY2hlY2tlZD0idHJ1ZSJdIC50ZyBpOjphZnRlcntsZWZ0OjI3cHh9Ci5zd1tkaXNhYmxlZF17b3BhY2l0eTouNX0KLmRhbmdlcntiYWNrZ3JvdW5kOnZhcigtLXBvcHB5LXBhbGUpO2NvbG9yOnZhcigtLXBvcHB5LWluayk7Ym94LXNoYWRvdzpub25lO2ZvbnQtc2l6ZToxLjFyZW19CgpAbWVkaWEgKHByZWZlcnMtcmVkdWNlZC1tb3Rpb246IHJlZHVjZSl7CiAgKiwqOjpiZWZvcmUsKjo6YWZ0ZXJ7YW5pbWF0aW9uLWR1cmF0aW9uOi4wMW1zICFpbXBvcnRhbnQ7YW5pbWF0aW9uLWl0ZXJhdGlvbi1jb3VudDoxICFpbXBvcnRhbnQ7dHJhbnNpdGlvbjpub25lICFpbXBvcnRhbnR9Cn0KPC9zdHlsZT4KPC9oZWFkPgo8Ym9keT4KPGRpdiBjbGFzcz0iYXBwIj4KCiAgPCEtLSBTVEFSVCAtLT4KICA8c2VjdGlvbiBjbGFzcz0ic2NyZWVuIiBpZD0ic2NyLXN0YXJ0IiBhcmlhLWxhYmVsPSJTdGFydCI+CiAgICA8ZGl2IGNsYXNzPSJzY3JvbGwiPgogICAgICA8ZGl2IGNsYXNzPSJoZXJvIj4KICAgICAgICA8aDE+S3JhYmJlbC1BcmVuYTwvaDE+CiAgICAgICAgPHAgY2xhc3M9InN1YiI+w5xiZSBkaWUgNmVyLVJlaWhlIHVuZCBzYW1tbGUgS3JhYmJlbC1Nb25zdGVyLjwvcD4KICAgICAgPC9kaXY+CiAgICAgIDxkaXYgY2xhc3M9ImxlZ3Mtbm90ZSI+CiAgICAgICAgPGRpdiBjbGFzcz0ic2l4IGhleCIgYXJpYS1oaWRkZW49InRydWUiPjY8L2Rpdj4KICAgICAgICA8cD5KZWRlcyBLcmFiYmVsLU1vbnN0ZXIgaGF0IDYgQmVpbmUuIFrDpGhsIG1hbCBuYWNoITwvcD4KICAgICAgPC9kaXY+CiAgICAgIDxoMj5Xw6RobGUgZGVpbiBlcnN0ZXMgTW9uc3RlcjwvaDI+CiAgICAgIDxkaXYgY2xhc3M9InBpY2tzIiBpZD0icGlja3MiPjwvZGl2PgogICAgICA8bGFiZWwgY2xhc3M9ImxibCIgZm9yPSJuaWNrIj5XaWUgc29sbCBkZWluIE1vbnN0ZXIgaGVpw59lbj88L2xhYmVsPgogICAgICA8aW5wdXQgY2xhc3M9ImZpZWxkIiBpZD0ibmljayIgbWF4bGVuZ3RoPSIxNCIgYXV0b2NvbXBsZXRlPSJvZmYiIHBsYWNlaG9sZGVyPSJEdSBrYW5uc3QgZGFzIEZlbGQgbGVlciBsYXNzZW4iPgogICAgICA8ZGl2IHN0eWxlPSJtYXJnaW4tdG9wOjE4cHgiPjxidXR0b24gY2xhc3M9ImJ0biB3aWRlIiBpZD0iZ28iIGRpc2FibGVkPkxvcyBnZWh0J3MhPC9idXR0b24+PC9kaXY+CiAgICA8L2Rpdj4KICA8L3NlY3Rpb24+CgogIDwhLS0gTUFQIC0tPgogIDxzZWN0aW9uIGNsYXNzPSJzY3JlZW4iIGlkPSJzY3ItbWFwIiBhcmlhLWxhYmVsPSJLYXJ0ZSI+CiAgICA8ZGl2IGNsYXNzPSJtZS1oZWFkIj4KICAgICAgPGRpdiBjbGFzcz0iZnJhbWUgaGV4IiBpZD0ibWFwLW1lIiBhcmlhLWhpZGRlbj0idHJ1ZSI+PC9kaXY+CiAgICAgIDxkaXYgY2xhc3M9IndobyI+PGIgaWQ9Im1hcC1uYW1lIj48L2I+PHNwYW4gaWQ9Im1hcC1sdmwiPjwvc3Bhbj48L2Rpdj4KICAgICAgPGJ1dHRvbiBjbGFzcz0iaWNvbi1idG4iIGlkPSJ0by1ib29rIiBhcmlhLWxhYmVsPSJNb25zdGVyYnVjaCI+8J+TljwvYnV0dG9uPgogICAgICA8YnV0dG9uIGNsYXNzPSJpY29uLWJ0biIgaWQ9InRvLXNldCIgYXJpYS1sYWJlbD0iRWluc3RlbGx1bmdlbiI+4pqZ77iPPC9idXR0b24+CiAgICA8L2Rpdj4KICAgIDxkaXYgY2xhc3M9InNjcm9sbCI+CiAgICAgIDxkaXYgY2xhc3M9InBhdGgiIGlkPSJwYXRoIj48L2Rpdj4KICAgICAgPHAgY2xhc3M9ImFsbHdvbiIgaWQ9ImFsbHdvbiIgaGlkZGVuPkFsbGUgQXJlbmVuIGdlc2NoYWZmdCEgS2FubnN0IGR1IMO8YmVyYWxsIDMgU3Rlcm5lIGhvbGVuPzwvcD4KICAgIDwvZGl2PgogIDwvc2VjdGlvbj4KCiAgPCEtLSBCQVRUTEUgLS0+CiAgPHNlY3Rpb24gY2xhc3M9InNjcmVlbiIgaWQ9InNjci1iYXR0bGUiIGFyaWEtbGFiZWw9IkthbXBmIj4KICAgIDxkaXYgY2xhc3M9ImJhciI+CiAgICAgIDxidXR0b24gY2xhc3M9Imljb24tYnRuIiBpZD0icXVpdCIgYXJpYS1sYWJlbD0iWnVyw7xjayB6dXIgS2FydGUiPuKclTwvYnV0dG9uPgogICAgICA8ZGl2IGNsYXNzPSJ0aXRsZSIgaWQ9ImItYXJlbmEiPjwvZGl2PgogICAgICA8YnV0dG9uIGNsYXNzPSJpY29uLWJ0biIgaWQ9InNwZWFrIiBhcmlhLWxhYmVsPSJBdWZnYWJlIHZvcmxlc2VuIj7wn5SKPC9idXR0b24+CiAgICA8L2Rpdj4KICAgIDxkaXYgY2xhc3M9InNjZW5lIiBpZD0ic2NlbmUiPgogICAgICA8ZGl2IGNsYXNzPSJjYXJkIGZvZS1jYXJkIj4KICAgICAgICA8ZGl2IGNsYXNzPSJubSIgaWQ9ImZvZS1uYW1lIj48L2Rpdj4KICAgICAgICA8ZGl2IGNsYXNzPSJocHdyYXAiPjxkaXYgY2xhc3M9ImhwIiByb2xlPSJwcm9ncmVzc2JhciIgYXJpYS1sYWJlbD0iS3JhZnQgdm9tIEdlZ25lciIgaWQ9ImhwYmFyIj48aSBpZD0iZm9lLWhwIj48L2k+PC9kaXY+PHNwYW4gY2xhc3M9ImhwbnVtIiBpZD0iaHBudW0iPjwvc3Bhbj48L2Rpdj4KICAgICAgPC9kaXY+CiAgICAgIDxkaXYgY2xhc3M9ImZvZSIgaWQ9ImZvZSI+PC9kaXY+CiAgICAgIDxkaXYgY2xhc3M9Im1lIiBpZD0ibWUiPjwvZGl2PgogICAgICA8ZGl2IGNsYXNzPSJjYXJkIG1lLWNhcmQiPgogICAgICAgIDxkaXYgY2xhc3M9Im5tIiBpZD0ibWUtbmFtZSI+PC9kaXY+CiAgICAgICAgPGRpdiBjbGFzcz0ic3RyZWFrIiBpZD0ic3RyZWFrIj48L2Rpdj4KICAgICAgPC9kaXY+CiAgICAgIDxkaXYgY2xhc3M9InBvcCIgaWQ9InBvcCIgYXJpYS1oaWRkZW49InRydWUiPjwvZGl2PgogICAgICA8ZGl2IGNsYXNzPSJzaGVldCIgaWQ9InNoZWV0IiBoaWRkZW4gcm9sZT0iZGlhbG9nIiBhcmlhLWxpdmU9InBvbGl0ZSI+PC9kaXY+CiAgICA8L2Rpdj4KICAgIDxkaXYgY2xhc3M9InRhc2siIGlkPSJ0YXNrIiBhcmlhLWxpdmU9InBvbGl0ZSI+PC9kaXY+CiAgICA8ZGl2IGNsYXNzPSJwYWQiIGlkPSJwYWQiPjwvZGl2PgogICAgPGRpdiBjbGFzcz0iY2hvaWNlcyIgaWQ9ImNob2ljZXMiIGhpZGRlbj48L2Rpdj4KICA8L3NlY3Rpb24+CgogIDwhLS0gV0lOIC0tPgogIDxzZWN0aW9uIGNsYXNzPSJzY3JlZW4iIGlkPSJzY3Itd2luIiBhcmlhLWxhYmVsPSJTaWVnIj4KICAgIDxkaXYgY2xhc3M9ImNlbnRlciI+CiAgICAgIDxoMSBpZD0id2luLXRpdGxlIj5HZWZhbmdlbiE8L2gxPgogICAgICA8ZGl2IGNsYXNzPSJqYXIgaGV4Ij48ZGl2IGNsYXNzPSJoZXgiIGlkPSJ3aW4tbW9uIj48L2Rpdj48L2Rpdj4KICAgICAgPGRpdiBjbGFzcz0iYmlnc3RhcnMiIGlkPSJ3aW4tc3RhcnMiPjwvZGl2PgogICAgICA8cCBpZD0id2luLXRleHQiPjwvcD4KICAgICAgPHAgY2xhc3M9Im11dGVkIiBpZD0id2luLXN1YiI+PC9wPgogICAgICA8YnV0dG9uIGNsYXNzPSJidG4iIGlkPSJ3aW4tYnRuIj5adXIgS2FydGU8L2J1dHRvbj4KICAgIDwvZGl2PgogIDwvc2VjdGlvbj4KCiAgPCEtLSBFVk9MVVRJT04gLS0+CiAgPHNlY3Rpb24gY2xhc3M9InNjcmVlbiIgaWQ9InNjci1ldm8iIGFyaWEtbGFiZWw9IkVudHdpY2tsdW5nIj4KICAgIDxkaXYgY2xhc3M9ImNlbnRlciI+CiAgICAgIDxoMT5XYXMgcGFzc2llcnQgZGE/PC9oMT4KICAgICAgPGRpdiBjbGFzcz0iamFyIGhleCIgaWQ9ImV2by1qYXIiPjxkaXYgY2xhc3M9ImhleCIgaWQ9ImV2by1tb24iPjwvZGl2PjwvZGl2PgogICAgICA8cCBpZD0iZXZvLXRleHQiIGFyaWEtbGl2ZT0icG9saXRlIj48L3A+CiAgICAgIDxidXR0b24gY2xhc3M9ImJ0biIgaWQ9ImV2by1idG4iIGhpZGRlbj5adXIgS2FydGU8L2J1dHRvbj4KICAgIDwvZGl2PgogIDwvc2VjdGlvbj4KCiAgPCEtLSBCT09LIC0tPgogIDxzZWN0aW9uIGNsYXNzPSJzY3JlZW4iIGlkPSJzY3ItYm9vayIgYXJpYS1sYWJlbD0iTW9uc3RlcmJ1Y2giPgogICAgPGRpdiBjbGFzcz0iYmFyIj4KICAgICAgPGJ1dHRvbiBjbGFzcz0iaWNvbi1idG4gYmFjayIgYXJpYS1sYWJlbD0iWnVyw7xjayB6dXIgS2FydGUiPuKGkDwvYnV0dG9uPgogICAgICA8ZGl2IGNsYXNzPSJ0aXRsZSI+TW9uc3RlcmJ1Y2g8L2Rpdj4KICAgICAgPHNwYW4gc3R5bGU9IndpZHRoOjUwcHgiPjwvc3Bhbj4KICAgIDwvZGl2PgogICAgPGRpdiBjbGFzcz0ic2Nyb2xsIj4KICAgICAgPGRpdiBjbGFzcz0iZ3JpZCIgaWQ9ImJvb2siPjwvZGl2PgogICAgICA8aDI+TWVpbiBTdGFuZDwvaDI+CiAgICAgIDxkaXYgY2xhc3M9InN0YW5kIiBpZD0ic3RhbmQiPjwvZGl2PgogICAgPC9kaXY+CiAgPC9zZWN0aW9uPgoKICA8IS0tIFNFVFRJTkdTIC0tPgogIDxzZWN0aW9uIGNsYXNzPSJzY3JlZW4iIGlkPSJzY3Itc2V0IiBhcmlhLWxhYmVsPSJFaW5zdGVsbHVuZ2VuIj4KICAgIDxkaXYgY2xhc3M9ImJhciI+CiAgICAgIDxidXR0b24gY2xhc3M9Imljb24tYnRuIGJhY2siIGFyaWEtbGFiZWw9Ilp1csO8Y2sgenVyIEthcnRlIj7ihpA8L2J1dHRvbj4KICAgICAgPGRpdiBjbGFzcz0idGl0bGUiPkVpbnN0ZWxsdW5nZW48L2Rpdj4KICAgICAgPHNwYW4gc3R5bGU9IndpZHRoOjUwcHgiPjwvc3Bhbj4KICAgIDwvZGl2PgogICAgPGRpdiBjbGFzcz0ic2Nyb2xsIj4KICAgICAgPGRpdiBjbGFzcz0ic2V0cyIgaWQ9InNldHMiPjwvZGl2PgogICAgICA8aDI+TmV1IGFuZmFuZ2VuPC9oMj4KICAgICAgPHAgY2xhc3M9Im11dGVkIiBzdHlsZT0ibWFyZ2luLWJvdHRvbTo4cHgiPkzDtnNjaHQgZGVpbiBNb25zdGVyLCBhbGxlIFN0ZXJuZSB1bmQgZGFzIE1vbnN0ZXJidWNoLjwvcD4KICAgICAgPGJ1dHRvbiBjbGFzcz0iYnRuIHdpZGUgZGFuZ2VyIiBpZD0icmVzZXQiPkFsbGVzIGzDtnNjaGVuPC9idXR0b24+CiAgICA8L2Rpdj4KICA8L3NlY3Rpb24+Cgo8L2Rpdj4KCjxzY3JpcHQ+Ci8qIC0tLS0tLS0tLS0gU3BlaWNoZXIgLS0tLS0tLS0tLSAqLwpjb25zdCBLRVkgPSAna3JhYmJlbGFyZW5hX3YxJzsKY29uc3QgREVGID0geyBzdGFydGVyOm51bGwsIG5hbWU6JycsIGFyZW5hczp7fSwgZmVobGVyOnt9LCByaWdodDp7fSwgZXZvbHZlZDpmYWxzZSwKICBzZXR0aW5nczp7IHZvcmxlc2VuOmZhbHNlLCB2b3JzY2hsYWVnZTpmYWxzZSwgdG9uOnRydWUgfSB9Owpjb25zdCBjbG9uZSA9IG8gPT4gSlNPTi5wYXJzZShKU09OLnN0cmluZ2lmeShvKSk7CmZ1bmN0aW9uIGxvYWQoKXsKICB0cnl7CiAgICBjb25zdCByID0gbG9jYWxTdG9yYWdlLmdldEl0ZW0oS0VZKTsKICAgIGlmKHIpeyBjb25zdCBvID0gSlNPTi5wYXJzZShyKTsgcmV0dXJuIE9iamVjdC5hc3NpZ24oY2xvbmUoREVGKSwgbywgeyBzZXR0aW5nczpPYmplY3QuYXNzaWduKGNsb25lKERFRi5zZXR0aW5ncyksIG8uc2V0dGluZ3N8fHt9KSB9KTsgfQogIH1jYXRjaChlKXt9CiAgcmV0dXJuIGNsb25lKERFRik7Cn0KZnVuY3Rpb24gc2F2ZSgpeyB0cnl7IGxvY2FsU3RvcmFnZS5zZXRJdGVtKEtFWSwgSlNPTi5zdHJpbmdpZnkoUykpOyB9Y2F0Y2goZSl7fSB9CmxldCBTID0gbG9hZCgpOwoKY29uc3QgJCA9IHMgPT4gZG9jdW1lbnQucXVlcnlTZWxlY3RvcihzKTsKY29uc3QgZXNjID0gcyA9PiBTdHJpbmcocykucmVwbGFjZSgvWyY8PiInXS9nLCBjID0+ICh7JyYnOicmYW1wOycsJzwnOicmbHQ7JywnPic6JyZndDsnLCciJzonJnF1b3Q7JywiJyI6JyYjMzk7J31bY10pKTsKY29uc3QgQUxMID0gWzEsMiwzLDQsNSw2LDcsOCw5LDEwXTsKCi8qIC0tLS0tLS0tLS0gTW9uc3RlciAtLS0tLS0tLS0tICovCmNvbnN0IE1PTiA9IHsKICBnbHVlaGZ1bms6ICAge25hbWU6J0dsw7xoZnVuaycsICAgdHlwOidGZXVlcicsICAgZXZvOidmbGFtbWZ1bmsnLCAgIHM6e2JvZHk6J2xvbmcnLCBjMTonI0YwN0EyQScsIGMyOicjRkZEODRBJywgbGVnOicjNkIyRTBFJywgd2luZ3M6J3NtYWxsJywgYW50OidjbHViJywgcGF0OlsnZ2xvdyddLCBleHRyYTpbJ2ZsYW1lJ119fSwKICBmbGFtbWZ1bms6ICAge25hbWU6J0ZsYW1tZnVuaycsICB0eXA6J0ZldWVyJywgICBzOntib2R5Oidsb25nJywgYzE6JyNFMjRFMUInLCBjMjonI0ZGRDg0QScsIGMzOicjOUUyRjBBJywgbGVnOicjNkIyRTBFJywgd2luZ3M6J2JpZycsIGFudDonY2x1YicsIHBhdDpbJ2dsb3cnLCdzdHJpcGVzJ10sIGV4dHJhOlsnYmlnZmxhbWUnLCdzcGFyayddfX0sCiAgdHJvcGZrYWVmZXI6IHtuYW1lOidUcm9wZmvDpGZlcicsIHR5cDonV2Fzc2VyJywgIGV2bzond2VsbGVua2FlZmVyJywgczp7Ym9keToncm91bmQnLCBjMTonIzJGN0ZFMCcsIGMyOicjQThEQ0ZGJywgbGVnOicjMTMzQTZCJywgd2luZ3M6J25vbmUnLCBhbnQ6J2N1cmwnLCBwYXQ6WydzcG90cycsJ3NoZWxsJ10sIGV4dHJhOlsnZHJvcCddfX0sCiAgd2VsbGVua2FlZmVyOntuYW1lOidXZWxsZW5rw6RmZXInLHR5cDonV2Fzc2VyJywgIHM6e2JvZHk6J3JvdW5kJywgYzE6JyMxQzVGQzInLCBjMjonI0E4RENGRicsIGxlZzonIzEzM0E2QicsIHdpbmdzOidzbWFsbCcsIGFudDonY3VybCcsIHBhdDpbJ3Nwb3RzJywnc2hlbGwnXSwgZXh0cmE6Wydob3JuJywnYnViYmxlcycsJ3NwYXJrJ119fSwKICBibGF0dHNjaHJlY2s6e25hbWU6J0JsYXR0c2NocmVjaycsdHlwOidQZmxhbnplJyxldm86J3dhbGRzY2hyZWNrJywgczp7Ym9keTonbG9uZycsIGMxOicjNDZBMzRBJywgYzI6JyNDNEVDN0EnLCBsZWc6JyMxRjUxMjInLCB3aW5nczonc21hbGwnLCBhbnQ6J2xvbmcnLCBwYXQ6WydzdHJpcGVzJ10sIGV4dHJhOlsnbGVhZiddfX0sCiAgd2FsZHNjaHJlY2s6IHtuYW1lOidXYWxkc2NocmVjaycsdHlwOidQZmxhbnplJywgczp7Ym9keTonbG9uZycsIGMxOicjMkU4QTNEJywgYzI6JyNDNEVDN0EnLCBsZWc6JyMxRjUxMjInLCB3aW5nczonYmlnJywgYW50Oidsb25nJywgcGF0Olsnc3RyaXBlcyddLCBleHRyYTpbJ2xlYWZjcm93bicsJ3NwYXJrJ119fSwKICBrcnVlbWVsOiAge25hbWU6J0tyw7xtZWxhbWVpc2UnLCB0eXA6J0VyZGUnLCAgIHM6e2JvZHk6J2FudCcsIGMxOicjOUE1QjM1JywgYzI6JyNDOThBNUMnLCBsZWc6JyM0QTJBMTQnLCB3aW5nczonbm9uZScsIGFudDonY3VybCcsIHBhdDpbXSwgZXh0cmE6W10sIGJyb3c6MX19LAogIHN1bW06ICAgICB7bmFtZTonU3VtbWh1bW1lbCcsICAgdHlwOidCbMO8dGUnLCAgczp7Ym9keTonYmVlJywgYzE6JyNGRkM5M0MnLCBjMjonIzNBMkExOCcsIGxlZzonIzNBMkExOCcsIHdpbmdzOidzbWFsbCcsIGFudDonY2x1YicsIHBhdDpbJ3N0cmlwZXMnXSwgZXh0cmE6WydzdGluZyddLCBicm93OjF9fSwKICBsaWJlbGxlOiAge25hbWU6J0JsaXR6bGliZWxsZScsIHR5cDonQmxpdHonLCAgczp7Ym9keTonbG9uZycsIGMxOicjN0I1NUYwJywgYzI6JyNGRkUwNjYnLCBsZWc6JyMyQzFDNjYnLCB3aW5nczonZHJhZ29uJywgYW50Oidsb25nJywgcGF0Olsnc3RyaXBlcyddLCBleHRyYTpbJ2JvbHQnXSwgYnJvdzoxfX0sCiAga25hY2s6ICAgIHtuYW1lOidLbmFja2vDpGZlcicsICAgdHlwOidQYW56ZXInLCBzOntib2R5Oidyb3VuZCcsIGMxOicjQzIzQjRBJywgYzI6JyMyQTFFMjQnLCBsZWc6JyMyQTFFMjQnLCB3aW5nczonbm9uZScsIGFudDonY2x1YicsIHBhdDpbJ3Nwb3RzJywnc2hlbGwnXSwgZXh0cmE6Wydob3JuJ10sIGJyb3c6MX19LAogIG1vdHRlOiAgICB7bmFtZTonTmViZWxtb3R0ZScsICAgdHlwOidOYWNodCcsICBzOntib2R5OidiZWUnLCBjMTonI0E2QjBCRCcsIGMyOicjRTlFRUY0JywgbGVnOicjNEE1MjYwJywgd2luZ3M6J21vdGgnLCBhbnQ6J2xvbmcnLCBwYXQ6WydzdHJpcGVzJ10sIGV4dHJhOltdLCBicm93OjF9fSwKICB3YW56ZTogICAge25hbWU6J1BhbnplcndhbnplJywgIHR5cDonUGFuemVyJywgczp7Ym9keToncm91bmQnLCBjMTonIzJGN0Q1QScsIGMyOicjQTlEREI5JywgbGVnOicjMTczRjJEJywgd2luZ3M6J25vbmUnLCBhbnQ6J2xvbmcnLCBwYXQ6WydzdHJpcGVzJywnc2hlbGwnXSwgZXh0cmE6Wydob3JuJ10sIGJyb3c6MX19LAogIGtvZW5pZ2luOiB7bmFtZTonV2FiZW5rw7ZuaWdpbicsIHR5cDonQmzDvHRlJywgIHM6e2JvZHk6J2JlZScsIGMxOicjRjRCMzAwJywgYzI6JyM0QTJFMEUnLCBsZWc6JyMzQTI0MDgnLCB3aW5nczonYmlnJywgYW50OidjbHViJywgcGF0Olsnc3RyaXBlcyddLCBleHRyYTpbJ2Nyb3duJywnc3RpbmcnLCdzcGFyayddLCBicm93OjF9fSwKfTsKY29uc3QgU1RBUlRFUlMgPSBbJ2dsdWVoZnVuaycsJ3Ryb3Bma2FlZmVyJywnYmxhdHRzY2hyZWNrJ107CgpsZXQgVUlEID0gMDsKZnVuY3Rpb24gaW5zZWN0KGtleSl7CiAgY29uc3QgbSA9IE1PTltrZXldLCBzID0gbS5zLCBpZCA9ICdrJyArIChVSUQrKyksIE8gPSAnIzJCMjExOCc7CiAgY29uc3QgQUIgPSB7bG9uZzpbMjcsMTUsMjddLCByb3VuZDpbMjIsMjMsMjJdLCBiZWU6WzI0LDIwLDIxXSwgYW50OlsyOCwxNiwxOV19W3MuYm9keV07CiAgY29uc3QgW2F5LCByeCwgcnldID0gQUIsIHRhaWwgPSBheSArIHJ5OwogIGNvbnN0IGhhcyA9IChhcnIsIHYpID0+IChhcnJ8fFtdKS5pbmNsdWRlcyh2KTsKICBsZXQgZyA9ICcnOwogIGNvbnN0IFcgPSAoY3gsY3ksd3gsd3kscm90LGZpbGwsb3ApID0+IGA8ZWxsaXBzZSBjeD0iJHtjeH0iIGN5PSIke2N5fSIgcng9IiR7d3h9IiByeT0iJHt3eX0iIHRyYW5zZm9ybT0icm90YXRlKCR7cm90fSAke2N4fSAke2N5fSkiIGZpbGw9IiR7ZmlsbH0iIGZpbGwtb3BhY2l0eT0iJHtvcH0iIHN0cm9rZT0iJHtPfSIgc3Ryb2tlLXdpZHRoPSIyIi8+YDsKICBjb25zdCBzdGFyID0gKHgseSxyKSA9PiBgPHBhdGggZD0iTSR7eH0gJHt5LXJ9IEwke3grciouMjh9ICR7eS1yKi4yOH0gTCR7eCtyfSAke3l9IEwke3grciouMjh9ICR7eStyKi4yOH0gTCR7eH0gJHt5K3J9IEwke3gtciouMjh9ICR7eStyKi4yOH0gTCR7eC1yfSAke3l9IEwke3gtciouMjh9ICR7eS1yKi4yOH1aIiBmaWxsPSIjRkZFMzZFIiBzdHJva2U9IiR7T30iIHN0cm9rZS13aWR0aD0iMS4yIi8+YDsKICBjb25zdCBmbGFtZSA9IHkgPT4gYDxwYXRoIGQ9Ik0wICR7eSsyNH0gQy0xMCAke3krMTR9IC05ICR7eSs0fSAtMyAke3ktMn0gQy0xICR7eSs2fSAzICR7eSs2fSA0ICR7eS0yfSBDMTAgJHt5KzZ9IDEwICR7eSsxNX0gMCAke3krMjR9WiIgZmlsbD0iI0ZGNkExQSIgc3Ryb2tlPSIke099IiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMCAke3krMTh9IEMtNCAke3krMTJ9IC0zICR7eSs3fSAwICR7eSs0fSBDMyAke3krOH0gNCAke3krMTJ9IDAgJHt5KzE4fVoiIGZpbGw9IiNGRkUxNEEiLz5gOwoKICAvLyA2IEJlaW5lICgzIGplIFNlaXRlKQogIGNvbnN0IEwgPSBbWzExLC04LDI4LC0xOCwzMywtMzFdLFsxMiwtMiwzMSwtMyw0MSwzXSxbMTEsNCwyNywxNSwzMSwzMV1dOwogIGZvcihjb25zdCBzZCBvZiBbLTEsMV0pIGZvcihjb25zdCBsIG9mIEwpewogICAgZyArPSBgPHBhdGggZD0iTSR7c2QqbFswXX0gJHtsWzFdfSBMJHtzZCpsWzJdfSAke2xbM119IEwke3NkKmxbNF19ICR7bFs1XX0iIGZpbGw9Im5vbmUiIHN0cm9rZT0iJHtzLmxlZ30iIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGNpcmNsZSBjeD0iJHtzZCpsWzRdfSIgY3k9IiR7bFs1XX0iIHI9IjIuNiIgZmlsbD0iJHtzLmxlZ30iLz5gOwogIH0KICAvLyBGw7xobGVyCiAgZm9yKGNvbnN0IHNkIG9mIFstMSwxXSl7CiAgICBpZihzLmFudCA9PT0gJ2NsdWInKSBnICs9IGA8cGF0aCBkPSJNJHtzZCo1fSAtNDAgUSR7c2QqOX0gLTU0ICR7c2QqMTd9IC01OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIke099IiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGNpcmNsZSBjeD0iJHtzZCoxN30iIGN5PSItNTgiIHI9IjQiIGZpbGw9IiR7cy5jMX0iIHN0cm9rZT0iJHtPfSIgc3Ryb2tlLXdpZHRoPSIyIi8+YDsKICAgIGVsc2UgaWYocy5hbnQgPT09ICdjdXJsJykgZyArPSBgPHBhdGggZD0iTSR7c2QqNX0gLTQwIFEke3NkKjZ9IC01NiAke3NkKjE2fSAtNTcgUSR7c2QqMjF9IC01NyAke3NkKjIwfSAtNTIgUSR7c2QqMTh9IC00OSAke3NkKjE1fSAtNTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iJHtPfSIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPmA7CiAgICBlbHNlIGcgKz0gYDxwYXRoIGQ9Ik0ke3NkKjV9IC00MCBRJHtzZCo4fSAtNTggJHtzZCoyMn0gLTY0IiBmaWxsPSJub25lIiBzdHJva2U9IiR7T30iIHN0cm9rZS13aWR0aD0iMi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz5gOwogIH0KICAvLyBGbMO8Z2VsIGhpbnRlciBkZW0gS8O2cnBlcgogIGlmKHMud2luZ3MgPT09ICdkcmFnb24nKSBmb3IoY29uc3Qgc2Qgb2YgWy0xLDFdKSBnICs9IFcoc2QqMjYsLTYsMjQsNi41LHNkKi0xMiwnI0VBRjdGRicsLjkpICsgVyhzZCoyNSw2LDIyLDYsc2QqMTQsJyNFQUY3RkYnLC45KTsKICBpZihzLndpbmdzID09PSAnbW90aCcpIGZvcihjb25zdCBzZCBvZiBbLTEsMV0pIGcgKz0gVyhzZCoyMiwtNCwyMCwxNyxzZCotMjAscy5jMiwxKSArIFcoc2QqMTgsMTYsMTMsMTIsc2QqMjAscy5jMiwxKSArIGA8Y2lyY2xlIGN4PSIke3NkKjI0fSIgY3k9Ii01IiByPSI1IiBmaWxsPSIke3MuYzF9IiBzdHJva2U9IiR7T30iIHN0cm9rZS13aWR0aD0iMS41Ii8+YDsKICAvLyBTY2h3YW56LUV4dHJhcwogIGlmKGhhcyhzLnBhdCwnZ2xvdycpKSBnICs9IGA8Y2lyY2xlIGN4PSIwIiBjeT0iJHt0YWlsLTh9IiByPSIyNCIgZmlsbD0iJHtzLmMyfSIgZmlsbC1vcGFjaXR5PSIuMzUiLz5gOwogIGlmKGhhcyhzLmV4dHJhLCdmbGFtZScpKSBnICs9IGZsYW1lKHRhaWwtNCk7CiAgaWYoaGFzKHMuZXh0cmEsJ2JpZ2ZsYW1lJykpIGcgKz0gYDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgJHt0YWlsLTR9KSBzY2FsZSgxLjQpIHRyYW5zbGF0ZSgwICR7LSh0YWlsLTQpfSkiPiR7ZmxhbWUodGFpbC00KX08L2c+YDsKICBpZihoYXMocy5leHRyYSwnc3RpbmcnKSkgZyArPSBgPHBhdGggZD0iTS00ICR7dGFpbC0zfSBMMCAke3RhaWwrOX0gTDQgJHt0YWlsLTN9WiIgZmlsbD0iJHtPfSIvPmA7CiAgaWYoaGFzKHMuZXh0cmEsJ2JvbHQnKSkgZyArPSBgPHBhdGggZD0iTTMgJHt0YWlsLTN9IEwtNiAke3RhaWwrMTB9IEwwICR7dGFpbCsxMH0gTC00ICR7dGFpbCsyM30gTDkgJHt0YWlsKzZ9IEwzICR7dGFpbCs2fSBMNyAke3RhaWwtM31aIiBmaWxsPSIjRkZFMDY2IiBzdHJva2U9IiR7T30iIHN0cm9rZS13aWR0aD0iMS44IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+YDsKICAvLyBIaW50ZXJsZWliCiAgZyArPSBgPGNsaXBQYXRoIGlkPSIke2lkfSI+PGVsbGlwc2UgY3g9IjAiIGN5PSIke2F5fSIgcng9IiR7cnh9IiByeT0iJHtyeX0iLz48L2NsaXBQYXRoPmA7CiAgZyArPSBgPGVsbGlwc2UgY3g9IjAiIGN5PSIke2F5fSIgcng9IiR7cnh9IiByeT0iJHtyeX0iIGZpbGw9IiR7cy5jMX0iLz5gOwogIGxldCBwID0gJyc7CiAgaWYoaGFzKHMucGF0LCdnbG93JykpIHAgKz0gYDxyZWN0IHg9Ii0zMCIgeT0iJHtheSszfSIgd2lkdGg9IjYwIiBoZWlnaHQ9IiR7cnkrNH0iIGZpbGw9IiR7cy5jMn0iLz5gOwogIGlmKGhhcyhzLnBhdCwnc3RyaXBlcycpKXsgY29uc3Qgc2MgPSBzLmMzIHx8IHMuYzI7IGZvcihjb25zdCBrIG9mIFstMC40NSwwLDAuNDVdKSBwICs9IGA8cmVjdCB4PSItMzAiIHk9IiR7YXkraypyeS0zLjV9IiB3aWR0aD0iNjAiIGhlaWdodD0iNyIgZmlsbD0iJHtzY30iLz5gOyB9CiAgaWYoaGFzKHMucGF0LCdzcG90cycpKSBmb3IoY29uc3QgW2R4LGR5LHJdIG9mIFtbLS40NSwtLjM1LC4yXSxbLjQ1LC0uMSwuMThdLFstLjM1LC40LC4xN10sWy40MiwuNSwuMTVdXSkgcCArPSBgPGNpcmNsZSBjeD0iJHtkeCpyeH0iIGN5PSIke2F5K2R5KnJ5fSIgcj0iJHtyKnJ4fSIgZmlsbD0iJHtzLmMyfSIvPmA7CiAgaWYoaGFzKHMucGF0LCdzaGVsbCcpKSBwICs9IGA8cGF0aCBkPSJNMCAke2F5LXJ5fSBMMCAke2F5K3J5fSIgc3Ryb2tlPSIke099IiBzdHJva2Utd2lkdGg9IjIiLz5gOwogIGcgKz0gYDxnIGNsaXAtcGF0aD0idXJsKCMke2lkfSkiPiR7cH08L2c+PGVsbGlwc2UgY3g9IjAiIGN5PSIke2F5fSIgcng9IiR7cnh9IiByeT0iJHtyeX0iIGZpbGw9Im5vbmUiIHN0cm9rZT0iJHtPfSIgc3Ryb2tlLXdpZHRoPSIyLjUiLz5gOwogIC8vIEZsw7xnZWwgb2JlbiBkcmF1ZgogIGlmKHMud2luZ3MgPT09ICdzbWFsbCcpIGZvcihjb25zdCBzZCBvZiBbLTEsMV0pIGcgKz0gVyhzZCoxMSw1LDcsMTcsc2QqMjIsJyNGNEZCRkYnLC43NSk7CiAgaWYocy53aW5ncyA9PT0gJ2JpZycpIGZvcihjb25zdCBzZCBvZiBbLTEsMV0pIGcgKz0gVyhzZCoxOCw1LDE0LDI4LHNkKjI4LCcjRjRGQkZGJywuOCk7CiAgLy8gQnJ1c3QKICBnICs9IGA8ZWxsaXBzZSBjeD0iMCIgY3k9Ii01IiByeD0iJHtzLmJvZHk9PT0nYW50Jz8xMDoxM30iIHJ5PSIxMSIgZmlsbD0iJHtzLmMxfSIgc3Ryb2tlPSIke099IiBzdHJva2Utd2lkdGg9IjIuNSIvPmA7CiAgLy8gSG9ybiBoaW50ZXIgZGVtIEtvcGYKICBpZihoYXMocy5leHRyYSwnaG9ybicpKSBnICs9IGA8cGF0aCBkPSJNLTUgLTQwIFEtMiAtNjIgOSAtNjQgUTMgLTU0IDUgLTQwWiIgZmlsbD0iJHtzLmMyfSIgc3Ryb2tlPSIke099IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz5gOwogIC8vIEtvcGYgdW5kIEdlc2ljaHQKICBnICs9IGA8Y2lyY2xlIGN4PSIwIiBjeT0iLTI3IiByPSIxNiIgZmlsbD0iJHtzLmMxfSIgc3Ryb2tlPSIke099IiBzdHJva2Utd2lkdGg9IjIuNSIvPmA7CiAgZm9yKGNvbnN0IHNkIG9mIFstMSwxXSl7CiAgICBnICs9IGA8ZWxsaXBzZSBjeD0iJHtzZCo2LjV9IiBjeT0iLTI5IiByeD0iNS4yIiByeT0iNi4yIiBmaWxsPSIjZmZmIiBzdHJva2U9IiR7T30iIHN0cm9rZS13aWR0aD0iMS41Ii8+PGNpcmNsZSBjeD0iJHtzZCo3LjN9IiBjeT0iLTI4IiByPSIzLjEiIGZpbGw9IiMxYjFiMWIiLz48Y2lyY2xlIGN4PSIke3NkKjYuNS0xfSIgY3k9Ii0zMCIgcj0iMS4yIiBmaWxsPSIjZmZmIi8+YDsKICAgIGcgKz0gYDxjaXJjbGUgY3g9IiR7c2QqMTEuNX0iIGN5PSItMjEiIHI9IjIuOCIgZmlsbD0iI0ZGOEZBMyIgZmlsbC1vcGFjaXR5PSIuNiIvPmA7CiAgICBpZihzLmJyb3cpIGcgKz0gYDxwYXRoIGQ9Ik0ke3NkKjIuNX0gLTM1LjUgTCR7c2QqMTF9IC0zOC41IiBzdHJva2U9IiR7T30iIHN0cm9rZS13aWR0aD0iMi40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz5gOwogIH0KICBnICs9IGA8cGF0aCBkPSJNLTQuNSAtMTkuNSBRMCAtMTYgNC41IC0xOS41IiBmaWxsPSJub25lIiBzdHJva2U9IiR7T30iIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+YDsKICAvLyBLb3BmLUV4dHJhcwogIGlmKGhhcyhzLmV4dHJhLCdkcm9wJykpIGcgKz0gYDxwYXRoIGQ9Ik0wIC02MCBDLTYgLTUyIC02IC00NSAwIC00NSBDNiAtNDUgNiAtNTIgMCAtNjBaIiBmaWxsPSIjNkVDNkZGIiBzdHJva2U9IiR7T30iIHN0cm9rZS13aWR0aD0iMS44Ii8+YDsKICBjb25zdCBsZWFmID0gcm90ID0+IGA8ZyB0cmFuc2Zvcm09InJvdGF0ZSgke3JvdH0gMCAtNDIpIj48cGF0aCBkPSJNMCAtNDIgQy05IC00OCAtNyAtNjIgNCAtNjQgQzggLTU0IDYgLTQ3IDAgLTQyWiIgZmlsbD0iIzdCQ0I0RSIgc3Ryb2tlPSIke099IiBzdHJva2Utd2lkdGg9IjEuOCIvPjxwYXRoIGQ9Ik0wIC00MyBMMyAtNTkiIHN0cm9rZT0iJHtPfSIgc3Ryb2tlLXdpZHRoPSIxLjIiLz48L2c+YDsKICBpZihoYXMocy5leHRyYSwnbGVhZicpKSBnICs9IGxlYWYoMCk7CiAgaWYoaGFzKHMuZXh0cmEsJ2xlYWZjcm93bicpKSBnICs9IGxlYWYoLTM4KSArIGxlYWYoMzgpICsgbGVhZigwKTsKICBpZihoYXMocy5leHRyYSwnY3Jvd24nKSkgZyArPSBgPHBhdGggZD0iTS0xMSAtNDAgTC0xMyAtNTUgTC02IC00OCBMMCAtNTggTDYgLTQ4IEwxMyAtNTUgTDExIC00MFoiIGZpbGw9IiNGRkQyM0YiIHN0cm9rZT0iJHtPfSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGNpcmNsZSBjeD0iMCIgY3k9Ii00NSIgcj0iMi40IiBmaWxsPSIjRTA0NTdCIi8+YDsKICBpZihoYXMocy5leHRyYSwnYnViYmxlcycpKSBnICs9IFtbLTMyLC00Miw0XSxbLTM4LC01MywyLjZdLFszMywtNDYsMy42XSxbNDAsLTU2LDIuMl1dLm1hcCgoW3gseSxyXSkgPT4gYDxjaXJjbGUgY3g9IiR7eH0iIGN5PSIke3l9IiByPSIke3J9IiBmaWxsPSIjQkRFNkZGIiBzdHJva2U9IiR7T30iIHN0cm9rZS13aWR0aD0iMS4yIi8+YCkuam9pbignJyk7CiAgaWYoaGFzKHMuZXh0cmEsJ3NwYXJrJykpIGcgKz0gc3RhcigtNDAsLTQ2LDYpICsgc3Rhcig0MSwtMjYsNSkgKyBzdGFyKC00MiwyMiw0LjUpOwogIHJldHVybiBgPHN2ZyB2aWV3Qm94PSItNTIgLTcwIDEwNCAxNTIiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iJHttLm5hbWV9Ij4ke2d9PC9zdmc+YDsKfQoKLyogLS0tLS0tLS0tLSBBcmVuZW4gLS0tLS0tLS0tLSAqLwpjb25zdCBBUkVORU4gPSBbCiAge25yOjEsIG9ydDonQW1laXNlbmjDvGdlbCcsIGZvZTona3J1ZW1lbCcsIHR5cGVzOlsnbWFsJ10sIG5zOlsxLDIsNSwxMF0sIGhwOjUsCiAgIGludHJvOidIaWVyIMO8YnN0IGR1IGRpZSBLw7ZuaWdzYXVmZ2FiZW46IDEgwrcgNiwgMiDCtyA2LCA1IMK3IDYgdW5kIDEwIMK3IDYuIE1pdCBpaG5lbiBrYW5uc3QgZHUgc3DDpHRlciBhbGxlIGFuZGVyZW4gQXVmZ2FiZW4gYXVzcmVjaG5lbi4nfSwKICB7bnI6Miwgb3J0OidCbHVtZW53aWVzZScsIGZvZTonc3VtbScsIHR5cGVzOlsnbWFsJ10sIG5zOlszLDQsNiw5XSwgaHA6NSwKICAgaW50cm86J0pldHp0IGtvbW1lbiBkaWUgTmFjaGJhcm4gZGVyIEvDtm5pZ3NhdWZnYWJlbi4gQmVpc3BpZWw6IDYgwrcgNiBpc3QgNSDCtyA2IHVuZCBub2NoIGVpbmUgNiBkYXp1Lid9LAogIHtucjozLCBvcnQ6J1RlaWNodWZlcicsIGZvZTonbGliZWxsZScsIHR5cGVzOlsnbWFsJ10sIG5zOkFMTCwgaHA6NiwKICAgaW50cm86J0pldHp0IGlzdCBhbGxlcyBnZW1pc2NodCwgYXVjaCA3IMK3IDYgdW5kIDggwrcgNi4gRGVuayBhbiBkaWUgS8O2bmlnc2F1ZmdhYmVuISd9LAogIHtucjo0LCBvcnQ6J0JhdW1zdGFtbScsIGZvZTona25hY2snLCB0eXBlczpbJ21hbCcsJ3RhdXNjaCddLCBuczpBTEwsIGhwOjYsCiAgIGludHJvOidUYXVzY2hhdWZnYWJlbiEgNiDCtyA3IGlzdCBkYXNzZWxiZSB3aWUgNyDCtyA2LiBEYXMgRXJnZWJuaXMgYmxlaWJ0IGdsZWljaC4nfSwKICB7bnI6NSwgb3J0OidMYXRlcm5lbmxpY2h0JywgZm9lOidtb3R0ZScsIHR5cGVzOlsnZ2V0ZWlsdCddLCBuczpBTEwsIGhwOjYsCiAgIGludHJvOidHZXRlaWx0LUF1ZmdhYmVuISBCZWkgNDIgOiA2IGZyYWdzdCBkdTogV2VsY2hlIFphaGwgbWFsIDYgZXJnaWJ0IDQyPyd9LAogIHtucjo2LCBvcnQ6J1N0ZWlubWF1ZXInLCBmb2U6J3dhbnplJywgdHlwZXM6WydsdWVja2UnLCdiZWluZSddLCBuczpBTEwsIGhwOjcsCiAgIGludHJvOidIaWVyIGZlaGx0IGVpbmUgWmFobC4gT2RlciBkdSB6w6RobHN0IEJlaW5lLiBEZW5rIGRyYW46IEplZGVyIEvDpGZlciBoYXQgNiBCZWluZSEnfSwKICB7bnI6Nywgb3J0OidCaWVuZW5zdG9jaycsIGZvZTona29lbmlnaW4nLCB0eXBlczpbJ21hbCcsJ3RhdXNjaCcsJ2dldGVpbHQnLCdsdWVja2UnLCdiZWluZSddLCBuczpBTEwsIGhwOjksIGJvc3M6dHJ1ZSwKICAgaW50cm86J0RlciBncm/Dn2UgRW5ka2FtcGYhIEhpZXIga29tbWVuIGFsbGUgQXVmZ2FiZW4gdm9yLiBEdSBzY2hhZmZzdCBkYXMhJ30sCl07CmNvbnN0IEVWT19TVEFSUyA9IDEyOwpjb25zdCB0b3RhbFN0YXJzID0gKCkgPT4gT2JqZWN0LnZhbHVlcyhTLmFyZW5hcykucmVkdWNlKChhLGQpID0+IGEgKyBkLnN0YXJzLCAwKTsKY29uc3Qgd29uQ291bnQgPSAoKSA9PiBPYmplY3Qua2V5cyhTLmFyZW5hcykubGVuZ3RoOwpjb25zdCBtZUtleSA9ICgpID0+IFMuZXZvbHZlZCA/IE1PTltTLnN0YXJ0ZXJdLmV2byA6IFMuc3RhcnRlcjsKY29uc3QgbWVOYW1lID0gKCkgPT4gUy5uYW1lIHx8IE1PTlttZUtleSgpXS5uYW1lOwoKLyogLS0tLS0tLS0tLSBUb24sIFZvcmxlc2VuLCBWaWJyYXRpb24gLS0tLS0tLS0tLSAqLwpsZXQgQUMgPSBudWxsOwpmdW5jdGlvbiB0b25lKHNlcSl7CiAgaWYoIVMuc2V0dGluZ3MudG9uKSByZXR1cm47CiAgdHJ5ewogICAgQUMgPSBBQyB8fCBuZXcgKHdpbmRvdy5BdWRpb0NvbnRleHQgfHwgd2luZG93LndlYmtpdEF1ZGlvQ29udGV4dCkoKTsKICAgIGxldCB0ID0gQUMuY3VycmVudFRpbWU7CiAgICBmb3IoY29uc3QgW2YsZF0gb2Ygc2VxKXsKICAgICAgY29uc3QgbyA9IEFDLmNyZWF0ZU9zY2lsbGF0b3IoKSwgZ24gPSBBQy5jcmVhdGVHYWluKCk7CiAgICAgIG8udHlwZSA9ICd0cmlhbmdsZSc7IG8uZnJlcXVlbmN5LnZhbHVlID0gZjsKICAgICAgZ24uZ2Fpbi5zZXRWYWx1ZUF0VGltZSguMDAwMSwgdCk7CiAgICAgIGduLmdhaW4uZXhwb25lbnRpYWxSYW1wVG9WYWx1ZUF0VGltZSguMTgsIHQgKyAuMDIpOwogICAgICBnbi5nYWluLmV4cG9uZW50aWFsUmFtcFRvVmFsdWVBdFRpbWUoLjAwMDEsIHQgKyBkKTsKICAgICAgby5jb25uZWN0KGduKS5jb25uZWN0KEFDLmRlc3RpbmF0aW9uKTsgby5zdGFydCh0KTsgby5zdG9wKHQgKyBkICsgLjAzKTsKICAgICAgdCArPSBkICogLjg1OwogICAgfQogIH1jYXRjaChlKXt9Cn0KY29uc3QgY2FuU3BlYWsgPSAnc3BlZWNoU3ludGhlc2lzJyBpbiB3aW5kb3cgJiYgJ1NwZWVjaFN5bnRoZXNpc1V0dGVyYW5jZScgaW4gd2luZG93OwpmdW5jdGlvbiBzcGVhayh0eHQpewogIGlmKCFjYW5TcGVhayB8fCAhdHh0KSByZXR1cm47CiAgdHJ5eyBzcGVlY2hTeW50aGVzaXMuY2FuY2VsKCk7IGNvbnN0IHUgPSBuZXcgU3BlZWNoU3ludGhlc2lzVXR0ZXJhbmNlKHR4dCk7IHUubGFuZyA9ICdkZS1ERSc7IHUucmF0ZSA9IC45OyBzcGVlY2hTeW50aGVzaXMuc3BlYWsodSk7IH1jYXRjaChlKXt9Cn0KZnVuY3Rpb24gdmliKG1zKXsgdHJ5eyBuYXZpZ2F0b3IudmlicmF0ZSAmJiBuYXZpZ2F0b3IudmlicmF0ZShtcyk7IH1jYXRjaChlKXt9IH0KCi8qIC0tLS0tLS0tLS0gQmlsZHNjaGlybWUgLS0tLS0tLS0tLSAqLwpmdW5jdGlvbiBzaG93KGlkKXsKICBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCcuc2NyZWVuJykuZm9yRWFjaChzID0+IHMuY2xhc3NMaXN0LnRvZ2dsZSgnYWN0aXZlJywgcy5pZCA9PT0gaWQpKTsKICBpZihpZCA9PT0gJ3Njci1tYXAnKSByZW5kZXJNYXAoKTsKICBpZihpZCA9PT0gJ3Njci1ib29rJykgcmVuZGVyQm9vaygpOwogIGlmKGlkID09PSAnc2NyLXNldCcpIHJlbmRlclNldHRpbmdzKCk7CiAgaWYoaWQgPT09ICdzY3Itc3RhcnQnKSByZW5kZXJTdGFydCgpOwp9CgovKiBTdGFydCAqLwpsZXQgc2VsID0gbnVsbDsKZnVuY3Rpb24gcmVuZGVyU3RhcnQoKXsKICBzZWwgPSBudWxsOyAkKCcjZ28nKS5kaXNhYmxlZCA9IHRydWU7ICQoJyNuaWNrJykudmFsdWUgPSAnJzsKICAkKCcjcGlja3MnKS5pbm5lckhUTUwgPSBTVEFSVEVSUy5tYXAoayA9PiBgPGJ1dHRvbiBjbGFzcz0icGljayIgZGF0YS1rPSIke2t9IiBhcmlhLXByZXNzZWQ9ImZhbHNlIj4ke2luc2VjdChrKX08Yj4ke01PTltrXS5uYW1lfTwvYj48c3Bhbj4ke01PTltrXS50eXB9PC9zcGFuPjwvYnV0dG9uPmApLmpvaW4oJycpOwp9CiQoJyNwaWNrcycpLmFkZEV2ZW50TGlzdGVuZXIoJ2NsaWNrJywgZSA9PiB7CiAgY29uc3QgYiA9IGUudGFyZ2V0LmNsb3Nlc3QoJy5waWNrJyk7IGlmKCFiKSByZXR1cm47CiAgc2VsID0gYi5kYXRhc2V0Lms7CiAgZG9jdW1lbnQucXVlcnlTZWxlY3RvckFsbCgnLnBpY2snKS5mb3JFYWNoKHggPT4geC5zZXRBdHRyaWJ1dGUoJ2FyaWEtcHJlc3NlZCcsIFN0cmluZyh4ID09PSBiKSkpOwogICQoJyNnbycpLmRpc2FibGVkID0gZmFsc2U7IHRvbmUoW1s1MjAsLjA4XV0pOwp9KTsKJCgnI2dvJykuYWRkRXZlbnRMaXN0ZW5lcignY2xpY2snLCAoKSA9PiB7CiAgaWYoIXNlbCkgcmV0dXJuOwogIFMuc3RhcnRlciA9IHNlbDsgUy5uYW1lID0gJCgnI25pY2snKS52YWx1ZS50cmltKCkuc2xpY2UoMCwxNCk7IHNhdmUoKTsKICB0b25lKFtbNTIwLC4xXSxbNjYwLC4xXSxbODgwLC4xNl1dKTsgc2hvdygnc2NyLW1hcCcpOwp9KTsKCi8qIEthcnRlICovCmZ1bmN0aW9uIHJlbmRlck1hcCgpewogICQoJyNtYXAtbWUnKS5pbm5lckhUTUwgPSBpbnNlY3QobWVLZXkoKSk7CiAgJCgnI21hcC1uYW1lJykudGV4dENvbnRlbnQgPSBtZU5hbWUoKTsKICAkKCcjbWFwLWx2bCcpLnRleHRDb250ZW50ID0gYFN0dWZlICR7MSArIHdvbkNvdW50KCl9IMK3ICR7dG90YWxTdGFycygpfSBTdGVybmVgOwogICQoJyNwYXRoJykuaW5uZXJIVE1MID0gQVJFTkVOLm1hcChhID0+IHsKICAgIGNvbnN0IG9wZW4gPSBhLm5yID09PSAxIHx8IFMuYXJlbmFzW2EubnIgLSAxXTsKICAgIGNvbnN0IGQgPSBTLmFyZW5hc1thLm5yXTsKICAgIGNvbnN0IHN0YXJzID0gZCA/ICfimIUnLnJlcGVhdChkLnN0YXJzKSArICfimIYnLnJlcGVhdCgzIC0gZC5zdGFycykgOiAnJzsKICAgIHJldHVybiBgPGJ1dHRvbiBjbGFzcz0ibm9kZSAke2QgPyAnZG9uZScgOiAnJ30gJHthLmJvc3MgPyAnYm9zcycgOiAnJ30iIGRhdGEtbnI9IiR7YS5ucn0iICR7b3BlbiA/ICcnIDogJ2Rpc2FibGVkJ30KICAgICAgYXJpYS1sYWJlbD0iQXJlbmEgJHthLm5yfTogJHthLm9ydH0ke29wZW4gPyAnLCBHZWduZXIgJyArIE1PTlthLmZvZV0ubmFtZSA6ICcsIG5vY2ggZ2VzcGVycnQnfSR7ZCA/ICcsICcgKyBkLnN0YXJzICsgJyB2b24gMyBTdGVybmVuJyA6ICcnfSI+CiAgICAgIDxzcGFuIGNsYXNzPSJudW0gaGV4IiBhcmlhLWhpZGRlbj0idHJ1ZSI+JHtvcGVuID8gYS5uciA6ICfwn5SSJ308L3NwYW4+CiAgICAgIDxzcGFuIGNsYXNzPSJ0eHQiPjxiPiR7YS5vcnR9PC9iPjxzbWFsbD4ke29wZW4gPyBNT05bYS5mb2VdLm5hbWUgOiAnTm9jaCBnZXNwZXJydCd9PC9zbWFsbD4ke2QgPyBgPHNwYW4gY2xhc3M9InN0YXJzIiBhcmlhLWhpZGRlbj0idHJ1ZSI+JHtzdGFyc308L3NwYW4+YCA6ICcnfTwvc3Bhbj4KICAgICAgPHNwYW4gY2xhc3M9Im1pbmkgJHtvcGVuID8gJycgOiAndW5rbm93bid9IiBhcmlhLWhpZGRlbj0idHJ1ZSI+JHtpbnNlY3QoYS5mb2UpfTwvc3Bhbj4KICAgIDwvYnV0dG9uPmA7CiAgfSkuam9pbignJyk7CiAgJCgnI2FsbHdvbicpLmhpZGRlbiA9IHdvbkNvdW50KCkgPCBBUkVORU4ubGVuZ3RoOwp9CiQoJyNwYXRoJykuYWRkRXZlbnRMaXN0ZW5lcignY2xpY2snLCBlID0+IHsKICBjb25zdCBiID0gZS50YXJnZXQuY2xvc2VzdCgnLm5vZGUnKTsgaWYoIWIgfHwgYi5kaXNhYmxlZCkgcmV0dXJuOwogIHN0YXJ0QmF0dGxlKCtiLmRhdGFzZXQubnIpOwp9KTsKJCgnI3RvLWJvb2snKS5vbmNsaWNrID0gKCkgPT4gc2hvdygnc2NyLWJvb2snKTsKJCgnI3RvLXNldCcpLm9uY2xpY2sgPSAoKSA9PiBzaG93KCdzY3Itc2V0Jyk7CmRvY3VtZW50LnF1ZXJ5U2VsZWN0b3JBbGwoJy5iYWNrJykuZm9yRWFjaChiID0+IGIub25jbGljayA9ICgpID0+IHNob3coJ3Njci1tYXAnKSk7CgovKiAtLS0tLS0tLS0tIEthbXBmIC0tLS0tLS0tLS0gKi8KbGV0IEIgPSBudWxsOwpjb25zdCBCUklER0UgPSB7CiAgMTonRWlubWFsIGRpZSA2LiBEYXMgaXN0IGdhbnogbGVpY2h0IScsCiAgMjonMiDCtyA2IGlzdCBkYXMgRG9wcGVsdGUgdm9uIDYuIFJlY2huZSA2ICsgNi4nLAogIDM6J0R1IHdlacOfdDogMiDCtyA2ID0gMTIuIE5pbW0gbm9jaCBlaW5lIDYgZGF6dS4nLAogIDQ6J0R1IHdlacOfdDogNSDCtyA2ID0gMzAuIE5pbW0gZWluZSA2IHdlZy4nLAogIDU6J0R1IHdlacOfdDogMTAgwrcgNiA9IDYwLiBOaW1tIGRhdm9uIGRpZSBIw6RsZnRlLicsCiAgNjonRHUgd2Vpw590OiA1IMK3IDYgPSAzMC4gTmltbSBub2NoIGVpbmUgNiBkYXp1LicsCiAgNzonRHUgd2Vpw590OiA1IMK3IDYgPSAzMCB1bmQgMiDCtyA2ID0gMTIuIFJlY2huZSBiZWlkZXMgenVzYW1tZW4uJywKICA4OidEdSB3ZWnDn3Q6IDEwIMK3IDYgPSA2MC4gTmltbSAyIMK3IDYgPSAxMiB3ZWcuJywKICA5OidEdSB3ZWnDn3Q6IDEwIMK3IDYgPSA2MC4gTmltbSBlaW5lIDYgd2VnLicsCiAgMTA6J0jDpG5nZSBhbiBkaWUgNiBlaW5lIDAgYW4uJwp9OwoKZnVuY3Rpb24gYnVpbGRQYWQoKXsKICBjb25zdCByb3dzID0gW1snMScsJzInLCczJ10sWyc0JywnNScsJzYnXSxbJzcnLCc4JywnOSddLFsnZGVsJywnMCcsJ29rJ11dOwogICQoJyNwYWQnKS5pbm5lckhUTUwgPSByb3dzLm1hcChyID0+IGA8ZGl2IGNsYXNzPSJwcm93Ij4ke3IubWFwKGsgPT4gewogICAgaWYoayA9PT0gJ2RlbCcpIHJldHVybiBgPGJ1dHRvbiBjbGFzcz0ia2V5IGRlbCIgZGF0YS1rPSJkZWwiIGFyaWEtbGFiZWw9IkzDtnNjaGVuIj48c3BhbiBjbGFzcz0iaHggaGV4Ij7ijKs8L3NwYW4+PC9idXR0b24+YDsKICAgIGlmKGsgPT09ICdvaycpICByZXR1cm4gYDxidXR0b24gY2xhc3M9ImtleSBvayIgZGF0YS1rPSJvayIgYXJpYS1sYWJlbD0iUHLDvGZlbiI+PHNwYW4gY2xhc3M9Imh4IGhleCI+4pyTPC9zcGFuPjwvYnV0dG9uPmA7CiAgICByZXR1cm4gYDxidXR0b24gY2xhc3M9ImtleSIgZGF0YS1rPSIke2t9Ij48c3BhbiBjbGFzcz0iaHggaGV4Ij4ke2t9PC9zcGFuPjwvYnV0dG9uPmA7CiAgfSkuam9pbignJyl9PC9kaXY+YCkuam9pbignJyk7Cn0KJCgnI3BhZCcpLmFkZEV2ZW50TGlzdGVuZXIoJ2NsaWNrJywgZSA9PiB7IGNvbnN0IGIgPSBlLnRhcmdldC5jbG9zZXN0KCcua2V5Jyk7IGlmKGIpIHByZXNzKGIuZGF0YXNldC5rKTsgfSk7CgpmdW5jdGlvbiBzdGFydEJhdHRsZShucil7CiAgY29uc3QgYSA9IEFSRU5FTltuciAtIDFdOwogIEIgPSB7YSwgbWF4OmEuaHAsIGhwOmEuaHAsIG1pc3Rha2VzOjAsIHNlcmllOjAsIHRhc2s6bnVsbCwgdHJpZXM6MCwgbGFzdE46bnVsbCwgYnVzeTp0cnVlLCBpbnB1dDonJ307CiAgJCgnI2ItYXJlbmEnKS50ZXh0Q29udGVudCA9IGBBcmVuYSAke2EubnJ9OiAke2Eub3J0fWA7CiAgY29uc3QgZm9lID0gJCgnI2ZvZScpOyBmb2UuY2xhc3NOYW1lID0gJ2ZvZSc7IGZvZS5pbm5lckhUTUwgPSBgPGRpdiBjbGFzcz0iYm9iIj4ke2luc2VjdChhLmZvZSl9PC9kaXY+YDsKICBjb25zdCBtZSA9ICQoJyNtZScpOyBtZS5jbGFzc05hbWUgPSAnbWUnOyBtZS5pbm5lckhUTUwgPSBgPGRpdiBjbGFzcz0iYm9iIj4ke2luc2VjdChtZUtleSgpKX08L2Rpdj5gOwogICQoJyNmb2UtbmFtZScpLnRleHRDb250ZW50ID0gTU9OW2EuZm9lXS5uYW1lOwogICQoJyNtZS1uYW1lJykudGV4dENvbnRlbnQgPSBtZU5hbWUoKTsKICAkKCcjc3BlYWsnKS5oaWRkZW4gPSAhY2FuU3BlYWs7CiAgJCgnI3Rhc2snKS5pbm5lckhUTUwgPSAnJzsKICB1cGRIUCgpOyB1cGRTdHJlYWsoKTsgcmVuZGVySW5wdXQoKTsKICBzaG93KCdzY3ItYmF0dGxlJyk7CiAgc2hlZXQoYDxoMz4ke2EuYm9zcyA/ICdFbmRrYW1wZiEnIDogJ0FyZW5hICcgKyBhLm5yICsgJzogJyArIGEub3J0fTwvaDM+CiAgICA8cD4ke2EuaW50cm99PC9wPgogICAgPHAgY2xhc3M9Im11dGVkIj5KZWRlIHJpY2h0aWdlIEFudHdvcnQgaXN0IGVpbiBUcmVmZmVyLiAzIHJpY2h0aWdlIGhpbnRlcmVpbmFuZGVyIGdlYmVuIGVpbmVuIFZvbGx0cmVmZmVyITwvcD5gLAogICAgJ0thbXBmIHN0YXJ0ZW4hJywgKCkgPT4geyBCLmJ1c3kgPSBmYWxzZTsgbmV4dFRhc2soKTsgfSk7CiAgaWYoUy5zZXR0aW5ncy52b3JsZXNlbikgc3BlYWsoYS5pbnRybyk7Cn0KCmZ1bmN0aW9uIHNoZWV0KGh0bWwsIGJ0biwgY2IpewogIGNvbnN0IHNoID0gJCgnI3NoZWV0Jyk7CiAgc2guaW5uZXJIVE1MID0gaHRtbCArIGA8YnV0dG9uIGNsYXNzPSJidG4gd2lkZSIgaWQ9InNoZWV0LWJ0biI+JHtidG59PC9idXR0b24+YDsKICBzaC5oaWRkZW4gPSBmYWxzZTsKICAkKCcjc2hlZXQtYnRuJykub25jbGljayA9ICgpID0+IHsgc2guaGlkZGVuID0gdHJ1ZTsgY2IgJiYgY2IoKTsgfTsKfQpjb25zdCBoaWRlU2hlZXQgPSAoKSA9PiB7ICQoJyNzaGVldCcpLmhpZGRlbiA9IHRydWU7IH07CgpmdW5jdGlvbiBwaWNrTihucyl7CiAgbGV0IHBvb2wgPSBucy5maWx0ZXIobiA9PiBuICE9PSAoQiAmJiBCLmxhc3ROKSk7IGlmKCFwb29sLmxlbmd0aCkgcG9vbCA9IG5zOwogIGNvbnN0IHcgPSBwb29sLm1hcChuID0+IDEgKyAzICogTWF0aC5taW4oUy5mZWhsZXJbbl0gfHwgMCwgMykpOwogIGxldCByID0gTWF0aC5yYW5kb20oKSAqIHcucmVkdWNlKCh4LHkpID0+IHggKyB5LCAwKTsKICBmb3IobGV0IGkgPSAwOyBpIDwgcG9vbC5sZW5ndGg7IGkrKyl7IHIgLT0gd1tpXTsgaWYociA8IDApIHJldHVybiBwb29sW2ldOyB9CiAgcmV0dXJuIHBvb2xbcG9vbC5sZW5ndGggLSAxXTsKfQpjb25zdCBzaHVmZmxlID0gYSA9PiB7IGZvcihsZXQgaSA9IGEubGVuZ3RoIC0gMTsgaSA+IDA7IGktLSl7IGNvbnN0IGogPSBNYXRoLmZsb29yKE1hdGgucmFuZG9tKCkgKiAoaSArIDEpKTsgW2FbaV0sYVtqXV0gPSBbYVtqXSxhW2ldXTsgfSByZXR1cm4gYTsgfTsKCmZ1bmN0aW9uIG5leHRUYXNrKCl7CiAgY29uc3QgYSA9IEIuYSwgdCA9IGEudHlwZXNbTWF0aC5mbG9vcihNYXRoLnJhbmRvbSgpICogYS50eXBlcy5sZW5ndGgpXSwgbiA9IHBpY2tOKGEubnMpLCBwID0gbiAqIDY7CiAgQi5sYXN0TiA9IG47IEIudHJpZXMgPSAwOyBCLmlucHV0ID0gJyc7CiAgbGV0IFQ7CiAgc3dpdGNoKHQpewogICAgY2FzZSAnbWFsJzogICAgIFQgPSB7ZXhwcjpgJHtufSDCtyA2ID0gwqdgLCBhbnM6cCwgc2F5OmAke259IG1hbCA2YH07IGJyZWFrOwogICAgY2FzZSAndGF1c2NoJzogIFQgPSB7ZXhwcjpgNiDCtyAke259ID0gwqdgLCBhbnM6cCwgc2F5OmA2IG1hbCAke259YH07IGJyZWFrOwogICAgY2FzZSAnZ2V0ZWlsdCc6IFQgPSB7ZXhwcjpgJHtwfSA6IDYgPSDCp2AsIGFuczpuLCBzYXk6YCR7cH0gZ2V0ZWlsdCBkdXJjaCA2YH07IGJyZWFrOwogICAgY2FzZSAnbHVlY2tlJzogIFQgPSB7ZXhwcjpgwqcgwrcgNiA9ICR7cH1gLCBhbnM6biwgc2F5OmBXZWxjaGUgWmFobCBtYWwgNiBlcmdpYnQgJHtwfT9gfTsgYnJlYWs7CiAgICBjYXNlICdiZWluZSc6ICAgVCA9IHtwcmU6YDxzcGFuIGNsYXNzPSJidWdzIiBhcmlhLWhpZGRlbj0idHJ1ZSI+JHsn8J+QnicucmVwZWF0KG4pfTwvc3Bhbj5XaWUgdmllbGUgQmVpbmUgaGFiZW4gJHtufSBLw6RmZXI/YCwgZXhwcjpgwqcgQmVpbmVgLCBhbnM6cCwKICAgICAgICAgICAgICAgICAgICAgICAgIHNheTpgV2llIHZpZWxlIEJlaW5lIGhhYmVuICR7bn0gS8OkZmVyPyBKZWRlciBLw6RmZXIgaGF0IDYgQmVpbmUuYH07IGJyZWFrOwogIH0KICBULnQgPSB0OyBULm4gPSBuOyBCLnRhc2sgPSBUOwogIEIuY2hvaWNlcyA9IFMuc2V0dGluZ3Mudm9yc2NobGFlZ2UgPyBtYWtlQ2hvaWNlcyhUKSA6IG51bGw7CiAgcmVuZGVyVGFzaygpOyByZW5kZXJJbnB1dCgpOwogIGlmKFMuc2V0dGluZ3Mudm9ybGVzZW4pIHNwZWFrKFQuc2F5KTsKfQpmdW5jdGlvbiBtYWtlQ2hvaWNlcyhUKXsKICBjb25zdCBhID0gVC5hbnMsIHNtYWxsID0gKFQudCA9PT0gJ2dldGVpbHQnIHx8IFQudCA9PT0gJ2x1ZWNrZScpOwogIGNvbnN0IGNhbmQgPSBzbWFsbCA/IFthKzEsIGEtMSwgYSsyLCBhLTJdIDogW2ErNiwgYS02LCBhKzEyLCBhLTEyXTsKICBjb25zdCBwb29sID0gc2h1ZmZsZShjYW5kLmZpbHRlcih4ID0+IHggPiAwICYmIHggIT09IGEpKTsKICByZXR1cm4gc2h1ZmZsZShbYSwgcG9vbFswXSwgcG9vbFsxXV0pOwp9CmZ1bmN0aW9uIHJlbmRlclRhc2soKXsKICBjb25zdCBUID0gQi50YXNrOwogICQoJyN0YXNrJykuaW5uZXJIVE1MID0gKFQucHJlID8gYDxkaXYgY2xhc3M9InByZSI+JHtULnByZX08L2Rpdj5gIDogJycpICsKICAgIGA8ZGl2IGNsYXNzPSJleHByIj4ke1QuZXhwci5yZXBsYWNlKCfCpycsIGA8c3BhbiBjbGFzcz0ic2xvdCIgaWQ9InNsb3QiIGFyaWEtbGFiZWw9IkRlaW5lIEFudHdvcnQiPiR7Qi5pbnB1dCB8fCAnJm5ic3A7J308L3NwYW4+YCl9PC9kaXY+YDsKfQpmdW5jdGlvbiB1cGRhdGVTbG90KGNscyl7CiAgY29uc3QgcyA9ICQoJyNzbG90Jyk7IGlmKCFzKSByZXR1cm47CiAgcy5pbm5lckhUTUwgPSBCLmlucHV0IHx8ICcmbmJzcDsnOwogIHMuY2xhc3NOYW1lID0gJ3Nsb3QnICsgKGNscyA/ICcgJyArIGNscyA6ICcnKTsKfQpmdW5jdGlvbiByZW5kZXJJbnB1dCgpewogIGNvbnN0IHVzZUNob2ljZXMgPSAhIShCICYmIEIuY2hvaWNlcyk7CiAgJCgnI3BhZCcpLmhpZGRlbiA9IHVzZUNob2ljZXM7CiAgY29uc3QgYyA9ICQoJyNjaG9pY2VzJyk7IGMuaGlkZGVuID0gIXVzZUNob2ljZXM7CiAgaWYodXNlQ2hvaWNlcykgYy5pbm5lckhUTUwgPSBCLmNob2ljZXMubWFwKHYgPT4gYDxidXR0b24gY2xhc3M9ImtleSIgZGF0YS12PSIke3Z9Ij48c3BhbiBjbGFzcz0iaHggaGV4Ij4ke3Z9PC9zcGFuPjwvYnV0dG9uPmApLmpvaW4oJycpOwp9CiQoJyNjaG9pY2VzJykuYWRkRXZlbnRMaXN0ZW5lcignY2xpY2snLCBlID0+IHsKICBjb25zdCBiID0gZS50YXJnZXQuY2xvc2VzdCgnLmtleScpOyBpZighYiB8fCBiLmRpc2FibGVkIHx8ICFCIHx8IEIuYnVzeSkgcmV0dXJuOwogIGNvbnN0IHYgPSArYi5kYXRhc2V0LnY7CiAgaWYodiAhPT0gQi50YXNrLmFucyl7IGIuZGlzYWJsZWQgPSB0cnVlOyBiLmNsYXNzTGlzdC5hZGQoJ3dyb25nJyk7IH0KICBCLmlucHV0ID0gU3RyaW5nKHYpOyB1cGRhdGVTbG90KCk7IHN1Ym1pdCh2KTsKfSk7CgpmdW5jdGlvbiBwcmVzcyhrKXsKICBpZighQiB8fCBCLmJ1c3kgfHwgIUIudGFzaykgcmV0dXJuOwogIGlmKGsgPT09ICdkZWwnKSBCLmlucHV0ID0gQi5pbnB1dC5zbGljZSgwLCAtMSk7CiAgZWxzZSBpZihrID09PSAnb2snKXsgaWYoQi5pbnB1dCkgc3VibWl0KCtCLmlucHV0KTsgcmV0dXJuOyB9CiAgZWxzZSBpZihCLmlucHV0Lmxlbmd0aCA8IDMpIEIuaW5wdXQgKz0gazsKICB1cGRhdGVTbG90KCk7Cn0KCmZ1bmN0aW9uIGFuaW0oc2VsLCBjbHMpewogIGNvbnN0IGVsID0gJChzZWwpOyBlbC5jbGFzc0xpc3QucmVtb3ZlKCdsdW5nZScsJ2h1cnQnLCdkb2RnZScsJ2ZhaW50Jyk7IHZvaWQgZWwub2Zmc2V0V2lkdGg7IGVsLmNsYXNzTGlzdC5hZGQoY2xzKTsKfQpmdW5jdGlvbiBwb3AodHh0KXsgY29uc3QgZWwgPSAkKCcjcG9wJyk7IGVsLnRleHRDb250ZW50ID0gdHh0OyBlbC5jbGFzc0xpc3QucmVtb3ZlKCdzaG93Jyk7IHZvaWQgZWwub2Zmc2V0V2lkdGg7IGVsLmNsYXNzTGlzdC5hZGQoJ3Nob3cnKTsgfQpmdW5jdGlvbiB1cGRIUCgpewogICQoJyNmb2UtaHAnKS5zdHlsZS53aWR0aCA9ICgxMDAgKiBCLmhwIC8gQi5tYXgpICsgJyUnOwogICQoJyNocG51bScpLnRleHRDb250ZW50ID0gYCR7Qi5ocH0vJHtCLm1heH1gOwogIGNvbnN0IGJhciA9ICQoJyNocGJhcicpOyBiYXIuc2V0QXR0cmlidXRlKCdhcmlhLXZhbHVlbWluJywnMCcpOyBiYXIuc2V0QXR0cmlidXRlKCdhcmlhLXZhbHVlbWF4JywgQi5tYXgpOyBiYXIuc2V0QXR0cmlidXRlKCdhcmlhLXZhbHVlbm93JywgQi5ocCk7Cn0KZnVuY3Rpb24gdXBkU3RyZWFrKCl7CiAgY29uc3QgZiA9IEIuc2VyaWUgPT09IDAgPyAwIDogKChCLnNlcmllIC0gMSkgJSAzKSArIDE7CiAgJCgnI3N0cmVhaycpLmlubmVySFRNTCA9IGBTZXJpZSAke1swLDEsMl0ubWFwKGkgPT4gYDxzcGFuIGNsYXNzPSJwaXAgaGV4ICR7aSA8IGYgPyAnb24nIDogJyd9Ij48L3NwYW4+YCkuam9pbignJyl9YDsKICAkKCcjc3RyZWFrJykuc2V0QXR0cmlidXRlKCdhcmlhLWxhYmVsJywgYFNlcmllOiAke2Z9IHZvbiAzYCk7Cn0KCmZ1bmN0aW9uIHN1Ym1pdCh2KXsKICBjb25zdCBUID0gQi50YXNrOyBoaWRlU2hlZXQoKTsKICBCLmJ1c3kgPSB0cnVlOwogIGlmKHYgPT09IFQuYW5zKXsKICAgIEIuc2VyaWUrKzsKICAgIGNvbnN0IGNyaXQgPSBCLnNlcmllICUgMyA9PT0gMCwgZG1nID0gY3JpdCA/IDIgOiAxOwogICAgaWYoQi50cmllcyA9PT0gMCl7IFMucmlnaHRbVC5uXSA9IChTLnJpZ2h0W1Qubl0gfHwgMCkgKyAxOyBpZihTLmZlaGxlcltULm5dID4gMCkgUy5mZWhsZXJbVC5uXS0tOyBzYXZlKCk7IH0KICAgIHVwZGF0ZVNsb3QoJ29rJyk7IHVwZFN0cmVhaygpOwogICAgYW5pbSgnI21lJywgJ2x1bmdlJyk7CiAgICBzZXRUaW1lb3V0KCgpID0+IHsKICAgICAgYW5pbSgnI2ZvZScsICdodXJ0Jyk7IEIuaHAgPSBNYXRoLm1heCgwLCBCLmhwIC0gZG1nKTsgdXBkSFAoKTsKICAgICAgcG9wKGNyaXQgPyAnVm9sbHRyZWZmZXIhIOKIkjInIDogJ1RyZWZmZXIhIOKIkjEnKTsKICAgICAgdG9uZShjcml0ID8gW1s2NjAsLjA5XSxbODgwLC4wOV0sWzExNzUsLjJdXSA6IFtbNjYwLC4wOV0sWzg4MCwuMTRdXSk7IHZpYihjcml0ID8gNjAgOiAyNSk7CiAgICB9LCAyMzApOwogICAgc2V0VGltZW91dCgoKSA9PiB7CiAgICAgIGlmKEIuaHAgPD0gMCl7IGFuaW0oJyNmb2UnLCAnZmFpbnQnKTsgc2V0VGltZW91dCh3aW4sIDk1MCk7IH0KICAgICAgZWxzZSB7IEIuYnVzeSA9IGZhbHNlOyBuZXh0VGFzaygpOyB9CiAgICB9LCAxMTUwKTsKICB9IGVsc2UgewogICAgQi5zZXJpZSA9IDA7IEIubWlzdGFrZXMrKzsgQi50cmllcysrOwogICAgaWYoQi50cmllcyA9PT0gMSl7IFMuZmVobGVyW1Qubl0gPSAoUy5mZWhsZXJbVC5uXSB8fCAwKSArIDE7IHNhdmUoKTsgfQogICAgdXBkYXRlU2xvdCgnYmFkJyk7IHVwZFN0cmVhaygpOwogICAgYW5pbSgnI2ZvZScsICdkb2RnZScpOyBwb3AoJ0F1c2dld2ljaGVuIScpOyB0b25lKFtbMzAwLC4xMl0sWzIyMCwuMjJdXSk7IHZpYihbNDAsNDAsNDBdKTsKICAgIHNldFRpbWVvdXQoKCkgPT4geyBCLmlucHV0ID0gJyc7IHVwZGF0ZVNsb3QoKTsgQi5idXN5ID0gZmFsc2U7IHNob3dIZWxwKCk7IH0sIDY1MCk7CiAgfQp9CgpmdW5jdGlvbiBkb3RGaWVsZChuKXsKICBsZXQgaCA9ICcnOwogIGZvcihsZXQgciA9IDE7IHIgPD0gbjsgcisrKXsgaCArPSAnPGk+PC9pPicucmVwZWF0KDYpOyBpZihyID09PSA1ICYmIG4gPiA1KSBoICs9ICc8aHI+JzsgfQogIHJldHVybiBgPGRpdiBjbGFzcz0iZG90cyIgYXJpYS1oaWRkZW49InRydWUiPiR7aH08L2Rpdj5gOwp9CmZ1bmN0aW9uIHNob3dIZWxwKCl7CiAgY29uc3QgVCA9IEIudGFzaywgbiA9IFQubiwgcCA9IG4gKiA2OwogIGlmKEIudHJpZXMgPj0gMil7CiAgICBjb25zdCBmdWxsID0gVC5leHByLnJlcGxhY2UoJ8KnJywgVC5hbnMpOwogICAgc2hlZXQoYDxoMz5TbyBnZWh0IGVzOjwvaDM+PGRpdiBjbGFzcz0ic29sdXRpb24iPiR7ZnVsbH08L2Rpdj48cD5UaXBwZSBqZXR6dCBkaWUgJHtULmFuc30gZWluLjwvcD5gLCAnT2theSEnKTsKICAgIGlmKFMuc2V0dGluZ3Mudm9ybGVzZW4pIHNwZWFrKGBEaWUgTMO2c3VuZyBpc3QgJHtULmFuc30uYCk7CiAgICByZXR1cm47CiAgfQogIGxldCB0eHQsIGNhcCA9IGAke259IFJlaWhlbiBtaXQgamUgNiBQdW5rdGVuYDsKICBpZihULnQgPT09ICdtYWwnKSB0eHQgPSBCUklER0Vbbl07CiAgaWYoVC50ID09PSAndGF1c2NoJykgdHh0ID0gYFRhdXNjaCBkaWUgWmFobGVuOiA2IMK3ICR7bn0gaXN0IGRhc3NlbGJlIHdpZSAke259IMK3IDYuIGAgKyBCUklER0Vbbl07CiAgaWYoVC50ID09PSAnYmVpbmUnKSB0eHQgPSBgSmVkZXIgS8OkZmVyIGhhdCA2IEJlaW5lLiBEYXMgaXN0ICR7bn0gwrcgNi4gYCArIEJSSURHRVtuXTsKICBpZihULnQgPT09ICdnZXRlaWx0JyB8fCBULnQgPT09ICdsdWVja2UnKXsgdHh0ID0gYEZyYWcgZGljaDogV2VsY2hlIFphaGwgbWFsIDYgZXJnaWJ0ICR7cH0/IFrDpGhsIGRpZSBSZWloZW4uYDsgY2FwID0gYCR7cH0gUHVua3RlLCBpbW1lciA2IGluIGVpbmVyIFJlaWhlYDsgfQogIHNoZWV0KGA8aDM+RmFzdCEgSGllciBpc3QgZWluIFRpcHA6PC9oMz48cD4ke3R4dH08L3A+JHtkb3RGaWVsZChuKX08cCBjbGFzcz0iZG90Y2FwIj4ke2NhcH08L3A+YCwgJ05vY2htYWwgdmVyc3VjaGVuJyk7CiAgaWYoUy5zZXR0aW5ncy52b3JsZXNlbikgc3BlYWsodHh0LnJlcGxhY2UoL8K3L2csICdtYWwnKSk7Cn0KCmZ1bmN0aW9uIHdpbigpewogIGNvbnN0IGEgPSBCLmEsIG0gPSBCLm1pc3Rha2VzOwogIGNvbnN0IHN0ID0gbSA9PT0gMCA/IDMgOiBtIDw9IDIgPyAyIDogMTsKICBjb25zdCBwcmV2ID0gUy5hcmVuYXNbYS5ucl0sIGZpcnN0ID0gIXByZXY7CiAgUy5hcmVuYXNbYS5ucl0gPSB7c3RhcnM6IE1hdGgubWF4KHN0LCBwcmV2ID8gcHJldi5zdGFycyA6IDApfTsKICBsZXQgZXZvID0gZmFsc2U7CiAgaWYoIVMuZXZvbHZlZCAmJiB0b3RhbFN0YXJzKCkgPj0gRVZPX1NUQVJTKXsgUy5ldm9sdmVkID0gdHJ1ZTsgZXZvID0gdHJ1ZTsgfQogIHNhdmUoKTsKICBjb25zdCBmb2UgPSBNT05bYS5mb2VdLm5hbWU7CiAgJCgnI3dpbi10aXRsZScpLnRleHRDb250ZW50ID0gZmlyc3QgPyAnR2VmYW5nZW4hJyA6ICdHZXdvbm5lbiEnOwogICQoJyN3aW4tbW9uJykuaW5uZXJIVE1MID0gaW5zZWN0KGEuZm9lKTsKICAkKCcjd2luLXN0YXJzJykudGV4dENvbnRlbnQgPSAn4piFJy5yZXBlYXQoc3QpICsgJ+KYhicucmVwZWF0KDMgLSBzdCk7CiAgJCgnI3dpbi1zdGFycycpLnNldEF0dHJpYnV0ZSgnYXJpYS1sYWJlbCcsIGAke3N0fSB2b24gMyBTdGVybmVuYCk7CiAgJCgnI3dpbi10ZXh0JykudGV4dENvbnRlbnQgPSBmaXJzdCA/IGAke2ZvZX0gaXN0IGpldHp0IGluIGRlaW5lbSBNb25zdGVyYnVjaC5gIDogYER1IGhhc3QgJHtmb2V9IG5vY2ggZWlubWFsIGJlc2llZ3QuYDsKICBsZXQgc3ViID0gbSA9PT0gMCA/ICdLZWluIGVpbnppZ2VyIEZlaGxlci4gU3RhcmshJyA6IG0gPD0gMiA/IGBOdXIgJHttfSAke20gPT09IDEgPyAnRmVobGVyJyA6ICdGZWhsZXInfS4gU2VociBndXQhYCA6ICdHdXQgZ2Vrw6RtcGZ0ISBNaXQgd2VuaWdlciBGZWhsZXJuIGJla29tbXN0IGR1IG1laHIgU3Rlcm5lLic7CiAgaWYoZmlyc3QgJiYgYS5uciA8IEFSRU5FTi5sZW5ndGgpIHN1YiArPSBgIEFyZW5hICR7YS5uciArIDF9IGlzdCBqZXR6dCBvZmZlbi5gOwogICQoJyN3aW4tc3ViJykudGV4dENvbnRlbnQgPSBzdWI7CiAgJCgnI3dpbi1idG4nKS50ZXh0Q29udGVudCA9IGV2byA/ICdXZWl0ZXInIDogJ1p1ciBLYXJ0ZSc7CiAgJCgnI3dpbi1idG4nKS5vbmNsaWNrID0gKCkgPT4gZXZvID8gc2hvd0V2bygpIDogc2hvdygnc2NyLW1hcCcpOwogIHRvbmUoW1s1MjMsLjFdLFs2NTksLjFdLFs3ODQsLjFdLFsxMDQ3LC4zXV0pOyB2aWIoODApOwogIHNob3coJ3Njci13aW4nKTsKICBpZihTLnNldHRpbmdzLnZvcmxlc2VuKSBzcGVhayhmaXJzdCA/IGBHZWZhbmdlbiEgJHtmb2V9IGlzdCBqZXR6dCBpbiBkZWluZW0gTW9uc3RlcmJ1Y2guYCA6ICdHZXdvbm5lbiEnKTsKICBCID0gbnVsbDsKfQoKZnVuY3Rpb24gc2hvd0V2bygpewogIGNvbnN0IG9sZCA9IFMuc3RhcnRlciwgbncgPSBNT05bb2xkXS5ldm8sIGphciA9ICQoJyNldm8tamFyJyk7CiAgJCgnI2V2by1tb24nKS5pbm5lckhUTUwgPSBpbnNlY3Qob2xkKTsKICAkKCcjZXZvLXRleHQnKS50ZXh0Q29udGVudCA9IGBPaCEgJHtTLm5hbWUgfHwgTU9OW29sZF0ubmFtZX0gbGV1Y2h0ZXQg4oCmYDsKICAkKCcjZXZvLWJ0bicpLmhpZGRlbiA9IHRydWU7IGphci5jbGFzc0xpc3QucmVtb3ZlKCdmbGFzaCcpOwogIHNob3coJ3Njci1ldm8nKTsKICBzZXRUaW1lb3V0KCgpID0+IHsKICAgIGphci5jbGFzc0xpc3QuYWRkKCdmbGFzaCcpOyB0b25lKFtbNDQwLC4xNV0sWzU1NCwuMTVdLFs2NTksLjE1XSxbODgwLC4zNV1dKTsKICAgIHNldFRpbWVvdXQoKCkgPT4gewogICAgICAkKCcjZXZvLW1vbicpLmlubmVySFRNTCA9IGluc2VjdChudyk7CiAgICAgICQoJyNldm8tdGV4dCcpLnRleHRDb250ZW50ID0gUy5uYW1lID8gYCR7Uy5uYW1lfSBoYXQgc2ljaCBlbnR3aWNrZWx0ISBKZXR6dCBpc3QgZXMgZWluICR7TU9OW253XS5uYW1lfS5gIDogYCR7TU9OW29sZF0ubmFtZX0gaGF0IHNpY2ggenUgJHtNT05bbnddLm5hbWV9IGVudHdpY2tlbHQhYDsKICAgICAgJCgnI2V2by1idG4nKS5oaWRkZW4gPSBmYWxzZTsKICAgICAgaWYoUy5zZXR0aW5ncy52b3JsZXNlbikgc3BlYWsoJCgnI2V2by10ZXh0JykudGV4dENvbnRlbnQpOwogICAgfSwgMzIwKTsKICB9LCAxNTAwKTsKfQokKCcjZXZvLWJ0bicpLm9uY2xpY2sgPSAoKSA9PiBzaG93KCdzY3ItbWFwJyk7CgokKCcjcXVpdCcpLm9uY2xpY2sgPSAoKSA9PiB7IEIgPSBudWxsOyBpZihjYW5TcGVhaykgc3BlZWNoU3ludGhlc2lzLmNhbmNlbCgpOyBoaWRlU2hlZXQoKTsgc2hvdygnc2NyLW1hcCcpOyB9OwokKCcjc3BlYWsnKS5vbmNsaWNrID0gKCkgPT4geyBpZihCICYmIEIudGFzaykgc3BlYWsoQi50YXNrLnNheSk7IH07Cgpkb2N1bWVudC5hZGRFdmVudExpc3RlbmVyKCdrZXlkb3duJywgZSA9PiB7CiAgaWYoISQoJyNzY3ItYmF0dGxlJykuY2xhc3NMaXN0LmNvbnRhaW5zKCdhY3RpdmUnKSB8fCAhQikgcmV0dXJuOwogIGlmKC9eWzAtOV0kLy50ZXN0KGUua2V5KSkgcHJlc3MoZS5rZXkpOwogIGVsc2UgaWYoZS5rZXkgPT09ICdCYWNrc3BhY2UnKSBwcmVzcygnZGVsJyk7CiAgZWxzZSBpZihlLmtleSA9PT0gJ0VudGVyJyl7IGlmKCEkKCcjc2hlZXQnKS5oaWRkZW4peyAkKCcjc2hlZXQtYnRuJykuY2xpY2soKTsgfSBlbHNlIHByZXNzKCdvaycpOyBlLnByZXZlbnREZWZhdWx0KCk7IH0KfSk7CgovKiAtLS0tLS0tLS0tIE1vbnN0ZXJidWNoIC0tLS0tLS0tLS0gKi8KZnVuY3Rpb24gcmVuZGVyQm9vaygpewogIGNvbnN0IG1rID0gbWVLZXkoKTsKICBsZXQgaCA9IGA8ZGl2IGNsYXNzPSJiY2FyZCBtaW5lIj4ke2luc2VjdChtayl9PGRpdj48Yj4ke2VzYyhtZU5hbWUoKSl9PC9iPjxicj48c21hbGw+JHtNT05bbWtdLm5hbWV9LCBUeXAgJHtNT05bbWtdLnR5cH08L3NtYWxsPjxicj48c21hbGw+RGVpbiBNb25zdGVyPC9zbWFsbD48L2Rpdj48L2Rpdj5gOwogIGggKz0gQVJFTkVOLm1hcChhID0+IFMuYXJlbmFzW2EubnJdCiAgICA/IGA8ZGl2IGNsYXNzPSJiY2FyZCI+JHtpbnNlY3QoYS5mb2UpfTxiPiR7TU9OW2EuZm9lXS5uYW1lfTwvYj48c21hbGw+VHlwICR7TU9OW2EuZm9lXS50eXB9PC9zbWFsbD48L2Rpdj5gCiAgICA6IGA8ZGl2IGNsYXNzPSJiY2FyZCB1bmtub3duIj4ke2luc2VjdChhLmZvZSl9PGI+Pz8/PC9iPjxzbWFsbD5BcmVuYSAke2EubnJ9PC9zbWFsbD48L2Rpdj5gKS5qb2luKCcnKTsKICAkKCcjYm9vaycpLmlubmVySFRNTCA9IGg7CgogIGNvbnN0IHRzID0gdG90YWxTdGFycygpLCB3b24gPSB3b25Db3VudCgpOwogIGNvbnN0IHN1cmUgPSBBTEwuZmlsdGVyKG4gPT4gKFMucmlnaHRbbl0gfHwgMCkgPj0gMyAmJiAhKFMuZmVobGVyW25dID4gMCkpOwogIGNvbnN0IHRvZG8gPSBBTEwuZmlsdGVyKG4gPT4gUy5mZWhsZXJbbl0gPiAwKTsKICBjb25zdCBjaGlwID0gKG4sIGMpID0+IGA8c3BhbiBjbGFzcz0iY2hpcCAke2N9Ij4ke259IMK3IDYgPSAke24gKiA2fTwvc3Bhbj5gOwogIGxldCBldm9JbmZvID0gUy5ldm9sdmVkID8gJzxwPkRlaW4gTW9uc3RlciBoYXQgc2ljaCBzY2hvbiBlbnR3aWNrZWx0ITwvcD4nCiAgICA6IGA8cD5CZWkgJHtFVk9fU1RBUlN9IFN0ZXJuZW4gZW50d2lja2VsdCBzaWNoIGRlaW4gTW9uc3Rlci4gTm9jaCAke01hdGgubWF4KDAsIEVWT19TVEFSUyAtIHRzKX0gU3Rlcm5lITwvcD4KICAgICAgIDxkaXYgY2xhc3M9Im1ldGVyIiBhcmlhLWhpZGRlbj0idHJ1ZSI+PGkgc3R5bGU9IndpZHRoOiR7TWF0aC5taW4oMTAwLCAxMDAgKiB0cyAvIEVWT19TVEFSUyl9JSI+PC9pPjwvZGl2PmA7CiAgJCgnI3N0YW5kJykuaW5uZXJIVE1MID0gYAogICAgPHA+PGI+QXJlbmVuIGdlc2NoYWZmdDo8L2I+ICR7d29ufSB2b24gJHtBUkVORU4ubGVuZ3RofTwvcD4KICAgIDxwPjxiPlN0ZXJuZTo8L2I+ICR7dHN9IHZvbiAke0FSRU5FTi5sZW5ndGggKiAzfTwvcD4KICAgICR7ZXZvSW5mb30KICAgIDxoMiBzdHlsZT0ibWFyZ2luLXRvcDoxMnB4Ij7inJMgRGFzIGthbm5zdCBkdSBzY2hvbiBzaWNoZXI8L2gyPgogICAgPGRpdiBjbGFzcz0iY2hpcHMiPiR7c3VyZS5sZW5ndGggPyBzdXJlLm1hcChuID0+IGNoaXAobiwgJycpKS5qb2luKCcnKSA6ICc8c3BhbiBjbGFzcz0ibXV0ZWQiPk5vY2ggbmljaHRzLiBMZWcgbG9zITwvc3Bhbj4nfTwvZGl2PgogICAgPGgyPuKcjiBEYXMgw7xic3QgZHUgbm9jaDwvaDI+CiAgICA8ZGl2IGNsYXNzPSJjaGlwcyI+JHt0b2RvLmxlbmd0aCA/IHRvZG8ubWFwKG4gPT4gY2hpcChuLCAnd2FybicpKS5qb2luKCcnKSA6ICc8c3BhbiBjbGFzcz0ibXV0ZWQiPkdlcmFkZSBuaWNodHMuIFN1cGVyITwvc3Bhbj4nfTwvZGl2PgogICAgPHAgY2xhc3M9Im11dGVkIj5aZWlnIGRpZXNlIFNlaXRlIGRlaW5lciBMZWhyZXJpbiBvZGVyIGRlaW5lbSBMZWhyZXIuPC9wPmA7Cn0KCi8qIC0tLS0tLS0tLS0gRWluc3RlbGx1bmdlbiAtLS0tLS0tLS0tICovCmZ1bmN0aW9uIHJlbmRlclNldHRpbmdzKCl7CiAgY29uc3QgaXRlbXMgPSBbCiAgICBbJ3Zvcmxlc2VuJywgJ0F1ZmdhYmVuIHZvcmxlc2VuJywgY2FuU3BlYWsgPyAnRGFzIEhhbmR5IGxpZXN0IGplZGUgQXVmZ2FiZSBsYXV0IHZvci4nIDogJ0RlaW4gR2Vyw6R0IGthbm4gbGVpZGVyIG5pY2h0IHZvcmxlc2VuLicsICFjYW5TcGVha10sCiAgICBbJ3ZvcnNjaGxhZWdlJywgJ0FudHdvcnQtS27DtnBmZScsICdMZWljaHRlcjogRHUgd8OkaGxzdCBhdXMgMyBBbnR3b3J0ZW4uJywgZmFsc2VdLAogICAgWyd0b24nLCAnVMO2bmUnLCAnR2Vyw6R1c2NoZSBiZWkgVHJlZmZlcm4gdW5kIFNpZWdlbi4nLCBmYWxzZV0sCiAgXTsKICAkKCcjc2V0cycpLmlubmVySFRNTCA9IGl0ZW1zLm1hcCgoW2ssIHQsIGQsIGRpc10pID0+IHsKICAgIGNvbnN0IG9uID0gISFTLnNldHRpbmdzW2tdICYmICFkaXM7CiAgICByZXR1cm4gYDxidXR0b24gY2xhc3M9InN3IiByb2xlPSJzd2l0Y2giIGFyaWEtY2hlY2tlZD0iJHtvbn0iIGRhdGEtaz0iJHtrfSIgJHtkaXMgPyAnZGlzYWJsZWQnIDogJyd9PgogICAgICA8c3Bhbj48Yj4ke3R9PC9iPjxzbWFsbD4ke2R9PC9zbWFsbD48L3NwYW4+PHNwYW4gY2xhc3M9InRnIj48c3Bhbj4ke29uID8gJ0FuJyA6ICdBdXMnfTwvc3Bhbj48aT48L2k+PC9zcGFuPjwvYnV0dG9uPmA7CiAgfSkuam9pbignJyk7CiAgcmVzZXRBcm1lZCA9IGZhbHNlOyAkKCcjcmVzZXQnKS50ZXh0Q29udGVudCA9ICdBbGxlcyBsw7ZzY2hlbic7Cn0KJCgnI3NldHMnKS5hZGRFdmVudExpc3RlbmVyKCdjbGljaycsIGUgPT4gewogIGNvbnN0IGIgPSBlLnRhcmdldC5jbG9zZXN0KCcuc3cnKTsgaWYoIWIgfHwgYi5kaXNhYmxlZCkgcmV0dXJuOwogIGNvbnN0IGsgPSBiLmRhdGFzZXQuazsgUy5zZXR0aW5nc1trXSA9ICFTLnNldHRpbmdzW2tdOyBzYXZlKCk7IHJlbmRlclNldHRpbmdzKCk7CiAgaWYoayA9PT0gJ3Zvcmxlc2VuJyAmJiBTLnNldHRpbmdzLnZvcmxlc2VuKSBzcGVhaygnVm9ybGVzZW4gaXN0IGFuLicpOwp9KTsKbGV0IHJlc2V0QXJtZWQgPSBmYWxzZTsKJCgnI3Jlc2V0Jykub25jbGljayA9ICgpID0+IHsKICBpZighcmVzZXRBcm1lZCl7IHJlc2V0QXJtZWQgPSB0cnVlOyAkKCcjcmVzZXQnKS50ZXh0Q29udGVudCA9ICdXaXJrbGljaD8gTm9jaG1hbCB0aXBwZW4nOyByZXR1cm47IH0KICB0cnl7IGxvY2FsU3RvcmFnZS5yZW1vdmVJdGVtKEtFWSk7IH1jYXRjaChlKXt9CiAgUyA9IGNsb25lKERFRik7IHNob3coJ3Njci1zdGFydCcpOwp9OwoKLyogLS0tLS0tLS0tLSBMb3MgLS0tLS0tLS0tLSAqLwpidWlsZFBhZCgpOwpzaG93KFMuc3RhcnRlciA/ICdzY3ItbWFwJyA6ICdzY3Itc3RhcnQnKTsKPC9zY3JpcHQ+CjwvYm9keT4KPC9odG1sPgo=</script>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ALL = [1,2,3,4,5,6,7,8,9,10];
+const rnd = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i],a[j]] = [a[j],a[i]]; } return a; };
+const starStr = n => '★'.repeat(n) + '☆'.repeat(3 - n);
+
+/* =========================================================
+   DATEN
+   ========================================================= */
+const PARTNER = {
+  loewe:   {stufen:['Löwenbaby','Junger Löwe','Großer Löwe'], emoji:'🦁', motto:'mutig'},
+  pinguin: {stufen:['Pinguinküken','Junger Pinguin','Kaiserpinguin'], emoji:'🐧', motto:'flink'},
+  panda:   {stufen:['Pandababy','Junger Panda','Großer Panda'], emoji:'🐼', motto:'geduldig'},
+};
+const TIERE = {
+  nashorn:     {name:'Rumpel',   emoji:'🦏'},
+  flamingo:    {name:'Rosalie',  emoji:'🦩'},
+  faultier:    {name:'Schlummi', emoji:'🦥'},
+  zebra:       {name:'Streifi',  emoji:'🦓'},
+  seestern:    {name:'Stella',   emoji:'⭐'},
+  marienkaefer:{name:'Punktina', emoji:'🐞'},
+  oktopus:     {name:'Okti',     emoji:'🐙'},
+  guerteltier: {name:'Rollo',    emoji:'🐾'},
+  krabbe:      {name:'Kneifer',  emoji:'🦀'},
+  elefant:     {name:'Elfriede', emoji:'🐘'},
+};
+// s/p = Einzahl/Mehrzahl für die Tier-Aufgabe, teil = was gezählt wird
+const REIHEN = {
+  1: {tier:'nashorn', gehege:'Nashorn-Weide', biom:'savanne', wer:'Rumpel, das Nashorn', icon:'🦏', s:'Nashorn', p:'Nashörner', teil:'Hörner', fakt:'Jedes Panzernashorn hat 1 Horn auf der Nase.'},
+  2: {tier:'flamingo', gehege:'Flamingo-Lagune', biom:'see', wer:'Rosalie, der Flamingo', icon:'🦩', s:'Flamingo', p:'Flamingos', teil:'Beine', fakt:'Jeder Flamingo hat 2 Beine. Oft steht er nur auf einem!'},
+  3: {tier:'faultier', gehege:'Faultier-Dschungel', biom:'dschungel', wer:'Schlummi, das Faultier', icon:'✋', s:'Faultier-Hand', p:'Faultier-Hände', teil:'Krallen', fakt:'Das Dreifinger-Faultier hat an jeder Hand 3 lange Krallen.'},
+  4: {tier:'zebra', gehege:'Zebra-Savanne', biom:'savanne', wer:'Streifi, das Zebra', icon:'🦓', s:'Zebra', p:'Zebras', teil:'Beine', fakt:'Jedes Zebra hat 4 Beine.'},
+  5: {tier:'seestern', gehege:'Seestern-Becken', biom:'meer', wer:'Stella, der Seestern', icon:'⭐', s:'Seestern', p:'Seesterne', teil:'Arme', fakt:'Ein Seestern hat 5 Arme.'},
+  6: {krabbel:true, gehege:'Insektenhaus', biom:'wiese', wer:'die Krabbel-Monster', icon:'🐞', s:'Käfer', p:'Käfer', teil:'Beine', fakt:'Jeder Käfer hat 6 Beine.'},
+  7: {tier:'marienkaefer', gehege:'Marienkäfer-Wiese', biom:'wiese', wer:'Punktina, der Marienkäfer', icon:'🐞', s:'Marienkäfer', p:'Marienkäfer', teil:'Punkte', fakt:'Der Siebenpunkt-Marienkäfer hat 7 Punkte auf dem Rücken.'},
+  8: {tier:'oktopus', gehege:'Oktopus-Grotte', biom:'meer', wer:'Okti, der Oktopus', icon:'🐙', s:'Oktopus', p:'Oktopusse', teil:'Arme', fakt:'Ein Oktopus hat 8 Arme.'},
+  9: {tier:'guerteltier', gehege:'Gürteltier-Wüste', biom:'wueste', wer:'Rollo, das Gürteltier', icon:'', s:'Gürteltier', p:'Gürteltiere', teil:'Panzerbänder', fakt:'Das Neunbinden-Gürteltier hat 9 Bänder auf seinem Panzer.'},
+  10:{tier:'krabbe', gehege:'Krabben-Strand', biom:'strand', wer:'Kneifer, die Krabbe', icon:'🦀', s:'Krabbe', p:'Krabben', teil:'Beine', fakt:'Eine Krabbe hat 10 Beine. 2 davon sind große Scheren.'},
+};
+// Empfohlene Reihenfolge: Kernreihen → Verdopplungsfamilie → 3/6/9 → 7 → 1
+const ORDER = [2,5,10,4,8,3,6,9,7,1];
+const STUFEN = [
+  {nr:1, titel:'Königsaufgaben', types:['mal'], ns:[1,2,5,10], hp:5,
+   intro:k => `Hier übst du die Königsaufgaben: 1 · ${k}, 2 · ${k}, 5 · ${k} und 10 · ${k}. Mit ihnen kannst du später alle anderen Aufgaben ausrechnen.`},
+  {nr:2, titel:'Nachbaraufgaben', types:['mal'], ns:[3,4,6,9], hp:5,
+   intro:k => `Jetzt kommen die Nachbarn der Königsaufgaben. Beispiel: 6 · ${k} ist 5 · ${k} und noch eine ${k} dazu.`},
+  {nr:3, titel:'Alles gemischt', types:['mal','tausch'], ns:ALL, hp:6,
+   intro:k => `Jetzt ist alles gemischt, auch 7 · ${k} und 8 · ${k}. Dazu kommen Tauschaufgaben: ${k} · 7 ist dasselbe wie 7 · ${k}.`},
+  {nr:4, titel:'Gehege-Champion', types:['geteilt','luecke','sach'], ns:ALL, hp:7,
+   intro:(k,R) => `Der große Wettkampf! Jetzt kommen Geteilt-Aufgaben, Lückenaufgaben und Tier-Aufgaben. ${R.fakt}`},
+];
+const EVO_AT = [0, 12, 40];
+
+/* =========================================================
+   SPEICHER
+   ========================================================= */
+const KEY = 'zooarena_v1', KEY6 = 'krabbelarena_v1';
+const DEF = {partner:null, name:'', evo:0, reihen:{}, fest:0, fehler:{}, right:{}, lehrer:false,
+  settings:{vorlesen:false, vorschlaege:false, ton:true, spar:false}};
+const clone = o => JSON.parse(JSON.stringify(o));
+function load(){
+  try{
+    const r = localStorage.getItem(KEY);
+    if(r){ const o = JSON.parse(r); return Object.assign(clone(DEF), o, {settings:Object.assign(clone(DEF.settings), o.settings || {})}); }
+  }catch(e){}
+  return clone(DEF);
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+let S = load();
+
+// Fortschritt aus dem Insektenhaus (eigener Speicher des 6er-Spiels)
+function K6(){ try{ return JSON.parse(localStorage.getItem(KEY6) || 'null') || {}; }catch(e){ return {}; } }
+const k6arenas = () => K6().arenas || {};
+const stufenOf = k => (S.reihen[k] && S.reihen[k].stufen) || {};
+const reiheStars = k => k === 6
+  ? Object.values(k6arenas()).reduce((a,d) => a + (d.stars || 0), 0)
+  : Object.values(stufenOf(k)).reduce((a,v) => a + v, 0);
+const done = k => k === 6 ? !!k6arenas()[7] : !!stufenOf(k)[4];
+const doneCount = () => ALL.filter(done).length;
+const totalStars = () => ALL.reduce((a,k) => a + reiheStars(k), 0) + (S.fest || 0);
+const evoFor = st => st >= EVO_AT[2] ? 2 : st >= EVO_AT[1] ? 1 : 0;
+const partnerSpec = () => ({kind:'partner', art:S.partner, st:S.evo});
+const meName = () => S.name || PARTNER[S.partner].stufen[S.evo];
+
+/* =========================================================
+   TON, SPRACHE, VIBRATION
+   ========================================================= */
+let AC = null;
+function tone(seq){
+  if(!S.settings.ton) return;
+  try{
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if(AC.state === 'suspended') AC.resume();
+    let t = AC.currentTime + 0.01;
+    for(const [f,d] of seq){
+      const o = AC.createOscillator(), g = AC.createGain();
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.2, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + d + 0.03);
+      t += d * 0.9;
+    }
+  }catch(e){}
+}
+const canSpeak = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+function speak(txt){
+  if(!canSpeak) return;
+  try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = 'de-DE'; u.rate = .9; speechSynthesis.speak(u); }catch(e){}
+}
+const sayable = t => t.replace(/·/g, ' mal ').replace(/ : /g, ' geteilt durch ').replace(/§/g, 'wie viel');
+function vib(ms){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} }
+
+/* =========================================================
+   3D-ENGINE (three.js r128)
+   ========================================================= */
+const G = {ok:false, r:null, scene:null, cam:null, canvas:null, world:null, host:null, lay:null,
+  actors:{}, parts:[], paused:false, ro:null};
+const BIOM = {
+  savanne:  {sky:'linear-gradient(#FFE6A3 0%,#D5EEFF 78%)', ground:'#E3C46E', plat:'#C9A956'},
+  see:      {sky:'linear-gradient(#B9E4FF 0%,#EAF8FF 80%)', ground:'#A8D46F', plat:'#86B957'},
+  dschungel:{sky:'linear-gradient(#B4E2BB 0%,#E6F6E0 80%)', ground:'#74B04A', plat:'#5A9637'},
+  meer:     {sky:'linear-gradient(#9FD8FF 0%,#E1F4FF 80%)', ground:'#F1DEA6', plat:'#DCC488'},
+  wiese:    {sky:'linear-gradient(#CBE8FF 0%,#F2FFEA 80%)', ground:'#A4D46C', plat:'#86B957'},
+  wueste:   {sky:'linear-gradient(#FFD39A 0%,#FFF2D8 80%)', ground:'#E8C07A', plat:'#CDA35E'},
+  strand:   {sky:'linear-gradient(#A5DBFF 0%,#FFF4D9 85%)', ground:'#F3E0A5', plat:'#DCC488'},
+  fest:     {sky:'linear-gradient(#FFD3E6 0%,#FFF3C4 85%)', ground:'#A4D46C', plat:'#86B957'},
+};
+const LAY = {
+  battle:{cam:[0,2.2,6.6], look:[0,0.8,-0.2], minAsp:1.2,
+    roles:{me:{p:[-1.35,0,1.85], ry:1.75}, foe:{p:[1.3,0,-1.25], ry:-0.6}}},
+  center:{cam:[0,1.45,4.7], look:[0,0.85,0], minAsp:0.9, roles:{c:{p:[0,0,0], ry:0.5}}},
+  trio:{cam:[0,1.45,5.4], look:[0,0.7,0], minAsp:1.25,
+    roles:{t0:{p:[-1.55,0,0], ry:0.35}, t1:{p:[0,0,0.25], ry:0}, t2:{p:[1.55,0,0], ry:-0.35}}},
+};
+
+function initGL(){
+  if(!window.THREE) return;
+  try{
+    const r = new THREE.WebGLRenderer({antialias:true, alpha:true});
+    r.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    r.setClearColor(0x000000, 0);
+    G.r = r; G.canvas = r.domElement; G.canvas.className = 'gl'; G.canvas.setAttribute('aria-hidden','true');
+    G.scene = new THREE.Scene();
+    G.cam = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+    G.scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7a55, 0.85));
+    const d = new THREE.DirectionalLight(0xffffff, 0.7); d.position.set(-3, 6, 5); G.scene.add(d);
+    G.world = new THREE.Group(); G.scene.add(G.world);
+    G.shadowMat = new THREE.MeshBasicMaterial({color:0x000000, transparent:true, opacity:.16, depthWrite:false});
+    G.partMats = ['#FFE14A','#FFFFFF','#FF9F1C'].map(c => new THREE.MeshBasicMaterial({color:c}));
+    if('ResizeObserver' in window) G.ro = new ResizeObserver(() => fit());
+    else window.addEventListener('resize', () => fit());
+    G.ok = true;
+  }catch(e){ G.ok = false; }
+}
+const use3d = () => G.ok && !S.settings.spar;
+
+const GEO = {};
+function geo(kind){
+  if(GEO[kind]) return GEO[kind];
+  let g;
+  switch(kind){
+    case 'sph':  g = new THREE.SphereGeometry(1, 20, 14); break;
+    case 'rock': g = new THREE.IcosahedronGeometry(1, 0); break;
+    case 'cyl':  g = new THREE.CylinderGeometry(1, 1, 1, 14); break;
+    case 'cone': g = new THREE.ConeGeometry(1, 1, 14); break;
+    case 'box':  g = new THREE.BoxGeometry(1, 1, 1); break;
+    case 'disc': g = new THREE.CylinderGeometry(1, 1, 1, 36); break;
+    case 'circ': g = new THREE.CircleGeometry(1, 32); break;
+    case 'oct':  g = new THREE.OctahedronGeometry(1, 0); break;
+    case 'half': g = new THREE.SphereGeometry(1, 22, 10, 0, Math.PI * 2, 0, Math.PI / 2); break;
+  }
+  return GEO[kind] = g;
+}
+function stripeTex(horizontal){
+  const c = document.createElement('canvas');
+  c.width = horizontal ? 32 : 256; c.height = horizontal ? 256 : 32;
+  const x = c.getContext('2d'); x.fillStyle = '#FFFFFF'; x.fillRect(0, 0, c.width, c.height);
+  x.fillStyle = '#1E1E22';
+  const L = horizontal ? c.height : c.width;
+  let p = 4, i = 0;
+  while(p < L){ const w = 9 + (i % 3) * 3; if(horizontal) x.fillRect(0, p, c.width, w); else x.fillRect(p, 0, w, c.height); p += w + 13 + (i % 2) * 4; i++; }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+}
+// Baukasten: gibt eine Gruppe zurück und merkt sich die Materialien zum Aufräumen
+function kit(){
+  const mats = {};
+  const root = new THREE.Group(); root.userData.mats = mats;
+  const m = c => {
+    if(mats[c]) return mats[c];
+    if(c === 'stripeV' || c === 'stripeH') return mats[c] = new THREE.MeshLambertMaterial({map:stripeTex(c === 'stripeH')});
+    return mats[c] = new THREE.MeshLambertMaterial({color:c});
+  };
+  const add = (par, kind, c, p = [0,0,0], s = 1, r = [0,0,0]) => {
+    const mesh = new THREE.Mesh(geo(kind), m(c));
+    mesh.position.set(p[0], p[1], p[2]);
+    if(typeof s === 'number') mesh.scale.setScalar(s); else mesh.scale.set(s[0], s[1], s[2]);
+    mesh.rotation.set(r[0], r[1], r[2]);
+    (par || root).add(mesh); return mesh;
+  };
+  const grp = (par, p = [0,0,0], r = [0,0,0]) => { const g = new THREE.Group(); g.position.set(p[0],p[1],p[2]); g.rotation.set(r[0],r[1],r[2]); (par || root).add(g); return g; };
+  const eyes = (par, x, y, z, r) => { for(const sx of [-1,1]){
+    add(par,'sph','#FFFFFF',[sx*x,y,z],r);
+    add(par,'sph','#1B1B1F',[sx*x,y,z+r*.62],r*.58);
+    add(par,'sph','#FFFFFF',[sx*x-r*.15,y+r*.2,z+r*1.05],r*.18);
+  }};
+  const cheeks = (par, x, y, z, r) => { for(const sx of [-1,1]) add(par,'sph','#FF9FB0',[sx*x,y,z],[r,r*.6,r*.4]); };
+  return {root, add, grp, eyes, cheeks};
+}
+function finish(root, sc, h){ root.scale.setScalar(sc); root.userData.h = h * sc; return root; }
+
+/* ---------- Partner-Tiere (3 Wachstumsstufen) ---------- */
+function bLoewe(st){
+  const {root, add, grp, eyes, cheeks} = kit();
+  const fur = '#E8A63A', light = '#F8D9A0', mane = '#A9561C', dark = '#3A2414';
+  add(root,'sph',fur,[0,.55,-.05],[.48,.42,.62]);
+  for(const [x,z] of [[-.25,.28],[.25,.28],[-.25,-.35],[.25,-.35]]){ add(root,'cyl',fur,[x,.22,z],[.11,.44,.11]); add(root,'sph',light,[x,.05,z+.04],[.13,.08,.15]); }
+  add(root,'cyl',fur,[0,.72,-.78],[.04,.5,.04],[-.9,0,0]);
+  add(root,'sph',mane,[0,.86,-1],.09);
+  const h = grp(root,[0,1.02,.42]);
+  if(st > 0){
+    const R = st === 1 ? .44 : .52, b = st === 1 ? .16 : .21, n = st === 1 ? 11 : 14;
+    add(h,'sph',mane,[0,0,-.2],[R+.04,R+.04,.25]);
+    for(let i = 0; i < n; i++){ const a = i / n * Math.PI * 2; add(h,'sph',mane,[Math.cos(a)*R,Math.sin(a)*R,-.1],b); }
+  }
+  add(h,'sph',fur,[0,0,0],.4);
+  add(h,'sph',light,[0,-.12,.28],[.22,.16,.16]);
+  add(h,'sph',dark,[0,-.03,.42],[.07,.05,.05]);
+  for(const sx of [-1,1]){ add(h,'sph',fur,[sx*.3,.3,-.02],.12); add(h,'sph',light,[sx*.3,.3,.06],.07); }
+  eyes(h,.15,.1,.3,.075); cheeks(h,.25,-.08,.3,.06);
+  return finish(root, [.8,.95,1.1][st], 1.5);
+}
+function bPinguin(st){
+  const {root, add, grp, eyes, cheeks} = kit();
+  const back = st === 0 ? '#8E98A6' : '#263041', belly = st === 0 ? '#E9EDF2' : '#FFFFFF', beak = '#F59A23';
+  add(root,'sph',back,[0,.62,0],[.45,.6,.42]);
+  add(root,'sph',belly,[0,.56,.14],[.36,.48,.32]);
+  for(const sx of [-1,1]) add(root,'sph',back,[sx*.43,.64,0],[.08,.32,.18],[0,0,sx*.35]);
+  for(const sx of [-1,1]) add(root,'sph',beak,[sx*.16,.04,.16],[.12,.05,.18]);
+  const h = grp(root,[0,1.25,.02]);
+  add(h,'sph',back,[0,0,0],.34);
+  add(h,'sph',belly,[0,-.04,.12],[.24,.22,.24]);
+  if(st === 0) add(h,'sph',back,[0,.33,0],[.06,.1,.06]);
+  if(st === 2) for(const sx of [-1,1]) add(h,'sph','#FFC93C',[sx*.25,-.12,.08],[.07,.13,.06]);
+  add(h,'cone',beak,[0,-.08,.4],[.07,.18,.07],[Math.PI/2,0,0]);
+  eyes(h,.11,.04,.27,.06); cheeks(h,.2,-.08,.26,.05);
+  return finish(root, [.75,.92,1.12][st], 1.65);
+}
+function bPanda(st){
+  const {root, add, grp, eyes, cheeks} = kit();
+  const W = '#F7F7F2', K = '#26262C';
+  add(root,'sph',W,[0,.55,0],[.5,.48,.48]);
+  add(root,'sph',K,[0,.78,-.02],[.5,.17,.46]);
+  for(const [x,z] of [[-.25,.2],[.25,.2],[-.25,-.22],[.25,-.22]]) add(root,'sph',K,[x,.17,z],[.17,.18,.2]);
+  for(const sx of [-1,1]) add(root,'sph',K,[sx*.42,.66,.16],[.13,.26,.14],[0,0,sx*.6]);
+  if(st === 2){ add(root,'cyl','#6DBE45',[.5,.95,.3],[.045,.9,.045],[0,0,.3]); add(root,'sph','#4E9A2E',[.36,1.3,.3],[.14,.05,.07],[0,0,-.5]); }
+  const h = grp(root,[0,1.18,.12]);
+  add(h,'sph',W,[0,0,0],.4);
+  for(const sx of [-1,1]){ add(h,'sph',K,[sx*.3,.3,-.05],.13); add(h,'sph',K,[sx*.14,.03,.34],[.1,.13,.05],[0,0,sx*-.5]); }
+  add(h,'sph',W,[0,-.13,.33],[.14,.1,.1]);
+  add(h,'sph',K,[0,-.09,.42],[.06,.04,.04]);
+  eyes(h,.14,.05,.37,.05); cheeks(h,.25,-.1,.3,.05);
+  return finish(root, [.78,.95,1.12][st], 1.6);
+}
+
+/* ---------- Gehege-Tiere ---------- */
+function bNashorn(){
+  const {root, add, grp, eyes, cheeks} = kit();
+  const g = '#8D96A0', d = '#77808A', horn = '#EDE4D3';
+  add(root,'sph',g,[0,.62,-.1],[.55,.45,.78]);
+  add(root,'sph',d,[0,.64,.22],[.56,.46,.07]);
+  add(root,'sph',d,[0,.64,-.42],[.56,.46,.07]);
+  for(const [x,z] of [[-.3,.35],[.3,.35],[-.3,-.55],[.3,-.55]]) add(root,'cyl',g,[x,.22,z],[.15,.44,.15]);
+  add(root,'cyl',d,[0,.75,-.9],[.03,.3,.03],[-.6,0,0]);
+  const h = grp(root,[0,.78,.72]);
+  add(h,'sph',g,[0,0,0],[.32,.3,.4]);
+  add(h,'sph',g,[0,-.06,.32],[.24,.2,.22]);
+  add(h,'cone',horn,[0,.18,.42],[.09,.32,.09],[.35,0,0]);
+  for(const sx of [-1,1]){ add(h,'cone',g,[sx*.2,.3,-.12],[.06,.14,.06]); add(h,'sph','#3B3F45',[sx*.08,-.1,.53],.025); }
+  eyes(h,.2,.06,.22,.055); cheeks(h,.2,-.1,.4,.05);
+  return finish(root, 1, 1.35);
+}
+function bFlamingo(){
+  const {root, add, grp, eyes, cheeks} = kit();
+  const pink = '#F48FB1', deep = '#E5679A';
+  for(const sx of [-1,1]){
+    add(root,'cyl',deep,[sx*.1,.45,0],[.03,.9,.03]);
+    add(root,'sph',deep,[sx*.1,.5,0],.045);
+    add(root,'sph',deep,[sx*.1,.02,.06],[.08,.02,.11]);
+  }
+  add(root,'sph',pink,[0,1.05,-.05],[.36,.3,.5]);
+  for(const sx of [-1,1]) add(root,'sph',deep,[sx*.3,1.08,-.08],[.06,.2,.36]);
+  add(root,'cone',pink,[0,1.12,-.55],[.1,.25,.1],[-1.9,0,0]);
+  for(let j = 0; j <= 8; j++){ const t = j / 8; add(root,'sph',pink,[0,1.2+.85*t,.28+.14*Math.sin(t*Math.PI*2)],.075); }
+  const h = grp(root,[0,2.12,.3]);
+  add(h,'sph',pink,[0,0,0],.16);
+  add(h,'sph','#F7E3E8',[0,-.04,.17],[.06,.06,.1]);
+  add(h,'cone','#222226',[0,-.1,.26],[.05,.14,.05],[Math.PI/2+.9,0,0]);
+  eyes(h,.09,.04,.11,.04); cheeks(h,.11,-.05,.1,.03);
+  return finish(root, .9, 2.3);
+}
+function bFaultier(){
+  const {root, add, grp, eyes} = kit();
+  const fur = '#9C7A55', face = '#E3CFA9', dark = '#4B3624', claw = '#F2E6C9';
+  add(root,'sph',fur,[0,.6,0],[.45,.5,.4]);
+  add(root,'sph','#B39270',[0,.55,.2],[.3,.36,.22]);
+  for(const sx of [-1,1]) add(root,'sph',fur,[sx*.22,.15,.15],[.14,.15,.2]);
+  for(const sx of [-1,1]){
+    const a = grp(root,[sx*.36,.82,.05],[0,0,sx*2.5]);
+    add(a,'cyl',fur,[0,-.26,0],[.085,.52,.085]);
+    add(a,'sph',fur,[0,-.54,0],.1);
+    for(const i of [-1,0,1]) add(a,'cone',claw,[i*.055,-.68,.03],[.025,.15,.025],[0,0,Math.PI]);
+  }
+  const h = grp(root,[0,1.18,.08]);
+  add(h,'sph',fur,[0,0,0],.32);
+  add(h,'sph',face,[0,-.03,.17],[.24,.2,.18]);
+  for(const sx of [-1,1]) add(h,'sph',dark,[sx*.11,.01,.31],[.08,.04,.03],[0,0,sx*-.35]);
+  add(h,'sph',dark,[0,-.08,.34],[.05,.035,.03]);
+  eyes(h,.11,.02,.32,.04);
+  return finish(root, 1, 1.55);
+}
+function bZebra(){
+  const {root, add, grp, eyes} = kit();
+  add(root,'sph','stripeV',[0,.75,-.05],[.42,.38,.7]);
+  for(const [x,z] of [[-.22,.4],[.22,.4],[-.22,-.45],[.22,-.45]]){ add(root,'cyl','stripeH',[x,.33,z],[.07,.62,.07]); add(root,'cyl','#1E1E22',[x,.04,z],[.075,.08,.075]); }
+  add(root,'cyl','stripeH',[0,1.12,.6],[.13,.5,.15],[.5,0,0]);
+  add(root,'box','#1E1E22',[0,1.22,.52],[.05,.42,.1],[.5,0,0]);
+  add(root,'cyl','#1E1E22',[0,.78,-.78],[.03,.35,.03],[-.5,0,0]);
+  const h = grp(root,[0,1.4,.78]);
+  add(h,'sph','stripeV',[0,0,0],[.17,.2,.32]);
+  add(h,'sph','#2A2A30',[0,-.06,.27],[.12,.11,.12]);
+  for(const sx of [-1,1]){ add(h,'cone','#FFFFFF',[sx*.1,.22,-.1],[.05,.15,.04]); add(h,'cone','#1E1E22',[sx*.1,.31,-.1],[.025,.05,.02]); }
+  eyes(h,.13,.06,.05,.05);
+  return finish(root, 1, 1.75);
+}
+function bSeestern(){
+  const {root, add, grp, eyes, cheeks} = kit();
+  const or = '#FF8A3D', dot = '#FFC48A';
+  const s = grp(root,[0,.74,0]);
+  add(s,'sph',or,[0,0,0],[.3,.3,.17]);
+  for(let i = 0; i < 5; i++){
+    const a = Math.PI / 2 + i * Math.PI * 2 / 5, dx = Math.cos(a), dy = Math.sin(a);
+    add(s,'cone',or,[dx*.5,dy*.5,0],[.18,.6,.11],[0,0,a-Math.PI/2]);
+    for(const r of [.32,.5,.66]) add(s,'sph',dot,[dx*r,dy*r,.08-r*.06],.035);
+  }
+  eyes(s,.09,.05,.13,.055); cheeks(s,.17,-.06,.13,.04);
+  add(s,'sph','#B4441A',[0,-.08,.16],[.05,.025,.02]);
+  return finish(root, 1.05, 1.5);
+}
+function bMarienkaefer(){
+  const {root, add, eyes} = kit();
+  const red = '#E23B30', K = '#1E1E22';
+  add(root,'sph',K,[0,.2,0],[.5,.12,.6]);
+  add(root,'half',red,[0,.18,0],[.55,.42,.65]);
+  // 7 Punkte, gut verteilt auf dem Panzer
+  const spots = [[.0,0],[.62,.95],[.62,-.95],[.95,1.95],[.95,-1.95],[.7,2.7],[.7,-2.7]];
+  for(const [th,ph] of spots){
+    const x = Math.sin(th)*Math.sin(ph)*.56, y = .18 + Math.cos(th)*.43, z = Math.sin(th)*Math.cos(ph)*.66;
+    add(root,'sph',K,[x,y,z],.1);
+  }
+  add(root,'sph',K,[0,.32,.62],[.26,.22,.22]);
+  for(const sx of [-1,1]){
+    add(root,'cyl',K,[sx*.08,.55,.75],[.015,.22,.015],[.5,0,sx*-.35]);
+    add(root,'sph',K,[sx*.12,.65,.82],.035);
+    for(const z of [-.3,0,.3]) add(root,'cyl',K,[sx*.5,.1,z],[.03,.26,.03],[0,0,sx*1.0]);
+  }
+  eyes(root,.1,.38,.78,.06);
+  return finish(root, 1.35, .85);
+}
+function bOktopus(){
+  const {root, add, grp, eyes, cheeks} = kit();
+  const pur = '#9A6AE0', light = '#C9B0F5';
+  root.userData.wig = [];
+  add(root,'sph',pur,[0,1.05,0],[.5,.58,.5]);
+  add(root,'sph',light,[-.2,1.35,.3],.08);
+  add(root,'sph',light,[.25,1.25,.36],.06);
+  for(let i = 0; i < 8; i++){
+    const a = i / 8 * Math.PI * 2 + Math.PI / 8, arm = grp(root);
+    for(let j = 0; j < 5; j++){
+      const r = .3 + j * .14, y = .5 - j * .1 + (j > 2 ? (j - 2) * .09 : 0);
+      add(arm,'sph',j === 4 ? light : pur,[Math.cos(a)*r, Math.max(.06,y), Math.sin(a)*r],.15 - j*.022);
+    }
+    root.userData.wig.push({g:arm, ph:i * .8});
+  }
+  eyes(root,.17,1.0,.42,.09); cheeks(root,.3,.85,.38,.06);
+  return finish(root, 1, 1.65);
+}
+function bGuerteltier(){
+  const {root, add, grp, eyes} = kit();
+  const sh = '#B49372', shd = '#8F7055', skin = '#E3C3A3';
+  add(root,'sph',skin,[0,.3,0],[.38,.18,.6]);
+  for(let i = 0; i < 9; i++){ const s = 1 - Math.abs(i - 4) / 14; add(root,'sph',i % 2 ? sh : shd,[0,.42,-.48+i*.12],[.46*s,.4*s,.1]); }
+  add(root,'sph',sh,[0,.4,.55],[.42,.35,.18]);
+  add(root,'sph',sh,[0,.38,-.6],[.4,.33,.18]);
+  for(const [x,z] of [[-.25,.38],[.25,.38],[-.25,-.38],[.25,-.38]]) add(root,'cyl',skin,[x,.12,z],[.07,.24,.07]);
+  add(root,'cone',sh,[0,.3,-.95],[.06,.45,.06],[-(Math.PI/2+.3),0,0]);
+  const h = grp(root,[0,.42,.78]);
+  add(h,'cone',sh,[0,0,.12],[.16,.38,.16],[Math.PI/2,0,0]);
+  add(h,'sph','#5A4330',[0,0,.32],.04);
+  for(const sx of [-1,1]) add(h,'sph',skin,[sx*.11,.18,-.04],[.06,.13,.03]);
+  eyes(h,.1,.08,.02,.05);
+  return finish(root, 1.25, .9);
+}
+function bKrabbe(){
+  const {root, add, grp, eyes, cheeks} = kit();
+  const red = '#E8552E', light = '#F7A07F';
+  add(root,'sph',red,[0,.42,0],[.55,.28,.42]);
+  add(root,'sph',light,[0,.36,.2],[.36,.15,.22]);
+  for(const sx of [-1,1]){
+    add(root,'cyl',red,[sx*.15,.66,.25],[.035,.3,.035]);
+    // Schere
+    add(root,'cyl',red,[sx*.52,.5,.3],[.05,.32,.05],[0,0,sx*.9]);
+    add(root,'sph',red,[sx*.68,.62,.42],[.2,.16,.14]);
+    add(root,'cone',red,[sx*.7,.74,.58],[.07,.22,.07],[.9,0,0]);
+    add(root,'cone',light,[sx*.7,.54,.58],[.06,.2,.06],[2.2,0,0]);
+    // 4 Laufbeine
+    for(let i = 0; i < 4; i++){
+      const z = -.28 + i * .14;
+      add(root,'cyl',red,[sx*.6,.385,z],[.035,.31,.035],[0,0,sx*1.34]);
+      add(root,'sph',red,[sx*.75,.35,z],.04);
+      add(root,'cyl',red,[sx*.8,.18,z],[.03,.37,.03],[0,0,sx*.27]);
+    }
+  }
+  eyes(root,.15,.84,.25,.08); cheeks(root,.3,.4,.4,.05);
+  return finish(root, 1.2, 1.1);
+}
+function bElefant(){
+  const {root, add, grp, eyes, cheeks} = kit();
+  const g = '#9AA3AE', ear = '#B8C0CA', pink = '#F4B6C2';
+  add(root,'sph',g,[0,.88,-.1],[.62,.55,.8]);
+  for(const [x,z] of [[-.32,.4],[.32,.4],[-.32,-.5],[.32,-.5]]){ add(root,'cyl',g,[x,.33,z],[.17,.66,.17]); add(root,'sph','#F2EEE6',[x,.06,z+.14],[.1,.05,.05]); }
+  add(root,'cyl',g,[0,1.0,-.92],[.03,.4,.03],[-.5,0,0]);
+  const h = grp(root,[0,1.3,.68]);
+  add(h,'sph',g,[0,0,0],.45);
+  for(const sx of [-1,1]){
+    add(h,'sph',ear,[sx*.46,.05,-.12],[.34,.42,.07],[0,sx*.5,0]);
+    add(h,'sph',pink,[sx*.48,.05,-.085],[.25,.32,.05],[0,sx*.5,0]);
+    add(h,'cone','#FFFFFF',[sx*.17,-.22,.38],[.045,.22,.045],[2.0,0,0]);
+  }
+  for(let j = 0; j <= 7; j++){
+    const t = j / 7, a = (1-t)*(1-t), b = 2*(1-t)*t, c = t*t;
+    add(h,'sph',g,[0, a*-.08 + b*-.65 + c*-.5, a*.4 + b*.55 + c*.85], .13 - j*.008);
+  }
+  add(h,'cone','#FF5C8A',[0,.55,0],[.17,.38,.17],[0,0,.15]);
+  add(h,'sph','#FFE14A',[-.05,.75,0],.07);
+  eyes(h,.17,.1,.37,.07); cheeks(h,.3,-.08,.32,.06);
+  return finish(root, 1.05, 2.0);
+}
+const BUILD = {nashorn:bNashorn, flamingo:bFlamingo, faultier:bFaultier, zebra:bZebra, seestern:bSeestern,
+  marienkaefer:bMarienkaefer, oktopus:bOktopus, guerteltier:bGuerteltier, krabbe:bKrabbe, elefant:bElefant};
+const PBUILD = {loewe:bLoewe, pinguin:bPinguin, panda:bPanda};
+const build = spec => spec.kind === 'partner' ? PBUILD[spec.art](spec.st) : BUILD[spec.key]();
+const specEmoji = spec => spec.kind === 'partner' ? PARTNER[spec.art].emoji : TIERE[spec.key].emoji;
+const specKey = spec => spec.kind === 'partner' ? `p-${spec.art}-${spec.st}` : `t-${spec.key}`;
+
+/* ---------- Kulissen ---------- */
+function buildBiome(name, lay){
+  const B = BIOM[name] || BIOM.wiese;
+  const {root, add, grp} = kit();
+  add(root,'disc',B.ground,[0,-.03,-1],[9,.05,9]);
+  const rock = (x,z,s) => add(root,'rock','#A9A398',[x,.12*s,z],[.38*s,.24*s,.32*s],[0,x,0]);
+  const tuft = (x,z,c) => { for(const d of [-.08,0,.08]) add(root,'cone',c,[x+d,.12,z+d*.5],[.05,.26,.05],[0,0,d*3]); };
+  const tree = (x,z,s,trunk,crown,flat) => { add(root,'cyl',trunk,[x,.55*s,z],[.09*s,1.1*s,.09*s]); add(root,'sph',crown,[x,1.15*s,z],flat ? [.65*s,.25*s,.55*s] : [.5*s,.5*s,.5*s]); if(!flat) add(root,'sph',crown,[x+.3*s,.95*s,z+.1],.35*s); };
+  const water = (x,z,sx,sz,c) => add(root,'circ',c,[x,.012,z],[sx,sz,1],[-Math.PI/2,0,0]);
+  const flower = (x,z,c) => { add(root,'cyl','#4E9A2E',[x,.12,z],[.015,.24,.015]); add(root,'sph',c,[x,.26,z],.06); add(root,'sph','#FFE14A',[x,.26,z+.04],.025); };
+  switch(name){
+    case 'savanne':
+      tree(-3.1,-2.8,1.4,'#7A5232','#7FA03A',true); tree(3.3,-3.6,1.1,'#7A5232','#8DAE45',true);
+      rock(2.5,-1.9,1.2); rock(-2.6,-1.4,.8);
+      for(const [x,z] of [[-1.8,-2.6],[.4,-3.2],[2.1,-2.9],[-.8,-3.6],[3.2,-1.2]]) tuft(x,z,'#C8A84A');
+      break;
+    case 'see':
+      water(0,-3.4,2.8,1.4,'#7CC6EA'); water(0,-3.4,2.4,1.1,'#94D3F0');
+      for(const [x,z] of [[-2.6,-3],[-2.3,-3.3],[2.7,-3.1],[2.4,-3.5]]){ add(root,'cyl','#5E9A3A',[x,.4,z],[.025,.8,.025]); add(root,'cyl','#7A5232',[x,.78,z],[.05,.16,.05]); }
+      rock(-3,-1.6,1); tuft(2.9,-1.4,'#5E9A3A');
+      break;
+    case 'dschungel':
+      tree(-3,-2.6,1.5,'#6B4A2B','#3F8A3A'); tree(3.1,-3.1,1.3,'#6B4A2B','#4C9A40'); tree(.4,-4.4,1.7,'#6B4A2B','#357E33');
+      for(const [x,z] of [[-1.6,-2.2],[1.8,-2.2],[-.6,-3]]) for(const r of [0,1.2,2.4]) add(root,'sph','#4F9A3E',[x+Math.cos(r)*.18,.12,z+Math.sin(r)*.18],[.28,.06,.12],[0,r,.3]);
+      break;
+    case 'meer': case 'strand':
+      water(0,-5.2,6.5,2.6,'#5DB8E6'); water(0,-4.2,5.5,1.2,'#8FD2F2');
+      rock(-2.8,-1.8,1); rock(2.9,-2.1,.8);
+      for(const [x,z,c] of [[-1.6,-2.4,'#F7A1B5'],[1.4,-2.7,'#FFD9A8'],[2.2,-1.3,'#F7A1B5']]) add(root,'cone',c,[x,.08,z],[.1,.16,.1],[.3,0,.4]);
+      if(name === 'strand'){
+        add(root,'cyl','#9C6B3E',[-3,.9,-2.6],[.08,1.8,.08],[0,0,.15]);
+        for(let i = 0; i < 5; i++){ const a = i / 5 * Math.PI * 2; add(root,'sph','#4E9A2E',[-3.13+Math.cos(a)*.42,1.78,-2.6+Math.sin(a)*.42],[.5,.06,.16],[0,-a,-.25]); }
+      }
+      break;
+    case 'wiese':
+      for(const [x,z,c] of [[-2.4,-2.2,'#FF7A9A'],[-1.4,-3,'#FFD23F'],[1.5,-2.6,'#B38BFA'],[2.6,-1.6,'#FF7A9A'],[.3,-3.6,'#FFFFFF'],[3,-3.2,'#FFD23F'],[-3,-1.2,'#B38BFA']]) flower(x,z,c);
+      add(root,'sph','#6FAE45',[-3.2,.3,-3],[.6,.4,.5]); add(root,'sph','#7DBB52',[3.4,.3,-3.6],[.7,.45,.5]);
+      break;
+    case 'wueste':
+      for(const [x,z,s] of [[-2.9,-2.6,1.2],[3,-3.2,1]]){ add(root,'cyl','#5A9E46',[x,.6*s,z],[.16*s,1.2*s,.16*s]); add(root,'cyl','#5A9E46',[x+.28*s,.7*s,z],[.08*s,.4*s,.08*s]); add(root,'cyl','#5A9E46',[x-.26*s,.55*s,z],[.08*s,.35*s,.08*s]); }
+      rock(1.6,-2.4,1.3); rock(-1.4,-3.4,1); rock(2.7,-1.2,.7);
+      break;
+    case 'fest':
+      for(const [x,z] of [[-2.7,-2.4],[2.9,-2.9]]){
+        ['#FF5C8A','#FFD23F','#4FB3FF','#7BD66B'].forEach((c,i) => { const bx = x + (i - 1.5) * .3, by = 1.7 + (i % 2) * .3; add(root,'sph',c,[bx,by,z],[.2,.24,.2]); add(root,'cyl','#FFFFFF',[bx,(by-.2)/2,z],[.008,by-.2,.008]); });
+      }
+      for(const [x,z,c] of [[-1.5,-3,'#FF7A9A'],[1.4,-3.3,'#FFD23F'],[.2,-3.8,'#B38BFA']]) flower(x,z,c);
+      break;
+  }
+  if(lay === 'battle'){
+    for(const r of ['me','foe']){ const p = LAY.battle.roles[r].p; add(root,'disc',B.plat,[p[0],.0,p[2]],[r === 'me' ? 1.05 : .95,.05,r === 'me' ? .8 : .72]); }
+  } else if(lay === 'center'){
+    add(root,'disc',B.plat,[0,0,0],[1.15,.06,1.0]);
+  }
+  return root;
+}
+
+/* ---------- Bühne verwalten ---------- */
+function disposeObj(o){
+  o.traverse(c => { const m = c.userData && c.userData.mats; if(m) for(const k in m){ if(m[k].map) m[k].map.dispose(); m[k].dispose(); } });
+}
+function clearWorld(){
+  for(const c of [...G.world.children]){ G.world.remove(c); disposeObj(c); }
+  G.actors = {}; G.parts = [];
+}
+function addActor(id, spec, role, spin){
+  const L = G.lay, base = L.roles[role] || {p:[0,0,0], ry:0};
+  const o = build(spec);
+  const sh = new THREE.Mesh(geo('circ'), G.shadowMat);
+  sh.rotation.x = -Math.PI / 2; sh.position.set(base.p[0], .06, base.p[2]);
+  const sw = Math.max(.6, Math.min(1.1, o.userData.h * .45)); sh.scale.set(sw, sw * .8, 1);
+  G.world.add(o); G.world.add(sh);
+  G.actors[id] = {obj:o, shadow:sh, base:{x:base.p[0], y:base.p[1], z:base.p[2], ry:base.ry}, s:o.scale.x, ph:Math.random() * 6, anim:null, spin:!!spin};
+}
+function mount3d(host, cfg){
+  if(G.canvas.parentNode !== host){ host.prepend(G.canvas); }
+  if(G.ro && G.host !== host){ if(G.host) G.ro.unobserve(G.host); G.ro.observe(host); }
+  G.host = host; G.lay = LAY[cfg.lay];
+  clearWorld();
+  G.world.add(buildBiome(cfg.biom, cfg.lay));
+  for(const a of cfg.actors) addActor(a.id, a.spec, a.role, a.spin);
+  fit(); requestAnimationFrame(fit);
+}
+function fit(){
+  if(!G.ok || !G.host) return;
+  const w = G.host.clientWidth, h = G.host.clientHeight; if(!w || !h) return;
+  G.r.setSize(w, h, false); G.cam.aspect = w / h;
+  const L = G.lay, f = Math.max(1, L.minAsp / (w / h));
+  G.cam.position.set(L.look[0] + (L.cam[0] - L.look[0]) * f, L.look[1] + (L.cam[1] - L.look[1]) * f, L.look[2] + (L.cam[2] - L.look[2]) * f);
+  G.cam.lookAt(L.look[0], L.look[1], L.look[2]);
+  G.cam.updateProjectionMatrix();
+}
+const now = () => performance.now() / 1000;
+function play3d(id, type){
+  const a = G.actors[id]; if(!a) return;
+  const an = {type, t0:now(), dur:{lunge:.5, hurt:.5, dodge:.5, faint:.9, cheer:1.3, hop:.5, appear:.6, evo:1.3}[type] || .5, hold:type === 'faint'};
+  if(type === 'lunge'){
+    const o = G.actors[id === 'me' ? 'foe' : 'me'];
+    if(o){ const dx = o.base.x - a.base.x, dz = o.base.z - a.base.z, l = Math.hypot(dx, dz) || 1; an.dx = dx / l; an.dz = dz / l; } else { an.dx = 0; an.dz = 1; }
+  }
+  a.anim = an;
+}
+function burst3d(id){
+  const a = G.actors[id]; if(!a) return;
+  const y = a.obj.userData.h * .6;
+  for(let i = 0; i < 16; i++){
+    const m = new THREE.Mesh(geo('oct'), G.partMats[i % 3]);
+    m.position.set(a.base.x, y, a.base.z);
+    const ang = Math.random() * Math.PI * 2, sp = 1.6 + Math.random() * 1.6;
+    G.world.add(m);
+    G.parts.push({m, v:[Math.cos(ang) * sp, 2 + Math.random() * 2.2, Math.sin(ang) * sp], life:.9});
+  }
+}
+function swap3d(id, spec){
+  const a = G.actors[id]; if(!a) return;
+  G.world.remove(a.obj); disposeObj(a.obj);
+  a.obj = build(spec); a.s = a.obj.scale.x; G.world.add(a.obj);
+}
+function updActor(a, t){
+  const b = a.base; let x = b.x, y = b.y, z = b.z, ry = b.ry, rz = 0, sc = 1;
+  if(a.spin) ry = b.ry + Math.sin(t * .5) * .9;
+  y += Math.abs(Math.sin(t * 2.4 + a.ph)) * .05;
+  const an = a.anim;
+  if(an){
+    let u = (t - an.t0) / an.dur;
+    if(u >= 1){ if(an.hold) u = 1; else { a.anim = null; u = -1; } }
+    if(u >= 0){
+      const s = Math.sin(u * Math.PI);
+      switch(an.type){
+        case 'lunge': x += an.dx * s * 1.3; z += an.dz * s * 1.3; y += s * .35; break;
+        case 'hurt': x += Math.sin(u * 44) * .13 * (1 - u); rz = Math.sin(u * 30) * .18 * (1 - u); break;
+        case 'dodge': x += s * .75; y += s * .3; rz = -.3 * s; break;
+        case 'faint': rz = -Math.min(1, u * 1.3) * 1.45; y -= u * .2; sc = 1 - u * .15; break;
+        case 'cheer': y += Math.abs(Math.sin(u * Math.PI * 3)) * .55; ry += u * Math.PI * 2; break;
+        case 'hop': y += s * .45; break;
+        case 'appear': sc = u < .7 ? (u / .7) * 1.15 : 1.15 - (u - .7) / .3 * .15; break;
+        case 'evo': sc = 1 + Math.sin(u * Math.PI * 6) * .14 * (1 - u); ry += u * Math.PI * 4; break;
+      }
+    }
+  }
+  a.obj.position.set(x, y, z); a.obj.rotation.set(0, ry, rz); a.obj.scale.setScalar(a.s * sc);
+  const w = a.obj.userData.wig; if(w) for(const q of w) q.g.rotation.y = Math.sin(t * 2 + q.ph) * .12;
+}
+function loop(ts){
+  requestAnimationFrame(loop);
+  if(!G.ok || G.paused || !G.host || document.hidden || G.host.offsetParent === null || G.canvas.parentNode !== G.host) return;
+  const t = ts / 1000, dt = Math.min(.05, t - (G.lt || t)); G.lt = t;
+  for(const id in G.actors) updActor(G.actors[id], t);
+  for(let i = G.parts.length - 1; i >= 0; i--){
+    const p = G.parts[i]; p.life -= dt; p.v[1] -= 7 * dt;
+    p.m.position.x += p.v[0] * dt; p.m.position.y += p.v[1] * dt; p.m.position.z += p.v[2] * dt;
+    p.m.rotation.x += dt * 6; p.m.scale.setScalar(Math.max(0, .09 * p.life / .9));
+    if(p.life <= 0){ G.world.remove(p.m); G.parts.splice(i, 1); }
+  }
+  G.r.render(G.scene, G.cam);
+}
+
+/* ---------- Vorschaubilder aus 3D (für Karte und Album) ---------- */
+const THUMB = {};
+function thumb(spec){
+  const key = specKey(spec);
+  if(THUMB[key]) return THUMB[key];
+  if(!use3d()) return null;
+  try{
+    if(!G.ts){
+      G.ts = new THREE.Scene();
+      G.ts.add(new THREE.HemisphereLight(0xffffff, 0x8a7a55, .9));
+      const d = new THREE.DirectionalLight(0xffffff, .7); d.position.set(-3, 6, 5); G.ts.add(d);
+      G.tc = new THREE.PerspectiveCamera(30, 1, .1, 50);
+    }
+    const o = build(spec), h = o.userData.h || 1.4;
+    o.rotation.y = .5; G.ts.add(o);
+    const d = h * 2.2 + 1.2;
+    G.tc.position.set(0, h * .62, d); G.tc.lookAt(0, h * .47, 0);
+    const pr = G.r.getPixelRatio(), sz = new THREE.Vector2(); G.r.getSize(sz);
+    G.r.setPixelRatio(1); G.r.setSize(240, 240, false);
+    G.r.render(G.ts, G.tc);
+    const url = G.canvas.toDataURL('image/png');
+    G.r.setPixelRatio(pr); G.r.setSize(Math.max(1, sz.x), Math.max(1, sz.y), false);
+    G.ts.remove(o); disposeObj(o);
+    fit();
+    return THUMB[key] = url;
+  }catch(e){ return null; }
+}
+function picHTML(spec){
+  const u = thumb(spec);
+  return u ? `<img src="${u}" alt="">` : `<span class="emo" aria-hidden="true">${specEmoji(spec)}</span>`;
+}
+
+/* ---------- Ersatz ohne 3D: große Emoji-Tiere ---------- */
+const D2 = {};
+function mount2d(host, cfg){
+  const B = BIOM[cfg.biom] || BIOM.wiese;
+  const wrap = document.createElement('div'); wrap.className = 's2d'; wrap.setAttribute('aria-hidden','true');
+  wrap.innerHTML = `<div class="ground" style="background:${B.ground}"></div>`;
+  for(const id in D2) delete D2[id];
+  for(const a of cfg.actors){
+    const el = document.createElement('div');
+    el.className = `a2d r-${a.role}`;
+    const sc = a.spec.kind === 'partner' ? [.8,.95,1.1][a.spec.st] : 1;
+    el.innerHTML = `<span class="fx"><span class="flip"><span class="em" style="font-size:${sc}em">${specEmoji(a.spec)}</span></span></span><span class="plat"></span>`;
+    wrap.appendChild(el); D2[a.id] = el;
+  }
+  host.prepend(wrap);
+}
+function play2d(id, type){
+  const el = D2[id]; if(!el) return;
+  const fx = el.querySelector('.fx');
+  fx.className = 'fx'; void fx.offsetWidth; fx.classList.add(type);
+}
+function burst2d(id){
+  const el = D2[id]; if(!el) return;
+  const r = el.getBoundingClientRect(), host = el.parentNode, hr = host.getBoundingClientRect();
+  for(let i = 0; i < 8; i++){
+    const s = document.createElement('span'); s.className = 'spark'; s.textContent = i % 2 ? '✨' : '⭐';
+    s.style.left = (r.left - hr.left + r.width / 2 - 10) + 'px'; s.style.top = (r.top - hr.top + r.height / 3) + 'px';
+    const a = i / 8 * Math.PI * 2; s.style.setProperty('--dx', Math.cos(a) * 70 + 'px'); s.style.setProperty('--dy', Math.sin(a) * 60 - 20 + 'px');
+    host.appendChild(s); setTimeout(() => s.remove(), 850);
+  }
+}
+function swap2d(id, spec){
+  const el = D2[id]; if(!el) return;
+  const em = el.querySelector('.em'); em.textContent = specEmoji(spec);
+  if(spec.kind === 'partner') em.style.fontSize = [.8,.95,1.1][spec.st] + 'em';
+}
+
+const Stage = {
+  host:null, cfg:null, d2:false,
+  mount(host, cfg){
+    this.host = host; this.cfg = cfg;
+    host.style.background = (BIOM[cfg.biom] || BIOM.wiese).sky;
+    const old = host.querySelector('.s2d'); if(old) old.remove();
+    if(use3d()){ this.d2 = false; mount3d(host, cfg); }
+    else {
+      this.d2 = true;
+      if(G.canvas && G.canvas.parentNode === host){ G.canvas.remove(); G.host = null; }
+      mount2d(host, cfg);
+    }
+  },
+  play(id, type){ this.d2 ? play2d(id, type) : play3d(id, type); },
+  burst(id){ this.d2 ? burst2d(id) : burst3d(id); },
+  swap(id, spec){ this.d2 ? swap2d(id, spec) : swap3d(id, spec); },
+  refresh(){ if(this.host && this.cfg && this.host.offsetParent !== null) this.mount(this.host, this.cfg); }
+};
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+  const sc = document.querySelector('#' + id + ' .scroll'); if(sc) sc.scrollTop = 0;
+}
+function toMap(){
+  const ne = evoFor(totalStars());
+  if(S.partner && ne > S.evo){ const from = S.evo; S.evo = ne; save(); showEvo(from); return; }
+  renderMap(); show('scr-map');
+}
+document.querySelectorAll('.to-map').forEach(b => b.addEventListener('click', toMap));
+
+/* =========================================================
+   START
+   ========================================================= */
+let chosen = null;
+function renderStart(){
+  chosen = null; $('#go').disabled = true;
+  $('#picks').innerHTML = Object.entries(PARTNER).map(([key,p], i) =>
+    `<button class="pick" data-p="${key}" data-i="${i}" aria-pressed="false"><span class="emo" aria-hidden="true">${p.emoji}</span><b>${p.stufen[0]}</b><small>${p.motto}</small></button>`).join('');
+  show('scr-start');
+  Stage.mount($('#start-stage'), {lay:'trio', biom:'wiese',
+    actors:Object.keys(PARTNER).map((key,i) => ({id:'t' + i, spec:{kind:'partner', art:key, st:0}, role:'t' + i}))});
+}
+$('#picks').addEventListener('click', e => {
+  const b = e.target.closest('.pick'); if(!b) return;
+  chosen = b.dataset.p;
+  document.querySelectorAll('.pick').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  Stage.play('t' + b.dataset.i, 'hop'); tone([[523,.08],[784,.12]]);
+  $('#go').disabled = false;
+});
+$('#go').addEventListener('click', () => {
+  if(!chosen) return;
+  S.partner = chosen; S.name = $('#nick').value.trim().slice(0, 14);
+  S.evo = evoFor(totalStars()); save();
+  toMap();
+});
+
+/* =========================================================
+   ZOO-KARTE
+   ========================================================= */
+function renderMap(){
+  const p = PARTNER[S.partner], ts = totalStars();
+  $('#map-me').innerHTML = picHTML(partnerSpec());
+  $('#map-name').textContent = meName();
+  $('#map-lvl').textContent = `${p.stufen[S.evo]} · ★ ${ts}` +
+    (S.evo < 2 ? ` · noch ${Math.max(1, EVO_AT[S.evo + 1] - ts)} ★ bis zum Wachsen` : '');
+  const rec = ORDER.find(k => !done(k));
+  $('#gehege').innerHTML = ORDER.map(k => {
+    const R = REIHEN[k], d = done(k);
+    const badge = d ? '<span class="badge done">✓ Champion</span>' : k === rec ? '<span class="badge tipp">Tipp</span>' : '';
+    if(R.krabbel){
+      const a = k6arenas(), won = Object.keys(a).length;
+      return `<button class="geh" data-k="6" aria-label="6er-Reihe: Insektenhaus, Krabbel-Arena">
+        <div class="pic" style="background:${BIOM.wiese.sky}"><span class="emo" aria-hidden="true">🐞</span><span class="sign">6er</span>${badge}</div>
+        <div class="nm">Insektenhaus</div>
+        <div class="prog">${[1,2,3,4,5,6,7].map(i => `<span class="${a[i] ? 'on' : ''}"></span>`).join('')}</div>
+        <small class="meta">Krabbel-Arena · ${won} von 7 Arenen · ★ ${reiheStars(6)}</small></button>`;
+    }
+    const st = stufenOf(k), n = Object.keys(st).length;
+    return `<button class="geh" data-k="${k}" aria-label="${k}er-Reihe: ${R.gehege}">
+      <div class="pic" style="background:${BIOM[R.biom].sky}">${picHTML({kind:'tier', key:R.tier})}<span class="sign">${k}er</span>${badge}</div>
+      <div class="nm">${R.gehege}</div>
+      <div class="prog">${[1,2,3,4].map(i => `<span class="${st[i] ? 'on' : ''}"></span>`).join('')}</div>
+      <small class="meta">${n} von 4 Stufen · ★ ${reiheStars(k)}</small></button>`;
+  }).join('');
+  const open = doneCount() >= 3 || S.lehrer;
+  $('#fest').innerHTML = `<button class="wide-card" id="fest-btn" ${open ? '' : 'disabled'}>
+    <div class="pic" style="background:${BIOM.fest.sky}">${picHTML({kind:'tier', key:'elefant'})}</div>
+    <span class="flex-1"><b>Großes Zoofest</b><small>${open
+      ? (S.fest ? `${starStr(S.fest)} · Alle Reihen gemischt, die du schon kannst.` : 'Elfriede die Elefantin mischt alle Reihen, die du schon kannst.')
+      : `Werde in 3 Gehegen Champion. Geschafft: ${doneCount()} von 3.`}</small></span>
+    <span class="go" aria-hidden="true">${open ? '▶' : '🔒'}</span></button>`;
+}
+$('#gehege').addEventListener('click', e => { const b = e.target.closest('.geh'); if(b) openGehege(+b.dataset.k); });
+$('#fest').addEventListener('click', e => { const b = e.target.closest('#fest-btn'); if(b && !b.disabled) startBattle({mode:'fest'}); });
+$('#to-book').addEventListener('click', () => { renderBook(); show('scr-book'); });
+$('#to-set').addEventListener('click', () => { renderSettings(); show('scr-set'); });
+$('#to-train').addEventListener('click', () => { renderTrain(); show('scr-train'); });
+
+/* =========================================================
+   GEHEGE
+   ========================================================= */
+let curK = null;
+function openGehege(k){
+  if(k === 6){ openKrabbel(); return; }
+  curK = k; const R = REIHEN[k], st = stufenOf(k);
+  $('#g-title').textContent = `${R.gehege} · ${k}er-Reihe`;
+  $('#g-who').textContent = R.wer;
+  $('#g-fakt').textContent = R.fakt;
+  $('#g-stufen').innerHTML = STUFEN.map(s => {
+    const open = s.nr === 1 || st[s.nr - 1] || S.lehrer, stars = st[s.nr];
+    const info = stars ? `<span class="stars" aria-label="${stars} von 3 Sternen">${starStr(stars)}</span>`
+      : open ? 'Noch nicht gespielt' : `Erst Stufe ${s.nr - 1} schaffen`;
+    return `<button class="stufe" data-s="${s.nr}" ${open ? '' : 'disabled'}>
+      <span class="num" aria-hidden="true">${open ? s.nr : '🔒'}</span>
+      <span class="flex-1"><b>Stufe ${s.nr}: ${s.titel}</b><small>${info}</small></span>
+      <span aria-hidden="true">${open ? '▶' : ''}</span></button>`;
+  }).join('');
+  show('scr-geh');
+  Stage.mount($('#g-stage'), {lay:'center', biom:R.biom, actors:[{id:'c', spec:{kind:'tier', key:R.tier}, role:'c', spin:true}]});
+  Stage.play('c', 'appear');
+}
+$('#g-stufen').addEventListener('click', e => { const b = e.target.closest('.stufe'); if(b && !b.disabled) startBattle({mode:'stufe', k:curK, s:+b.dataset.s}); });
+
+/* =========================================================
+   WETTKAMPF
+   ========================================================= */
+let B = null;
+function festKs(){
+  let ks = ALL.filter(done);
+  if(ks.length < 2) ks = ALL;
+  return ks;
+}
+function startBattle(cfg){
+  let a;
+  if(cfg.mode === 'stufe'){
+    const st = STUFEN[cfg.s - 1], R = REIHEN[cfg.k];
+    a = {mode:'stufe', k:cfg.k, s:cfg.s, ks:[cfg.k], types:st.types, ns:st.ns, hp:st.hp, foe:R.tier, biom:R.biom,
+      title:`${R.gehege} · Stufe ${cfg.s}`, head:`${TIERE[R.tier].name} fordert dich heraus!`, intro:st.intro(cfg.k, R)};
+  } else if(cfg.mode === 'fest'){
+    const ks = festKs();
+    a = {mode:'fest', ks, types:['mal','tausch','geteilt','luecke','sach'], ns:ALL, hp:10, foe:'elefant', biom:'fest',
+      title:'Großes Zoofest', head:'Das große Zoofest!',
+      intro:`Elfriede die Elefantin mischt diese Reihen: ${ks.map(k => k + 'er').join(', ')}. Hier kommen alle Aufgaben vor. Du schaffst das!`};
+  } else {
+    const zoo = cfg.ks.filter(k => k !== 6), k0 = zoo.length ? rnd(zoo) : 7;
+    a = {mode:'train', ks:cfg.ks, types:cfg.mit ? ['mal','tausch','geteilt','luecke'] : ['mal','tausch'], ns:ALL, hp:8,
+      foe:REIHEN[k0].tier, biom:REIHEN[k0].biom, title:'Training', head:'Training',
+      intro:`Du übst: ${cfg.ks.map(k => k + 'er').join(', ')}-Reihe. Hier gibt es keine Sterne. Rechne in Ruhe.`};
+  }
+  B = {a, hp:a.hp, max:a.hp, serie:0, mistakes:0, tries:0, input:'', busy:true, sheet:false, task:null, last:null};
+  $('#b-title').textContent = a.title;
+  $('#foe-name').textContent = TIERE[a.foe].name;
+  $('#me-name').textContent = meName();
+  $('#task').innerHTML = ''; $('#choices').hidden = true; $('#pad').hidden = false;
+  updHP(); updStreak();
+  show('scr-battle');
+  Stage.mount($('#b-stage'), {lay:'battle', biom:a.biom, actors:[
+    {id:'me', spec:partnerSpec(), role:'me'},
+    {id:'foe', spec:{kind:'tier', key:a.foe}, role:'foe'}]});
+  Stage.play('me', 'appear'); Stage.play('foe', 'appear');
+  sheet(`<h3>${esc(a.head)}</h3><p>${esc(a.intro)}</p>`, "Los geht's!", () => { B.busy = false; nextTask(); });
+  if(S.settings.vorlesen) speak(sayable(a.intro));
+}
+function sheet(html, btn, cb){
+  const sh = $('#sheet');
+  sh.innerHTML = html + `<button class="btn wide" id="sheet-btn">${btn}</button>`;
+  sh.hidden = false; if(B) B.sheet = true;
+  const b = $('#sheet-btn'); b.focus({preventScroll:true});
+  b.onclick = () => { sh.hidden = true; if(B) B.sheet = false; cb && cb(); };
+}
+const hideSheet = () => { $('#sheet').hidden = true; if(B) B.sheet = false; };
+
+function pickN(k, ns){
+  let pool = ns.filter(n => !(B.last && B.last.k === k && B.last.n === n)); if(!pool.length) pool = ns;
+  const w = pool.map(n => 1 + 3 * Math.min(S.fehler[k + 'x' + n] || 0, 3));
+  let r = Math.random() * w.reduce((x,y) => x + y, 0);
+  for(let i = 0; i < pool.length; i++){ r -= w[i]; if(r < 0) return pool[i]; }
+  return pool[pool.length - 1];
+}
+function nextTask(){
+  const a = B.a, t = rnd(a.types), k = rnd(a.ks), n = pickN(k, a.ns), p = n * k, R = REIHEN[k];
+  B.last = {k, n}; B.tries = 0; B.input = '';
+  let T;
+  switch(t){
+    case 'mal':     T = {expr:`${n} · ${k} = §`, ans:p, say:`${n} mal ${k}`}; break;
+    case 'tausch':  T = {expr:`${k} · ${n} = §`, ans:p, say:`${k} mal ${n}`}; break;
+    case 'geteilt': T = {expr:`${p} : ${k} = §`, ans:n, say:`${p} geteilt durch ${k}`}; break;
+    case 'luecke':  T = {expr:`§ · ${k} = ${p}`, ans:n, say:`Welche Zahl mal ${k} ergibt ${p}?`}; break;
+    case 'sach': {
+      const q = `Wie viele ${R.teil} ${n === 1 ? 'hat' : 'haben'} ${n} ${n === 1 ? R.s : R.p}?`;
+      const icons = R.icon ? `<span class="icons" aria-hidden="true">${R.icon.repeat(n)}</span>` : '';
+      T = {pre:icons + esc(q), expr:`§ ${R.teil}`, ans:p, say:`${q} ${R.fakt}`}; break;
+    }
+  }
+  T.t = t; T.n = n; T.k = k; B.task = T;
+  B.choices = S.settings.vorschlaege ? makeChoices(T) : null;
+  renderTask(); renderInput();
+  if(S.settings.vorlesen) speak(T.say);
+}
+function makeChoices(T){
+  const a = T.ans, k = T.k, small = (T.t === 'geteilt' || T.t === 'luecke');
+  const cand = small ? [a+1, a-1, a+2, a-2] : [a+k, a-k, a+2*k, a-2*k, T.n+k];
+  const pool = shuffle([...new Set(cand)].filter(x => x > 0 && x !== a));
+  return shuffle([a, pool[0], pool[1]]);
+}
+function renderTask(){
+  const T = B.task;
+  $('#task').innerHTML = (T.pre ? `<div class="pre">${T.pre}</div>` : '') +
+    `<div class="expr">${T.expr.replace('§', '<span class="slot" id="slot"></span>')}</div>`;
+  updateSlot();
+}
+function updateSlot(cls){
+  const s = $('#slot'); if(!s) return;
+  s.className = 'slot' + (B.input === '' ? ' empty' : '') + (cls ? ' ' + cls : '');
+  s.textContent = B.input === '' ? '?' : B.input;
+}
+function buildPad(){
+  const rows = ['1','2','3','4','5','6','7','8','9','del','0','ok'];
+  $('#pad').innerHTML = rows.map(k => k === 'del' ? `<button class="key del" data-k="del" aria-label="Löschen">⌫</button>`
+    : k === 'ok' ? `<button class="key ok" data-k="ok">OK</button>` : `<button class="key" data-k="${k}">${k}</button>`).join('');
+}
+function renderInput(){
+  const c = $('#choices'), useC = !!B.choices;
+  c.hidden = !useC; $('#pad').hidden = useC;
+  if(useC) c.innerHTML = B.choices.map(v => `<button class="key" data-v="${v}">${v}</button>`).join('');
+}
+$('#pad').addEventListener('click', e => { const b = e.target.closest('.key'); if(b) press(b.dataset.k); });
+$('#choices').addEventListener('click', e => {
+  const b = e.target.closest('.key'); if(!b || !B || B.busy || B.sheet) return;
+  B.input = b.dataset.v; updateSlot(); submit(+b.dataset.v);
+});
+function press(k){
+  if(!B || B.busy || B.sheet || !B.task) return;
+  if(k === 'del'){ B.input = B.input.slice(0, -1); updateSlot(); }
+  else if(k === 'ok'){ if(B.input !== '') submit(+B.input); }
+  else if(B.input.length < 3){ B.input = (B.input === '0' ? '' : B.input) + k; updateSlot(); }
+}
+document.addEventListener('keydown', e => {
+  if(!$('#scr-battle').classList.contains('on') || !B) return;
+  if(B.sheet){ if(e.key === 'Enter'){ e.preventDefault(); const b = $('#sheet-btn'); if(b) b.click(); } return; }
+  if(/^[0-9]$/.test(e.key)) press(e.key);
+  else if(e.key === 'Backspace'){ e.preventDefault(); press('del'); }
+  else if(e.key === 'Enter'){ e.preventDefault(); press('ok'); }
+});
+function pop(txt, bad){ const el = $('#pop'); el.textContent = txt; el.className = 'pop' + (bad ? ' bad' : ''); void el.offsetWidth; el.classList.add('show'); }
+function updHP(){
+  const pct = Math.max(0, B.hp / B.max * 100), i = $('#foe-hp');
+  i.style.width = pct + '%'; i.className = pct <= 25 ? 'low' : pct <= 55 ? 'mid' : '';
+  $('#hpnum').textContent = `${B.hp}/${B.max}`;
+  const bar = $('#hpbar'); bar.setAttribute('aria-valuemin','0'); bar.setAttribute('aria-valuemax', B.max); bar.setAttribute('aria-valuenow', B.hp);
+}
+function updStreak(){
+  const f = B.serie === 0 ? 0 : ((B.serie - 1) % 3) + 1;
+  $('#streak').innerHTML = `Serie${[1,2,3].map(i => `<span class="d${i <= f ? ' on' : ''}"></span>`).join('')}`;
+  $('#streak').setAttribute('aria-label', `${f} von 3 richtig in Folge. Bei 3 gibt es einen Volltreffer.`);
+}
+function submit(v){
+  const T = B.task, fk = T.k + 'x' + T.n;
+  hideSheet(); B.busy = true;
+  if(v === T.ans){
+    B.serie++;
+    const crit = B.serie % 3 === 0, dmg = crit ? 2 : 1;
+    if(B.tries === 0){ S.right[fk] = (S.right[fk] || 0) + 1; if(S.fehler[fk] > 0) S.fehler[fk]--; save(); }
+    updateSlot('ok'); updStreak();
+    Stage.play('me', 'lunge');
+    setTimeout(() => {
+      Stage.play('foe', 'hurt'); Stage.burst('foe');
+      B.hp = Math.max(0, B.hp - dmg); updHP();
+      pop(crit ? 'Volltreffer! −2' : 'Treffer! −1');
+      tone(crit ? [[660,.09],[880,.09],[1175,.2]] : [[660,.09],[880,.14]]); vib(crit ? 60 : 25);
+    }, 260);
+    setTimeout(() => {
+      if(B.hp <= 0){ Stage.play('foe', 'faint'); setTimeout(win, 1000); }
+      else { B.busy = false; nextTask(); }
+    }, 1200);
+  } else {
+    B.serie = 0; B.mistakes++; B.tries++;
+    if(B.tries === 1){ S.fehler[fk] = (S.fehler[fk] || 0) + 1; save(); }
+    updateSlot('bad'); updStreak();
+    Stage.play('foe', 'dodge'); pop('Ausgewichen!', true); tone([[300,.12],[220,.22]]); vib([40,40,40]);
+    setTimeout(() => { B.input = ''; updateSlot(); B.busy = false; showHelp(); }, 700);
+  }
+}
+
+/* ---------- Tipps: aus den Königsaufgaben abgeleitet ---------- */
+function bridge(k, n){
+  if(k === 1) return `Mal 1 heißt: die Zahl einmal. ${n} · 1 bleibt ${n}.`;
+  if(n === 1) return `Einmal die ${k}. Das ist ganz leicht!`;
+  if(n === 10 || k === 10) return k === 10 ? `Hänge an die ${n} eine 0 an.` : `Hänge an die ${k} eine 0 an.`;
+  const special = {
+    2: () => `Verdopple die ${n}: ${n} + ${n}.`,
+    4: () => `4er sind doppelte 2er. Rechne erst ${n} · 2 = ${n*2}. Dann verdoppeln: ${n*2} + ${n*2}.`,
+    5: () => `Rechne erst ${n} · 10 = ${n*10}. Nimm davon die Hälfte.`,
+    8: () => `8er sind doppelte 4er. Rechne erst ${n} · 4 = ${n*4}. Dann verdoppeln: ${n*4} + ${n*4}.`,
+    9: () => `Rechne erst ${n} · 10 = ${n*10}. Nimm dann eine ${n} weg.`,
+  };
+  if(special[k] && n !== 2 && n !== 5) return special[k]();
+  const K = x => x * k;
+  return {
+    2:`2 · ${k} ist das Doppelte von ${k}. Rechne ${k} + ${k}.`,
+    3:`Du weißt: 2 · ${k} = ${K(2)}. Nimm noch eine ${k} dazu.`,
+    4:`Du weißt: 2 · ${k} = ${K(2)}. Verdopple das: ${K(2)} + ${K(2)}.`,
+    5:`Du weißt: 10 · ${k} = ${K(10)}. Nimm davon die Hälfte.`,
+    6:`Du weißt: 5 · ${k} = ${K(5)}. Nimm noch eine ${k} dazu.`,
+    7:`Du weißt: 5 · ${k} = ${K(5)} und 2 · ${k} = ${K(2)}. Rechne beides zusammen.`,
+    8:`Du weißt: 10 · ${k} = ${K(10)}. Nimm 2 · ${k} = ${K(2)} weg.`,
+    9:`Du weißt: 10 · ${k} = ${K(10)}. Nimm eine ${k} weg.`,
+  }[n];
+}
+function dotField(n, k){
+  const cols = k > 5 ? `repeat(5,12px) 6px repeat(${k - 5},12px)` : `repeat(${k},12px)`;
+  let h = '';
+  for(let r = 1; r <= n; r++){
+    for(let c = 1; c <= k; c++){ h += '<i></i>'; if(c === 5 && k > 5) h += '<s></s>'; }
+    if(r === 5 && n > 5) h += '<hr>';
+  }
+  return `<div class="dots" style="grid-template-columns:${cols}" aria-hidden="true">${h}</div>`;
+}
+function showHelp(){
+  const T = B.task, n = T.n, k = T.k, p = n * k;
+  if(B.tries >= 2){
+    sheet(`<h3>So geht es:</h3><div class="solution">${T.expr.replace('§', T.ans)}</div><p>Tippe jetzt die ${T.ans} ein.</p>`, 'Okay!');
+    if(S.settings.vorlesen) speak(`Die Lösung ist ${T.ans}.`);
+    return;
+  }
+  let txt, cap = `${n} ${n === 1 ? 'Reihe' : 'Reihen'} mit je ${k} ${k === 1 ? 'Punkt' : 'Punkten'}`;
+  if(T.t === 'mal') txt = bridge(k, n);
+  if(T.t === 'tausch') txt = `Tausch die Zahlen: ${k} · ${n} ist dasselbe wie ${n} · ${k}. ` + bridge(k, n);
+  if(T.t === 'sach') txt = `${REIHEN[k].fakt} Das ist ${n} · ${k}. ` + bridge(k, n);
+  if(T.t === 'geteilt' || T.t === 'luecke'){ txt = `Frag dich: Welche Zahl mal ${k} ergibt ${p}? Zähl die Reihen.`; cap = `${p} Punkte, immer ${k} in einer Reihe`; }
+  sheet(`<h3>Fast! Hier ist ein Tipp:</h3><p>${esc(txt)}</p>${dotField(n, k)}<p class="dotcap">${cap}</p>`, 'Nochmal versuchen');
+  if(S.settings.vorlesen) speak(sayable(txt));
+}
+$('#speak').addEventListener('click', () => { if(B && B.task) speak(B.task.say); });
+$('#quit').addEventListener('click', () => {
+  if(!B) return;
+  const a = B.a; B = null; hideSheet(); if(canSpeak) speechSynthesis.cancel();
+  if(a.mode === 'stufe') openGehege(a.k);
+  else if(a.mode === 'train'){ renderTrain(); show('scr-train'); }
+  else toMap();
+});
+
+/* =========================================================
+   SIEG + VERWANDLUNG
+   ========================================================= */
+function win(){
+  const a = B.a, m = B.mistakes, st = m === 0 ? 3 : m <= 2 ? 2 : 1;
+  let title = 'Gewonnen!', text = '', back = toMap;
+  let sub = m === 0 ? 'Kein einziger Fehler. Stark!' : m <= 2 ? `Nur ${m} Fehler. Sehr gut!` : 'Gut gemacht! Mit weniger Fehlern bekommst du mehr Sterne.';
+  if(a.mode === 'stufe'){
+    const k = a.k, R = REIHEN[k];
+    S.reihen[k] = S.reihen[k] || {stufen:{}};
+    const prev = S.reihen[k].stufen[a.s];
+    S.reihen[k].stufen[a.s] = Math.max(st, prev || 0);
+    if(a.s === 4 && !prev){ title = 'Champion!'; text = `${R.wer} wohnt jetzt in deinem Zoo-Album.`; }
+    else { title = prev ? 'Gewonnen!' : 'Geschafft!'; text = `Stufe ${a.s} im Gehege „${R.gehege}“ ist geschafft.`; if(!prev && a.s < 4) sub += ` Stufe ${a.s + 1} ist jetzt offen.`; }
+    back = () => openGehege(k);
+  } else if(a.mode === 'fest'){
+    title = S.fest ? 'Gewonnen!' : 'Zoofest gewonnen!';
+    S.fest = Math.max(S.fest || 0, st);
+    text = 'Elfriede die Elefantin ist begeistert. Du kannst das Einmaleins!';
+  } else {
+    title = 'Training geschafft!';
+    text = 'Im Training gibt es keine Sterne. Aber du wirst immer sicherer.';
+    back = () => { renderTrain(); show('scr-train'); };
+  }
+  let evoFrom = null;
+  const ne = evoFor(totalStars());
+  if(ne > S.evo){ evoFrom = S.evo; S.evo = ne; }
+  save();
+  $('#win-title').textContent = title;
+  $('#win-stars').textContent = starStr(st);
+  $('#win-stars').setAttribute('aria-label', `${st} von 3 Sternen`);
+  $('#win-text').textContent = text;
+  $('#win-sub').textContent = sub;
+  $('#win-btn').textContent = evoFrom !== null ? 'Weiter' : (a.mode === 'stufe' ? 'Zum Gehege' : a.mode === 'train' ? 'Zum Training' : 'Zur Zookarte');
+  $('#win-btn').onclick = () => evoFrom !== null ? showEvo(evoFrom) : back();
+  B = null;
+  show('scr-win');
+  Stage.mount($('#win-stage'), {lay:'center', biom:a.biom, actors:[{id:'c', spec:{kind:'tier', key:a.foe}, role:'c', spin:true}]});
+  setTimeout(() => Stage.play('c', 'cheer'), 250);
+  tone([[523,.1],[659,.1],[784,.1],[1047,.3]]); vib(80);
+  if(S.settings.vorlesen) speak(`${title} ${text}`);
+}
+function showEvo(from){
+  const p = PARTNER[S.partner];
+  $('#evo-text').textContent = `${S.name || 'Dein ' + p.stufen[from]} leuchtet ganz hell …`;
+  $('#evo-btn').hidden = true;
+  show('scr-evo');
+  Stage.mount($('#evo-stage'), {lay:'center', biom:'fest', actors:[{id:'c', spec:{kind:'partner', art:S.partner, st:from}, role:'c'}]});
+  setTimeout(() => { Stage.play('c', 'evo'); tone([[392,.15],[523,.15],[659,.15]]); }, 700);
+  setTimeout(() => {
+    Stage.swap('c', partnerSpec()); Stage.burst('c'); Stage.play('c', 'cheer');
+    tone([[523,.1],[659,.1],[784,.1],[1047,.35]]); vib(120);
+    const txt = `Toll! ${S.name ? S.name + ' ist' : 'Dein Tier ist'} gewachsen. Jetzt ist es: ${p.stufen[S.evo]}!`;
+    $('#evo-text').textContent = txt; $('#evo-btn').hidden = false; $('#evo-btn').focus({preventScroll:true});
+    if(S.settings.vorlesen) speak(txt);
+  }, 2100);
+}
+$('#evo-btn').addEventListener('click', toMap);
+
+/* =========================================================
+   ZOO-ALBUM + EINMALEINS-TAFEL
+   ========================================================= */
+function stat(k, n){
+  let f = S.fehler[k + 'x' + n] || 0, r = S.right[k + 'x' + n] || 0;
+  if(k === 6){ const o = K6(); f += (o.fehler || {})[n] || 0; r += (o.right || {})[n] || 0; }
+  return f > 0 ? 'warn' : r >= 3 ? 'ok' : r > 0 ? 'seen' : 'none';
+}
+const STAT_TXT = {ok:'sicher', warn:'übe ich noch', seen:'schon gerechnet', none:'noch nicht dran'};
+function renderBook(){
+  const p = PARTNER[S.partner];
+  let h = `<div class="acard"><div class="pic" style="background:${BIOM.wiese.sky}">${picHTML(partnerSpec())}</div><b>${esc(meName())}</b><small>${S.name ? p.stufen[S.evo] : 'Dein Partner'}</small></div>`;
+  for(const k of ORDER){
+    const R = REIHEN[k], d = done(k);
+    if(R.krabbel){
+      const won = Object.keys(k6arenas()).length;
+      h += `<div class="acard${won ? '' : ' locked'}"><div class="pic" style="background:${BIOM.wiese.sky}"><span class="emo" aria-hidden="true">🐞</span></div><b>Krabbel-Monster</b><small>6er · ${won} von 7 Arenen</small></div>`;
+      continue;
+    }
+    h += `<div class="acard${d ? '' : ' locked'}"><div class="pic" style="background:${BIOM[R.biom].sky}">${picHTML({kind:'tier', key:R.tier})}</div>
+      <b>${d ? TIERE[R.tier].name : '???'}</b><small>${k}er · ${d ? R.gehege : 'noch nicht Champion'}</small></div>`;
+  }
+  h += `<div class="acard${S.fest ? '' : ' locked'}"><div class="pic" style="background:${BIOM.fest.sky}">${picHTML({kind:'tier', key:'elefant'})}</div><b>${S.fest ? 'Elfriede' : '???'}</b><small>Zoofest</small></div>`;
+  $('#album').innerHTML = h;
+  let rows = `<tr><th></th>${ALL.map(n => `<th scope="col">${n}·</th>`).join('')}</tr>`;
+  const cnt = {ok:0, warn:0, seen:0, none:0};
+  for(const k of ALL){
+    rows += `<tr><th scope="row">${k}er</th>` + ALL.map(n => {
+      const s = stat(k, n); cnt[s]++;
+      return `<td class="${s === 'none' ? '' : s}" aria-label="${n} mal ${k} ist ${n*k}: ${STAT_TXT[s]}">${n * k}</td>`;
+    }).join('') + '</tr>';
+  }
+  $('#tafel').innerHTML = rows;
+  $('#tafel-sum').textContent = `Sicher: ${cnt.ok} von 100 Aufgaben. Noch üben: ${cnt.warn}.`;
+}
+
+/* =========================================================
+   TRAINING
+   ========================================================= */
+const TR = {ks:new Set(), mit:false};
+function renderTrain(){
+  $('#kchips').innerHTML = ALL.map(k => `<button class="kchip" data-k="${k}" aria-pressed="${TR.ks.has(k)}">${k}er</button>`).join('');
+  $('#train-sets').innerHTML = `<button class="sw" role="switch" aria-checked="${TR.mit}" id="tr-mit">
+    <span><b>Auch Geteilt- und Lückenaufgaben</b><small>Zum Beispiel 42 : 7 oder ? · 7 = 42</small></span>
+    <span class="tg"><span>${TR.mit ? 'An' : 'Aus'}</span><i></i></span></button>`;
+  $('#train-go').disabled = TR.ks.size === 0;
+}
+$('#kchips').addEventListener('click', e => {
+  const b = e.target.closest('.kchip'); if(!b) return;
+  const k = +b.dataset.k; TR.ks.has(k) ? TR.ks.delete(k) : TR.ks.add(k); renderTrain();
+});
+$('#train-sets').addEventListener('click', e => { if(e.target.closest('#tr-mit')){ TR.mit = !TR.mit; renderTrain(); } });
+$('#train-go').addEventListener('click', () => { if(TR.ks.size) startBattle({mode:'train', ks:[...TR.ks].sort((a,b) => a - b), mit:TR.mit}); });
+
+/* =========================================================
+   EINSTELLUNGEN
+   ========================================================= */
+let resetArmed = false, teacherOK = false;
+function renderSettings(){
+  const items = [
+    ['vorlesen', 'Aufgaben vorlesen', canSpeak ? 'Das Gerät liest jede Aufgabe laut vor.' : 'Dein Gerät kann leider nicht vorlesen.', !canSpeak],
+    ['vorschlaege', 'Antwort-Knöpfe', 'Leichter: Du wählst aus 3 Antworten.', false],
+    ['ton', 'Töne', 'Geräusche bei Treffern und Siegen.', false],
+    ['spar', 'Einfache Bilder', G.ok ? 'Bilder statt 3D-Tiere. Hilft bei langsamen Geräten.' : 'Dein Gerät zeigt kein 3D. Es werden einfache Bilder genutzt.', !G.ok],
+  ];
+  $('#sets').innerHTML = items.map(([k, t, d, dis]) => {
+    const on = k === 'spar' ? (!G.ok || !!S.settings.spar) : (!!S.settings[k] && !dis);
+    return `<button class="sw" role="switch" aria-checked="${on}" data-k="${k}" ${dis ? 'disabled' : ''}>
+      <span><b>${t}</b><small>${d}</small></span><span class="tg"><span>${on ? 'An' : 'Aus'}</span><i></i></span></button>`;
+  }).join('');
+  $('#teacher').innerHTML = teacherOK
+    ? `<button class="sw" role="switch" aria-checked="${S.lehrer}" id="t-all" style="box-shadow:none;padding:0">
+        <span><b>Alles freischalten</b><small>Alle Stufen und das Zoofest sind sofort spielbar.</small></span>
+        <span class="tg"><span>${S.lehrer ? 'An' : 'Aus'}</span><i></i></span></button>`
+    : `<p class="m-0 mb-2 leading-snug">Code eingeben: Ergebnis von 17 · 13</p>
+       <div class="flex gap-2"><input class="field" id="t-code" inputmode="numeric" aria-label="Code für Lehrkräfte" style="max-width:140px">
+       <button class="btn honey" id="t-ok" style="min-height:52px">Öffnen</button></div>
+       <p class="muted m-0 mt-2" id="t-msg" aria-live="polite"></p>`;
+  resetArmed = false; $('#reset').textContent = 'Alles löschen';
+}
+$('#sets').addEventListener('click', e => {
+  const b = e.target.closest('.sw'); if(!b || b.disabled) return;
+  const k = b.dataset.k; S.settings[k] = !S.settings[k]; save(); renderSettings();
+});
+$('#teacher').addEventListener('click', e => {
+  if(e.target.closest('#t-ok')){
+    if($('#t-code').value.trim() === '221'){ teacherOK = true; renderSettings(); }
+    else $('#t-msg').textContent = 'Der Code stimmt nicht.';
+  }
+  if(e.target.closest('#t-all')){ S.lehrer = !S.lehrer; save(); renderSettings(); }
+});
+$('#reset').addEventListener('click', () => {
+  if(!resetArmed){ resetArmed = true; $('#reset').textContent = 'Wirklich? Nochmal tippen'; return; }
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  S = clone(DEF); $('#nick').value = ''; renderStart();
+});
+
+/* =========================================================
+   INSEKTENHAUS: das 6er-Spiel (Krabbel-Arena) eingebettet
+   ========================================================= */
+function openKrabbel(){
+  const f = $('#k-frame');
+  if(!f.dataset.loaded){
+    try{
+      const b64 = $('#krabbel-src').textContent.trim();
+      const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+      f.srcdoc = new TextDecoder('utf-8').decode(bytes);
+      f.dataset.loaded = '1';
+    }catch(e){ return; }
+  }
+  G.paused = true;
+  $('#krabbel').classList.add('on');
+  $('#k-back').focus({preventScroll:true});
+}
+$('#k-back').addEventListener('click', () => {
+  $('#krabbel').classList.remove('on'); G.paused = false;
+  toMap();
+});
+
+/* =========================================================
+   START DER APP
+   ========================================================= */
+buildPad();
+initGL();
+requestAnimationFrame(loop);
+document.addEventListener('visibilitychange', () => { if(!document.hidden) fit(); });
+if(S.partner && PARTNER[S.partner]){ S.evo = Math.max(S.evo, 0); toMap(); }
+else renderStart();
+</script>
+</body>
+</html>
