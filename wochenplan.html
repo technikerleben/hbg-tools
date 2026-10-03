@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Familien-Wochenplan · 5.–9. Oktober 2026</title>
+<style>
+  :root{
+    --bg:#f4f7fb;
+    --card:#ffffff;
+    --ink:#1f2a37;
+    --muted:#667085;
+    --blue:#245688;
+    --mint:#48dccb;
+    --orange:#f0a66f;
+    --line:#d9e1ea;
+    --softblue:#eaf1f8;
+    --softmint:#e9fbf8;
+    --softorange:#fff2e8;
+    --shadow:0 8px 24px rgba(31,42,55,.08);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+  }
+  .wrap{
+    max-width:1100px;
+    margin:0 auto;
+    padding:24px 16px 40px;
+  }
+  .hero{
+    background:linear-gradient(135deg,var(--blue),#3f76aa);
+    color:#fff;
+    border-radius:22px;
+    padding:24px;
+    box-shadow:var(--shadow);
+    margin-bottom:18px;
+  }
+  .hero h1{
+    margin:0 0 6px;
+    font-size:clamp(1.7rem,4vw,2.5rem);
+  }
+  .hero p{margin:0;opacity:.9}
+  .prep{
+    background:var(--card);
+    border-radius:18px;
+    padding:18px;
+    box-shadow:var(--shadow);
+    margin-bottom:18px;
+  }
+  .prep h2{margin:0 0 12px;font-size:1.2rem}
+  .prep-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:10px;
+  }
+  .prep-item{
+    border:1px solid var(--line);
+    border-left:6px solid var(--orange);
+    border-radius:14px;
+    padding:12px 14px;
+    background:#fff;
+  }
+  .prep-item strong{display:block;margin-bottom:4px}
+  .days{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:14px;
+  }
+  .day{
+    background:var(--card);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .day-head{
+    padding:14px 16px;
+    background:var(--softblue);
+    border-bottom:1px solid var(--line);
+  }
+  .day-head h3{margin:0;font-size:1.15rem}
+  .day-head span{color:var(--muted);font-size:.92rem}
+  .events{
+    padding:10px 14px 14px;
+  }
+  .event{
+    display:grid;
+    grid-template-columns:70px 1fr;
+    gap:10px;
+    padding:10px 0;
+    border-bottom:1px solid #edf0f4;
+  }
+  .event:last-child{border-bottom:none}
+  .time{
+    font-weight:800;
+    color:var(--blue);
+  }
+  .label{font-weight:650}
+  .note{color:var(--muted);font-size:.92rem;margin-top:2px}
+  .bag{
+    margin-top:10px;
+    background:var(--softorange);
+    border:1px solid #f4d0b7;
+    border-radius:12px;
+    padding:10px 12px;
+    font-weight:700;
+  }
+  .relaxed .day-head{background:var(--softmint)}
+  .relaxed .time{color:#168b7c}
+  .tight .day-head{background:var(--softorange)}
+  .checklist{
+    margin-top:18px;
+    background:var(--card);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    padding:18px;
+  }
+  .checklist h2{margin:0 0 10px;font-size:1.15rem}
+  .check{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:8px 0;
+    border-bottom:1px solid #edf0f4;
+  }
+  .check:last-child{border-bottom:none}
+  input[type="checkbox"]{
+    margin-top:3px;
+    width:20px;
+    height:20px;
+    accent-color:var(--blue);
+  }
+  footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:.85rem;
+    margin-top:18px;
+  }
+  @media (max-width:600px){
+    .wrap{padding:14px 10px 28px}
+    .hero{padding:18px;border-radius:18px}
+    .event{grid-template-columns:62px 1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section class="hero">
+    <h1>Wochenplan Familie</h1>
+    <p>Montag, 5. Oktober bis Freitag, 9. Oktober 2026</p>
+  </section>
+
+  <section class="prep">
+    <h2>👜 Taschen vorbereiten</h2>
+    <div class="prep-grid">
+      <div class="prep-item">
+        <strong>Sonntag</strong>
+        🏊 Felix: Schwimmtasche für die Schule packen<br>
+        🏊 Lina: Schwimmtasche für Montag packen
+      </div>
+      <div class="prep-item">
+        <strong>Dienstagabend</strong>
+        🤸 Lina: Turntasche für Mittwoch packen
+      </div>
+      <div class="prep-item">
+        <strong>Mittwochabend</strong>
+        🏃 Felix: Sporttasche für Donnerstag packen
+      </div>
+      <div class="prep-item">
+        <strong>Donnerstagabend</strong>
+        🎵 Lina: Musikschulsachen für Freitag bereitstellen
+      </div>
+    </div>
+  </section>
+
+  <section class="days">
+
+    <article class="day tight">
+      <div class="day-head">
+        <h3>Montag</h3>
+        <span>Engster Nachmittag</span>
+      </div>
+      <div class="events">
+        <div class="event">
+          <div class="time">13:10</div>
+          <div><div class="label">Arbeitsschluss</div></div>
+        </div>
+        <div class="event">
+          <div class="time">14:00</div>
+          <div><div class="label">Felix abholen</div></div>
+        </div>
+        <div class="event">
+          <div class="time">danach</div>
+          <div><div class="label">Lina abholen</div></div>
+        </div>
+        <div class="event">
+          <div class="time">später</div>
+          <div><div class="label">Martin kommt</div></div>
+        </div>
+        <div class="event">
+          <div class="time">17:20</div>
+          <div>
+            <div class="label">Lina: Schwimmkurs</div>
+            <div class="note">Abendbrot für Lina mitnehmen.</div>
+          </div>
+        </div>
+        <div class="bag">✅ Schwimmtasche Lina: schon am Sonntag packen</div>
+      </div>
+    </article>
+
+    <article class="day relaxed">
+      <div class="day-head">
+        <h3>Dienstag</h3>
+        <span>Ruhiger Nachmittag</span>
+      </div>
+      <div class="events">
+        <div class="event">
+          <div class="time">13:15</div>
+          <div><div class="label">Arbeitsschluss</div></div>
+        </div>
+        <div class="event">
+          <div class="time">bis 14:30</div>
+          <div>
+            <div class="label">Lina abholen</div>
+            <div class="note">Für die Notgruppe angemeldet.</div>
+          </div>
+        </div>
+        <div class="event">
+          <div class="time">15:00</div>
+          <div><div class="label">Felix abholen</div></div>
+        </div>
+        <div class="event">
+          <div class="time">Abend</div>
+          <div><div class="label">Kein Termin</div></div>
+        </div>
+        <div class="bag">👜 Abends: Linas Turntasche für Mittwoch packen</div>
+      </div>
+    </article>
+
+    <article class="day relaxed">
+      <div class="day-head">
+        <h3>Mittwoch</h3>
+        <span>Betreuung ist organisiert</span>
+      </div>
+      <div class="events">
+        <div class="event">
+          <div class="time">14:00</div>
+          <div><div class="label">Gisela holt Lina ab</div></div>
+        </div>
+        <div class="event">
+          <div class="time">nachm.</div>
+          <div>
+            <div class="label">Felix wird von Schmids abgeholt</div>
+            <div class="note">und zu Gisela gebracht.</div>
+          </div>
+        </div>
+        <div class="event">
+          <div class="time">nachm.</div>
+          <div>
+            <div class="label">Nadine holt Lina zum Turnen ab</div>
+          </div>
+        </div>
+        <div class="event">
+          <div class="time">15:40</div>
+          <div><div class="label">Arbeitsschluss</div></div>
+        </div>
+        <div class="event">
+          <div class="time">danach</div>
+          <div><div class="label">Lina nach dem Turnen abholen</div></div>
+        </div>
+        <div class="bag">👜 Abends: Felix’ Sporttasche für Donnerstag packen</div>
+      </div>
+    </article>
+
+    <article class="day tight">
+      <div class="day-head">
+        <h3>Donnerstag</h3>
+        <span>Homeoffice + ATZ</span>
+      </div>
+      <div class="events">
+        <div class="event">
+          <div class="time">vorm.</div>
+          <div><div class="label">Homeoffice</div></div>
+        </div>
+        <div class="event">
+          <div class="time">14:00</div>
+          <div><div class="label">Felix abholen</div></div>
+        </div>
+        <div class="event">
+          <div class="time">danach</div>
+          <div><div class="label">Lina abholen</div></div>
+        </div>
+        <div class="event">
+          <div class="time">15:30</div>
+          <div>
+            <div class="label">Felix: ATZ</div>
+            <div class="note">Lina mitnehmen.</div>
+          </div>
+        </div>
+        <div class="bag">✅ Felix: Schulsport – Sporttasche am Mittwochabend packen</div>
+        <div class="bag">🎵 Abends: Linas Musikschulsachen für Freitag bereitstellen</div>
+      </div>
+    </article>
+
+    <article class="day tight">
+      <div class="day-head">
+        <h3>Freitag</h3>
+        <span>Kurzer Übergang am Nachmittag</span>
+      </div>
+      <div class="events">
+        <div class="event">
+          <div class="time">12:25</div>
+          <div><div class="label">Arbeitsschluss</div></div>
+        </div>
+        <div class="event">
+          <div class="time">bis 14:30</div>
+          <div><div class="label">Lina abholen</div></div>
+        </div>
+        <div class="event">
+          <div class="time">15:00</div>
+          <div><div class="label">Felix abholen</div></div>
+        </div>
+        <div class="event">
+          <div class="time">16:00</div>
+          <div>
+            <div class="label">Lina zur Musikschule bringen</div>
+            <div class="note">Felix ggf. direkt mitnehmen.</div>
+          </div>
+        </div>
+        <div class="bag">✅ Musikschulsachen am Donnerstagabend bereitstellen</div>
+      </div>
+    </article>
+
+  </section>
+
+  <section class="checklist">
+    <h2>✅ Wochen-Checkliste</h2>
+    <label class="check"><input type="checkbox"> <span>Sonntag: Felix’ Schwimmtasche für die Schule packen</span></label>
+    <label class="check"><input type="checkbox"> <span>Sonntag: Linas Schwimmtasche für Montag packen</span></label>
+    <label class="check"><input type="checkbox"> <span>Montag: Abendbrot für Lina einpacken</span></label>
+    <label class="check"><input type="checkbox"> <span>Dienstagabend: Linas Turntasche packen</span></label>
+    <label class="check"><input type="checkbox"> <span>Mittwochabend: Felix’ Sporttasche packen</span></label>
+    <label class="check"><input type="checkbox"> <span>Donnerstagabend: Musikschulsachen Lina bereitstellen</span></label>
+  </section>
+
+  <footer>Wochenübersicht · 5.–9. Oktober 2026</footer>
+</div>
+
+<script>
+  const boxes = [...document.querySelectorAll('input[type="checkbox"]')];
+  boxes.forEach((box, i) => {
+    const key = 'wochenplan-check-' + i;
+    box.checked = localStorage.getItem(key) === '1';
+    box.addEventListener('change', () => {
+      localStorage.setItem(key, box.checked ? '1' : '0');
+    });
+  });
+</script>
+</body>
+</html>
