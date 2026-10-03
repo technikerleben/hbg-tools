@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quadernetz-Generator</title>
+<style>
+:root{--ink:#14213d;--muted:#667085;--blue:#245688;--mint:#48dccb;--orange:#f0a66f;--violet:#7c3aed;--line:#1f2937}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:var(--ink);background:linear-gradient(135deg,#eef4fb,#f8fbfd 55%,#eefaf8)}
+.app{min-height:100vh;display:grid;grid-template-columns:minmax(300px,380px) 1fr}
+aside{padding:24px;background:#ffffffec;border-right:1px solid #e7ebf0;overflow:auto}
+main{min-width:0;padding:24px;display:flex;flex-direction:column;gap:16px}
+h1{margin:0 0 8px;font-size:1.65rem}.lead{margin:0 0 20px;color:var(--muted);line-height:1.45}
+.card{background:#fff;border:1px solid #e6eaf0;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 4px 14px #14213d0a}
+.card h2{margin:0 0 12px;font-size:1rem}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{display:block;font-size:.82rem;color:#344054;margin-bottom:5px;font-weight:700}
+input[type=number],select{width:100%;padding:10px 11px;border:1px solid #cfd6df;border-radius:10px;font:inherit;background:#fff;color:var(--ink)}
+input:focus,select:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px #2456881f}
+.check{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:.9rem}.check input{width:18px;height:18px;accent-color:var(--blue)}
+.hint{margin-top:8px;font-size:.78rem;color:var(--muted);line-height:1.4}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{border:0;border-radius:11px;padding:11px 12px;font:inherit;font-weight:750;cursor:pointer}.primary{background:var(--blue);color:#fff}.secondary{background:#edf3f8;color:var(--blue)}.ghost{background:#f7f8fa;color:#344054;border:1px solid #dde3ea}.wide{grid-column:1/-1}
+.topbar{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap}.status{background:#fff;border:1px solid #e6eaf0;border-radius:12px;padding:10px 12px;color:var(--muted);font-size:.88rem}
+.canvas{flex:1;min-height:560px;background:#fff;border:1px solid #e6eaf0;border-radius:18px;box-shadow:0 10px 28px #14213d1a;overflow:hidden}
+#stage{width:100%;height:100%;min-height:560px;display:block;background:#fff}.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.82rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}.sw{width:28px;border-top:2px solid var(--line)}.sw.fold{border-top:2px dashed var(--violet)}.sw.tab{border-top-color:#d97706}
+#error{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;background:#fff1f0;color:#b42318;border:1px solid #fecdca;font-size:.86rem}
+@media(max-width:900px){.app{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid #e7ebf0}.canvas,#stage{min-height:460px}}
+@media print{aside,.topbar,.legend{display:none!important}main{padding:0}.canvas{border:0;box-shadow:none}#stage{min-height:0;width:100vw;height:100vh}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+<h1>Quadernetz-Generator</h1>
+<p class="lead">Erzeuge maßstäbliche Quadernetze für Matheunterricht, Arbeitsblätter und Bastelvorlagen.</p>
+
+<section class="card">
+<h2>1. Maße</h2>
+<div class="grid2">
+<div><label for="a">Länge a</label><input id="a" type="number" min=".1" step=".1" value="6"></div>
+<div><label for="b">Breite b</label><input id="b" type="number" min=".1" step=".1" value="4"></div>
+<div><label for="c">Höhe c</label><input id="c" type="number" min=".1" step=".1" value="3"></div>
+<div><label for="unit">Einheit</label><select id="unit"><option value="cm" selected>cm</option><option value="mm">mm</option></select></div>
+</div>
+<div class="hint">Der SVG-Export enthält echte Abmessungen in Millimetern.</div>
+</section>
+
+<section class="card">
+<h2>2. Netzform</h2>
+<label for="layout">Variante</label>
+<select id="layout">
+<option value="classic">Klassisch – vier Seiten in Reihe</option>
+<option value="cross">Kreuzform</option>
+<option value="compact">Kompakt</option>
+</select>
+<label class="check"><input id="labels" type="checkbox" checked>Maße beschriften</label>
+<label class="check"><input id="tabs" type="checkbox">Klebelaschen anzeigen</label>
+<label class="check"><input id="grid" type="checkbox" checked>Raster anzeigen</label>
+</section>
+
+<section class="card">
+<h2>3. Darstellung</h2>
+<div class="grid2">
+<div><label for="gridstep">Rasterweite</label><input id="gridstep" type="number" min=".1" step=".1" value=".5"></div>
+<div><label for="tabsize">Laschenbreite</label><input id="tabsize" type="number" min=".1" step=".1" value=".7"></div>
+</div>
+<div class="hint">Die Angaben beziehen sich auf die gewählte Maßeinheit.</div>
+</section>
+
+<section class="card">
+<h2>Export</h2>
+<div class="buttons">
+<button class="primary wide" id="download">SVG herunterladen</button>
+<button class="secondary" id="copy">SVG kopieren</button>
+<button class="ghost" id="print">Drucken</button>
+</div>
+<div id="error"></div>
+</section>
+</aside>
+
+<main>
+<div class="topbar">
+<div class="status" id="status">Maße: 6 × 4 × 3 cm</div>
+<div class="status">Durchgezogen = schneiden · gestrichelt = falten</div>
+</div>
+<div class="canvas"><svg id="stage" xmlns="http://www.w3.org/2000/svg" aria-label="Quadernetz Vorschau"></svg></div>
+<div class="legend">
+<span><i class="sw"></i>Schnittkante</span><span><i class="sw fold"></i>Faltkante</span><span><i class="sw tab"></i>Klebelasche</span>
+</div>
+</main>
+</div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id),NS="http://www.w3.org/2000/svg",stage=$("stage"),err=$("error");
+const ids=["a","b","c","unit","layout","labels","tabs","grid","gridstep","tabsize"];
+const num=id=>parseFloat($(id).value),fmt=n=>Number.isInteger(n)?String(n):String(Math.round(n*100)/100).replace(".",",");
+const S=(tag,a={})=>{const e=document.createElementNS(NS,tag);Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));return e};
+function settings(){return{a:num("a"),b:num("b"),c:num("c"),unit:$("unit").value,layout:$("layout").value,labels:$("labels").checked,tabs:$("tabs").checked,grid:$("grid").checked,gridstep:num("gridstep"),tabsize:num("tabsize")}}
+function valid(s){return[s.a,s.b,s.c,s.gridstep,s.tabsize].every(n=>Number.isFinite(n)&&n>0)}
+function rects(s){
+ const{a,b,c}=s;
+ if(s.layout==="classic")return[
+  {x:0,y:b,w:a,h:c,t:"AC"},{x:a,y:b,w:b,h:c,t:"BC"},{x:a+b,y:b,w:a,h:c,t:"AC"},{x:2*a+b,y:b,w:b,h:c,t:"BC"},
+  {x:0,y:0,w:a,h:b,t:"AB"},{x:0,y:b+c,w:a,h:b,t:"AB"}];
+ if(s.layout==="cross")return[
+  {x:c,y:c,w:a,h:b,t:"AB"},{x:c,y:0,w:a,h:c,t:"AC"},{x:c,y:c+b,w:a,h:c,t:"AC"},
+  {x:0,y:c,w:c,h:b,t:"BC"},{x:c+a,y:c,w:c,h:b,t:"BC"},{x:c+a+c,y:c,w:a,h:b,t:"AB"}];
+ return[
+  {x:0,y:a,w:a,h:c,t:"AC"},{x:a,y:a,w:b,h:c,t:"BC"},{x:a+b,y:a,w:a,h:c,t:"AC"},{x:2*a+b,y:a,w:b,h:c,t:"BC"},
+  {x:a,y:0,w:b,h:a,t:"AB"},{x:a+b,y:a+c,w:a,h:b,t:"AB"}];
+}
+const near=(a,b)=>Math.abs(a-b)<1e-9;
+function edges(r){return[
+ {x1:r.x,y1:r.y,x2:r.x+r.w,y2:r.y},
+ {x1:r.x+r.w,y1:r.y,x2:r.x+r.w,y2:r.y+r.h},
+ {x1:r.x+r.w,y1:r.y+r.h,x2:r.x,y2:r.y+r.h},
+ {x1:r.x,y1:r.y+r.h,x2:r.x,y2:r.y}]}
+function key(e){let p1=[e.x1,e.y1],p2=[e.x2,e.y2];if(e.x1>e.x2||(near(e.x1,e.x2)&&e.y1>e.y2))[p1,p2]=[p2,p1];return p1.map(n=>n.toFixed(6)).join(",")+"|"+p2.map(n=>n.toFixed(6)).join(",")}
+function edgeMap(rs){const m=new Map;rs.forEach((r,ri)=>edges(r).forEach(e=>{const k=key(e);if(!m.has(k))m.set(k,[]);m.get(k).push({ri,e})}));return m}
+function tab(e,z){const dx=e.x2-e.x1,dy=e.y2-e.y1,L=Math.hypot(dx,dy);if(!L)return null;const nx=dy/L,ny=-dx/L,i=Math.min(z*.35,L*.18),ux=dx/L,uy=dy/L;return[[e.x1,e.y1],[e.x2,e.y2],[e.x2-ux*i+nx*z,e.y2-uy*i+ny*z],[e.x1+ux*i+nx*z,e.y1+uy*i+ny*z]]}
+function bounds(rs,s){let X=Infinity,Y=Infinity,x=-Infinity,y=-Infinity;rs.forEach(r=>{X=Math.min(X,r.x);Y=Math.min(Y,r.y);x=Math.max(x,r.x+r.w);y=Math.max(y,r.y+r.h)});if(s.tabs){X-=s.tabsize;Y-=s.tabsize;x+=s.tabsize;y+=s.tabsize}const p=Math.max(s.a,s.b,s.c)*.14+.4;return{X:X-p,Y:Y-p,x:x+p,y:y+p}}
+function label(t,s){if(t==="AB")return fmt(s.a)+" × "+fmt(s.b)+" "+s.unit;if(t==="AC")return fmt(s.a)+" × "+fmt(s.c)+" "+s.unit;return fmt(s.b)+" × "+fmt(s.c)+" "+s.unit}
+function render(){
+ const s=settings();err.style.display="none";
+ if(!valid(s)){err.textContent="Bitte nur positive Zahlen größer als 0 eingeben.";err.style.display="block";return}
+ $("status").textContent="Maße: "+fmt(s.a)+" × "+fmt(s.b)+" × "+fmt(s.c)+" "+s.unit;
+ stage.replaceChildren();const rs=rects(s),m=edgeMap(rs),b=bounds(rs,s),W=b.x-b.X,H=b.y-b.Y,M=Math.max(W,H);
+ stage.setAttribute("viewBox",b.X+" "+b.Y+" "+W+" "+H);stage.setAttribute("preserveAspectRatio","xMidYMid meet");
+ const defs=S("defs");if(s.grid){const p=S("pattern",{id:"g",width:s.gridstep,height:s.gridstep,patternUnits:"userSpaceOnUse"});p.appendChild(S("path",{d:"M "+s.gridstep+" 0 L 0 0 0 "+s.gridstep,fill:"none",stroke:"#dfe5ee","stroke-width":M/900}));defs.appendChild(p)}stage.appendChild(defs);
+ stage.appendChild(S("rect",{x:b.X,y:b.Y,width:W,height:H,fill:s.grid?"url(#g)":"#fff"}));
+ rs.forEach(r=>stage.appendChild(S("rect",{x:r.x,y:r.y,width:r.w,height:r.h,fill:"rgba(72,220,203,.10)",stroke:"none"})));
+ if(s.tabs){let i=0;m.forEach(a=>{if(a.length!==1)return;const e=a[0].e,L=Math.hypot(e.x2-e.x1,e.y2-e.y1),vertical=near(e.x1,e.x2);if(L<s.tabsize*1.2||(!vertical&&i++%2))return;const p=tab(e,s.tabsize);stage.appendChild(S("polygon",{points:p.map(q=>q.join(",")).join(" "),fill:"rgba(240,166,111,.20)",stroke:"#d97706","stroke-width":M/500,"stroke-linejoin":"round"}))})}
+ m.forEach(a=>{const e=a[0].e,fold=a.length>1;stage.appendChild(S("line",{x1:e.x1,y1:e.y1,x2:e.x2,y2:e.y2,stroke:fold?"#7c3aed":"#1f2937","stroke-width":M/(fold?450:380),"stroke-dasharray":fold?(M/180)+" "+(M/240):"none","stroke-linecap":"round"}))});
+ if(s.labels){const fs=Math.max(.22,Math.min(W,H)/34);rs.forEach(r=>{const t=S("text",{x:r.x+r.w/2,y:r.y+r.h/2,"text-anchor":"middle","dominant-baseline":"middle","font-family":"Arial,sans-serif","font-size":fs,"font-weight":"700",fill:"#245688"});t.textContent=label(r.t,s);stage.appendChild(t)})}
+}
+function svgText(){const s=settings();if(!valid(s))return null;render();const b=bounds(rects(s),s),f=s.unit==="cm"?10:1,c=stage.cloneNode(true);c.setAttribute("width",(b.x-b.X)*f+"mm");c.setAttribute("height",(b.y-b.Y)*f+"mm");c.setAttribute("viewBox",b.X+" "+b.Y+" "+(b.x-b.X)+" "+(b.y-b.Y));return new XMLSerializer().serializeToString(c)}
+$("download").onclick=()=>{const x=svgText();if(!x)return;const s=settings(),u=URL.createObjectURL(new Blob([x],{type:"image/svg+xml;charset=utf-8"})),a=document.createElement("a");a.href=u;a.download="quadernetz_"+s.a+"x"+s.b+"x"+s.c+"_"+s.unit+".svg";a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
+$("copy").onclick=async()=>{const x=svgText();if(!x)return;try{await navigator.clipboard.writeText(x);const b=$("copy"),t=b.textContent;b.textContent="Kopiert!";setTimeout(()=>b.textContent=t,1200)}catch{err.textContent="Kopieren wurde vom Browser blockiert. Nutze den SVG-Download.";err.style.display="block"}};
+$("print").onclick=()=>print();ids.forEach(id=>{[$(id)].forEach(e=>{e.addEventListener("input",render);e.addEventListener("change",render)})});render();
+})();
+</script>
+</body>
+</html>
