@@ -139,6 +139,143 @@
     font-size:.85rem;
     margin-top:18px;
   }
+
+  .view-switch{
+    display:flex;
+    gap:8px;
+    margin:0 0 18px;
+    position:sticky;
+    top:8px;
+    z-index:20;
+    width:max-content;
+    background:rgba(244,247,251,.92);
+    backdrop-filter:blur(8px);
+    padding:6px;
+    border-radius:14px;
+  }
+  .view-btn{
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+    font:inherit;
+    font-weight:750;
+    padding:9px 14px;
+    border-radius:10px;
+    cursor:pointer;
+  }
+  .view-btn.active{
+    background:var(--blue);
+    color:#fff;
+    border-color:var(--blue);
+  }
+  .view-panel[hidden]{display:none!important}
+  .calendar-card{
+    background:var(--card);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    padding:18px;
+    margin-bottom:18px;
+    overflow:hidden;
+  }
+  .calendar-card h2{margin:0 0 4px;font-size:1.2rem}
+  .calendar-help{margin:0 0 14px;color:var(--muted);font-size:.9rem}
+  .calendar-scroll{overflow-x:auto;padding-bottom:6px}
+  .week-calendar{
+    --hour:70px;
+    display:grid;
+    grid-template-columns:56px repeat(5,minmax(155px,1fr));
+    min-width:840px;
+    position:relative;
+  }
+  .cal-corner,.cal-day{
+    height:54px;
+    position:sticky;
+    top:0;
+    z-index:4;
+    background:#fff;
+    border-bottom:1px solid var(--line);
+  }
+  .cal-day{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    font-weight:800;
+    border-left:1px solid var(--line);
+  }
+  .cal-day small{font-weight:600;color:var(--muted);margin-top:2px}
+  .time-col{
+    position:relative;
+    height:calc(var(--hour) * 6);
+    border-right:1px solid var(--line);
+  }
+  .time-mark{
+    position:absolute;
+    right:8px;
+    transform:translateY(-7px);
+    font-size:.76rem;
+    color:var(--muted);
+  }
+  .cal-col{
+    position:relative;
+    height:calc(var(--hour) * 6);
+    border-left:1px solid var(--line);
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent calc(var(--hour) - 1px),
+        #e9edf2 calc(var(--hour) - 1px),
+        #e9edf2 var(--hour)
+      );
+  }
+  .cal-event{
+    position:absolute;
+    left:7px;
+    right:7px;
+    transform:translateY(-50%);
+    border-radius:10px;
+    padding:6px 8px;
+    font-size:.78rem;
+    line-height:1.2;
+    border:1px solid rgba(0,0,0,.08);
+    box-shadow:0 2px 8px rgba(31,42,55,.07);
+  }
+  .cal-event strong{display:block;font-size:.8rem;margin-bottom:1px}
+  .cal-event.work{background:var(--softblue);border-left:5px solid var(--blue)}
+  .cal-event.pickup{background:var(--softmint);border-left:5px solid #168b7c}
+  .cal-event.activity{background:var(--softorange);border-left:5px solid #d77a33}
+  .cal-notes{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    margin-left:56px;
+    min-width:784px;
+    border-top:1px solid var(--line);
+  }
+  .cal-note{
+    padding:9px 10px;
+    font-size:.78rem;
+    color:var(--muted);
+    border-left:1px solid var(--line);
+    background:#fafbfc;
+  }
+  .legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 16px;
+    margin-top:12px;
+    color:var(--muted);
+    font-size:.8rem;
+  }
+  .legend span::before{
+    content:"";
+    display:inline-block;
+    width:10px;height:10px;border-radius:3px;margin-right:5px;
+  }
+  .legend .lg-work::before{background:var(--softblue);border:1px solid var(--blue)}
+  .legend .lg-pickup::before{background:var(--softmint);border:1px solid #168b7c}
+  .legend .lg-act::before{background:var(--softorange);border:1px solid #d77a33}
+
   @media (max-width:600px){
     .wrap{padding:14px 10px 28px}
     .hero{padding:18px;border-radius:18px}
@@ -176,6 +313,76 @@
       </div>
     </div>
   </section>
+
+
+  <div class="view-switch" role="tablist" aria-label="Ansicht wählen">
+    <button class="view-btn active" id="btnCalendar" type="button" role="tab" aria-selected="true">📅 Kalender</button>
+    <button class="view-btn" id="btnDetails" type="button" role="tab" aria-selected="false">☰ Details</button>
+  </div>
+
+  <section class="calendar-card view-panel" id="calendarView">
+    <h2>📅 Kalenderansicht</h2>
+    <p class="calendar-help">Zeitachse 12–18 Uhr. Angaben ohne feste Uhrzeit stehen unter dem jeweiligen Tag.</p>
+    <div class="calendar-scroll">
+      <div class="week-calendar">
+        <div class="cal-corner"></div>
+        <div class="cal-day">Montag<small>05.10.</small></div>
+        <div class="cal-day">Dienstag<small>06.10.</small></div>
+        <div class="cal-day">Mittwoch<small>07.10.</small></div>
+        <div class="cal-day">Donnerstag<small>08.10.</small></div>
+        <div class="cal-day">Freitag<small>09.10.</small></div>
+
+        <div class="time-col">
+          <span class="time-mark" style="top:0%">12:00</span>
+          <span class="time-mark" style="top:16.667%">13:00</span>
+          <span class="time-mark" style="top:33.333%">14:00</span>
+          <span class="time-mark" style="top:50%">15:00</span>
+          <span class="time-mark" style="top:66.667%">16:00</span>
+          <span class="time-mark" style="top:83.333%">17:00</span>
+          <span class="time-mark" style="top:100%">18:00</span>
+        </div>
+
+        <div class="cal-col">
+          <div class="cal-event work" style="top:19.44%"><strong>13:10</strong>Arbeitsschluss</div>
+          <div class="cal-event pickup" style="top:33.33%"><strong>14:00</strong>Felix abholen</div>
+          <div class="cal-event activity" style="top:88.89%"><strong>17:20</strong>Lina Schwimmkurs</div>
+        </div>
+        <div class="cal-col">
+          <div class="cal-event work" style="top:20.83%"><strong>13:15</strong>Arbeitsschluss</div>
+          <div class="cal-event pickup" style="top:41.67%"><strong>bis 14:30</strong>Lina abholen</div>
+          <div class="cal-event pickup" style="top:50%"><strong>15:00</strong>Felix abholen</div>
+        </div>
+        <div class="cal-col">
+          <div class="cal-event pickup" style="top:33.33%"><strong>14:00</strong>Gisela holt Lina</div>
+          <div class="cal-event work" style="top:61.11%"><strong>15:40</strong>Arbeitsschluss</div>
+        </div>
+        <div class="cal-col">
+          <div class="cal-event pickup" style="top:33.33%"><strong>14:00</strong>Felix abholen</div>
+          <div class="cal-event activity" style="top:58.33%"><strong>15:30</strong>Felix ATZ</div>
+        </div>
+        <div class="cal-col">
+          <div class="cal-event work" style="top:6.94%"><strong>12:25</strong>Arbeitsschluss</div>
+          <div class="cal-event pickup" style="top:41.67%"><strong>bis 14:30</strong>Lina abholen</div>
+          <div class="cal-event pickup" style="top:50%"><strong>15:00</strong>Felix abholen</div>
+          <div class="cal-event activity" style="top:66.67%"><strong>16:00</strong>Musikschule Lina</div>
+        </div>
+      </div>
+      <div class="cal-notes">
+        <div class="cal-note">Danach Lina abholen · Martin kommt · Abendbrot fürs Schwimmen mitnehmen</div>
+        <div class="cal-note">Kein weiterer Nachmittagstermin · abends Linas Turntasche packen</div>
+        <div class="cal-note">Schmids → Felix zu Gisela · Nadine → Lina zum Turnen · Lina danach abholen</div>
+        <div class="cal-note">Homeoffice · danach Lina abholen · Lina mit zum ATZ</div>
+        <div class="cal-note">Felix ggf. mit zur Musikschule nehmen</div>
+      </div>
+    </div>
+    <div class="legend">
+      <span class="lg-work">Arbeit</span>
+      <span class="lg-pickup">Abholen / Betreuung</span>
+      <span class="lg-act">Termin / Aktivität</span>
+    </div>
+  </section>
+
+  <div class="view-panel" id="detailsView" hidden>
 
   <section class="days">
 
@@ -337,6 +544,8 @@
 
   </section>
 
+  </div>
+
   <section class="checklist">
     <h2>✅ Wochen-Checkliste</h2>
     <label class="check"><input type="checkbox"> <span>Sonntag: Felix’ Schwimmtasche für die Schule packen</span></label>
@@ -359,6 +568,26 @@
       localStorage.setItem(key, box.checked ? '1' : '0');
     });
   });
+
+  const btnCalendar = document.getElementById('btnCalendar');
+  const btnDetails = document.getElementById('btnDetails');
+  const calendarView = document.getElementById('calendarView');
+  const detailsView = document.getElementById('detailsView');
+
+  function setView(view){
+    const calendar = view === 'calendar';
+    calendarView.hidden = !calendar;
+    detailsView.hidden = calendar;
+    btnCalendar.classList.toggle('active', calendar);
+    btnDetails.classList.toggle('active', !calendar);
+    btnCalendar.setAttribute('aria-selected', calendar ? 'true' : 'false');
+    btnDetails.setAttribute('aria-selected', calendar ? 'false' : 'true');
+    localStorage.setItem('wochenplan-view', view);
+  }
+  btnCalendar.addEventListener('click', () => setView('calendar'));
+  btnDetails.addEventListener('click', () => setView('details'));
+  setView(localStorage.getItem('wochenplan-view') || 'calendar');
+
 </script>
 </body>
 </html>
