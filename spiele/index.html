@@ -97,6 +97,11 @@
     .spiel .icon{background:#fff0df}
     .einhorn{border-color:#e7c3ff}
     .einhorn .icon{background:#f5e8ff}
+    .buchstaben{border-color:#ced2ff;grid-column:1/-1;min-height:170px;flex-direction:row;gap:22px;text-align:left}
+    .buchstaben .icon{background:#eceeff;margin:0}
+    @media (max-width:760px){
+      .buchstaben{grid-column:auto}
+    }
 
     footer{
       margin-top:28px;
@@ -167,6 +172,13 @@
         <div>
           <h2>Einhorn-Mathe</h2>
           <p>Rechne mit dem Einhorn.</p>
+        </div>
+      </a>
+      <a class="card buchstaben" href="/spiele/buchstaben.html">
+        <div class="icon" aria-hidden="true">🔠</div>
+        <div>
+          <h2>Groß &amp; klein</h2>
+          <p>Finde passende Buchstaben oder spiele Memory.</p>
         </div>
       </a>
     </section>
