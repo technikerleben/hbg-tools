@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#245688">
+  <title>Ä-Detektive – 12 Merkwörter trainieren</title>
+  <style>
+    :root{--blue:#245688;--blue-dark:#163c61;--mint:#48dccb;--orange:#f0a66f;--paper:#f4f8fb;--ink:#173044;--muted:#526679;--line:#cad8e3;--good:#13724d;--bad:#a33331;--radius:22px}
+    *{box-sizing:border-box}
+    html{min-height:100%;-webkit-text-size-adjust:100%}
+    body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--paper);color:var(--ink)}
+    button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+    button:focus-visible{outline:4px solid #f09c36;outline-offset:3px}
+    button:disabled{cursor:default;opacity:.48}
+    .top{background:var(--blue);color:#fff;padding:18px max(18px,env(safe-area-inset-right)) 17px;box-shadow:0 4px 14px #163c611c}
+    .headinner{max-width:1150px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+    h1{font-size:clamp(1.5rem,3.2vw,2.3rem);letter-spacing:-.035em;margin:0;line-height:1.15}
+    .subtitle{margin:5px 0 0;color:#dceefb;font-size:.95rem}
+    .round{background:#fff2;color:inherit;border:1px solid #fff6;border-radius:999px;padding:9px 14px;font-weight:700;font-size:.93rem;white-space:nowrap}
+    .wrap{width:min(1150px,100%);margin:auto;padding:18px 17px 34px}
+    .progress-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:9px;font-size:.92rem;font-weight:700;color:var(--muted)}
+    .progress{height:11px;background:#dce8f0;border-radius:999px;overflow:hidden;margin-bottom:19px}
+    .progress-fill{height:100%;background:var(--mint);width:0%;transition:width .25s ease;border-radius:999px}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(390px,.98fr);gap:17px;align-items:stretch}
+    .panel{background:#fff;border:1px solid #d8e5ed;border-radius:var(--radius);padding:clamp(18px,2.4vw,29px);box-shadow:0 7px 20px #2456880b;min-width:0}
+    .play{min-height:456px;display:flex;flex-direction:column;align-items:stretch}
+    .tag{display:inline-flex;align-self:flex-start;font-size:.81rem;font-weight:800;letter-spacing:.055em;text-transform:uppercase;border-radius:999px;background:#e1f3f0;color:#1a635a;padding:7px 13px;margin:0 0 14px}
+    h2{font-size:clamp(1.45rem,3vw,2rem);line-height:1.18;margin:0 0 10px;letter-spacing:-.025em}
+    p{line-height:1.5}
+    .instructions{font-size:1.06rem;color:var(--muted);margin:0 0 20px}
+    .speak{border:2px solid var(--blue);background:var(--blue);color:#fff;border-radius:18px;min-height:73px;padding:12px 18px;font-size:clamp(1.04rem,2.5vw,1.3rem);font-weight:800;width:100%;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 5px 0 var(--blue-dark)}
+    .speak:active{transform:translateY(3px);box-shadow:0 2px 0 var(--blue-dark)}
+    .speak.speaking{background:#3574ab}
+    .speaker-icon{font-size:1.5em;line-height:1}
+    .note{color:var(--muted);font-size:.88rem;text-align:center;margin:11px 0 21px}
+    .article-area{margin-top:7px}
+    .article-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .article-button{min-height:80px;border-radius:15px;border:2px solid #adc9dd;color:var(--blue-dark);background:#f6fbfe;font-size:clamp(1.35rem,3.8vw,1.9rem);font-weight:800}
+    .article-button:not(:disabled):active{background:#def4f1}
+    .article-button.wrong{background:#ffe7e5;border-color:#da706c;color:#8c2926;opacity:.6}
+    .article-pill{align-self:flex-start;border-radius:12px;padding:9px 15px;font-size:1.12rem;font-weight:800;background:#e3f5ee;color:var(--good);margin:4px 0 18px}
+    .slots{display:grid;gap:6px;grid-template-columns:repeat(var(--length),minmax(0,1fr));max-width:590px;width:100%;margin:8px auto 14px}
+    .slot{min-width:0;aspect-ratio:.86;max-height:77px;border:2px solid #bfd2df;border-bottom:5px solid var(--blue);background:#f6fafc;border-radius:10px;display:flex;justify-content:center;align-items:center;font-size:clamp(1.35rem,3.9vw,2.25rem);font-weight:800;color:var(--blue-dark)}
+    .slot.wrong{background:#fff0ef;border-color:#cf6c67;border-bottom-color:var(--bad)}
+    .slot.right{background:#e5f7ec;border-color:#79b79c;border-bottom-color:var(--good)}
+    .slot.empty::after{content:"";width:8px;height:8px;border-radius:50%;background:#c1ced9}
+    .counter{font-size:.91rem;color:var(--muted);text-align:center;margin:0 0 9px}
+    .feedback{margin-top:auto;min-height:54px;border-radius:13px;padding:14px 15px;font-weight:700;background:#e9f2f8;color:var(--blue-dark);display:flex;align-items:center;line-height:1.45}
+    .feedback[data-tone="error"]{background:#fff0ec;color:#87342f}
+    .feedback[data-tone="good"]{background:#e5f7ee;color:#0d6744}
+    .keyboard-panel{display:flex;flex-direction:column;justify-content:center;gap:14px}
+    .keyboard-title{font-weight:800;font-size:1.16rem;margin:0}
+    .keyboard-hint{color:var(--muted);margin:-6px 0 0;font-size:.92rem}
+    .keyboard{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
+    .key{height:clamp(54px,7.3vh,75px);background:#fff;color:var(--blue-dark);border:2px solid #c1d3e1;border-bottom:5px solid #95b0c5;border-radius:13px;font-size:clamp(1.35rem,2.7vw,1.85rem);font-weight:850;user-select:none}
+    .key:active:not(:disabled){transform:translateY(3px);border-bottom-width:2px;background:#e7f7f4}
+    .key.umlaut{background:#bff7ee;border-color:#2fbfb0;border-bottom-color:#139d90;color:#064c47}
+    .kb-actions{display:grid;grid-template-columns:1fr 1.35fr;gap:10px}
+    .action{border:none;border-radius:14px;min-height:65px;padding:9px 12px;font-weight:850;font-size:clamp(1rem,2.4vw,1.19rem)}
+    .backspace{background:#e3ebf1;color:var(--blue-dark);border:2px solid #c1d1dd}
+    .check{background:var(--mint);color:#0d413d;border:2px solid #26bbaa;box-shadow:0 4px 0 #1d968a}
+    .check:active:not(:disabled){transform:translateY(2px);box-shadow:0 2px 0 #1d968a}
+    .big-action{width:100%;max-width:400px;align-self:center;background:var(--mint);color:#063f39;border:0;border-radius:17px;min-height:67px;font-size:1.21rem;font-weight:850;margin-top:12px}
+    .secondary{background:#e6eff5;color:#173e5a;border:2px solid #acc9dd;box-shadow:none;margin-top:10px}
+    .welcome{display:flex;flex-direction:column;justify-content:center;gap:5px;min-height:390px}
+    .welcome .hero{font-size:clamp(3.4rem,8vw,5.8rem);line-height:1.2;margin-bottom:15px}
+    .steps{margin:7px 0 10px;padding:0;list-style:none;display:grid;gap:10px}
+    .steps li{background:#eff6fa;border-radius:11px;padding:11px 14px;font-size:1rem}
+    .result-word{font-size:clamp(2rem,5vw,3.15rem);font-weight:850;color:var(--blue);line-height:1.2;margin:8px 0 12px;overflow-wrap:anywhere}
+    .result-word .article{color:#15684f}
+    .result-text{font-size:1.05rem;color:var(--muted)}
+    .score{font-size:clamp(2.5rem,8vw,4.5rem);font-weight:900;color:var(--blue);line-height:1}
+    .mistakes-list{padding-left:20px;columns:2;line-height:1.8}
+    .micro{font-size:.82rem;color:var(--muted);text-align:center;line-height:1.45;margin-top:12px}
+    .hide{display:none!important}
+    @media(max-width:850px){.layout{grid-template-columns:minmax(0,1fr)}.play{min-height:320px}.keyboard-panel{gap:10px}.key{height:clamp(50px,7.3vh,70px)}.welcome{min-height:275px}.wrap{padding-top:13px}.progress{margin-bottom:13px}}
+    @media(max-width:430px){.top{padding:14px 16px}.panel{padding:16px}.wrap{padding-left:10px;padding-right:10px}.layout{gap:11px}.keyboard{gap:6px}.key{border-radius:10px;border-bottom-width:4px;height:clamp(48px,7vh,60px);font-size:1.48rem}.slot{border-radius:7px;gap:3px}.article-button{min-height:65px}.speak{min-height:65px}.instructions{font-size:1rem}.play{min-height:315px}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="headinner">
+      <div><h1>🔎 Ä-Detektive</h1><div class="subtitle">Hören · Artikel finden · richtig schreiben</div></div>
+      <div class="round" id="roundLabel">12 Merkwörter mit ä</div>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="progress-row"><span id="progressText">Bereit zum Start</span><span id="progressFraction">0 / 12</span></div>
+    <div class="progress" role="progressbar" aria-label="Lernfortschritt" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="layout">
+      <section class="panel play" aria-label="Lernaufgabe">
+        <div id="welcome" class="welcome">
+          <div class="hero" aria-hidden="true">🔊 ✍️ 🐻</div>
+          <span class="tag">Deine Mission</span>
+          <h2>Kannst du alle 12 Ä-Wörter?</h2>
+          <ol class="steps">
+            <li>🔊 Höre dir das Wort an.</li>
+            <li>🧩 Wähle <strong>der</strong>, <strong>die</strong> oder <strong>das</strong>.</li>
+            <li>⌨️ Schreibe das Wort mit der Tastatur.</li>
+          </ol>
+          <button class="big-action" id="startButton" type="button">Spiel starten →</button>
+        </div>
+        <div id="playing" class="hide">
+          <span class="tag" id="stepLabel">Schritt 1 · Artikel</span>
+          <h2 id="taskTitle">Höre genau hin!</h2>
+          <p class="instructions" id="taskText">Höre das Wort und finde seinen Artikel.</p>
+          <button type="button" id="speakButton" class="speak"><span class="speaker-icon" aria-hidden="true">🔊</span><span>Wort anhören</span></button>
+          <p class="note">Du kannst das Wort so oft anhören, wie du möchtest.</p>
+          <div id="articleArea" class="article-area">
+            <div class="article-buttons" role="group" aria-label="Artikel auswählen">
+              <button class="article-button" type="button" data-article="der">der</button>
+              <button class="article-button" type="button" data-article="die">die</button>
+              <button class="article-button" type="button" data-article="das">das</button>
+            </div>
+          </div>
+          <div id="spellArea" class="hide">
+            <div class="article-pill" id="articlePill"></div>
+            <div class="slots" id="slots" aria-label="Buchstaben des Wortes"></div>
+            <p class="counter" id="letterCounter"></p>
+          </div>
+        </div>
+        <div id="success" class="welcome hide">
+          <div class="hero" id="successEmoji" aria-hidden="true">⭐</div>
+          <span class="tag">Geschafft!</span>
+          <h2 id="successTitle">Richtig geschrieben!</h2>
+          <div class="result-word" id="resultWord"></div>
+          <p class="result-text" id="successText"></p>
+          <button type="button" class="big-action" id="nextButton">Nächstes Wort →</button>
+        </div>
+        <div id="summary" class="welcome hide">
+          <div class="hero" aria-hidden="true">🏆</div>
+          <span class="tag" id="summaryTag">Runde abgeschlossen</span>
+          <h2 id="summaryTitle">Stark geübt!</h2>
+          <div class="score" id="summaryScore"></div>
+          <p id="summaryText" class="result-text"></p>
+          <div id="mistakesSection" class="hide">
+            <p><strong>Diese Wörter kannst du noch einmal trainieren:</strong></p>
+            <ul id="mistakesList" class="mistakes-list"></ul>
+          </div>
+          <button class="big-action" id="reviewButton" type="button">Fehlerwörter wiederholen ↻</button>
+          <button class="big-action secondary" id="restartButton" type="button">Alle 12 Wörter neu üben</button>
+        </div>
+        <div id="feedback" class="feedback hide" role="status" aria-live="polite"></div>
+      </section>
+      <section class="panel keyboard-panel" id="keyboardPanel" aria-label="Bildschirmtastatur">
+        <h2 class="keyboard-title">Deine große Tastatur</h2>
+        <p class="keyboard-hint">Denke daran: Nomen schreibt man groß. Der erste Buchstabe wird automatisch groß.</p>
+        <div class="keyboard" id="keyboard" role="group" aria-label="Buchstaben eingeben"></div>
+        <div class="kb-actions">
+          <button class="action backspace" id="deleteButton" type="button">⌫ Löschen</button>
+          <button class="action check" id="checkButton" type="button">✓ Prüfen</button>
+        </div>
+        <div class="micro">Die Tastatur enthält alle Buchstaben, die du für die 12 Merkwörter brauchst. Du kannst auch eine echte Tastatur benutzen.</div>
+      </section>
+    </div>
+  </main>
+  <script>
+    (() => {
+      'use strict';
+      const WORDS = [
+        {word:'Lärm',article:'der'}, {word:'Säge',article:'die'},
+        {word:'Bär',article:'der'}, {word:'März',article:'der'},
+        {word:'Rätsel',article:'das'}, {word:'Käse',article:'der'},
+        {word:'Träne',article:'die'}, {word:'Käfig',article:'der'},
+        {word:'Krähe',article:'die'}, {word:'Käfer',article:'der'},
+        {word:'Mädchen',article:'das'}, {word:'Märchen',article:'das'}
+      ];
+      const KEYBOARD = ['a','ä','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','r','s','t','u','v','w','z'];
+      const $ = id => document.getElementById(id);
+      const dom = {
+        welcome:$('welcome'),playing:$('playing'),success:$('success'),summary:$('summary'),feedback:$('feedback'),
+        keyboardPanel:$('keyboardPanel'),keyboard:$('keyboard'),progressText:$('progressText'),progressFraction:$('progressFraction'),
+        progressBar:$('progressBar'),progressFill:$('progressFill'),roundLabel:$('roundLabel'),stepLabel:$('stepLabel'),
+        taskTitle:$('taskTitle'),taskText:$('taskText'),articleArea:$('articleArea'),spellArea:$('spellArea'),
+        articlePill:$('articlePill'),slots:$('slots'),letterCounter:$('letterCounter'),
+        resultWord:$('resultWord'),successTitle:$('successTitle'),successEmoji:$('successEmoji'),successText:$('successText'),
+        nextButton:$('nextButton'),summaryTag:$('summaryTag'),summaryTitle:$('summaryTitle'),summaryScore:$('summaryScore'),
+        summaryText:$('summaryText'),mistakesSection:$('mistakesSection'),mistakesList:$('mistakesList'),reviewButton:$('reviewButton')
+      };
+      let queue=[], index=0, stage='welcome', reviewing=false, typed='', current=null;
+      let badCurrent=false, badArticleChoices=new Set(), wrongPositions=[], cleanCount=0;
+      let passErrors=new Set(), reviewErrors=new Set();
+      const shuffle = a => {
+        const b=[...a];
+        for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}
+        return b;
+      };
+      function show(section){
+        [dom.welcome,dom.playing,dom.success,dom.summary].forEach(el=>el.classList.add('hide'));
+        section.classList.remove('hide');
+        dom.keyboardPanel.classList.toggle('hide', stage!=='spell');
+      }
+      function message(msg,tone='neutral'){
+        dom.feedback.textContent=msg;
+        dom.feedback.dataset.tone=tone;
+        dom.feedback.classList.remove('hide');
+      }
+      function hideMessage(){dom.feedback.classList.add('hide');dom.feedback.textContent='';}
+      function progress(){
+        const done=Math.min(index,queue.length);
+        dom.progressText.textContent=stage==='welcome'?'Bereit zum Start':stage==='summary'?'Runde geschafft!':`${reviewing?'Wiederholung':'Übungsrunde'} · Wort ${Math.min(index+1,queue.length)} von ${queue.length}`;
+        dom.progressFraction.textContent=`${done} / ${queue.length}`;
+        dom.progressBar.setAttribute('aria-valuemax',String(queue.length));
+        dom.progressBar.setAttribute('aria-valuenow',String(done));
+        dom.progressFill.style.width=`${100*done/queue.length}%`;
+        dom.roundLabel.textContent=reviewing?'🔁 Fehlerwörter üben':'12 Merkwörter mit ä';
+      }
+      function stopSpeech(){if('speechSynthesis' in window)window.speechSynthesis.cancel();}
+      function speakWord(){
+        if(!current)return;
+        if(!('speechSynthesis' in window)){
+          message('Auf diesem Gerät ist keine Sprachausgabe verfügbar. Öffne die Datei bitte in Safari, Chrome oder Edge.','error');
+          return;
+        }
+        stopSpeech();
+        const u=new SpeechSynthesisUtterance(current.word); // Der Artikel wird absichtlich nicht vorgelesen.
+        u.lang='de-DE';u.rate=.83;u.pitch=1;
+        const german=window.speechSynthesis.getVoices().filter(v=>/^de(?:-|_)/i.test(v.lang));
+        const best=german.find(v=>v.localService)||german[0];
+        if(best)u.voice=best;
+        const btn=$('speakButton');
+        btn.classList.add('speaking');
+        u.onend=()=>btn.classList.remove('speaking');
+        u.onerror=()=>btn.classList.remove('speaking');
+        window.speechSynthesis.speak(u);
+      }
+      function startGame(){
+        stopSpeech();reviewing=false;queue=shuffle(WORDS.map((_,i)=>i));index=0;
+        cleanCount=0;passErrors.clear();reviewErrors.clear();load();
+      }
+      function startReview(indices){
+        stopSpeech();reviewing=true;queue=shuffle(indices);index=0;
+        reviewErrors.clear();load();
+      }
+      function load(){
+        if(index>=queue.length){showSummary();return;}
+        current=WORDS[queue[index]];typed='';badCurrent=false;badArticleChoices.clear();wrongPositions=[];stage='article';
+        dom.stepLabel.textContent='Schritt 1 von 2 · Artikel';
+        dom.taskTitle.textContent='Welcher Artikel passt?';
+        dom.taskText.textContent='Höre das Wort. Wähle der, die oder das.';
+        dom.articleArea.classList.remove('hide');dom.spellArea.classList.add('hide');
+        document.querySelectorAll('[data-article]').forEach(btn=>{btn.disabled=false;btn.classList.remove('wrong');});
+        progress();show(dom.playing);hideMessage();message('Tippe auf „Wort anhören“. Wähle danach den passenden Artikel.');
+      }
+      function chooseArticle(article){
+        if(stage!=='article')return;
+        if(article!==current.article){
+          badCurrent=true;badArticleChoices.add(article);
+          document.querySelectorAll('[data-article]').forEach(btn=>{
+            if(btn.dataset.article===article){btn.disabled=true;btn.classList.add('wrong');}
+          });
+          message('Das passt noch nicht. Überlege noch einmal: der, die oder das?','error');
+          return;
+        }
+        stage='spell';dom.stepLabel.textContent='Schritt 2 von 2 · Schreiben';
+        dom.taskTitle.textContent='Schreibe das gehörte Wort!';
+        dom.taskText.textContent='Tippe die Buchstaben auf der großen Tastatur ein.';
+        dom.articleArea.classList.add('hide');dom.spellArea.classList.remove('hide');
+        dom.articlePill.textContent=`✓ Artikel: ${current.article}`;
+        show(dom.playing);message('Richtiger Artikel! Jetzt schreibe das Wort.','good');renderSlots();renderKeyboard();
+      }
+      function renderKeyboard(){
+        document.querySelectorAll('.key').forEach(btn=>{
+          btn.textContent=typed.length===0?btn.dataset.key.toLocaleUpperCase('de-DE'):btn.dataset.key;
+        });
+      }
+      function renderSlots(){
+        if(stage!=='spell')return;
+        dom.slots.replaceChildren();dom.slots.style.setProperty('--length',current.word.length);
+        for(let i=0;i<current.word.length;i++){
+          const el=document.createElement('div');
+          const typedLetter=typed[i];
+          el.className='slot'+(typedLetter?'':' empty');
+          if(wrongPositions.length&&typedLetter){
+            el.classList.add(wrongPositions.includes(i)?'wrong':'right');
+          }
+          el.textContent=typedLetter||'';
+          dom.slots.appendChild(el);
+        }
+        dom.letterCounter.textContent=`${typed.length} von ${current.word.length} Buchstaben eingetippt`;
+        $('deleteButton').disabled=typed.length===0;
+      }
+      function addLetter(ch){
+        if(stage!=='spell'||typed.length>=current.word.length)return;
+        const letter=typed.length===0?ch.toLocaleUpperCase('de-DE'):ch.toLocaleLowerCase('de-DE');
+        typed+=letter;wrongPositions=[];renderSlots();renderKeyboard();
+      }
+      function backspace(){
+        if(stage!=='spell'||!typed.length)return;
+        typed=typed.slice(0,-1);wrongPositions=[];renderSlots();renderKeyboard();
+      }
+      function check(){
+        if(stage!=='spell')return;
+        if(typed.length<current.word.length){
+          message(`Es fehlen noch ${current.word.length-typed.length} ${current.word.length-typed.length===1?'Buchstabe':'Buchstaben'}. Höre bei Bedarf noch einmal hin.`,'error');
+          return;
+        }
+        if(typed!==current.word){
+          badCurrent=true;
+          wrongPositions=[...current.word].flatMap((ch,i)=>typed[i]===ch?[]:[i]);
+          renderSlots();
+          message('Fast! Die roten Kästchen zeigen dir, wo du noch etwas verbessern kannst.','error');
+          return;
+        }
+        if(reviewing){if(badCurrent)reviewErrors.add(queue[index]);}
+        else{if(badCurrent)passErrors.add(queue[index]);else cleanCount++;}
+        stage='success';stopSpeech();hideMessage();
+        dom.resultWord.replaceChildren();
+        const art=document.createElement('span');art.className='article';art.textContent=current.article+' ';
+        dom.resultWord.append(art,document.createTextNode(current.word));
+        dom.successEmoji.textContent=badCurrent?'💪':'🌟';
+        dom.successTitle.textContent=badCurrent?'Gut verbessert!':'Auf Anhieb richtig!';
+        dom.successText.textContent=badCurrent?'Du hast weiterprobiert und das Wort richtig geschrieben.':'Artikel und Schreibweise stimmen sofort. Klasse!';
+        dom.nextButton.textContent=index===queue.length-1?'Ergebnis ansehen →':'Nächstes Wort →';
+        show(dom.success);
+      }
+      function next(){if(stage!=='success')return;index++;load();}
+      function showSummary(){
+        stage='summary';stopSpeech();progress();
+        const remaining=reviewing?[...reviewErrors]:[...passErrors];
+        const amount=queue.length;
+        dom.summaryTag.textContent=reviewing?'Wiederholung abgeschlossen':'Übungsrunde abgeschlossen';
+        if(reviewing){
+          dom.summaryTitle.textContent=remaining.length?'Du wirst immer sicherer!':'Alle Wiederholungswörter geschafft!';
+          dom.summaryScore.textContent=`${amount-remaining.length} / ${amount}`;
+          dom.summaryText.textContent='So viele Wörter hast du in der Wiederholung direkt richtig gelöst.';
+        }else{
+          dom.summaryTitle.textContent=cleanCount===amount?'Alle Wörter auf Anhieb!':'Gut geübt!';
+          dom.summaryScore.textContent=`${cleanCount} / ${amount}`;
+          dom.summaryText.textContent='So viele Wörter hast du mit richtigem Artikel und richtiger Schreibweise auf Anhieb geschafft. Die anderen hast du bereits verbessert.';
+        }
+        dom.mistakesSection.classList.toggle('hide',remaining.length===0);
+        dom.mistakesList.replaceChildren();
+        remaining.forEach(id=>{
+          const li=document.createElement('li');li.textContent=`${WORDS[id].article} ${WORDS[id].word}`;dom.mistakesList.appendChild(li);
+        });
+        dom.reviewButton.classList.toggle('hide',remaining.length===0);
+        dom.reviewButton.onclick=()=>startReview(remaining);
+        hideMessage();show(dom.summary);
+      }
+      KEYBOARD.forEach(ch=>{
+        const btn=document.createElement('button');btn.type='button';btn.className='key'+(ch==='ä'?' umlaut':'');
+        btn.dataset.key=ch;btn.textContent=ch;btn.setAttribute('aria-label',`Buchstabe ${ch}`);
+        btn.addEventListener('click',()=>addLetter(ch));dom.keyboard.appendChild(btn);
+      });
+      $('startButton').addEventListener('click',startGame);
+      $('speakButton').addEventListener('click',speakWord);
+      $('deleteButton').addEventListener('click',backspace);
+      $('checkButton').addEventListener('click',check);
+      $('nextButton').addEventListener('click',next);
+      $('restartButton').addEventListener('click',startGame);
+      document.querySelectorAll('[data-article]').forEach(btn=>btn.addEventListener('click',()=>chooseArticle(btn.dataset.article)));
+      document.addEventListener('keydown',event=>{
+        if(event.altKey||event.ctrlKey||event.metaKey||stage!=='spell')return;
+        if(event.key==='Backspace'){event.preventDefault();backspace();}
+        else if(event.key==='Enter'){event.preventDefault();check();}
+        else if(event.key.length===1){
+          const k=event.key.toLocaleLowerCase('de-DE');
+          if(KEYBOARD.includes(k)){event.preventDefault();addLetter(k);}
+        }
+      });
+      window.addEventListener('pagehide',stopSpeech);
+      progress();
+    })();
+  </script>
+</body>
+</html>
