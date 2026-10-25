@@ -27,15 +27,27 @@ main{display:flex;align-items:center;justify-content:center;gap:18px;padding:4px
 
 /* ---------- Brett ---------- */
 #board{position:relative;width:var(--bs);height:var(--bs);flex:none;border-radius:calc(var(--c)*.5);
-  background:radial-gradient(circle at 50% 50%,#fff8e6,#f3e2bb 70%,#e2c88f);
-  box-shadow:0 0 0 calc(var(--c)*.12) #7a5a2b,0 0 0 calc(var(--c)*.22) var(--turn,#7a5a2b),0 20px 50px rgba(0,0,0,.55);transition:box-shadow .5s}
+  background:radial-gradient(circle at 50% 45%,#6cad4f,#4c8c3b 55%,#2f6a2c);overflow:hidden;
+  box-shadow:0 0 0 calc(var(--c)*.12) #5b3a1e,0 0 0 calc(var(--c)*.22) var(--turn,#5b3a1e),0 20px 50px rgba(0,0,0,.55);transition:box-shadow .5s}
 #board.shake{animation:shake .5s}
 @keyframes shake{20%{transform:translate(-8px,4px)}40%{transform:translate(7px,-5px)}60%{transform:translate(-5px,-3px)}80%{transform:translate(4px,4px)}}
-.lines{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
-.zone{position:absolute;border-radius:24%;background:var(--pc);opacity:.22;z-index:1}
-.zone.off{opacity:.07}
+.forest{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.tree{transform-box:fill-box;transform-origin:center;animation:sway 5s ease-in-out infinite}
+@keyframes sway{50%{transform:rotate(5deg) scale(1.03)}}
+.zone{position:absolute;border-radius:18%;background:color-mix(in srgb,var(--pc) 28%,#8cc068);border:calc(var(--c)*.07) dashed #7a5230;box-shadow:inset 0 0 calc(var(--c)*.3) rgba(0,0,0,.25);z-index:1}
+.zone.off{filter:grayscale(1);opacity:.5}
+.cottage{position:absolute;width:calc(var(--c)*1.5);height:calc(var(--c)*1.3);transform:translate(-50%,-50%);z-index:1;filter:drop-shadow(calc(var(--c)*.12) calc(var(--c)*.15) 0 rgba(0,0,0,.35))}
+.cottage.off{filter:grayscale(.85) brightness(.75)}
+.roof{position:absolute;inset:0;border-radius:6%;overflow:hidden;display:flex;border:2px solid var(--pcd)}
+.roof i{flex:1;background:repeating-linear-gradient(0deg,transparent 0 calc(var(--c)*.13),rgba(0,0,0,.2) calc(var(--c)*.13) calc(var(--c)*.155)),var(--pc)}
+.roof i.r{background:repeating-linear-gradient(0deg,transparent 0 calc(var(--c)*.13),rgba(0,0,0,.25) calc(var(--c)*.13) calc(var(--c)*.155)),var(--pcd)}
+.roof::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:calc(var(--c)*.07);transform:translateX(-50%);background:rgba(255,255,255,.35)}
+.chimney{position:absolute;width:22%;height:24%;left:64%;top:12%;background:#8f8a84;border:2px solid #57524d;border-radius:8%}
+.smoke{position:absolute;left:15%;top:15%;width:70%;height:70%;border-radius:50%;background:rgba(240,240,240,.75);animation:smoke 3s ease-out infinite;opacity:0}
+.smoke:nth-child(2){animation-delay:1s}.smoke:nth-child(3){animation-delay:2s}
+@keyframes smoke{0%{transform:translate(0,0) scale(.6);opacity:.85}100%{transform:translate(130%,-200%) scale(2.4);opacity:0}}
 .cell{position:absolute;width:calc(var(--c)*.8);height:calc(var(--c)*.8);transform:translate(-50%,-50%);border-radius:50%;
-  background:radial-gradient(circle at 40% 35%,#fff,#efe5cf);border:calc(var(--c)*.065) solid #4a4470;
+  background:radial-gradient(circle at 40% 35%,#f6eedc,#cbb994);border:calc(var(--c)*.065) solid #5b3f24;
   box-shadow:inset 0 -3px 0 rgba(0,0,0,.12),0 2px 4px rgba(0,0,0,.25);z-index:2}
 .cell.colored{background:radial-gradient(circle at 40% 35%,var(--pl),var(--pc));border-color:var(--pcd)}
 .cell.home{background:radial-gradient(circle at 40% 35%,#fff,var(--pl));border-color:var(--pcd)}
@@ -188,7 +200,7 @@ main{display:flex;align-items:center;justify-content:center;gap:18px;padding:4px
 <div id="setupOv" class="overlay"><div class="box">
   <h2>🎲 Neues Spiel</h2>
   <div id="setupRows"></div>
-  <label class="opt">Fragezeichen pro Spiel <input type="range" id="qCount" min="0" max="12" value="6"><b id="qVal">6</b></label>
+  <label class="opt">Fragezeichen auf dem Feld <input type="range" id="qCount" min="0" max="10" value="6"><b id="qVal">6</b></label>
   <label class="opt">Tempo Computer
     <select id="speed"><option value="1">Normal</option><option value="0.5">Schnell</option><option value="1.6">Gemütlich</option></select>
   </label>
@@ -204,7 +216,7 @@ main{display:flex;align-items:center;justify-content:center;gap:18px;padding:4px
     <li>Sind keine Figuren auf der Bahn, hat man <b>3 Versuche</b> für eine 6.</li>
     <li>Landest du auf einer gegnerischen Figur, wird sie <b>rausgeworfen</b>. Eigene Figuren blockieren das Feld.</li>
     <li>Im Ziel darf nicht übersprungen werden. Wer zuerst alle 4 Figuren im Ziel hat, gewinnt.</li>
-    <li><b>❓ Fragezeichen</b> tauchen zufällig auf freien Feldern auf. Wer genau darauf landet, dreht am Glücksrad:</li>
+    <li><b>❓ Fragezeichen</b> liegen immer auf dem Feld. Wird eins eingesammelt, taucht sofort ein neues an einer zufälligen freien Stelle auf. Wer genau darauf landet, dreht am Glücksrad:</li>
   </ul>
   <ul>
     <li>🎲 <b>Extra-Wurf</b> – sofort noch einmal würfeln</li>
@@ -319,13 +331,51 @@ const fieldXY=f=>elXY(trackEls[f]);
 function mkCell(x,y,cls,o){const d=document.createElement('div');d.className='cell '+cls;d.style.left=P(x);d.style.top=P(y);d.dataset.key=x+','+y;
   if(o!==undefined){d.style.setProperty('--pc',COLS[o]);d.style.setProperty('--pcd',DARK[o]);d.style.setProperty('--pl',LIGHT[o]);}
   board.appendChild(d);cellMap[x+','+y]=d;return d;}
+const COTTAGES=[[3,3],[8,3],[8,8],[3,8]];
+function rng(seed){return()=>{seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function buildBoard(act){
   board.innerHTML='';trackEls=[];cellMap={};
-  const pt=([x,y])=>`${x+.5},${y+.5}`;
-  board.insertAdjacentHTML('beforeend',`<svg class="lines" viewBox="0 0 11 11"><polygon points="${TRACK.map(pt).join(' ')}" fill="none" stroke="#4a4470" stroke-width=".1" stroke-linejoin="round"/>${
-    GOALS.map((g,o)=>`<polyline points="${[TRACK[(STARTS[o]+39)%40],...g].map(pt).join(' ')}" fill="none" stroke="${COLS[o]}" stroke-width=".1" opacity="${act[o]?1:.3}"/>`).join('')}</svg>`);
-  HOUSES.forEach((h,o)=>{const z=document.createElement('div');z.className='zone'+(act[o]?'':' off');const mx=Math.min(...h.map(c=>c[0])),my=Math.min(...h.map(c=>c[1]));
-    z.style.left=`calc(${mx/11*100}% + var(--c)*.04)`;z.style.top=`calc(${my/11*100}% + var(--c)*.04)`;z.style.width=z.style.height='calc(var(--c)*1.92)';z.style.setProperty('--pc',COLS[o]);board.appendChild(z);});
+  const u=rng(20261025),pt=([x,y])=>`${x+.5},${y+.5}`;
+  // Waldboden + Weg
+  let g='';
+  for(let i=0;i<280;i++)g+=`<circle cx="${(u()*11).toFixed(2)}" cy="${(u()*11).toFixed(2)}" r="${(.02+u()*.05).toFixed(3)}" fill="${u()<.5?'#2f6a2c':'#86c766'}" opacity="${(.3+u()*.4).toFixed(2)}"/>`;
+  const tp=TRACK.map(pt).join(' ');
+  g+=`<polygon points="${tp}" fill="none" stroke="#5e4226" stroke-width=".78" stroke-linejoin="round" opacity=".5"/>
+      <polygon points="${tp}" fill="none" stroke="#b08a57" stroke-width=".64" stroke-linejoin="round"/>
+      <polygon points="${tp}" fill="none" stroke="#c7a673" stroke-width=".34" stroke-linejoin="round" stroke-dasharray=".04 .2" stroke-linecap="round"/>`;
+  GOALS.forEach((gl,o)=>{const p=[TRACK[(STARTS[o]+39)%40],...gl].map(pt).join(' ');
+    g+=`<polyline points="${p}" fill="none" stroke="#b08a57" stroke-width=".62" stroke-linecap="round"/><polyline points="${p}" fill="none" stroke="${COLS[o]}" stroke-width=".22" stroke-linecap="round" opacity="${act[o]?.7:.25}"/>`;});
+  board.insertAdjacentHTML('beforeend',`<svg class="forest" viewBox="0 0 11 11">${g}</svg>`);
+  // Gärten + Häuschen
+  HOUSES.forEach((h,o)=>{
+    const z=document.createElement('div');z.className='zone'+(act[o]?'':' off');const mx=Math.min(...h.map(c=>c[0])),my=Math.min(...h.map(c=>c[1]));
+    z.style.left=`calc(${mx/11*100}% + var(--c)*.05)`;z.style.top=`calc(${my/11*100}% + var(--c)*.05)`;z.style.width=z.style.height='calc(var(--c)*1.9)';z.style.setProperty('--pc',COLS[o]);board.appendChild(z);
+    const [cx,cy]=COTTAGES[o],c=document.createElement('div');c.className='cottage'+(act[o]?'':' off');
+    c.style.left=(cx/11*100)+'%';c.style.top=(cy/11*100)+'%';c.style.setProperty('--pc',COLS[o]);c.style.setProperty('--pcd',DARK[o]);
+    c.innerHTML='<div class="roof"><i></i><i class="r"></i></div><div class="chimney">'+(act[o]?'<span class="smoke"></span><span class="smoke"></span><span class="smoke"></span>':'')+'</div>';
+    board.appendChild(c);});
+  // Bäume auf allen freien Feldern
+  const used=new Set([...TRACK,...GOALS.flat(),...HOUSES.flat(),[5,5]].map(c=>c.join(',')));
+  const inCot=(x,y)=>COTTAGES.some(([cx,cy])=>x>=cx-1&&x<=cx&&y>=cy-1&&y<=cy);
+  let sh='',t='',deco='';const spots=[];
+  for(let y=0;y<11;y++)for(let x=0;x<11;x++)if(!used.has(x+','+y)&&!inCot(x,y))spots.push([x,y]);
+  spots.forEach(([x,y])=>{
+    const cx=x+.5+(u()-.5)*.3,cy=y+.5+(u()-.5)*.3,r=.36+u()*.16,d=(u()*5).toFixed(2),k=u();
+    sh+=`<ellipse cx="${cx+.1}" cy="${cy+.13}" rx="${r}" ry="${r*.92}" fill="rgba(0,0,0,.28)"/>`;
+    if(k<.35){ // Tanne
+      const star=(rr,n=9)=>Array.from({length:n*2},(_,i)=>{const a=i/(n*2)*Math.PI*2,q=i%2?rr*.6:rr;return `${(cx+Math.cos(a)*q).toFixed(3)},${(cy+Math.sin(a)*q).toFixed(3)}`;}).join(' ');
+      t+=`<g class="tree" style="animation-delay:-${d}s"><polygon points="${star(r)}" fill="#1f4d2b"/><polygon points="${star(r*.62)}" fill="#2f6f3e"/><circle cx="${cx}" cy="${cy}" r="${r*.14}" fill="#4f9a5a"/></g>`;
+    }else{ // Laubbaum (ein paar herbstlich)
+      const pal=k>.88?['#8a4b16','#c47a2c','#eab04f']:k>.6?['#2f6b2a','#4b9440','#7cc25e']:['#245c2b','#3a7f37','#62a84d'];
+      let lob='';for(let i=0;i<5;i++){const a=i/5*Math.PI*2+u();lob+=`<circle cx="${(cx+Math.cos(a)*r*.45).toFixed(3)}" cy="${(cy+Math.sin(a)*r*.45).toFixed(3)}" r="${(r*.58).toFixed(3)}" fill="${pal[1]}"/>`;}
+      t+=`<g class="tree" style="animation-delay:-${d}s"><circle cx="${cx}" cy="${cy}" r="${r}" fill="${pal[0]}"/>${lob}<circle cx="${cx-r*.2}" cy="${cy-r*.25}" r="${r*.42}" fill="${pal[2]}" opacity=".9"/></g>`;
+    }
+    if(u()<.3){const fx2=x+(u()<.5?.12:.88),fy2=y+(u()<.5?.12:.88);
+      deco+=u()<.4?`<text x="${fx2}" y="${fy2}" font-size=".26" text-anchor="middle" dominant-baseline="middle">🍄</text>`
+        :`<g>${[0,1,2,3,4].map(i=>{const a=i/5*Math.PI*2;return `<circle cx="${fx2+Math.cos(a)*.05}" cy="${fy2+Math.sin(a)*.05}" r=".04" fill="${u()<.5?'#fff':'#ffd6ec'}"/>`;}).join('')}<circle cx="${fx2}" cy="${fy2}" r=".03" fill="#ffc83d"/></g>`;}
+  });
+  board.insertAdjacentHTML('beforeend',`<svg class="forest" viewBox="0 0 11 11">${sh}${t}${deco}</svg>`);
+  // Felder
   TRACK.forEach(([x,y],i)=>{const so=STARTS.indexOf(i);const c=mkCell(x,y,so>=0?'colored start'+(act[so]?'':' off'):'',so>=0?so:undefined);c.dataset.f=i;trackEls[i]=c;});
   for(let o=0;o<4;o++){HOUSES[o].forEach(([x,y])=>mkCell(x,y,'home'+(act[o]?'':' off'),o));GOALS[o].forEach(([x,y])=>mkCell(x,y,'colored'+(act[o]?'':' off'),o));}
   const e=document.createElement('div');e.className='emblem';e.textContent='?';e.style.left=P(5);e.style.top=P(5);board.appendChild(e);
@@ -348,7 +398,7 @@ function log(h){const li=document.createElement('li');li.innerHTML=h;const l=$('
 function renderPlayers(){$('#players').innerHTML=S.players.map((p,o)=>{if(p.type==='off')return '';const g=mine(o).filter(q=>q.p>=40).length;
   return `<div class="pl ${o===S.cur?'cur':''}" style="--pc:${COLS[o]}"><span class="dot"></span><span>${esc(p.name)}</span><span>${p.type==='ai'?'🤖':'🙂'}</span><span class="stars">${'★'.repeat(g)}${'☆'.repeat(4-g)}</span></div>`;}).join('');}
 function updateQ(){const on=S.specials.filter(s=>s.type==='q').length;
-  $('#qinfo').innerHTML=S.qTotal?`❓ Auf dem Feld: <b>${on}</b> · Noch versteckt: <b>${S.qTotal-S.qSpawned}</b> · Gefunden: <b>${S.qFound}</b>`:'❓ Ohne Fragezeichen (klassisch)';}
+  $('#qinfo').innerHTML=S.qTotal?`❓ Auf dem Feld: <b>${on}</b> · Schon gefunden: <b>${S.qFound}</b>`:'❓ Ohne Fragezeichen (klassisch)';}
 function place(pc){const [x,y]=coordOf(pc);pc.el.style.left=P(x);pc.el.style.top=P(y);}
 function hop(pc){const e=pc.el;e.classList.remove('hop');void e.offsetWidth;e.classList.add('hop');}
 function updateSleep(pc){pc.el.classList.toggle('sleeping',pc.sleep>0);}
@@ -463,7 +513,7 @@ async function resolveLanding(o,pc){
   }else if(sp.type==='bed'){
     pc.sleep=1;updateSleep(pc);SFX.snore();setMsg(`🛏️ Gähn … diese Figur von ${nm(o)} schläft eine Runde.`);log(`🛏️ ${nm(o)} schläft ein.`);await wait(1000);
   }else{
-    S.qFound++;updateQ();await wheelEvent(o,pc);
+    S.qFound++;updateQ();await wheelEvent(o,pc);await topUp();
   }
 }
 async function spinWheel(o){
@@ -523,13 +573,14 @@ async function wheelEvent(o,pc){
   else{setMsg(`${nm(o)} platziert ${what} …`);await wait(700*S.speed);f=aiTrap(o,free);}
   addSpecial(res,f,true);SFX.pop();log(`${res==='dyn'?'🧨':'🛏️'} ${nm(o)} legt ${res==='dyn'?'Dynamit':'ein Bett'} aus.`);await wait(450);
 }
-async function maybeSpawn(){
-  const on=S.specials.filter(s=>s.type==='q').length;
-  if(S.qSpawned>=S.qTotal||on>=2)return;
-  if(Math.random()>(on===0?.45:.18))return;
-  const free=freeFields();if(!free.length)return;
-  const f=pick(free);addSpecial('q',f,true);S.qSpawned++;updateQ();SFX.pop();
-  burst(...fieldXY(f),['#c9a7ff','#8a4dff','#fff'],20,3,.03);log('❓ Ein neues Fragezeichen ist aufgetaucht!');await wait(550);
+async function topUp(){
+  let n=0;
+  while(S.specials.filter(s=>s.type==='q').length<S.qTotal){
+    const free=freeFields();if(!free.length)break;
+    const f=pick(free);addSpecial('q',f,true);n++;
+    SFX.pop();burst(...fieldXY(f),['#c9a7ff','#8a4dff','#fff'],20,3,.03);
+  }
+  if(n){updateQ();log('❓ Ein neues Fragezeichen ist aufgetaucht!');await wait(550);}
 }
 function turnStart(o){
   renderPlayers();board.style.setProperty('--turn',COLS[o]);rollBtn.style.setProperty('--bc',COLS[o]);dice.style.setProperty('--dc',DARK[o]);
@@ -544,7 +595,7 @@ async function win(o){
 async function run(){
   await wait(400);setMsg(`🎲 ${nm(S.cur)} beginnt!`);log(`Das Spiel beginnt – ${nm(S.cur)} fängt an.`);await wait(900);
   while(!S.over){
-    const o=S.cur;turnStart(o);await maybeSpawn();
+    const o=S.cur;turnStart(o);await topUp();
     let tries=triesFor(o),again=true;
     while(again&&!S.over){
       again=false;
@@ -567,14 +618,14 @@ async function run(){
 /* ================= Start / Setup ================= */
 function startGame(cfg){
   clearPick();
-  S={players:cfg.players,pieces:[],specials:[],qTotal:cfg.q,qSpawned:0,qFound:0,speed:cfg.speed,cur:0,bonus:false,over:false,pending:null,rollRes:null,spinRes:null};
+  S={players:cfg.players,pieces:[],specials:[],qTotal:cfg.q,qFound:0,speed:cfg.speed,cur:0,bonus:false,over:false,pending:null,rollRes:null,spinRes:null};
   const act=cfg.players.map(p=>p.type!=='off');
   buildBoard(act);$('#log').innerHTML='';
   S.players.forEach((p,o)=>{if(p.type==='off')return;for(let i=0;i<4;i++){const el=document.createElement('div');el.className='piece';
     el.style.setProperty('--pc',COLS[o]);el.style.setProperty('--pcd',DARK[o]);el.innerHTML='<div class="body"></div><div class="zzz">💤</div>';board.appendChild(el);
     const pc={owner:o,idx:i,p:-1,sleep:0,blocked:false,el};place(pc);S.pieces.push(pc);}});
   const actives=[0,1,2,3].filter(o=>act[o]);S.cur=pick(actives);
-  if(S.qTotal>0){const f=pick(freeFields());addSpecial('q',f,true);S.qSpawned=1;}
+  for(let i=0;i<S.qTotal;i++){const free=freeFields();if(!free.length)break;addSpecial('q',pick(free),true);}
   updateQ();renderPlayers();rollBtn.disabled=true;
   run().catch(e=>{if(e!==ABORT)console.error(e);});
 }
