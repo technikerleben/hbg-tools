@@ -214,6 +214,7 @@ main{display:flex;align-items:center;justify-content:center;gap:18px;padding:4px
     <li>Mit einer <b>6</b> kommt eine Figur aus dem Haus auf das Startfeld. Nach einer 6 darf man noch einmal würfeln.</li>
     <li>Wer eine 6 hat und noch Figuren im Haus, <b>muss</b> eine herausholen. Das Startfeld muss danach freigemacht werden.</li>
     <li>Sind keine Figuren auf der Bahn, hat man <b>3 Versuche</b> für eine 6.</li>
+    <li>🍀 <b>Glückswürfel:</b> Wer 3 Runden lang keine Figur herausbringen konnte, würfelt leichter eine 6: erst 40 %, dann jede weitere Runde mehr (bis 85 %). Sobald eine Figur draußen ist, ist der Bonus wieder weg.</li>
     <li>Landest du auf einer gegnerischen Figur, wird sie <b>rausgeworfen</b>. Eigene Figuren blockieren das Feld.</li>
     <li>Im Ziel darf nicht übersprungen werden. Wer zuerst alle 4 Figuren im Ziel hat, gewinnt.</li>
     <li><b>❓ Fragezeichen</b> liegen immer auf dem Feld. Wird eins eingesammelt, taucht sofort ein neues an einer zufälligen freien Stelle auf. Wer genau darauf landet, dreht am Glücksrad:</li>
@@ -396,7 +397,7 @@ showFace(6);
 function setMsg(h){$('#msg').innerHTML=h;}
 function log(h){const li=document.createElement('li');li.innerHTML=h;const l=$('#log');l.prepend(li);while(l.children.length>14)l.lastChild.remove();}
 function renderPlayers(){$('#players').innerHTML=S.players.map((p,o)=>{if(p.type==='off')return '';const g=mine(o).filter(q=>q.p>=40).length;
-  return `<div class="pl ${o===S.cur?'cur':''}" style="--pc:${COLS[o]}"><span class="dot"></span><span>${esc(p.name)}</span><span>${p.type==='ai'?'🤖':'🙂'}</span><span class="stars">${'★'.repeat(g)}${'☆'.repeat(4-g)}</span></div>`;}).join('');}
+  return `<div class="pl ${o===S.cur?'cur':''}" style="--pc:${COLS[o]}"><span class="dot"></span><span>${esc(p.name)}</span><span>${p.type==='ai'?'🤖':'🙂'}${luck(o)?' 🍀':''}</span><span class="stars">${'★'.repeat(g)}${'☆'.repeat(4-g)}</span></div>`;}).join('');}
 function updateQ(){const on=S.specials.filter(s=>s.type==='q').length;
   $('#qinfo').innerHTML=S.qTotal?`❓ Auf dem Feld: <b>${on}</b> · Schon gefunden: <b>${S.qFound}</b>`:'❓ Ohne Fragezeichen (klassisch)';}
 function place(pc){const [x,y]=coordOf(pc);pc.el.style.left=P(x);pc.el.style.top=P(y);}
@@ -422,6 +423,8 @@ function legalMoves(o,d){
   return moves;
 }
 const triesFor=o=>mine(o).every(q=>q.p<0||q.p>=40)?3:1;
+// Glücksbonus: nach 3 Runden ohne Figur auf der Bahn steigt die Chance auf eine 6
+const luck=o=>S.stuck[o]>=3&&triesFor(o)===3?Math.min(.85,.4+.15*(S.stuck[o]-3)):0;
 function targetCoord(m){const o=m.pc.owner;return m.to>=40?GOALS[o][m.to-40]:TRACK[(STARTS[o]+m.to)%40];}
 function nextP(o){for(let i=1;i<=4;i++){const n=(o+i)%4;if(S.players[n].type!=='off')return n;}return o;}
 
@@ -465,12 +468,12 @@ const pickField=list=>new Promise(res=>{S.pending={type:'field',set:new Set(list
 /* ================= Ablauf ================= */
 async function rollDice(o){
   if(isHuman(o)){
-    setMsg(`${nm(o)}, du bist dran – würfeln!${triesFor(o)===3?' <span style="opacity:.75">(Du brauchst eine 6.)</span>':''}`);
+    setMsg(`${nm(o)}, du bist dran – würfeln!${triesFor(o)===3?' <span style="opacity:.75">(Du brauchst eine 6.)</span>':''}${luck(o)?`<br>🍀 Glückswürfel: ${Math.round(luck(o)*100)} % Chance auf eine 6!`:''}`);
     rollBtn.disabled=false;await new Promise(r=>S.rollRes=r);rollBtn.disabled=true;
-  }else{setMsg(`🤖 ${nm(o)} würfelt …`);await wait(550*S.speed);}
+  }else{setMsg(`🤖 ${nm(o)} würfelt …${luck(o)?' 🍀':''}`);await wait(550*S.speed);}
   dice.classList.add('rolling');
   for(let i=0;i<9;i++){showFace(1+rnd(6));SFX.dice();await wait(60);}
-  const d=1+rnd(6);dice.classList.remove('rolling');showFace(d);dice.classList.add('land');setTimeout(()=>dice.classList.remove('land'),320);
+  const lk=luck(o),d=lk?(Math.random()<lk?6:1+rnd(5)):1+rnd(6);dice.classList.remove('rolling');showFace(d);dice.classList.add('land');setTimeout(()=>dice.classList.remove('land'),320);
   await wait(320);return d;
 }
 async function chooseMove(o,moves,d){
@@ -493,7 +496,7 @@ async function swap(a,b){const fa=fieldOf(a),fb=fieldOf(b);a.p=rel(fb,a.owner);b
 
 async function doMove(o,mv){
   const pc=mv.pc;pc.el.classList.add('moving');
-  if(mv.out){pc.p=0;pc.el.classList.add('fly');place(pc);SFX.pop();await wait(620);pc.el.classList.remove('fly');log(`${nm(o)} bringt eine Figur ins Spiel.`);}
+  if(mv.out){S.cameOut=true;pc.p=0;pc.el.classList.add('fly');place(pc);SFX.pop();await wait(620);pc.el.classList.remove('fly');log(`${nm(o)} bringt eine Figur ins Spiel.`);}
   else{const n=mv.to-pc.p;for(let i=0;i<n;i++){pc.p++;place(pc);hop(pc);SFX.step();await wait(190);}}
   pc.el.classList.remove('moving');
   if(pc.p>=40){if(mv.to-0>=40&&!mv.out){SFX.goal();burst(...elXY(pc.el),[COLS[o],'#fff','#ffd166'],24,3.5,.05);}return;}
@@ -596,6 +599,8 @@ async function run(){
   await wait(400);setMsg(`🎲 ${nm(S.cur)} beginnt!`);log(`Das Spiel beginnt – ${nm(S.cur)} fängt an.`);await wait(900);
   while(!S.over){
     const o=S.cur;turnStart(o);await topUp();
+    const wasStuck=triesFor(o)===3;S.cameOut=false;
+    if(luck(o))log(`🍀 ${nm(o)} bekommt den Glückswürfel (${Math.round(luck(o)*100)} % für eine 6).`);
     let tries=triesFor(o),again=true;
     while(again&&!S.over){
       again=false;
@@ -611,6 +616,7 @@ async function run(){
       if(mine(o).every(q=>q.p>=40)){S.over=true;await win(o);return;}
       if(d===6||S.bonus){again=true;tries=triesFor(o);setMsg(d===6?'Eine 6 – nochmal würfeln!':'🎲 Extra-Wurf!');await wait(600);}
     }
+    S.stuck[o]=wasStuck&&!S.cameOut&&triesFor(o)===3?S.stuck[o]+1:0;
     turnEnd(o);S.cur=nextP(o);
   }
 }
@@ -618,7 +624,7 @@ async function run(){
 /* ================= Start / Setup ================= */
 function startGame(cfg){
   clearPick();
-  S={players:cfg.players,pieces:[],specials:[],qTotal:cfg.q,qFound:0,speed:cfg.speed,cur:0,bonus:false,over:false,pending:null,rollRes:null,spinRes:null};
+  S={players:cfg.players,pieces:[],specials:[],qTotal:cfg.q,stuck:[0,0,0,0],cameOut:false,qFound:0,speed:cfg.speed,cur:0,bonus:false,over:false,pending:null,rollRes:null,spinRes:null};
   const act=cfg.players.map(p=>p.type!=='off');
   buildBoard(act);$('#log').innerHTML='';
   S.players.forEach((p,o)=>{if(p.type==='off')return;for(let i=0;i<4;i++){const el=document.createElement('div');el.className='piece';
