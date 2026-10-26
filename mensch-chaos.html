@@ -169,6 +169,21 @@ main{display:flex;align-items:center;justify-content:center;gap:18px;padding:4px
 #wheelRes b{font-size:22px}
 .resIcon{font-size:44px;animation:boxIn .5s cubic-bezier(.3,1.6,.5,1)}
 
+.slot{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:12px;margin-bottom:10px}
+.slot h3{font-size:16px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.slot h3 small{font-weight:500;font-size:13px;opacity:.75}
+.slot .who{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;margin-bottom:10px}
+.slot .who .dot{display:inline-block;vertical-align:-2px;width:12px;height:12px}
+.slot .btns{display:flex;gap:8px}
+.slot button{flex:1;padding:11px 8px;border-radius:10px;border:none;font-weight:700;font-size:15px;color:#fff;cursor:pointer;background:#6a4cff}
+.slot button.load{background:#05a87f}
+.slot button.del{flex:0 0 auto;background:rgba(255,255,255,.14)}
+.slot button.warn{background:#e5004f}
+.slot button:disabled{opacity:.35;cursor:default}
+.slot.flash{animation:flash .7s}
+@keyframes flash{30%{box-shadow:0 0 0 3px #05a87f}}
+#saveHint{font-size:14px;opacity:.85;margin-bottom:12px}
+.big.ghost{background:rgba(255,255,255,.14)}
 #fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:150}
 </style>
 </head>
@@ -176,6 +191,7 @@ main{display:flex;align-items:center;justify-content:center;gap:18px;padding:4px
 <header>
   <h1>Mensch ärgere dich nicht <span>– Chaos-Edition ❓</span></h1>
   <div class="hbtns">
+    <button class="hbtn" id="saveBtn" title="Speichern / Laden">💾</button>
     <button class="hbtn" id="rulesBtn" title="Regeln">📖</button>
     <button class="hbtn" id="muteBtn" title="Ton an/aus">🔊</button>
     <button class="hbtn" id="newBtn" title="Neues Spiel">🔄</button>
@@ -206,6 +222,14 @@ main{display:flex;align-items:center;justify-content:center;gap:18px;padding:4px
   </label>
   <div id="setupErr"></div>
   <button class="big" id="startBtn">Los geht's!</button>
+  <button class="big ghost" id="setupLoad">📂 Spielstand laden</button>
+</div></div>
+
+<div id="saveOv" class="overlay hidden"><div class="box">
+  <h2>💾 Spielstände</h2>
+  <p id="saveHint"></p>
+  <div id="slots"></div>
+  <button class="big ghost" id="saveClose">Schließen</button>
 </div></div>
 
 <div id="rulesOv" class="overlay hidden"><div class="box">
@@ -217,6 +241,7 @@ main{display:flex;align-items:center;justify-content:center;gap:18px;padding:4px
     <li>🍀 <b>Glückswürfel:</b> Wer 3 Runden lang keine Figur herausbringen konnte, würfelt leichter eine 6: erst 40 %, dann jede weitere Runde mehr (bis 85 %). Sobald eine Figur draußen ist, ist der Bonus wieder weg.</li>
     <li>Landest du auf einer gegnerischen Figur, wird sie <b>rausgeworfen</b>. Eigene Figuren blockieren das Feld.</li>
     <li>Im Ziel darf nicht übersprungen werden. Wer zuerst alle 4 Figuren im Ziel hat, gewinnt.</li>
+    <li>💾 Über den Speicher-Knopf oben kannst du das Spiel in einem von 3 Slots sichern und später weiterspielen.</li>
     <li><b>❓ Fragezeichen</b> liegen immer auf dem Feld. Wird eins eingesammelt, taucht sofort ein neues an einer zufälligen freien Stelle auf. Wer genau darauf landet, dreht am Glücksrad:</li>
   </ul>
   <ul>
@@ -389,8 +414,7 @@ showFace(6);
 (function buildWheel(){const pt=a=>{const r=a*Math.PI/180;return [Math.sin(r)*95,-Math.cos(r)*95];};const seg=360/WHEEL.length;let h='<circle r="98" fill="#fff"/>';
   WHEEL.forEach((w,i)=>{const a0=i*seg,a1=a0+seg,[x0,y0]=pt(a0),[x1,y1]=pt(a1);
     h+=`<path d="M0 0 L${x0} ${y0} A95 95 0 0 1 ${x1} ${y1} Z" fill="${w.color}" stroke="#fff" stroke-width="2"/>
-    <g transform="rotate(${a0+seg/2})"><text y="-58" text-anchor="middle" dominant-baseline="middle" font-size="26">${w.icon}</text>
-    <text y="-34" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="800" fill="#fff" font-family="system-ui,sans-serif">${w.label}</text></g>`;});
+    <g transform="rotate(${a0+seg/2})"><text y="-57" text-anchor="middle" dominant-baseline="central" font-size="38">${w.icon}</text></g>`;});
   wheelSvg.innerHTML=h;})();
 
 /* ================= Anzeige ================= */
@@ -585,8 +609,9 @@ async function topUp(){
   }
   if(n){updateQ();log('❓ Ein neues Fragezeichen ist aufgetaucht!');await wait(550);}
 }
+function turnVisual(o){renderPlayers();board.style.setProperty('--turn',COLS[o]);rollBtn.style.setProperty('--bc',COLS[o]);dice.style.setProperty('--dc',DARK[o]);}
 function turnStart(o){
-  renderPlayers();board.style.setProperty('--turn',COLS[o]);rollBtn.style.setProperty('--bc',COLS[o]);dice.style.setProperty('--dc',DARK[o]);
+  turnVisual(o);
   const sl=mine(o).filter(q=>q.sleep>0);sl.forEach(q=>q.blocked=true);
   if(sl.length)log(`💤 Eine Figur von ${nm(o)} schläft diese Runde.`);
 }
@@ -595,15 +620,24 @@ async function win(o){
   renderPlayers();SFX.win();confetti();setMsg(`🏆 ${nm(o)} gewinnt!`);log(`🏆 ${nm(o)} hat gewonnen!`);
   await wait(1200);$('#winTitle').innerHTML=`${nm(o)} gewinnt!`;$('#winOv').classList.remove('hidden');
 }
-async function run(){
-  await wait(400);setMsg(`🎲 ${nm(S.cur)} beginnt!`);log(`Das Spiel beginnt – ${nm(S.cur)} fängt an.`);await wait(900);
+function snapshot(){return {v:1,date:Date.now(),players:S.players,qTotal:S.qTotal,speed:S.speed,cur:S.cur,tries:S.tries,wasStuck:S.wasStuck,
+  cameOut:S.cameOut,stuck:[...S.stuck],qFound:S.qFound,pieces:S.pieces.map(q=>[q.owner,q.idx,q.p,q.sleep,q.blocked?1:0]),specials:S.specials.map(x=>[x.type,x.f])};}
+async function run(res){
+  if(res){turnVisual(S.cur);setMsg(`💾 Spielstand geladen – ${nm(S.cur)} ist dran.`);log(`💾 Spielstand geladen.`);await wait(900);}
+  else{await wait(400);setMsg(`🎲 ${nm(S.cur)} beginnt!`);log(`Das Spiel beginnt – ${nm(S.cur)} fängt an.`);await wait(900);}
   while(!S.over){
-    const o=S.cur;turnStart(o);await topUp();
-    const wasStuck=triesFor(o)===3;S.cameOut=false;
-    if(luck(o))log(`🍀 ${nm(o)} bekommt den Glückswürfel (${Math.round(luck(o)*100)} % für eine 6).`);
-    let tries=triesFor(o),again=true;
+    const o=S.cur;let tries,wasStuck;
+    if(res){tries=res.tries;wasStuck=res.wasStuck;res=null;}
+    else{
+      turnStart(o);await topUp();
+      wasStuck=triesFor(o)===3;S.cameOut=false;
+      if(luck(o))log(`🍀 ${nm(o)} bekommt den Glückswürfel (${Math.round(luck(o)*100)} % für eine 6).`);
+      tries=triesFor(o);
+    }
+    let again=true;
     while(again&&!S.over){
       again=false;
+      S.tries=tries;S.wasStuck=wasStuck;S.snap=snapshot();   // Ruhepunkt: hier wird gespeichert
       const d=await rollDice(o);tries--;
       const moves=legalMoves(o,d);
       if(!moves.length){
@@ -613,7 +647,7 @@ async function run(){
       }
       const mv=await chooseMove(o,moves,d);
       S.bonus=false;await doMove(o,mv);renderPlayers();
-      if(mine(o).every(q=>q.p>=40)){S.over=true;await win(o);return;}
+      if(mine(o).every(q=>q.p>=40)){S.over=true;S.snap=null;await win(o);return;}
       if(d===6||S.bonus){again=true;tries=triesFor(o);setMsg(d===6?'Eine 6 – nochmal würfeln!':'🎲 Extra-Wurf!');await wait(600);}
     }
     S.stuck[o]=wasStuck&&!S.cameOut&&triesFor(o)===3?S.stuck[o]+1:0;
@@ -622,19 +656,57 @@ async function run(){
 }
 
 /* ================= Start / Setup ================= */
-function startGame(cfg){
-  clearPick();
-  S={players:cfg.players,pieces:[],specials:[],qTotal:cfg.q,stuck:[0,0,0,0],cameOut:false,qFound:0,speed:cfg.speed,cur:0,bonus:false,over:false,pending:null,rollRes:null,spinRes:null};
+function startGame(cfg,snap){
+  clearPick();['#wheelOv','#winOv'].forEach(id=>$(id).classList.add('hidden'));
+  S={players:cfg.players,pieces:[],specials:[],qTotal:cfg.q,stuck:snap?[...snap.stuck]:[0,0,0,0],cameOut:snap?snap.cameOut:false,
+     qFound:snap?snap.qFound:0,speed:cfg.speed,cur:0,bonus:false,over:false,pending:null,rollRes:null,spinRes:null,snap:null};
   const act=cfg.players.map(p=>p.type!=='off');
   buildBoard(act);$('#log').innerHTML='';
   S.players.forEach((p,o)=>{if(p.type==='off')return;for(let i=0;i<4;i++){const el=document.createElement('div');el.className='piece';
     el.style.setProperty('--pc',COLS[o]);el.style.setProperty('--pcd',DARK[o]);el.innerHTML='<div class="body"></div><div class="zzz">💤</div>';board.appendChild(el);
-    const pc={owner:o,idx:i,p:-1,sleep:0,blocked:false,el};place(pc);S.pieces.push(pc);}});
-  const actives=[0,1,2,3].filter(o=>act[o]);S.cur=pick(actives);
-  for(let i=0;i<S.qTotal;i++){const free=freeFields();if(!free.length)break;addSpecial('q',pick(free),true);}
+    const pc={owner:o,idx:i,p:-1,sleep:0,blocked:false,el};
+    const sv=snap&&snap.pieces.find(q=>q[0]===o&&q[1]===i);if(sv){pc.p=sv[2];pc.sleep=sv[3];pc.blocked=!!sv[4];updateSleep(pc);}
+    place(pc);S.pieces.push(pc);}});
+  if(snap){snap.specials.forEach(([t,f])=>addSpecial(t,f,true));S.cur=snap.cur;}
+  else{S.cur=pick([0,1,2,3].filter(o=>act[o]));
+    for(let i=0;i<S.qTotal;i++){const free=freeFields();if(!free.length)break;addSpecial('q',pick(free),true);}}
   updateQ();renderPlayers();rollBtn.disabled=true;
-  run().catch(e=>{if(e!==ABORT)console.error(e);});
+  run(snap?{tries:snap.tries,wasStuck:snap.wasStuck}:null).catch(e=>{if(e!==ABORT)console.error(e);});
 }
+
+/* ================= Speichern / Laden ================= */
+const SLOT_KEY=i=>'madn-chaos-save-'+i;
+function readSlot(i){try{const d=JSON.parse(localStorage.getItem(SLOT_KEY(i)));return d&&d.v===1?d:null;}catch(e){return null;}}
+function renderSlots(flashI,msg){
+  const can=!!(S&&S.snap&&!S.over);
+  $('#saveHint').textContent=msg||(can?'Gespeichert wird der Stand vor dem aktuellen Wurf.':'Gerade läuft kein Spiel – du kannst aber einen Spielstand laden.');
+  let h='';
+  for(let i=1;i<=3;i++){const d=readSlot(i);
+    h+=`<div class="slot${flashI===i?' flash':''}"><h3><span>Slot ${i}</span><small>${d?new Date(d.date).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'})+' Uhr':'leer'}</small></h3>`;
+    if(d)h+=`<div class="who">${d.players.map((p,o)=>p.type==='off'?'':`<span><span class="dot" style="--pc:${COLS[o]}"></span> ${esc(p.name)} <span style="color:#ffd166">${'★'.repeat(d.pieces.filter(q=>q[0]===o&&q[2]>=40).length)}</span>${o===d.cur?' 🎲':''}</span>`).join('')}</div>`;
+    h+=`<div class="btns"><button data-a="save" data-i="${i}" ${can?'':'disabled'}>💾 Speichern</button><button class="load" data-a="load" data-i="${i}" ${d?'':'disabled'}>📂 Laden</button>${d?`<button class="del" data-a="del" data-i="${i}" title="Löschen">🗑️</button>`:''}</div></div>`;}
+  $('#slots').innerHTML=h;
+}
+function openSaves(){renderSlots();$('#saveOv').classList.remove('hidden');}
+$('#slots').onclick=e=>{
+  const b=e.target.closest('button');if(!b||b.disabled)return;
+  const i=+b.dataset.i,a=b.dataset.a,d=readSlot(i);
+  const needConfirm=(a==='save'&&d)||a==='del'||(a==='load'&&S&&S.snap&&!S.over);
+  if(needConfirm&&!b.classList.contains('warn')){
+    $('#slots').querySelectorAll('.warn').forEach(x=>x!==b&&renderSlots());
+    b.classList.add('warn');b.textContent=a==='save'?'Überschreiben?':a==='del'?'Löschen?':'Wirklich laden?';return;}
+  if(a==='save'){
+    try{localStorage.setItem(SLOT_KEY(i),JSON.stringify(S.snap));}catch(err){renderSlots(0,'⚠️ Speichern nicht möglich – der Browser blockiert den Speicher.');return;}
+    SFX.result();log(`💾 Spiel in Slot ${i} gespeichert.`);renderSlots(i,`✅ Gespeichert in Slot ${i}.`);
+  }else if(a==='del'){try{localStorage.removeItem(SLOT_KEY(i));}catch(err){}renderSlots();}
+  else if(a==='load'&&d){
+    ['#saveOv','#setupOv','#winOv'].forEach(id=>$(id).classList.add('hidden'));ac();SFX.magic();
+    startGame({players:d.players,q:d.qTotal,speed:d.speed},d);
+  }
+};
+$('#saveBtn').onclick=openSaves;
+$('#saveClose').onclick=()=>$('#saveOv').classList.add('hidden');
+
 (function setup(){
   let saved=null;try{saved=JSON.parse(localStorage.getItem('madn-chaos-cfg'));}catch(e){}
   const rows=$('#setupRows');
@@ -654,6 +726,7 @@ function startGame(cfg){
   };
   buildBoard([true,true,true,true]);
 })();
+$('#setupLoad').onclick=openSaves;
 $('#newBtn').onclick=()=>$('#setupOv').classList.remove('hidden');
 $('#againBtn').onclick=()=>{$('#winOv').classList.add('hidden');$('#setupOv').classList.remove('hidden');};
 $('#rulesBtn').onclick=()=>$('#rulesOv').classList.remove('hidden');
