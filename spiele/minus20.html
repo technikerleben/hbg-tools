@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#ffe9c7">
+<title>Känguru-Sprung – Minus bis 20</title>
+<style>
+:root{
+  --ink:#1f2a44;--muted:#6b7590;--card:#fff;--line:#e6dccb;
+  --sand:#ffe9c7;--sand2:#fff6e8;--sky:#cfeeff;
+  --red:#e5382f;--green:#22a35a;--green-soft:#e3f7ea;--orange:#f08a24;--blue:#2f6fd6;
+  --shadow:0 10px 26px rgba(80,50,10,.14);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  font-family:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--ink);background:linear-gradient(180deg,var(--sky) 0,#eaf7ff 30%,var(--sand) 100%);
+  display:flex;justify-content:center;overscroll-behavior:none;
+  -webkit-user-select:none;user-select:none;
+}
+button{font:inherit;color:inherit;cursor:pointer;border:0}
+.app{width:min(100%,480px);height:100dvh;position:relative;overflow:hidden}
+.screen{display:none;height:100%;flex-direction:column;padding:calc(10px + env(safe-area-inset-top)) 14px calc(12px + env(safe-area-inset-bottom))}
+.screen.active{display:flex}
+
+/* ---------- Menü ---------- */
+.menuHead{text-align:center;margin:auto 0 14px}
+.logo{font-size:72px;line-height:1;display:inline-block;animation:hop 1.6s ease-in-out infinite}
+@keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-16px) rotate(-6deg)}60%{transform:translateY(0)}}
+h1{margin:6px 0 4px;font-size:34px;letter-spacing:-.5px;line-height:1.05}
+.sub{margin:0;color:var(--muted);font-weight:700;font-size:16px}
+.rule{display:inline-block;margin-top:12px;background:#fff;border-radius:16px;padding:9px 14px;font-weight:800;font-size:15px;box-shadow:0 4px 0 #f0e2cc}
+.rule b{color:var(--red)}
+.modes{display:grid;gap:11px;margin-bottom:auto}
+.mode{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:12px;text-align:left;
+  background:#fff;border-radius:22px;padding:13px 14px;box-shadow:0 6px 0 #eadbc4}
+.mode:active{transform:translateY(3px);box-shadow:0 3px 0 #eadbc4}
+.mode .ic{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:28px}
+.mode strong{display:block;font-size:18px}
+.mode small{display:block;color:var(--muted);font-weight:700;font-size:13px;margin-top:2px;line-height:1.25}
+.rec{font-size:12px;font-weight:900;color:#8a5a12;background:#fff3dc;border-radius:999px;padding:5px 9px;white-space:nowrap}
+.m1 .ic{background:#e3f7ea}.m2 .ic{background:#ffe6e4}.m3 .ic{background:#e6efff}
+.menuFoot{display:flex;justify-content:center;gap:10px;margin-top:14px}
+.small{background:#ffffffcc;border-radius:999px;padding:8px 14px;font-weight:800;font-size:14px}
+
+/* ---------- Spiel ---------- */
+.top{display:flex;align-items:center;gap:8px}
+.iconBtn{width:40px;height:40px;border-radius:13px;background:#ffffffd9;font-size:20px;font-weight:900;flex:none}
+.prog{flex:1;height:14px;background:#ffffffb0;border-radius:999px;overflow:hidden;border:2px solid #fff}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffb347,var(--orange));border-radius:999px;transition:width .4s}
+.pill{background:#fff;border-radius:999px;padding:7px 11px;font-weight:900;font-size:15px;white-space:nowrap;box-shadow:0 3px 0 #eadbc4}
+.pill.streak{transition:transform .2s}
+.pill.streak.on{background:#fff0e0;color:#c2410c}
+.pill.bump{transform:scale(1.18)}
+
+.stage{flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;min-height:0;padding:10px 0;overflow-y:auto}
+.helping .stage{justify-content:flex-start;gap:8px;padding-top:8px}
+.helping .tag{display:none}
+.helping .eq{font-size:clamp(36px,11vw,48px)}
+.helping .taskCard{padding:8px 10px 6px;border-radius:20px}
+.helping .msg{min-height:0;font-size:15px;margin-top:2px}
+.helping .key{height:clamp(40px,6.4dvh,58px);font-size:24px}
+.helping .pad{gap:6px}
+.taskCard{position:relative;background:var(--card);border-radius:26px;box-shadow:var(--shadow);padding:16px 12px 14px;text-align:center}
+.tag{display:inline-block;font-size:12px;font-weight:900;letter-spacing:.3px;text-transform:uppercase;color:var(--muted);background:#f4efe6;border-radius:999px;padding:4px 10px;margin-bottom:6px}
+.pre{font-size:20px;font-weight:800;color:var(--muted);margin-bottom:2px}
+.pre .ok{color:var(--green)}
+.eq{font-size:clamp(46px,14vw,62px);font-weight:900;letter-spacing:1px;line-height:1.1;display:flex;justify-content:center;align-items:center;gap:.18em;white-space:nowrap}
+.eq .r{color:var(--red)}
+.slot{min-width:1.5em;padding:0 .12em;border-bottom:5px solid #d9cdb8;color:var(--blue);display:inline-block;text-align:center;border-radius:4px}
+.slot.empty{color:#c9bfae}
+.slot.good{color:var(--green);border-color:var(--green)}
+.slot.bad{color:var(--red);border-color:var(--red)}
+.taskCard.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+.msg{min-height:26px;font-weight:900;font-size:18px;margin-top:6px}
+.msg.good{color:var(--green)}.msg.bad{color:var(--red)}.msg.info{color:var(--muted)}
+.float{position:absolute;right:16px;top:10px;font-weight:1000;font-size:24px;color:var(--green);pointer-events:none;animation:up 1s ease-out forwards}
+@keyframes up{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-38px)}}
+
+.helpBtn{align-self:center;background:#fff;border-radius:999px;padding:10px 18px;font-weight:900;font-size:16px;box-shadow:0 4px 0 #eadbc4;display:flex;align-items:center;gap:8px}
+.helpBtn:active{transform:translateY(2px);box-shadow:0 2px 0 #eadbc4}
+.helpBtn.pulse{animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 4px 0 #eadbc4,0 0 0 7px #ffb34766}}
+.help{display:none;background:#fffdf8;border:3px solid #ffd59a;border-radius:22px;padding:8px 10px 10px}
+.help.open{display:block;animation:pop .25s ease-out}
+@keyframes pop{from{transform:scale(.96);opacity:0}}
+.helpHead{display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:14px;color:#9a5b08}
+.helpHead button{background:#fff1da;border-radius:999px;padding:5px 10px;font-weight:900;font-size:13px;color:#9a5b08}
+.nl{width:100%;height:auto;display:block}
+.nl .tick{stroke:var(--ink);stroke-width:1.4}
+.nl .tick.big{stroke-width:2}
+.nl .lbl{font-size:11px;font-weight:800;fill:var(--ink);text-anchor:middle}
+.nl .arc{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round}
+.nl .arcLbl{font-size:14px;font-weight:900;fill:var(--red);text-anchor:middle}
+.nl .arcLbl.plus{fill:var(--green)}
+.nl .dot{fill:var(--ink)}
+.nl .land{fill:var(--orange)}
+.nl .landLbl{font-size:12px;font-weight:900;fill:var(--orange);text-anchor:middle}
+.steps{margin:2px 0 0;padding:0;list-style:none;display:grid;gap:4px}
+.steps li{font-weight:800;font-size:16px;display:flex;align-items:center;gap:8px;opacity:0;transform:translateY(4px);transition:.3s}
+.steps li.show{opacity:1;transform:none}
+.steps .n{flex:none;width:22px;height:22px;border-radius:50%;background:#ffd59a;color:#7a4504;font-size:13px;display:grid;place-items:center}
+.steps .r{color:var(--red)}.steps .g{color:var(--green)}.steps .q{color:var(--blue)}
+
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.key{height:clamp(46px,7.6dvh,64px);border-radius:18px;background:#fff;font-size:28px;font-weight:900;box-shadow:0 5px 0 #e2d3bb}
+.key:active{transform:translateY(3px);box-shadow:0 2px 0 #e2d3bb}
+.key.del{background:#f4efe6;font-size:24px}
+.key.ok{background:var(--green);color:#fff;box-shadow:0 5px 0 #15803d}
+.key.ok:active{box-shadow:0 2px 0 #15803d}
+.pad.locked .key{opacity:.45;pointer-events:none}
+.next{display:none;height:clamp(52px,8dvh,64px);border-radius:18px;background:var(--orange);color:#fff;font-size:22px;font-weight:900;box-shadow:0 5px 0 #b45309;margin-top:8px;width:100%}
+.next.show{display:block}
+
+/* ---------- Ende ---------- */
+.endBox{margin:auto 0;text-align:center;background:#fff;border-radius:28px;box-shadow:var(--shadow);padding:22px 16px}
+.stars{font-size:46px;letter-spacing:6px;margin-bottom:4px}
+.stars span{display:inline-block;filter:grayscale(1);opacity:.3;transform:scale(.6);transition:.4s}
+.stars span.on{filter:none;opacity:1;transform:scale(1)}
+.bigScore{font-size:60px;font-weight:1000;line-height:1;color:var(--orange)}
+.bigScore small{display:block;font-size:15px;color:var(--muted);font-weight:800;margin-top:4px}
+.newRec{display:none;margin:16px auto 0;background:#fff3dc;color:#9a5b08;font-weight:1000;border-radius:999px;padding:8px 14px;width:max-content;animation:hop 1.2s infinite}
+.newRec.show{display:block}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:16px 0 6px}
+.stat{background:#f8f4ec;border-radius:16px;padding:9px 4px;font-weight:900;font-size:20px;white-space:nowrap}
+.stat small{display:block;font-size:11px;color:var(--muted);font-weight:800}
+.review{margin-top:12px;text-align:left}
+.review h3{font-size:15px;margin:0 0 6px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:#ffe6e4;color:#9b1c14;border-radius:999px;padding:5px 10px;font-weight:900;font-size:15px}
+.endBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.btn{height:56px;border-radius:18px;font-weight:900;font-size:18px;background:#fff;box-shadow:0 5px 0 #eadbc4}
+.btn.main{background:var(--orange);color:#fff;box-shadow:0 5px 0 #b45309}
+.btn:active{transform:translateY(3px)}
+
+.confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:50}
+.confetti i{position:absolute;top:-12px;width:9px;height:14px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105dvh) rotate(720deg)}}
+
+@media (max-height:640px){
+  .eq{font-size:44px}.taskCard{padding:10px 10px 8px}.msg{font-size:16px;min-height:22px}
+  .steps li{font-size:14px}.logo{font-size:56px}h1{font-size:28px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- Menü -->
+  <section class="screen active" id="menu">
+    <div class="menuHead">
+      <div class="logo" aria-hidden="true">🦘</div>
+      <h1>Känguru-Sprung</h1>
+      <p class="sub">Minus rechnen bis 20</p>
+      <div class="rule">In zwei Schritten zurück:<br><b>erst bis zum Zehner</b>, dann den Rest!</div>
+    </div>
+    <div class="modes">
+      <button class="mode m1" data-mode="warm"><span class="ic">🌱</span><span><strong>Aufwärmen</strong><small>10 Aufgaben · meist ohne Zehnerübergang</small></span><span class="rec" data-rec="warm"></span></button>
+      <button class="mode m2" data-mode="ten"><span class="ic">🔟</span><span><strong>Zehnerübergang</strong><small>15 Aufgaben · über die 10 springen</small></span><span class="rec" data-rec="ten"></span></button>
+      <button class="mode m3" data-mode="mix"><span class="ic">🏆</span><span><strong>Profi-Mix</strong><small>15 Aufgaben · mit Lücken und Probe</small></span><span class="rec" data-rec="mix"></span></button>
+    </div>
+    <div class="menuFoot"><button class="small" id="soundBtn">🔊 Ton an</button></div>
+  </section>
+
+  <!-- Spiel -->
+  <section class="screen" id="game">
+    <div class="top">
+      <button class="iconBtn" id="quit" aria-label="Zurück zum Menü">✕</button>
+      <div class="prog"><i id="progBar"></i></div>
+      <span class="pill streak" id="streak">🔥 0</span>
+      <span class="pill" id="score">⭐ 0</span>
+    </div>
+
+    <div class="stage">
+      <div class="taskCard" id="card">
+        <div class="tag" id="tag"></div>
+        <div class="pre" id="pre"></div>
+        <div class="eq" id="eq"></div>
+        <div class="msg" id="msg"></div>
+      </div>
+
+      <button class="helpBtn" id="helpBtn">🦘 Zeig mir den Weg</button>
+
+      <div class="help" id="help">
+        <div class="helpHead"><span>🦘 So springt das Känguru</span><button id="replay">↻ nochmal</button></div>
+        <svg class="nl" id="nl" viewBox="0 0 340 108" aria-hidden="true"></svg>
+        <ul class="steps" id="steps"></ul>
+      </div>
+    </div>
+
+    <div class="pad" id="pad">
+      <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
+      <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
+      <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
+      <button class="key del" data-k="del" aria-label="Löschen">⌫</button><button class="key" data-k="0">0</button><button class="key ok" data-k="ok" aria-label="Prüfen">✓</button>
+    </div>
+    <button class="next" id="next">Weiter ➜</button>
+  </section>
+
+  <!-- Ende -->
+  <section class="screen" id="end">
+    <div class="endBox">
+      <div class="stars" id="stars"><span>⭐</span><span>⭐</span><span>⭐</span></div>
+      <div class="bigScore" id="endScore">0<small>Punkte</small></div>
+      <div class="newRec" id="newRec">🏆 Neuer Rekord!</div>
+      <div class="stats">
+        <div class="stat" id="stRight">0<small>sofort richtig</small></div>
+        <div class="stat" id="stStreak">0<small>beste Serie</small></div>
+        <div class="stat" id="stRec">0<small>dein Rekord</small></div>
+      </div>
+      <div class="review" id="review"><h3>Diese Aufgaben übst du am besten nochmal:</h3><div class="chips" id="chips"></div></div>
+      <div class="endBtns">
+        <button class="btn" id="toMenu">Menü</button>
+        <button class="btn main" id="again">Nochmal!</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="confetti" id="confetti"></div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const M = '−';
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const shuffle = arr => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+
+/* ---------- Speicher (sicher) ---------- */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('minus20-' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('minus20-' + k, JSON.stringify(v)); } catch (e) {} }
+};
+
+/* ---------- Ton ---------- */
+let soundOn = store.get('sound', true), actx = null;
+function tone(freq, dur, when = 0, type = 'sine', vol = .18) {
+  if (!soundOn) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const t = actx.currentTime + when, o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+    o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + dur);
+  } catch (e) {}
+}
+const sfx = {
+  good() { tone(660, .15); tone(880, .22, .1); },
+  bad() { tone(220, .25, 0, 'triangle', .2); },
+  hop() { tone(520, .08, 0, 'sine', .08); },
+  fanfare() { [523, 659, 784, 1046].forEach((f, i) => tone(f, .25, i * .12)); }
+};
+function renderSound() { $('soundBtn').textContent = soundOn ? '🔊 Ton an' : '🔇 Ton aus'; }
+$('soundBtn').onclick = () => { soundOn = !soundOn; store.set('sound', soundOn); renderSound(); if (soundOn) sfx.good(); };
+renderSound();
+
+/* ---------- Aufgaben ---------- */
+// ohne Übergang: Ergebnis bleibt auf der gleichen Seite der 10
+function genNoCross() {
+  if (Math.random() < .8) { const a = rnd(12, 19), b = rnd(1, a - 10); return { a, b }; }
+  const a = rnd(5, 10), b = rnd(1, a - 1); return { a, b };
+}
+// mit Übergang: von einer Zahl über 10 auf eine Zahl unter 10
+function genCross() { const a = rnd(11, 18), b = rnd(a - 9, 9); return { a, b }; }
+
+function makeTask(kind) {
+  const p = kind === 'none' ? genNoCross() : genCross();
+  const c = p.a - p.b;
+  if (kind === 'gap')   return { type: 'gap',   a: p.a, b: p.b, c, answer: p.b, key: 'g' + p.a + '-' + p.b };
+  if (kind === 'probe') return { type: 'probe', a: p.a, b: p.b, c, answer: p.a, key: 'p' + p.a + '-' + p.b };
+  return { type: 'minus', a: p.a, b: p.b, c, answer: c, cross: kind === 'cross', key: 'm' + p.a + '-' + p.b };
+}
+const MODES = {
+  warm: { list: () => [...Array(7).fill('none'), ...Array(3).fill('cross')], easyFirst: true },
+  ten:  { list: () => Array(15).fill('cross') },
+  mix:  { list: () => [...Array(3).fill('none'), ...Array(7).fill('cross'), ...Array(3).fill('gap'), ...Array(2).fill('probe')], easyFirst: true }
+};
+function buildRound(mode) {
+  let kinds = MODES[mode].list();
+  if (MODES[mode].easyFirst) {
+    // die ersten zwei Aufgaben sind leicht, dann gemischt
+    const easy = kinds.filter(k => k === 'none'), rest = kinds.filter(k => k !== 'none');
+    const start = easy.splice(0, 2);
+    kinds = [...start, ...shuffle([...easy, ...rest])];
+  }
+  const seen = new Set(), out = [];
+  for (const k of kinds) {
+    let t, tries = 0;
+    do { t = makeTask(k); tries++; } while (seen.has(t.key) && tries < 40);
+    seen.add(t.key); out.push(t);
+  }
+  return out;
+}
+
+/* ---------- Zustand ---------- */
+let S = null;
+function startGame(mode) {
+  S = { mode, tasks: buildRound(mode), i: 0, score: 0, streak: 0, best: 0, firstRight: 0, wrongList: [], input: '', tries: 0, locked: false, t0: 0, helped: false };
+  show('game'); renderTop(); loadTask();
+}
+function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id)); }
+
+function renderTop() {
+  $('progBar').style.width = (S.i / S.tasks.length * 100) + '%';
+  $('score').textContent = '⭐ ' + S.score;
+  const st = $('streak'); st.textContent = '🔥 ' + S.streak; st.classList.toggle('on', S.streak >= 3);
+}
+
+const task = () => S.tasks[S.i];
+function loadTask() {
+  S.input = ''; S.tries = 0; S.locked = false; S.helped = false; S.t0 = Date.now();
+  const t = task();
+  $('tag').textContent = { minus: t.cross ? 'Über die 10' : 'Minus', gap: 'Lückenaufgabe', probe: 'Probe mit Plus' }[t.type];
+  $('pre').innerHTML = t.type === 'probe' ? `${t.a} ${M} <span class="r" style="color:var(--red)">${t.b}</span> = ${t.c} <span class="ok">✓</span> &nbsp;Stimmt das?` : '';
+  $('msg').textContent = ''; $('msg').className = 'msg';
+  $('game').classList.remove('helping');
+  $('help').classList.remove('open'); $('helpBtn').style.display = ''; $('helpBtn').classList.remove('pulse');
+  $('pad').classList.remove('locked'); $('next').classList.remove('show'); $('pad').style.display = '';
+  renderEq();
+}
+function slot(cls = '') {
+  const v = S.input === '' ? '?' : S.input;
+  return `<span class="slot ${S.input === '' ? 'empty' : ''} ${cls}" id="slot">${v}</span>`;
+}
+function renderEq(cls) {
+  const t = task();
+  let h;
+  if (t.type === 'minus') h = `<span>${t.a}</span><span>${M}</span><span class="r">${t.b}</span><span>=</span>${slot(cls)}`;
+  else if (t.type === 'gap') h = `<span>${t.a}</span><span>${M}</span>${slot(cls)}<span>=</span><span>${t.c}</span>`;
+  else h = `<span>${t.c}</span><span>+</span><span class="r">${t.b}</span><span>=</span>${slot(cls)}`;
+  $('eq').innerHTML = h;
+}
+
+/* ---------- Eingabe ---------- */
+function press(k) {
+  if (!S || S.locked) return;
+  if (k === 'del') S.input = S.input.slice(0, -1);
+  else if (k === 'ok') return check();
+  else if (S.input.length < 2) S.input = (S.input === '0' ? '' : S.input) + k;
+  renderEq();
+}
+$('pad').addEventListener('click', e => { const b = e.target.closest('.key'); if (b) press(b.dataset.k); });
+document.addEventListener('keydown', e => {
+  if (!$('game').classList.contains('active')) return;
+  if (/^[0-9]$/.test(e.key)) press(e.key);
+  else if (e.key === 'Backspace') press('del');
+  else if (e.key === 'Enter') { if ($('next').classList.contains('show')) nextTask(); else press('ok'); }
+});
+
+function check() {
+  if (S.input === '') { msg('Tippe erst eine Zahl ein.', 'info'); return; }
+  const t = task(), val = parseInt(S.input, 10);
+  if (val === t.answer) {
+    S.locked = true;
+    let pts, label;
+    if (S.tries === 0) {
+      S.streak++; S.firstRight++;
+      pts = 10;
+      const fast = !S.helped && Date.now() - S.t0 < 8000;
+      if (fast) pts += 5;
+      if (S.streak >= 5) pts += 10; else if (S.streak >= 3) pts += 5;
+      label = S.streak >= 5 ? `Super-Serie! 🔥${S.streak}` : fast ? 'Blitzschnell! ⚡' : ['Richtig!', 'Prima!', 'Klasse!', 'Genau!'][rnd(0, 3)];
+    } else {
+      S.streak = 1; pts = 5; label = 'Jetzt stimmt’s! 👍';
+    }
+    S.best = Math.max(S.best, S.streak);
+    S.score += pts;
+    renderEq('good'); msg(label, 'good'); floatPts('+' + pts); sfx.good();
+    const st = $('streak'); st.classList.add('bump'); setTimeout(() => st.classList.remove('bump'), 200);
+    if (S.streak > 0 && S.streak % 5 === 0) burst(26);
+    renderTop();
+    setTimeout(nextTask, 1100);
+  } else {
+    S.tries++; S.streak = 0; renderTop();
+    sfx.bad(); renderEq('bad');
+    const c = $('card'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake');
+    if (S.tries === 1) {
+      msg('Fast! Probier es nochmal.', 'bad');
+      $('helpBtn').classList.add('pulse');
+      setTimeout(() => { if (!S.locked) { S.input = ''; renderEq(); } }, 700);
+    } else {
+      // Lösung zeigen
+      S.locked = true;
+      if (!S.wrongList.includes(t)) S.wrongList.push(t);
+      msg('So geht’s – schau dem Känguru zu:', 'bad');
+      setTimeout(() => {
+        S.input = String(t.answer); renderEq('good');
+        openHelp(true);
+        $('pad').style.display = 'none'; $('next').classList.add('show');
+      }, 600);
+    }
+  }
+}
+function msg(text, cls) { const m = $('msg'); m.textContent = text; m.className = 'msg ' + cls; }
+function floatPts(txt) { const f = document.createElement('div'); f.className = 'float'; f.textContent = txt; $('card').appendChild(f); setTimeout(() => f.remove(), 1000); }
+
+function nextTask() {
+  S.i++;
+  renderTop();
+  if (S.i >= S.tasks.length) return finish();
+  loadTask();
+}
+$('next').onclick = nextTask;
+$('quit').onclick = () => { S = null; renderRecords(); show('menu'); };
+
+/* ---------- Hilfe: Zahlenstrahl ---------- */
+const X0 = 18, X1 = 322, BASE = 78;
+const xOf = n => X0 + (X1 - X0) * n / 20;
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text != null) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function helpPlan(t) {
+  let from, to, dir;
+  if (t.type === 'probe') { from = t.c; to = t.a; dir = 1; } else { from = t.a; to = t.c; dir = -1; }
+  const crosses = dir < 0 ? (from > 10 && to < 10) : (from < 10 && to > 10);
+  const parts = crosses ? [[from, 10], [10, to]] : [[from, to]];
+  const s1 = Math.abs(from - 10), s2 = Math.abs(10 - to), q = '<span class="q">?</span>';
+  let steps;
+  if (t.type === 'minus') {
+    steps = crosses
+      ? [`Zerlege die <span class="r">${t.b}</span>: &nbsp;<span class="r">${s1}</span> und <span class="r">${s2}</span>`,
+         `Erst bis zum Zehner: ${from} ${M} <span class="r">${s1}</span> = 10`,
+         `Dann den Rest: 10 ${M} <span class="r">${s2}</span> = ${q}`]
+      : [`Kein Zehner dazwischen – ein Sprung reicht.`,
+         `${from} ${M} <span class="r">${t.b}</span> = ${q}`];
+  } else if (t.type === 'gap') {
+    steps = crosses
+      ? [`Von ${from} bis zur 10: <span class="r">${s1}</span> Sprünge`,
+         `Von 10 bis ${to}: <span class="r">${s2}</span> Sprünge`,
+         `Zusammen: <span class="r">${s1}</span> + <span class="r">${s2}</span> = ${q}`]
+      : [`Zähle die Sprünge von ${from} zurück bis ${to}.`,
+         `Wie viele Sprünge sind es? ${q}`];
+  } else {
+    steps = crosses
+      ? [`Zerlege die <span class="g">${t.b}</span>: &nbsp;<span class="g">${s1}</span> und <span class="g">${s2}</span>`,
+         `Erst bis zum Zehner: ${from} + <span class="g">${s1}</span> = 10`,
+         `Dann den Rest: 10 + <span class="g">${s2}</span> = ${q}`]
+      : [`Ein Sprung nach vorne: ${from} + <span class="g">${t.b}</span> = ${q}`];
+  }
+  return { from, to, dir, parts, steps, crosses };
+}
+
+let animToken = 0;
+function openHelp(reveal) {
+  S.helped = true;
+  $('helpBtn').style.display = 'none';
+  $('help').classList.add('open'); $('game').classList.add('helping');
+  playHelp(reveal);
+}
+function playHelp(reveal) {
+  const t = task(), plan = helpPlan(t), token = ++animToken;
+  const svg = $('nl'); svg.innerHTML = '';
+  el('defs', {}, svg).innerHTML = '<marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1f2a44"/></marker>';
+  // Zahlenstrahl
+  el('line', { x1: X0 - 8, y1: BASE, x2: X1 + 8, y2: BASE, class: 'tick big' }, svg);
+  for (let n = 0; n <= 20; n++) {
+    const big = n % 5 === 0, ten = n === 10;
+    el('line', { x1: xOf(n), y1: BASE - (ten ? 13 : big ? 9 : 5), x2: xOf(n), y2: BASE + (ten ? 13 : big ? 9 : 5), class: 'tick' + (big ? ' big' : '') }, svg);
+    if (big) el('text', { x: xOf(n), y: BASE + 26, class: 'lbl', style: ten ? 'font-size:13px;font-weight:1000' : '' }, svg, n);
+  }
+  el('circle', { cx: xOf(plan.from), cy: BASE, r: 3.6, class: 'dot' }, svg);
+  if (plan.from % 5) el('text', { x: xOf(plan.from), y: BASE + 26, class: 'lbl' }, svg, plan.from);
+
+  // Arcs vorbereiten (unsichtbar)
+  const arcs = plan.parts.map(([a, b]) => {
+    const xa = xOf(a), xb = xOf(b), d = Math.abs(xb - xa), h = Math.min(56, 24 + d * .5);
+    const mx = (xa + xb) / 2;
+    const path = el('path', { d: `M${xa} ${BASE - 2} Q${mx} ${BASE - 2 - h * 2} ${xb} ${BASE - 3}`, class: 'arc', 'marker-end': 'url(#ah)' }, svg);
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = len; path.style.strokeDashoffset = len;
+    const steps = Math.abs(b - a);
+    let lblText = (plan.dir < 0 ? M : '+') + steps;
+    if (t.type === 'gap' && !plan.crosses) lblText = '?';
+    const lbl = el('text', { x: mx, y: Math.min(BASE - h - 8, BASE - 42), class: 'arcLbl' + (plan.dir > 0 ? ' plus' : ''), opacity: 0 }, svg, lblText);
+    return { path, len, lbl, b };
+  });
+  const roo = el('g', { transform: `translate(${xOf(plan.from)} ${BASE - 6})` }, svg);
+  el('text', { 'font-size': 24, 'text-anchor': 'middle', y: 0, transform: plan.dir > 0 ? 'scale(-1 1)' : '' }, roo, '🦘');
+
+  // Schritte
+  const ul = $('steps');
+  ul.innerHTML = plan.steps.map((s, i) => {
+    let html = s;
+    if (reveal) html = html.replace('<span class="q">?</span>', `<span class="q" style="color:var(--green)">${t.answer}</span>`);
+    return `<li><span class="n">${i + 1}</span><span>${html}</span></li>`;
+  }).join('');
+  const lis = [...ul.children];
+
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const alive = () => token === animToken;
+  function hop(arc) {
+    return new Promise(res => {
+      const dur = 380 + arc.len * 2.2, t0 = performance.now();
+      sfx.hop();
+      function f(now) {
+        if (!alive()) return res();
+        const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        arc.path.style.strokeDashoffset = arc.len * (1 - e);
+        const p = arc.path.getPointAtLength(arc.len * e);
+        roo.setAttribute('transform', `translate(${p.x} ${p.y - 6})`);
+        if (k < 1) requestAnimationFrame(f); else res();
+      }
+      requestAnimationFrame(f);
+    });
+  }
+  (async () => {
+    let li = 0;
+    const showLi = () => { if (lis[li]) lis[li++].classList.add('show'); };
+    if (plan.steps.length > arcs.length) { showLi(); await wait(650); }
+    for (let i = 0; i < arcs.length; i++) {
+      if (!alive()) return;
+      await hop(arcs[i]);
+      if (!alive()) return;
+      arcs[i].lbl.setAttribute('opacity', 1);
+      const isLast = i === arcs.length - 1;
+      if (!isLast) { el('circle', { cx: xOf(10), cy: BASE, r: 3.6, class: 'dot' }, svg); }
+      showLi();
+      await wait(isLast ? 200 : 750);
+    }
+    if (!alive()) return;
+    while (li < lis.length) { showLi(); await wait(500); }
+    el('circle', { cx: xOf(plan.to), cy: BASE, r: 5, class: 'land' }, svg);
+    if (reveal) el('text', { x: xOf(plan.to), y: BASE + (plan.to % 5 === 0 ? 40 : 26), class: 'landLbl' }, svg, plan.to);
+  })();
+}
+$('helpBtn').onclick = () => { $('helpBtn').classList.remove('pulse'); openHelp(false); };
+$('replay').onclick = () => playHelp(S.locked && S.tries >= 2);
+
+/* ---------- Ende ---------- */
+function finish() {
+  animToken++;
+  const n = S.tasks.length, ratio = S.firstRight / n;
+  const stars = ratio >= .9 ? 3 : ratio >= .7 ? 2 : 1;
+  const old = store.get('rec-' + S.mode, 0), isNew = S.score > old;
+  if (isNew) store.set('rec-' + S.mode, S.score);
+  show('end');
+  $('endScore').innerHTML = `${S.score}<small>Punkte</small>`;
+  $('stRight').innerHTML = `${S.firstRight}/${n}<small>sofort richtig</small>`;
+  $('stStreak').innerHTML = `${S.best}<small>beste Serie</small>`;
+  $('stRec').innerHTML = `${Math.max(old, S.score)}<small>dein Rekord</small>`;
+  $('newRec').classList.toggle('show', isNew && S.score > 0);
+  const sp = [...$('stars').children]; sp.forEach(s => s.classList.remove('on'));
+  sp.slice(0, stars).forEach((s, i) => setTimeout(() => s.classList.add('on'), 300 + i * 350));
+  const chips = S.wrongList.map(t => t.type === 'minus' ? `${t.a} ${M} ${t.b} = ${t.c}` : t.type === 'gap' ? `${t.a} ${M} ${t.b} = ${t.c}` : `${t.c} + ${t.b} = ${t.a}`);
+  $('review').style.display = chips.length ? '' : 'none';
+  $('chips').innerHTML = chips.map(c => `<span class="chip">${c}</span>`).join('');
+  if (isNew && S.score > 0) { sfx.fanfare(); burst(70); } else if (stars === 3) { sfx.fanfare(); burst(40); }
+}
+$('again').onclick = () => startGame(S.mode);
+$('toMenu').onclick = () => { renderRecords(); show('menu'); };
+
+function burst(count) {
+  const box = $('confetti'), cols = ['#f08a24', '#e5382f', '#22a35a', '#2f6fd6', '#ffd23f', '#c86bfa'];
+  for (let i = 0; i < count; i++) {
+    const c = document.createElement('i');
+    c.style.left = Math.random() * 100 + '%';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.4 + Math.random() * 1.4) + 's';
+    c.style.animationDelay = Math.random() * .4 + 's';
+    box.appendChild(c); setTimeout(() => c.remove(), 3400);
+  }
+}
+
+/* ---------- Menü ---------- */
+function renderRecords() {
+  document.querySelectorAll('[data-rec]').forEach(e => {
+    const r = store.get('rec-' + e.dataset.rec, 0);
+    e.textContent = r ? '🏆 ' + r : '';
+    e.style.display = r ? '' : 'none';
+  });
+}
+document.querySelectorAll('.mode').forEach(b => b.onclick = () => startGame(b.dataset.mode));
+renderRecords();
+})();
+</script>
+</body>
+</html>
