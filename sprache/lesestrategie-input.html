@@ -118,6 +118,9 @@ ol.auf li::before{content:counter(a);flex:0 0 56px;height:56px;border-radius:50%
 .uhr{display:flex;gap:24px;align-items:center;background:var(--sage-ghost);border:4px solid var(--sage-dark);border-radius:22px;padding:20px 24px;font-size:31px;line-height:1.35}
 .uhr .zeit{flex:0 0 auto;font-size:64px;font-weight:700;color:var(--sage-dark);background:#fff;border:4px solid var(--sage-dark);border-radius:16px;padding:4px 18px}
 .uhr.klein{font-size:26px;padding:14px 18px}.uhr.klein .zeit{font-size:44px}
+a.los{align-self:flex-start;margin-top:44px;font-size:40px;font-weight:700;color:#fff;background:var(--rust-base);border:4px solid var(--rust-dark);
+ border-radius:60px;padding:18px 52px;text-decoration:none;box-shadow:0 6px 0 var(--rust-dark)}
+a.los:active{transform:translateY(3px);box-shadow:0 3px 0 var(--rust-dark)}
 /* Leiste */
 #bar{position:absolute;left:80px;right:260px;bottom:30px;display:flex;gap:8px;align-items:center}
 #bar .dot{flex:1;height:8px;border-radius:4px;background:var(--slate-pale)}
@@ -259,6 +262,7 @@ body.vb #raus{display:block}
 <h1>Das Lese-Duell</h1>
 <div class='ziel' style='margin-bottom:24px'><b>Alle wieder da?</b> Gruppe 2 ist zurück – jetzt spielen wir zusammen.</div>
 <div class='ziel'>Zwei Teams, sechs Stufen. Wer hat die Texte wirklich verstanden?<br>Die Antworten stehen im Text – mit Zeilennummer.</div>
+<a class='los' href='lese-duell.html' onclick='event.stopPropagation()' ontouchend='event.stopPropagation()'>▶ Zum Lese-Duell</a>
 </section><div id='bar'></div><div id='hint'>Leertaste/Klick: weiter · ←: zurück · F: Vollbild · A: alles zeigen</div></div><div id='nav'><button onclick='event.stopPropagation();prev()' aria-label='zurück'>‹</button><button id='vbBtn' onclick='event.stopPropagation();vollbild()' aria-label='Vollbild'>⛶</button><button onclick='event.stopPropagation();next()' aria-label='weiter'>›</button></div><button id='raus' onclick='vollbild()' aria-label='Vollbild verlassen'>✕</button><script>
 const slides=[...document.querySelectorAll('.slide')];let i=0,k=0;
 const bar=document.getElementById('bar');
