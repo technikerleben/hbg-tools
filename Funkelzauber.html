@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#2a1b5c">
+<title>Funkelzauber – Laute verbinden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#1e1350; --bg2:#4a2380; --bg3:#8a3a9e;
+  --pink:#ff7ac6; --lila:#b38cff; --gold:#ffd76a; --mint:#7ef0d0; --sky:#7cc8ff;
+  --card:#fff8fe; --ink:#3a2463; --muted:#7a6a9a;
+  --s1:#3d6bff; --s2:#e8346f;
+  --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overscroll-behavior:none}
+body{
+  font-family:"Fredoka",system-ui,sans-serif;color:#fff;
+  background:
+    radial-gradient(120% 60% at 50% 0%, #6b2fa0 0%, transparent 60%),
+    radial-gradient(90% 50% at 100% 100%, #c2448f55 0%, transparent 60%),
+    linear-gradient(180deg,var(--bg1),var(--bg2) 60%,var(--bg3));
+  background-attachment:fixed;
+  -webkit-user-select:none;user-select:none;
+}
+button{font-family:inherit;cursor:pointer;border:0;color:inherit}
+#sky{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.tw{position:absolute;color:#fff;opacity:.2;animation:tw 3s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:.9;transform:scale(1.1)}}
+
+#app{position:relative;z-index:1;display:flex;flex-direction:column;height:100dvh;max-width:520px;margin:0 auto;padding-top:var(--safe-t)}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px 6px}
+header h1{flex:1;margin:0;font-size:1.15rem;font-weight:700;letter-spacing:.3px;text-shadow:0 2px 8px #0006}
+.hbtn{width:44px;height:44px;border-radius:14px;background:#ffffff22;font-size:1.3rem;display:grid;place-items:center}
+.stars{background:#ffffff22;border-radius:999px;padding:8px 12px;font-weight:700;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.stars.pop{animation:pop .5s}
+@keyframes pop{50%{transform:scale(1.25)}}
+main{flex:1;overflow-y:auto;overflow-x:hidden;padding:4px 14px 14px;display:flex;flex-direction:column;gap:12px}
+
+/* Funkel */
+.guide{display:flex;align-items:flex-end;gap:8px}
+.funkel{font-size:3.2rem;filter:drop-shadow(0 0 12px #ff9ad8aa);animation:float 3s ease-in-out infinite;line-height:1}
+@keyframes float{50%{transform:translateY(-6px) rotate(-3deg)}}
+.bubble{background:var(--card);color:var(--ink);border-radius:18px 18px 18px 4px;padding:10px 14px;font-weight:600;font-size:1rem;box-shadow:0 6px 18px #0004;position:relative;flex:1}
+
+/* Home */
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mcard{border-radius:22px;padding:16px 12px;text-align:left;display:flex;flex-direction:column;gap:4px;min-height:140px;box-shadow:0 8px 20px #0005,inset 0 2px 0 #fff6;position:relative;overflow:hidden}
+.mcard::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,#ffffff55 45%,transparent 60%);transform:translateX(-100%);animation:shine 4s infinite}
+@keyframes shine{60%,100%{transform:translateX(100%)}}
+.mcard .ic{font-size:2.4rem}
+.mcard b{font-size:1.1rem;line-height:1.15}
+.mcard small{font-size:.8rem;opacity:.9;font-weight:500}
+.c1{background:linear-gradient(145deg,#a77bff,#6b4bd6)}
+.c2{background:linear-gradient(145deg,#ff8fc8,#e0509c)}
+.c3{background:linear-gradient(145deg,#5fd8c0,#2a9e9a)}
+.c4{background:linear-gradient(145deg,#ffc56a,#f08a4b)}
+.panel{background:#ffffff18;border:1px solid #ffffff30;border-radius:20px;padding:12px 14px}
+.panel h3{margin:0 0 6px;font-size:1rem}
+.treasure{display:flex;flex-wrap:wrap;gap:6px;font-size:1.7rem;min-height:40px}
+.treasure .locked{opacity:.25;filter:grayscale(1)}
+.row{display:flex;gap:10px}
+.sbtn{flex:1;border-radius:16px;padding:14px 10px;background:#ffffff22;font-weight:600;font-size:.95rem}
+
+/* letter tiles */
+.tile{
+  font-family:"Andika",sans-serif;font-weight:700;color:var(--ink);
+  background:var(--card);border-radius:22px;display:grid;place-items:center;
+  box-shadow:0 8px 0 #d9c4f0,0 12px 24px #0005;line-height:1;
+  transition:box-shadow .2s, transform .2s;
+}
+.tile.glow{box-shadow:0 8px 0 #f6b6dd,0 0 0 4px var(--gold),0 0 30px 8px #ffd76acc}
+.tile.v{color:var(--s2)}
+
+/* Laute entdecken */
+.lcard{background:var(--card);color:var(--ink);border-radius:28px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 10px 30px #0006;position:relative}
+.lcard .big{font-family:"Andika";font-weight:700;font-size:min(42vw,190px);line-height:1;cursor:pointer}
+.lcard .pair{font-family:"Andika";font-size:1.3rem;color:var(--muted)}
+.lcard .anchor{font-size:3rem}
+.lcard .aw{font-family:"Andika";font-size:1.6rem}
+.lcard .aw b{color:var(--s2)}
+.tag{display:inline-block;border-radius:999px;padding:4px 12px;font-size:.85rem;font-weight:600}
+.tag.d{background:#dff7ef;color:#1c7a60}.tag.k{background:#fff0d6;color:#a55b00}.tag.vv{background:#ffe1ee;color:#b0245c}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.nav button{width:64px;height:64px;border-radius:50%;background:#ffffff25;font-size:1.6rem}
+.dots{font-size:.9rem;opacity:.8}
+
+/* Stage (Rutsche) */
+.stage{position:relative;height:min(36vh,260px);border-radius:26px;background:linear-gradient(180deg,#ffffff14,#ffffff05);border:1px solid #ffffff25;overflow:hidden}
+.stage .tile{position:absolute;top:50%;width:min(30vw,128px);height:min(36vw,150px);font-size:min(26vw,118px);transform:translateY(-50%)}
+.ribbon{position:absolute;top:50%;height:22px;transform:translateY(-50%);border-radius:999px;
+  background:linear-gradient(90deg,#ff7ac6,#ffd76a,#7ef0d0,#7cc8ff,#b38cff);background-size:200% 100%;animation:rb 2s linear infinite;box-shadow:0 0 16px #ffd76a99;opacity:.9}
+@keyframes rb{to{background-position:200% 0}}
+.kind{position:absolute;left:12px;top:10px}
+.track{position:relative;height:76px;border-radius:999px;background:#ffffff1f;border:2px dashed #ffffff55;touch-action:none}
+.track .fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,#ff7ac688,#ffd76a88,#7ef0d088)}
+.track .handle{position:absolute;top:50%;width:68px;height:68px;margin-top:-34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#ffe9a8 40%,#ffc23d);display:grid;place-items:center;font-size:2rem;box-shadow:0 0 20px #ffd76acc,0 4px 10px #0005}
+.track .hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-end;padding-right:22px;font-weight:600;opacity:.75;pointer-events:none}
+
+/* Trank */
+.formula{display:flex;align-items:center;justify-content:center;gap:8px}
+.formula .tile{width:min(19vw,90px);height:min(26vw,112px);font-size:min(16vw,80px)}
+.formula .op{font-size:1.6rem;font-weight:700;opacity:.8}
+.formula .res{display:flex;align-items:center;justify-content:center;width:auto;min-width:min(30vw,140px);padding:0 10px}
+.formula .empty{background:#ffffff22;box-shadow:none;color:#fff8;border:3px dashed #fff6}
+.pot{position:relative;width:200px;height:120px;margin:4px auto 0}
+.pot .body{position:absolute;bottom:0;left:10px;right:10px;height:96px;border-radius:20px 20px 70px 70px;background:linear-gradient(180deg,#3a2a5a,#1b1230);box-shadow:inset 0 -10px 20px #0008,0 8px 20px #0006}
+.pot .liquid{position:absolute;top:-4px;left:-8px;right:-8px;height:26px;border-radius:50%;background:var(--liq,#b38cff);box-shadow:0 0 30px var(--liq,#b38cff)}
+.pot .bub{position:absolute;bottom:90px;border-radius:50%;background:var(--liq,#b38cff);opacity:0;animation:bub 1.6s ease-out infinite}
+.pot.boil .bub{opacity:1}
+@keyframes bub{0%{transform:translateY(0) scale(.4);opacity:.9}100%{transform:translateY(-60px) scale(1.2);opacity:0}}
+.bottles{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.bottle{width:64px;height:92px;position:relative;background:none;padding:0}
+.bottle .neck{position:absolute;left:22px;width:20px;top:0;height:22px;background:#ffffffcc;border-radius:6px 6px 0 0}
+.bottle .cork{position:absolute;left:20px;width:24px;top:-8px;height:12px;background:#c89060;border-radius:4px}
+.bottle .glass{position:absolute;bottom:0;left:0;right:0;height:72px;border-radius:24px 24px 30px 30px;background:var(--c);box-shadow:inset 0 -8px 0 #0002,inset 6px 6px 0 #ffffff55,0 6px 14px #0005;display:grid;place-items:center;font-family:"Andika";font-weight:700;font-size:2.4rem;color:#fff;text-shadow:0 2px 4px #0005}
+.bottle.done::after{content:"✨";position:absolute;right:-6px;top:-4px;font-size:1.2rem}
+.bottle:active{transform:scale(.92)}
+
+/* Wörter */
+.word{display:flex;justify-content:center;flex-wrap:nowrap;gap:2px;background:var(--card);border-radius:26px;padding:22px 10px 30px;box-shadow:0 10px 30px #0006}
+.syl{font-family:"Andika";font-weight:700;font-size:min(17vw,84px);line-height:1;position:relative;padding:0 2px 10px;transition:transform .2s, text-shadow .2s}
+.syl:nth-child(odd){color:var(--s1)}.syl:nth-child(even){color:var(--s2)}
+.syl::after{content:"";position:absolute;left:8%;right:8%;bottom:-6px;height:16px;border:4px solid currentColor;border-top:0;border-radius:0 0 50% 50%/0 0 100% 100%;opacity:.55}
+.syl.on{transform:translateY(-6px) scale(1.06);text-shadow:0 0 18px #ffd76a}
+.word.small .syl{font-size:min(13vw,64px)}
+.pics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pic{aspect-ratio:1;border-radius:22px;background:var(--card);font-size:min(16vw,72px);display:grid;place-items:center;box-shadow:0 6px 0 #d9c4f0,0 10px 20px #0005}
+.pic.wrong{animation:shake .4s}
+.pic.right{box-shadow:0 0 0 5px var(--gold),0 0 30px #ffd76a}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+/* Adult bar */
+.adult{position:relative;z-index:3;background:#140a35e6;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid #ffffff2a;padding:8px 12px calc(10px + var(--safe-b));border-radius:22px 22px 0 0}
+.adult .lbl{font-size:.72rem;letter-spacing:1px;text-transform:uppercase;opacity:.6;text-align:center;margin-bottom:6px}
+.abtns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ab{border-radius:16px;padding:10px 4px;background:#ffffff1c;font-size:.78rem;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:58px}
+.ab span{font-size:1.4rem}
+.ab.go{background:linear-gradient(145deg,#ffd76a,#ff9fcf);color:#3a2463}
+.ab.go.ready{animation:pulse 1.2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px #ffd76a55}}
+.ab:disabled{opacity:.35}
+.tipbox{display:none;background:var(--card);color:var(--ink);border-radius:16px;padding:12px 14px;margin-bottom:8px;font-size:.95rem;line-height:1.4;max-height:34vh;overflow:auto}
+.tipbox.open{display:block}
+.tipbox b{color:#7a3fd0}
+.tipbox .lt{font-family:"Andika";font-weight:700;font-size:1.2rem;color:var(--s2)}
+
+/* Kiste */
+.grp h4{margin:8px 0 6px;font-size:.95rem;opacity:.9}
+.lgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.lt-btn{aspect-ratio:1;border-radius:14px;font-family:"Andika";font-weight:700;font-size:1.6rem;background:#ffffff1a;color:#fff9;border:2px solid #ffffff30}
+.lt-btn.on{background:var(--card);color:var(--ink);border-color:var(--gold);box-shadow:0 0 12px #ffd76a88}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #ffffff1a}
+.opt:last-child{border:0}
+.seg{display:flex;background:#ffffff1a;border-radius:12px;padding:3px}
+.seg button{padding:8px 12px;border-radius:10px;background:none;font-weight:600}
+.seg button.on{background:var(--card);color:var(--ink)}
+.info p{margin:0 0 10px;line-height:1.45;font-size:.98rem}
+.info ul{margin:0 0 10px;padding-left:20px;line-height:1.45}
+
+/* burst */
+.sp{position:fixed;pointer-events:none;z-index:50;font-size:1.6rem;animation:fly 1s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--dx),var(--dy)) scale(.4) rotate(200deg);opacity:0}}
+.modal{position:fixed;inset:0;z-index:40;background:#0009;display:grid;place-items:center;padding:20px}
+.modal .box{background:var(--card);color:var(--ink);border-radius:26px;padding:22px;text-align:center;max-width:360px;box-shadow:0 20px 50px #0008}
+.modal .box .em{font-size:4rem}
+.modal .box h2{margin:6px 0}
+.modal .box button{margin-top:12px;border-radius:16px;padding:12px 18px;background:linear-gradient(145deg,#b38cff,#ff7ac6);color:#fff;font-weight:700;font-size:1rem}
+.note{font-size:.85rem;opacity:.8;text-align:center}
+</style>
+</head>
+<body>
+<div id="sky"></div>
+<div id="app">
+  <header>
+    <button class="hbtn" id="homeBtn" aria-label="Start">🏠</button>
+    <h1 id="title">Funkelzauber</h1>
+    <div class="stars" id="stars">⭐ <span id="starN">0</span></div>
+  </header>
+  <main id="main"></main>
+  <div class="adult" id="adult" hidden>
+    <div class="tipbox" id="tipbox"></div>
+    <div class="lbl">🧑 Für Erwachsene</div>
+    <div class="abtns" id="abtns"></div>
+  </div>
+</div>
+
+<script>
+/* ---------- Daten ---------- */
+const LETTERS = {
+  a:{t:'v',e:'🍍',w:'Ananas',tip:'Mund weit auf: <b>aaa</b> – wie beim Zahnarzt. Schön lang ziehen.'},
+  e:{t:'v',e:'🐘',w:'Esel',tip:'Breit lächeln: <b>eee</b> – wie in „Esel“. Nicht „ä“.',aw:'<b>E</b>sel'},
+  i:{t:'v',e:'🦔',w:'Igel',tip:'Lächeln, Mund schmal: <b>iii</b> – wie in „Igel“.'},
+  o:{t:'v',e:'👵',w:'Oma',tip:'Lippen rund wie ein O: <b>ooo</b> – wie in „Oma“.'},
+  u:{t:'v',e:'🛸',w:'Ufo',tip:'Lippen spitz nach vorn: <b>uuu</b> – wie ein Ufo, das vorbeifliegt.'},
+  m:{t:'d',e:'🐭',w:'Maus',tip:'Lippen zu und summen: <b>mmm</b> – wie wenn etwas lecker schmeckt. Nicht „em“!'},
+  s:{t:'d',e:'☀️',w:'Sonne',tip:'Zähne zusammen, summen wie eine Biene oder zischen wie eine Schlange: <b>sss</b>. Nicht „es“!'},
+  l:{t:'d',e:'🦁',w:'Löwe',tip:'Zungenspitze oben hinter die Zähne und singen: <b>lll</b>. Nicht „el“!'},
+  r:{t:'d',e:'🚀',w:'Rakete',tip:'Wie ein brummender Motor oder ein Löwe: <b>rrr</b>. Nicht „er“!'},
+  f:{t:'d',e:'🐟',w:'Fisch',tip:'Obere Zähne auf die Unterlippe und pusten: <b>fff</b>. Nicht „ef“!'},
+  n:{t:'d',e:'👃',w:'Nase',tip:'Zunge oben, durch die Nase summen: <b>nnn</b>. Nicht „en“!'},
+  w:{t:'d',e:'🐋',w:'Wal',tip:'Wie f, aber mit Stimme – wie der Wind: <b>www</b>. Nicht „we“!'},
+  h:{t:'d',e:'🐰',w:'Hase',tip:'Warm in die Hand hauchen: <b>hhh</b>. Nicht „ha“!'},
+  t:{t:'k',e:'🍅',w:'Tomate',tip:'Kurz und leise wie ein Tropfen: <b>t</b>. Nicht „te“ – und kein „tö“ hinterher!'},
+  p:{t:'k',e:'🐧',w:'Pinguin',tip:'Lippen zu, kurz ploppen, als ob man eine Kerze auspustet: <b>p</b>. Nicht „pe“!'},
+  k:{t:'k',e:'🐄',w:'Kuh',tip:'Hinten im Hals ganz kurz, wie ein kleines Husten: <b>k</b>. Nicht „ka“!'},
+  b:{t:'k',e:'🍌',w:'Banane',tip:'Lippen zu, kurz mit Stimme: <b>b</b>. Nicht „be“!'},
+  d:{t:'k',e:'🦕',w:'Dino',tip:'Zunge oben, kurz mit Stimme: <b>d</b>. Nicht „de“!'},
+  g:{t:'k',e:'👻',w:'Gespenst',tip:'Hinten im Hals, kurz mit Stimme: <b>g</b>. Nicht „ge“!'}
+};
+const ORDER = ['m','a','o','i','l','s','e','u','r','f','n','w','h','t','p','k','b','d','g'];
+const VOWELS = ['a','e','i','o','u'];
+
+const WORDS = [
+  {w:'oma',s:['o','ma'],e:'👵',n:'Oma'},
+  {w:'opa',s:['o','pa'],e:'👴',n:'Opa'},
+  {w:'mama',s:['ma','ma'],e:'👩',n:'Mama'},
+  {w:'papa',s:['pa','pa'],e:'👨',n:'Papa'},
+  {w:'lila',s:['li','la'],e:'🟣',n:'lila'},
+  {w:'rosa',s:['ro','sa'],e:'💗',n:'rosa'},
+  {w:'rose',s:['ro','se'],e:'🌹',n:'Rose'},
+  {w:'lama',s:['la','ma'],e:'🦙',n:'Lama'},
+  {w:'nase',s:['na','se'],e:'👃',n:'Nase'},
+  {w:'hase',s:['ha','se'],e:'🐰',n:'Hase'},
+  {w:'hose',s:['ho','se'],e:'👖',n:'Hose'},
+  {w:'dose',s:['do','se'],e:'🥫',n:'Dose'},
+  {w:'sofa',s:['so','fa'],e:'🛋️',n:'Sofa'},
+  {w:'limo',s:['li','mo'],e:'🥤',n:'Limo'},
+  {w:'kino',s:['ki','no'],e:'🎬',n:'Kino'},
+  {w:'lupe',s:['lu','pe'],e:'🔍',n:'Lupe'},
+  {w:'tube',s:['tu','be'],e:'🧴',n:'Tube'},
+  {w:'dino',s:['di','no'],e:'🦕',n:'Dino'},
+  {w:'rabe',s:['ra','be'],e:'🐦',n:'Rabe'},
+  {w:'kuli',s:['ku','li'],e:'🖊️',n:'Kuli'},
+  {w:'tomate',s:['to','ma','te'],e:'🍅',n:'Tomate'},
+  {w:'banane',s:['ba','na','ne'],e:'🍌',n:'Banane'},
+  {w:'rakete',s:['ra','ke','te'],e:'🚀',n:'Rakete'},
+  // Stufe 2: Doppelvokal, geschlossene Silben, Konsonantenhäufung
+  {w:'fee',s:['fee'],e:'🧚',n:'Fee',l:2},
+  {w:'tee',s:['tee'],e:'🍵',n:'Tee',l:2},
+  {w:'blume',s:['blu','me'],e:'🌼',n:'Blume',l:2},
+  {w:'tulpe',s:['tul','pe'],e:'🌷',n:'Tulpe',l:2},
+  {w:'krone',s:['kro','ne'],e:'👑',n:'Krone',l:2},
+  {w:'farbe',s:['far','be'],e:'🎨',n:'Farbe',l:2},
+  {w:'pinsel',s:['pin','sel'],e:'🖌️',n:'Pinsel',l:2},
+  {w:'wolle',s:['wol','le'],e:'🧶',n:'Wolle',l:2},
+  {w:'wolke',s:['wol','ke'],e:'☁️',n:'Wolke',l:2},
+  {w:'feder',s:['fe','der'],e:'🪶',n:'Feder',l:2},
+  {w:'igel',s:['i','gel'],e:'🦔',n:'Igel',l:2},
+  {w:'mond',s:['mond'],e:'🌙',n:'Mond',l:2},
+  {w:'gold',s:['gold'],e:'🪙',n:'Gold',l:2}
+];
+
+const TREASURE = [
+  ['🦄','ein Einhorn'],['🌸','eine Kirschblüte'],['🧚','eine Fee'],['🌈','einen Regenbogen'],
+  ['🖍️','einen Wachsmalstift'],['🦋','einen Schmetterling'],['🌷','eine Tulpe'],['🔮','eine Zauberkugel'],
+  ['✂️','eine Bastelschere'],['👑','eine Krone'],['🌻','eine Sonnenblume'],['💎','einen Glitzerstein'],
+  ['🎨','einen Farbkasten'],['🍄','einen Zauberpilz'],['🌙','einen Mond'],['🧶','ein Wollknäuel'],
+  ['🐉','einen Drachen'],['🌺','eine Hibiskusblüte'],['🪄','einen Zauberstab'],['🏰','ein Schloss']
+];
+const PRAISE = ['Zauberhaft!','Super gelesen!','Wunderbar!','Du bist ein echter Lesezauberer!','Funkel-toll!','Klasse gemacht!','Hurra, das glitzert!'];
+const POTION = ['#ff7ac6','#7ef0d0','#ffd76a','#7cc8ff','#b38cff'];
+
+/* ---------- Zustand ---------- */
+const KEY='funkelzauber-v1';
+const S = (()=>{const d={letters:['m','a','o','i','l','s'],stars:0,tts:true,rate:.85,cs:'lower',lvl2:false};
+  try{const r=JSON.parse(localStorage.getItem(KEY)||'null'); if(r) Object.assign(d,r);}catch(e){} return d;})();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const fmt = t => S.cs==='upper' ? t.toUpperCase() : t;
+const known = () => ORDER.filter(l=>S.letters.includes(l));
+const kVowels = () => known().filter(l=>LETTERS[l].t==='v');
+const kCons = () => known().filter(l=>LETTERS[l].t!=='v');
+const rnd = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
+function availWords(){
+  return WORDS.filter(w=>(S.lvl2||!w.l) && [...w.w].every(c=>S.letters.includes(c)));
+}
+
+/* ---------- Sprache (nur Silben, Wörter, Lob) ---------- */
+let voice=null;
+function pickVoice(){try{const vs=speechSynthesis.getVoices();
+  voice=vs.find(v=>/^de/i.test(v.lang)&&/anna|petra|helena|katja|google/i.test(v.name))||vs.find(v=>/^de/i.test(v.lang))||null;}catch(e){}}
+if('speechSynthesis' in window){pickVoice(); try{speechSynthesis.onvoiceschanged=pickVoice}catch(e){}}
+function say(parts){
+  if(!S.tts||!('speechSynthesis' in window)) return;
+  try{speechSynthesis.cancel();
+    [].concat(parts).forEach(t=>{const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';if(voice)u.voice=voice;u.rate=S.rate;u.pitch=1.15;speechSynthesis.speak(u);});
+  }catch(e){}
+}
+
+/* ---------- Effekte ---------- */
+function burst(el){
+  const r=el?el.getBoundingClientRect():{left:innerWidth/2,top:innerHeight/2,width:0,height:0};
+  const x=r.left+r.width/2,y=r.top+r.height/2;
+  const em=['✨','💖','🌸','⭐','🦋','💜','🌷'];
+  for(let i=0;i<16;i++){const s=document.createElement('span');s.className='sp';s.textContent=rnd(em);
+    const a=Math.random()*Math.PI*2,d=70+Math.random()*90;
+    s.style.left=x+'px';s.style.top=y+'px';s.style.setProperty('--dx',Math.cos(a)*d+'px');s.style.setProperty('--dy',Math.sin(a)*d+'px');
+    document.body.appendChild(s);setTimeout(()=>s.remove(),1100);}
+}
+const START=Date.now(); let pauseShown=false;
+function addStar(el){
+  S.stars++; save(); renderStars(true); burst(el);
+  if(S.stars%5===0){const i=S.stars/5-1; if(i<TREASURE.length){const [e,n]=TREASURE[i];
+    setTimeout(()=>{modal(e,'Zauberschatz!',`Du hast ${n} gefunden!`,'Weiter zaubern'); say(`Du hast ${n} gefunden!`);},900); return;}}
+  if(!pauseShown && Date.now()-START>8*60*1000){pauseShown=true;
+    setTimeout(()=>modal('😴','Pause?','Ihr habt schon toll gezaubert! Funkel ist ein bisschen müde. Kurze Pause – oder noch eine Runde?','Noch eine Runde'),900);}
+}
+function modal(em,h,t,btn){
+  const m=document.createElement('div');m.className='modal';
+  m.innerHTML=`<div class="box"><div class="em">${em}</div><h2>${h}</h2><p>${t}</p><button>${btn}</button></div>`;
+  m.querySelector('button').onclick=()=>m.remove(); document.body.appendChild(m); burst(m.querySelector('.em'));
+}
+function renderStars(p){const n=document.getElementById('starN');n.textContent=S.stars;
+  if(p){const b=document.getElementById('stars');b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');}}
+(function sky(){const s=document.getElementById('sky');const g=['✦','✧','·','✦','⋆'];
+  for(let i=0;i<45;i++){const e=document.createElement('span');e.className='tw';e.textContent=rnd(g);
+    e.style.left=Math.random()*100+'%';e.style.top=Math.random()*100+'%';e.style.fontSize=(8+Math.random()*14)+'px';
+    e.style.animationDelay=(Math.random()*3)+'s';e.style.animationDuration=(2+Math.random()*3)+'s';s.appendChild(e);}})();
+
+/* ---------- Erwachsenenleiste ---------- */
+const main=document.getElementById('main'), adult=document.getElementById('adult'), tipbox=document.getElementById('tipbox'), abtns=document.getElementById('abtns');
+function setAdult(btns,tip){
+  if(!btns){adult.hidden=true;return;}
+  adult.hidden=false; tipbox.classList.remove('open'); tipbox.innerHTML=tip||'';
+  abtns.innerHTML='';
+  btns.forEach(b=>{const el=document.createElement('button');el.className='ab'+(b.go?' go':'');if(b.id)el.id=b.id;
+    el.innerHTML=`<span>${b.i}</span>${b.t}`;el.onclick=b.f;if(b.dis)el.disabled=true;abtns.appendChild(el);});
+}
+const tipBtn = () => ({i:'💡',t:'Tipp',f:()=>tipbox.classList.toggle('open')});
+function tipFor(l){const d=LETTERS[l];return `<div><span class="lt">${fmt(l)}</span> – ${d.tip}</div>`;}
+
+/* ---------- Drag-Leiste ---------- */
+function makeTrack(el,onMove,onEnd,icon='🦄',hint='wischen ➜'){
+  el.innerHTML=`<div class="fill"></div><div class="hint">${hint}</div><div class="handle">${icon}</div>`;
+  const fill=el.querySelector('.fill'),h=el.querySelector('.handle'),hint_=el.querySelector('.hint');let p=0,drag=false;
+  function set(v){p=Math.max(0,Math.min(1,v));const W=el.clientWidth-h.offsetWidth-8;h.style.left=(4+p*W)+'px';fill.style.width=(p*W+h.offsetWidth/2+4)+'px';hint_.style.opacity=p>0.05?0:.75;onMove(p);}
+  function pos(e){const r=el.getBoundingClientRect();return (e.clientX-r.left-h.offsetWidth/2)/(r.width-h.offsetWidth);}
+  el.addEventListener('pointerdown',e=>{drag=true;try{el.setPointerCapture(e.pointerId)}catch(_){}set(pos(e));});
+  el.addEventListener('pointermove',e=>{if(drag)set(pos(e));});
+  const up=()=>{if(!drag)return;drag=false;onEnd&&onEnd(p);};
+  el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+  requestAnimationFrame(()=>set(0));
+  return {reset:()=>set(0),set};
+}
+
+/* ---------- Screens ---------- */
+const screens={};
+let current='home';
+function go(name){current=name;try{speechSynthesis.cancel()}catch(e){}
+  document.getElementById('homeBtn').style.visibility=name==='home'?'hidden':'visible';
+  main.scrollTop=0;screens[name]();}
+document.getElementById('homeBtn').onclick=()=>go('home');
+
+function guide(text){return `<div class="guide"><div class="funkel">🦄</div><div class="bubble">${text}</div></div>`;}
+function needMsg(t){main.innerHTML=guide(t)+`<button class="sbtn" onclick="go('kiste')">🧰 Zur Buchstabenkiste</button>`;setAdult(null);}
+
+/* Start */
+screens.home=()=>{
+  document.getElementById('title').textContent='Funkelzauber';
+  const got=Math.floor(S.stars/5);
+  main.innerHTML=`
+  ${guide('Hallo, ich bin <b>Funkel</b>! Wollen wir zusammen Laute zaubern?')}
+  <div class="menu">
+    <button class="mcard c1" data-go="laute"><span class="ic">🔮</span><b>Zauberlaute</b><small>Jeder Buchstabe hat einen Laut</small></button>
+    <button class="mcard c2" data-go="rutsche"><span class="ic">🌈</span><b>Regenbogen&shy;rutsche</b><small>Zwei Laute rutschen zusammen</small></button>
+    <button class="mcard c3" data-go="trank"><span class="ic">🧪</span><b>Zaubertrank</b><small>Silben brauen</small></button>
+    <button class="mcard c4" data-go="woerter"><span class="ic">🪄</span><b>Wörterzauber</b><small>Silben werden zu Wörtern</small></button>
+  </div>
+  <div class="panel"><h3>💎 Zauberschatz <span style="opacity:.7;font-weight:500">– alle 5 Sterne ein neuer Schatz</span></h3>
+    <div class="treasure">${TREASURE.map((t,i)=>`<span class="${i<got?'':'locked'}">${t[0]}</span>`).join('')}</div></div>
+  <div class="row"><button class="sbtn" data-go="kiste">🧰 Buchstabenkiste</button><button class="sbtn" data-go="info">👋 Für Erwachsene</button></div>`;
+  main.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+  setAdult(null);
+};
+
+/* Zauberlaute */
+let lIdx=0;
+screens.laute=()=>{
+  document.getElementById('title').textContent='🔮 Zauberlaute';
+  const ks=known(); if(!ks.length) return needMsg('Die Buchstabenkiste ist leer. Wählt zuerst Buchstaben aus!');
+  lIdx=(lIdx+ks.length)%ks.length; const l=ks[lIdx], d=LETTERS[l];
+  const kind=d.t==='v'?'<span class="tag vv">Selbstlaut · lang singen</span>':d.t==='d'?'<span class="tag d">〰️ Langer Laut · ziehen</span>':'<span class="tag k">⚡ Kurzer Laut · antippen</span>';
+  const aw=d.aw?fmt(d.aw.replace(/<\/?b>/g,'')):fmt(d.w);
+  main.innerHTML=`
+  ${guide('Tippe auf den Buchstaben und sag seinen <b>Zauberlaut</b>!')}
+  <div class="lcard">
+    ${kind}
+    <div class="big ${d.t==='v'?'v':''}" id="big" style="color:${d.t==='v'?'var(--s2)':'var(--ink)'}">${fmt(l)}</div>
+    <div class="pair">${l.toUpperCase()} ${l}</div>
+    <div class="anchor">${d.e}</div>
+    <div class="aw"><b>${aw[0]}</b>${aw.slice(1)}</div>
+  </div>
+  <div class="nav"><button id="prev">◀</button><span class="dots">${lIdx+1} / ${ks.length}</span><button id="next">▶</button></div>`;
+  document.getElementById('big').onclick=e=>burst(e.currentTarget);
+  document.getElementById('prev').onclick=()=>{lIdx--;screens.laute();};
+  document.getElementById('next').onclick=()=>{lIdx++;screens.laute();};
+  setAdult([tipBtn(),
+    {i:'◀',t:'Zurück',f:()=>{lIdx--;screens.laute();}},
+    {i:'▶',t:'Weiter',f:()=>{lIdx++;screens.laute();}},
+    {i:'✨',t:'Geschafft',go:1,f:e=>{addStar(document.getElementById('big'));say(rnd(PRAISE));}}],
+    tipFor(l)+`<p style="margin:8px 0 0">Ihr sprecht den <b>Laut</b> vor, nicht den Buchstabennamen. Das Kind spricht nach und tippt dabei auf den Buchstaben. Das Bild hilft als Anker: „${d.e} ${d.w} fängt mit … an“.</p>`);
+};
+
+/* Regenbogenrutsche */
+let rs={};
+screens.rutsche=()=>{
+  document.getElementById('title').textContent='🌈 Regenbogenrutsche';
+  const C=kCons(),V=kVowels(); if(!C.length||!V.length) return needMsg('Für die Rutsche brauchen wir mindestens einen <b>Selbstlaut</b> (a, e, i, o, u) und einen anderen Buchstaben.');
+  let c=rnd(C),v=rnd(V); if(rs.c===c&&rs.v===v&&(C.length>1||V.length>1)){c=rnd(C);v=rnd(V);} rs={c,v,done:false};
+  const stop=LETTERS[c].t==='k';
+  main.innerHTML=`
+  ${guide(stop?'Kurzer Laut! Rutsch <b>schnell</b> vom ersten zum zweiten Laut.':'Halte den ersten Laut <b>lang</b>, bis die Rutsche beim zweiten ankommt!')}
+  <div class="stage" id="stage">
+    <span class="kind">${stop?'<span class="tag k">⚡ kurz</span>':'<span class="tag d">〰️ lang ziehen</span>'}</span>
+    <div class="ribbon" id="rib"></div>
+    <div class="tile" id="t1">${fmt(c)}</div>
+    <div class="tile v" id="t2">${fmt(v)}</div>
+  </div>
+  <div class="track" id="track"></div>
+  <p class="note">Finger auf das Einhorn legen und langsam nach rechts rutschen – dabei laut sprechen.</p>`;
+  const st=document.getElementById('stage'),t1=document.getElementById('t1'),t2=document.getElementById('t2'),rib=document.getElementById('rib');
+  const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+  function layout(p){const W=st.clientWidth,w=t1.offsetWidth,q=ease(p);
+    const a0=W*.05,a1=W/2-w-2,b0=W*.95-w,b1=W/2+2;
+    const x1=a0+(a1-a0)*q,x2=b0+(b1-b0)*q;
+    t1.style.left=x1+'px';t2.style.left=x2+'px';
+    rib.style.left=(x1+w-6)+'px';rib.style.width=Math.max(0,x2-x1-w+12)+'px';rib.style.opacity=p>=.98?0:.9;
+    t1.classList.toggle('glow',p<.98);t2.classList.toggle('glow',p>.55);
+    if(p>=.98){t1.classList.add('glow');t2.classList.add('glow');}
+  }
+  const tr=makeTrack(document.getElementById('track'),layout,p=>{
+    if(p>=.95&&!rs.done){rs.done=true;burst(st);document.querySelector('.bubble').innerHTML='Super! Jetzt sag es nochmal <b>schnell</b> hintereinander!';
+      const g=document.getElementById('ok');g&&g.classList.add('ready');}
+  },'🦄','rutschen ➜');
+  addEventListener('resize',()=>layout(0),{once:true});
+  const syl=c+v;
+  setAdult([tipBtn(),
+    {i:'🔊',t:'Lösung',f:()=>say(syl)},
+    {i:'🔁',t:'Nochmal',f:()=>{tr.reset();rs.done=false;}},
+    {i:'✨',t:'Geschafft',go:1,id:'ok',f:()=>{say([syl,rnd(PRAISE)]);addStar(st);setTimeout(screens.rutsche,1800);}}],
+    tipFor(c)+tipFor(v)+(stop
+      ?`<p style="margin:8px 0 0"><b>Kurzer Laut:</b> „${fmt(c)}“ lässt sich nicht ziehen. Den Mund schon bereit machen und <b>direkt</b> ins „${fmt(v)}${fmt(v)}${fmt(v)}“ gleiten – ohne „ö“ dazwischen.</p>`
+      :`<p style="margin:8px 0 0">Vormachen: <b>${fmt(c).repeat(3)}${fmt(v).repeat(3)}</b> – ohne Pause, der erste Laut fließt in den zweiten. Dann schneller: <b>${fmt(syl)}</b>.</p>`)
+    +`<p style="margin:6px 0 0;opacity:.8">🔊 Lösung erst benutzen, wenn ihr es zusammen versucht habt.</p>`);
+};
+
+/* Zaubertrank */
+let tk={c:null,done:[]};
+screens.trank=()=>{
+  document.getElementById('title').textContent='🧪 Zaubertrank';
+  const C=kCons(),V=kVowels(); if(!C.length||!V.length) return needMsg('Für den Zaubertrank brauchen wir mindestens einen <b>Selbstlaut</b> und einen anderen Buchstaben.');
+  if(!tk.c||!C.includes(tk.c)){tk.c=rnd(C);tk.done=[];}
+  tk.v=null;
+  main.innerHTML=`
+  ${guide(`Wähle einen Zaubertrank! Was wird aus <b>${fmt(tk.c)}</b>?`)}
+  <div class="formula">
+    <div class="tile">${fmt(tk.c)}</div><span class="op">+</span>
+    <div class="tile v empty" id="vslot">?</div><span class="op">=</span>
+    <div class="tile res empty" id="res">?</div>
+  </div>
+  <div class="pot" id="pot"><div class="body"><div class="liquid"></div></div>
+    ${[20,60,100,140,170].map((x,i)=>`<span class="bub" style="left:${x}px;width:${10+i%3*6}px;height:${10+i%3*6}px;animation-delay:${i*.3}s"></span>`).join('')}</div>
+  <div class="bottles" id="bottles">${V.map((v,i)=>`<button class="bottle ${tk.done.includes(v)?'done':''}" data-v="${v}" style="--c:${POTION[VOWELS.indexOf(v)]}"><span class="cork"></span><span class="neck"></span><span class="glass">${fmt(v)}</span></button>`).join('')}</div>`;
+  document.querySelectorAll('.bottle').forEach(b=>b.onclick=()=>{
+    const v=b.dataset.v;tk.v=v;const col=POTION[VOWELS.indexOf(v)];
+    const pot=document.getElementById('pot');pot.style.setProperty('--liq',col);pot.classList.remove('boil');void pot.offsetWidth;pot.classList.add('boil');
+    const vs=document.getElementById('vslot'),r=document.getElementById('res');
+    vs.classList.remove('empty');vs.textContent=fmt(v);
+    r.classList.remove('empty');r.innerHTML=`<span>${fmt(tk.c)}</span><span style="color:var(--s2)">${fmt(v)}</span>`;
+    burst(r);document.querySelector('.bubble').innerHTML='Lies den Zauberspruch! Erst lang, dann schnell.';
+    document.getElementById('ok').disabled=false;document.getElementById('sol').disabled=false;
+    renderTip();
+  });
+  function renderTip(){tipbox.innerHTML=tipFor(tk.c)+(tk.v?tipFor(tk.v)+`<p style="margin:8px 0 0">Gemeinsam „brauen“: <b>${fmt(tk.c)}…${fmt(tk.v).repeat(3)}</b> → <b>${fmt(tk.c+tk.v)}</b>. Fragt danach: „Kennst du ein Wort mit <b>${fmt(tk.c+tk.v)}</b>?“</p>`:'<p style="margin:8px 0 0">Das Kind wählt eine Flasche. Dann wird die Silbe gemeinsam gelesen.</p>');}
+  setAdult([tipBtn(),
+    {i:'🔊',t:'Lösung',id:'sol',dis:1,f:()=>tk.v&&say(tk.c+tk.v)},
+    {i:'🔀',t:'Neuer Laut',f:()=>{const C=kCons();let n=rnd(C);if(C.length>1)while(n===tk.c)n=rnd(C);tk.c=n;tk.done=[];screens.trank();}},
+    {i:'✨',t:'Geschafft',go:1,id:'ok',dis:1,f:()=>{if(!tk.v)return;say([tk.c+tk.v,rnd(PRAISE)]);addStar(document.getElementById('res'));
+      if(!tk.done.includes(tk.v))tk.done.push(tk.v);
+      if(tk.done.length>=kVowels().length){setTimeout(()=>{modal('🧪','Alle Tränke gebraut!',`Alle Silben mit ${fmt(tk.c)} geschafft!`,'Neuer Zauberlaut');const C=kCons();let n=rnd(C);if(C.length>1)while(n===tk.c)n=rnd(C);tk.c=n;tk.done=[];screens.trank();},1500);}
+      else setTimeout(screens.trank,1500);}}],'');
+  renderTip();
+};
+
+/* Wörterzauber */
+let wd={w:null,last:null};
+screens.woerter=()=>{
+  document.getElementById('title').textContent='🪄 Wörterzauber';
+  const A=availWords();
+  if(A.length<1) return needMsg('Mit diesen Buchstaben gibt es noch keine Zauberwörter. Nehmt mehr Buchstaben in die Kiste – zum Beispiel <b>m, a, o, l, s, e, r</b>.');
+  let w=rnd(A); if(A.length>1) while(w===wd.last) w=rnd(A); wd={w,last:w,phase:'read'};
+  const pics=shuffle([w,...shuffle(WORDS.filter(x=>x.e!==w.e)).slice(0,2)]);
+  main.innerHTML=`
+  ${guide('Lies das Zauberwort – <b>Silbe für Silbe</b>. Fahr mit dem Einhorn darunter!')}
+  <div class="word ${w.w.length>5?'small':''}" id="word">${w.s.map(s=>`<span class="syl">${fmt(s)}</span>`).join('')}</div>
+  <div class="track" id="track"></div>
+  <div id="pickArea" hidden>
+    <div class="guide" style="margin:6px 0"><div class="bubble" style="border-radius:18px">Welches Bild passt zum Wort?</div></div>
+    <div class="pics">${pics.map(p=>`<button class="pic" data-e="${p.e}">${p.e}</button>`).join('')}</div>
+  </div>`;
+  const syls=[...document.querySelectorAll('.syl')];
+  makeTrack(document.getElementById('track'),p=>{
+    const n=syls.length,i=Math.min(n-1,Math.floor(p*n*0.999));
+    syls.forEach((s,k)=>s.classList.toggle('on',p>=.97||(p>0.02&&k===i)));
+  },p=>{if(p>=.95){document.querySelector('.bubble').innerHTML='Und jetzt das <b>ganze Wort</b> auf einmal!';document.getElementById('ok').classList.add('ready');}},'🦄','lesen ➜');
+  main.querySelectorAll('.pic').forEach(b=>b.onclick=()=>{
+    if(wd.phase!=='pick')return;
+    if(b.dataset.e===w.e){b.classList.add('right');wd.phase='done';say([w.n,rnd(PRAISE)]);addStar(b);
+      syls.forEach(s=>s.classList.add('on'));setTimeout(screens.woerter,2400);}
+    else{b.classList.remove('wrong');void b.offsetWidth;b.classList.add('wrong');document.querySelector('#pickArea .bubble').textContent='Hmm, lies nochmal genau!';}
+  });
+  setAdult([tipBtn(),
+    {i:'🔊',t:'Lösung',f:()=>say(w.n)},
+    {i:'⏭️',t:'Anderes Wort',f:()=>screens.woerter()},
+    {i:'✨',t:'Gelesen!',go:1,id:'ok',f:()=>{if(wd.phase!=='read')return;wd.phase='pick';const pa=document.getElementById('pickArea');pa.hidden=false;pa.scrollIntoView({behavior:'smooth',block:'nearest'});document.getElementById('ok').disabled=true;}}],
+    `<p style="margin:0">Silben sind <b style="color:var(--s1)">blau</b> und <b style="color:var(--s2)">rot</b> markiert, die Bögen zeigen sie zusätzlich.</p>
+     <p style="margin:8px 0 0">1. Erst jede Silbe einzeln: ${w.s.map(s=>`<b>${fmt(s)}</b>`).join(' · ')}<br>2. Dann zusammenschleifen: <b>${fmt(w.w)}</b><br>3. „Gelesen!“ tippen – das Kind wählt das passende Bild. Erst dann sagt Funkel das Wort.</p>
+     <p style="margin:8px 0 0;opacity:.8">Klemmt eine Silbe? Übt sie kurz in der 🌈 Rutsche.</p>`);
+};
+
+/* Buchstabenkiste */
+screens.kiste=()=>{
+  document.getElementById('title').textContent='🧰 Buchstabenkiste';
+  const grp=(t,arr)=>`<div class="grp"><h4>${t}</h4><div class="lgrid">${arr.map(l=>`<button class="lt-btn ${S.letters.includes(l)?'on':''}" data-l="${l}">${fmt(l)}</button>`).join('')}</div></div>`;
+  const n=availWords().length;
+  main.innerHTML=`
+  ${guide(`Welche Buchstaben kennt das Kind schon? Damit gibt es <b>${n}</b> Zauberwörter.`)}
+  <div class="panel">
+    ${grp('Selbstlaute',ORDER.filter(l=>LETTERS[l].t==='v'))}
+    ${grp('〰️ Lange Laute (gut zum Ziehen)',ORDER.filter(l=>LETTERS[l].t==='d'))}
+    ${grp('⚡ Kurze Laute (später)',ORDER.filter(l=>LETTERS[l].t==='k'))}
+    <div class="row" style="margin-top:12px">
+      <button class="sbtn" id="pStart">Start-Set</button><button class="sbtn" id="pLong">+ lange Laute</button><button class="sbtn" id="pAll">Alle</button>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="opt"><span>Buchstabenform</span><div class="seg" id="cs"><button data-v="lower" class="${S.cs==='lower'?'on':''}">a b c</button><button data-v="upper" class="${S.cs==='upper'?'on':''}">A B C</button></div></div>
+    <div class="opt"><span>Funkel spricht<br><small style="opacity:.7">Lösungen &amp; Lob</small></span><div class="seg" id="tts"><button data-v="1" class="${S.tts?'on':''}">an</button><button data-v="0" class="${!S.tts?'on':''}">aus</button></div></div>
+    <div class="opt"><span>Sprechtempo</span><div class="seg" id="rate"><button data-v=".7" class="${S.rate==.7?'on':''}">langsam</button><button data-v=".85" class="${S.rate==.85?'on':''}">normal</button></div></div>
+    <div class="opt"><span>Schwierigere Wörter<br><small style="opacity:.7">Fee, Blume, Tulpe, Pinsel …</small></span><div class="seg" id="lvl"><button data-v="0" class="${!S.lvl2?'on':''}">nein</button><button data-v="1" class="${S.lvl2?'on':''}">ja</button></div></div>
+    <div class="opt"><span>Sterne zurücksetzen</span><button class="sbtn" style="flex:0 0 auto" id="rst">⭐ → 0</button></div>
+  </div>`;
+  main.querySelectorAll('.lt-btn').forEach(b=>b.onclick=()=>{const l=b.dataset.l;
+    S.letters=S.letters.includes(l)?S.letters.filter(x=>x!==l):[...S.letters,l];save();screens.kiste();});
+  document.getElementById('pStart').onclick=()=>{S.letters=['m','a','o','i','l','s'];save();screens.kiste();};
+  document.getElementById('pLong').onclick=()=>{S.letters=ORDER.filter(l=>LETTERS[l].t!=='k');save();screens.kiste();};
+  document.getElementById('pAll').onclick=()=>{S.letters=[...ORDER];save();screens.kiste();};
+  const seg=(id,fn)=>document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{fn(b.dataset.v);save();screens.kiste();});
+  seg('cs',v=>S.cs=v);seg('tts',v=>S.tts=v==='1');seg('rate',v=>S.rate=parseFloat(v));seg('lvl',v=>S.lvl2=v==='1');
+  let armed=false;document.getElementById('rst').onclick=e=>{if(!armed){armed=true;e.currentTarget.textContent='Sicher?';return;}S.stars=0;save();renderStars();screens.kiste();};
+  setAdult(null);
+};
+
+/* Info */
+screens.info=()=>{
+  document.getElementById('title').textContent='👋 Für Erwachsene';
+  main.innerHTML=`<div class="panel info">
+  <p><b>Funkelzauber ist eine App für zwei.</b> Das Kind liest, Sie sind die Stimme der Laute. Die App spricht absichtlich <b>keine einzelnen Laute</b>: Sprachausgaben sagen sonst „es“ statt „sss“ oder „em“ statt „mmm“.</p>
+  <h3>So geht’s</h3>
+  <ul>
+    <li><b>Laute statt Buchstabennamen:</b> „mmm“, nicht „em“. Bei 💡 Tipp steht für jeden Laut, wie er gebildet wird.</li>
+    <li><b>Lange Laute zuerst</b> (m, s, l, r, f, n, w): Die lassen sich ziehen und gut verbinden: „mmmaaa → ma“.</li>
+    <li><b>Kurze Laute</b> (t, p, k, b, d, g) nicht ziehen und kein „ö“ anhängen. Direkt in den Selbstlaut gleiten.</li>
+    <li><b>Sie entscheiden</b>, wann etwas geschafft ist (✨). Dann gibt es Lob, einen Stern und erst dann die Lösung von Funkel.</li>
+    <li><b>Kurz bleiben:</b> 5–10 Minuten reichen. Nach etwa 8 Minuten schlägt Funkel eine Pause vor.</li>
+  </ul>
+  <h3>Die vier Zauberübungen</h3>
+  <ul>
+    <li>🔮 <b>Zauberlaute:</b> Laut und Bild kennenlernen</li>
+    <li>🌈 <b>Regenbogenrutsche:</b> zwei Laute zur Silbe verbinden (Lautgleiten)</li>
+    <li>🧪 <b>Zaubertrank:</b> ein Laut mit allen Selbstlauten – ma, mo, mi …</li>
+    <li>🪄 <b>Wörterzauber:</b> Silben zum Wort schleifen, dann das Bild wählen</li>
+  </ul>
+  <p>In der 🧰 <b>Buchstabenkiste</b> wählen Sie, welche Buchstaben das Kind schon kennt. Alle Übungen nutzen nur diese.</p>
+  <p style="opacity:.75;font-size:.85rem">Alles bleibt auf diesem Gerät gespeichert. Die Sprachausgabe nutzt die deutsche Stimme Ihres Handys.</p>
+  </div>`;
+  setAdult(null);
+};
+
+renderStars();
+go('home');
+</script>
+</body>
+</html>
