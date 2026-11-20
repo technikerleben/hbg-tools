@@ -213,7 +213,12 @@ body.vb #raus{display:block}
     <div class='auftrag' data-k='2'><b>3. Lesen</b>Unterstreicht pro Abschnitt <u>ein</u> Schlüsselwort.</div>
     <div class='auftrag gruen' data-k='3'><b>Im Tandem</b>Zeigt euch eure Wörter: <i>Warum dieses Wort?</i></div>
   </div>
-</div></section><div id='bar'></div><div id='hint'>Leertaste/Klick: weiter · ←: zurück · F: Vollbild · A: alles zeigen</div></div><div id='nav'><button onclick='event.stopPropagation();prev()' aria-label='zurück'>‹</button><button id='vbBtn' onclick='event.stopPropagation();vollbild()' aria-label='Vollbild'>⛶</button><button onclick='event.stopPropagation();next()' aria-label='weiter'>›</button></div><button id='raus' onclick='vollbild()' aria-label='Vollbild verlassen'>✕</button><script>
+</div></section><section class='slide title'>
+<div class='top'><span class='ph reflexion'>Reflexion</span><span class='kick'>Zum Schluss</span></div>
+<h1>Das Lese-Duell</h1>
+<div class='ziel'>Die Fragen wechseln: einmal Schnee-Eule, einmal Andenkondor.<br>Die Antworten stehen im Text – mit Zeilennummer.</div>
+<a class='los' href='lese-duell-eule-kondor.html' onclick='event.stopPropagation()' ontouchend='event.stopPropagation()'>▶ Zum Lese-Duell</a>
+</section><div id='bar'></div><div id='hint'>Leertaste/Klick: weiter · ←: zurück · F: Vollbild · A: alles zeigen</div></div><div id='nav'><button onclick='event.stopPropagation();prev()' aria-label='zurück'>‹</button><button id='vbBtn' onclick='event.stopPropagation();vollbild()' aria-label='Vollbild'>⛶</button><button onclick='event.stopPropagation();next()' aria-label='weiter'>›</button></div><button id='raus' onclick='vollbild()' aria-label='Vollbild verlassen'>✕</button><script>
 const slides=[...document.querySelectorAll('.slide')];let i=0,k=0;
 const bar=document.getElementById('bar');
 slides.forEach(()=>{const d=document.createElement('div');d.className='dot';bar.appendChild(d)});
