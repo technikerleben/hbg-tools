@@ -160,16 +160,16 @@ body.vb #start,body.vb #ende{padding-top:calc(var(--sa-t) + 64px)}
   <div class="regeln">
     <div><b>Abwechselnd</b>Jede Stufe hat zwei Fragen zum selben Tier – eine für jedes Team. Die Fragen werden schwerer und bringen mehr Punkte.</div>
     <div><b>Klauen</b>Ist eine Antwort falsch, darf das andere Team antworten – für die halben Punkte.</div>
-    <div><b>Joker</b>Jedes Team hat einmal 50 : 50 und einmal Text: Ihr erfahrt, in welchem Text die Antwort steht.</div>
+    <div><b>Nachlesen</b>Nach jeder Frage seht ihr, in welcher Zeile die Antwort steht.</div>
   </div>
   <button class="big druck" id="startBtn" onclick="start()">Duell starten!</button>
 </section>
 
 <section id="spiel" class="screen">
   <div class="kopf">
-    <div class="team" id="t0"><div class="nm" id="nm0"></div><div class="pk" id="pk0">0</div><div class="jk"><button class="druck" id="j0_50" onclick="joker50(0)">50 : 50</button><button class="druck" id="j0_tx" onclick="jokerText(0)">📄 Text</button></div></div>
+    <div class="team" id="t0"><div class="nm" id="nm0"></div><div class="pk" id="pk0">0</div></div>
     <div class="mitte"><div class="stufen" id="stufen"></div><div class="stl" id="stl"></div><button class="voll" onclick="vollbild()" aria-label="Vollbild">⛶</button></div>
-    <div class="team" id="t1"><div class="nm" id="nm1"></div><div class="pk" id="pk1">0</div><div class="jk"><button class="druck" id="j1_50" onclick="joker50(1)">50 : 50</button><button class="druck" id="j1_tx" onclick="jokerText(1)">📄 Text</button></div></div>
+    <div class="team" id="t1"><div class="nm" id="nm1"></div><div class="pk" id="pk1">0</div></div>
   </div>
   <div class="info" id="info"></div>
   <div class="buehne">
@@ -195,7 +195,7 @@ body.vb #start,body.vb #ende{padding-top:calc(var(--sa-t) + 64px)}
 <div id="drehen"><div class="ic">📱</div><div>Bitte das iPad quer halten.</div></div>
 
 <script>
-const FRAGEN = [{"f": "Wo lebt die Schnee-Eule?", "a": ["in der Tundra im hohen Norden", "in der Wüste", "im Regenwald", "in den Anden"], "t": 1, "beleg": "Text 1, Zeile 10"}, {"f": "Was frisst die Schnee-Eule vor allem?", "a": ["Lemminge", "Früchte", "Aas", "Gras"], "t": 1, "beleg": "Text 1, Zeile 13"}, {"f": "Wo lebt der Andenkondor?", "a": ["in den Anden in Südamerika", "in der Arktis", "in Afrika", "in Australien"], "t": 2, "beleg": "Text 2, Zeile 10"}, {"f": "Was frisst der Andenkondor?", "a": ["Aas, also tote Tiere", "Lemminge", "Gras und Blätter", "Insekten"], "t": 2, "beleg": "Text 2, Zeile 13"}, {"f": "Wie viele Lemminge frisst eine Schnee-Eule am Tag?", "a": ["drei bis vier", "einen", "zehn", "zwanzig"], "t": 1, "beleg": "Text 1, Zeile 14"}, {"f": "Woran erkennt man ein Weibchen der Schnee-Eule?", "a": ["an den dunklen Flecken", "am ganz weißen Gefieder", "an einem Kamm auf dem Kopf", "an einer Halskrause"], "t": 1, "beleg": "Text 1, Zeile 6"}, {"f": "Was trägt der Andenkondor um den Hals?", "a": ["eine weiße Halskrause", "rote Federn", "einen Kamm", "gar nichts"], "t": 2, "beleg": "Text 2, Zeile 7"}, {"f": "Wie groß ist die Spannweite des Andenkondors?", "a": ["etwa 3 Meter", "etwa 30 Zentimeter", "etwa 1 Meter", "etwa 10 Meter"], "t": 2, "beleg": "Text 2, Zeile 16"}, {"f": "Warum jagt die Schnee-Eule auch am Tag?", "a": ["Im Sommer ist es in der Arktis fast immer hell.", "Sie kann nachts nicht sehen.", "Lemminge schlafen nachts.", "Am Tag ist es wärmer."], "t": 1, "beleg": "Text 1, Zeile 18"}, {"f": "Wozu helfen der Schnee-Eule die Federn an den Füßen?", "a": ["Sie sinkt im Schnee nicht ein.", "Sie fliegt schneller.", "Sie fängt besser Fische.", "Sie baut damit ihr Nest."], "t": 1, "beleg": "Text 1, Zeile 7"}, {"f": "Warum ist der Kopf ohne Federn für den Kondor praktisch?", "a": ["Beim Fressen von Aas bleibt er leichter sauber.", "Er kann besser hören.", "Der Kopf bleibt warm.", "Er fliegt damit schneller."], "t": 2, "beleg": "Text 2, Zeile 20"}, {"f": "Warum muss der Andenkondor nicht selbst jagen?", "a": ["Er frisst tote Tiere.", "Er ist zu groß zum Jagen.", "Menschen füttern ihn.", "Er frisst nur Pflanzen."], "t": 2, "beleg": "Text 2, Zeile 13"}];
+const FRAGEN = [{"f": "Wo lebt die Schnee-Eule?", "a": ["in der Tundra im hohen Norden", "in der Wüste", "im Regenwald", "in den Anden"], "t": 1, "beleg": "Text 1, Zeile 10"}, {"f": "Was frisst die Schnee-Eule vor allem?", "a": ["Lemminge", "Früchte", "Aas", "Gras"], "t": 1, "beleg": "Text 1, Zeile 13"}, {"f": "Was frisst der Andenkondor?", "a": ["Aas, also tote Tiere", "Lemminge", "Gras und Blätter", "Insekten"], "t": 2, "beleg": "Text 2, Zeile 13"}, {"f": "Wo lebt der Andenkondor?", "a": ["in den Anden in Südamerika", "in der Arktis", "in Afrika", "in Australien"], "t": 2, "beleg": "Text 2, Zeile 10"}, {"f": "Wie viele Lemminge frisst eine Schnee-Eule am Tag?", "a": ["drei bis vier", "einen", "zehn", "zwanzig"], "t": 1, "beleg": "Text 1, Zeile 14"}, {"f": "Woran erkennt man ein Weibchen der Schnee-Eule?", "a": ["an den dunklen Flecken", "am ganz weißen Gefieder", "an einem Kamm auf dem Kopf", "an einer Halskrause"], "t": 1, "beleg": "Text 1, Zeile 6"}, {"f": "Was trägt der Andenkondor um den Hals?", "a": ["eine weiße Halskrause", "rote Federn", "einen Kamm", "gar nichts"], "t": 2, "beleg": "Text 2, Zeile 7"}, {"f": "Wie groß ist die Spannweite des Andenkondors?", "a": ["etwa 3 Meter", "etwa 2 Meter", "etwa 4 Meter", "etwa 5 Meter"], "t": 2, "beleg": "Text 2, Zeile 16"}, {"f": "Warum jagt die Schnee-Eule auch am Tag?", "a": ["Im Sommer ist es in der Arktis fast immer hell.", "Sie kann nachts nicht sehen.", "Lemminge schlafen nachts.", "Am Tag ist es wärmer."], "t": 1, "beleg": "Text 1, Zeile 18"}, {"f": "Wozu helfen der Schnee-Eule die Federn an den Füßen?", "a": ["Sie sinkt im Schnee nicht ein.", "Sie fliegt schneller.", "Sie fängt besser Fische.", "Sie baut damit ihr Nest."], "t": 1, "beleg": "Text 1, Zeile 7"}, {"f": "Warum ist der Kopf ohne Federn für den Kondor praktisch?", "a": ["Beim Fressen von Aas bleibt er leichter sauber.", "Er kann besser hören.", "Der Kopf bleibt warm.", "Er fliegt damit schneller."], "t": 2, "beleg": "Text 2, Zeile 20"}, {"f": "Warum muss der Andenkondor nicht selbst jagen?", "a": ["Er frisst tote Tiere.", "Er ist zu groß zum Jagen.", "Menschen füttern ihn.", "Er frisst nur Pflanzen."], "t": 2, "beleg": "Text 2, Zeile 13"}];
 const TITEL = ["Die Schnee-Eule", "Der Andenkondor"];
 const PUNKTE = [100, 200, 300, 500, 700, 1000];   // je Stufe; Stufe = zwei Fragen
 const BU = ["A","B","C","D"];
@@ -232,7 +232,7 @@ function frage(){
   $("einloggen").classList.remove("on"); $("einloggen").style.display=""; $("weiter").classList.remove("on"); $("weiter").style.display="none"; $("bTimer").classList.add("on");
   joker();
 }
-function joker(){
+function joker(){ return;
   for(const t of [0,1]) for(const j of ["50","tx"]){
     const b=$(`j${t}_${j}`); if(b.dataset.used) {b.disabled=true;b.classList.add('used');continue;}
     b.disabled = !(phase==="wahl" && t===dran && !klau);
