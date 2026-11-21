@@ -35,6 +35,8 @@ button:focus-visible{outline:4px solid var(--gold);outline-offset:3px}
 .hbtn{display:flex;align-items:center;gap:8px;min-height:48px;padding:6px 14px;border-radius:14px;background:rgba(16,23,58,.75);border:2px solid rgba(242,181,68,.5);font-weight:700;font-size:16px}
 .hbtn svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .hbtn.off{opacity:.55}
+.hbtn,#hud .name{white-space:nowrap}
+@media (max-width:1150px){.hbtn span{display:none}.hbtn{padding:6px 11px}}
 
 /* Kiki */
 #kiki{position:fixed;left:16px;bottom:16px;display:flex;align-items:flex-end;gap:10px;z-index:10;max-width:min(560px,60vw);transition:opacity .3s,transform .3s}
@@ -52,20 +54,21 @@ body.panel-open #chips,body.panel-open #kiki,body.busy #chips{opacity:0;pointer-
 #chips{transition:opacity .3s,transform .3s}
 
 /* Panel */
-#panel{position:fixed;top:78px;right:16px;bottom:16px;width:min(48vw,560px);z-index:20;background:var(--paper);color:var(--ink);border-radius:26px;box-shadow:0 18px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;overflow:hidden;transition:transform .45s cubic-bezier(.2,.9,.3,1.2),opacity .3s}
+#panel{position:fixed;top:78px;right:16px;max-height:calc(100% - 94px);width:min(48vw,560px);z-index:20;background:var(--paper);color:var(--ink);border-radius:26px;box-shadow:0 18px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;overflow:hidden;transition:transform .45s cubic-bezier(.2,.9,.3,1.2),opacity .3s}
 #panel.hidden{transform:translateX(110%);opacity:0;pointer-events:none}
-#panel header{display:flex;align-items:center;gap:10px;padding:14px 16px 8px 20px}
-#ptitle{flex:1;font-family:Fredoka,sans-serif;font-weight:700;font-size:24px;line-height:1.1}
-.ibtn{display:grid;place-items:center;width:52px;height:52px;border-radius:16px;background:var(--paper2);flex:none}
+#panel header{display:flex;align-items:center;gap:8px;padding:10px 12px 6px 18px}
+#ptitle{flex:1;font-family:Fredoka,sans-serif;font-weight:700;font-size:21px;line-height:1.1}
+.ibtn{display:grid;place-items:center;width:46px;height:46px;border-radius:16px;background:var(--paper2);flex:none}
 .ibtn svg{width:28px;height:28px;fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.prog{margin:0 20px;height:14px;border-radius:8px;background:var(--paper2);overflow:hidden}
+.progrow{display:flex;align-items:center;gap:10px;margin:0 18px}.progrow .small{white-space:nowrap;font-size:14px}
+.prog{flex:1;height:12px;border-radius:8px;background:var(--paper2);overflow:hidden}
 .prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),#f7d27d);border-radius:8px;transition:width .5s}
-#task{flex:1;overflow:auto;padding:14px 20px 8px;display:flex;flex-direction:column;gap:14px}
-.instr{margin:0;font-size:18px;color:var(--muted)}
-.q{display:grid;place-items:center;min-height:120px}
-.fossil{font-size:clamp(34px,4.4vw,48px);font-weight:700;padding:18px 34px;border-radius:22px;background:#e6d7b5;border:3px dashed #b79c6b;box-shadow:inset 0 -6px 0 rgba(0,0,0,.08);text-align:center}
+#task{flex:0 1 auto;overflow:auto;padding:10px 18px 14px;display:flex;flex-direction:column;gap:clamp(8px,1.6vh,14px)}
+.instr{margin:0;font-size:16px;line-height:1.35;color:var(--muted)}
+.q{display:grid;place-items:center;flex:none}
+.fossil{font-size:clamp(26px,5vh,40px);font-weight:700;padding:clamp(8px,1.8vh,14px) 28px;border-radius:22px;background:#e6d7b5;border:3px dashed #b79c6b;box-shadow:inset 0 -6px 0 rgba(0,0,0,.08);text-align:center}
 .gap{display:inline-block;min-width:2.6em;border-bottom:4px solid var(--ink);color:transparent}
-.sent{margin:0;font-size:clamp(22px,2.6vw,28px);line-height:1.55;text-align:center}
+.sent{margin:0;font-size:clamp(18px,3vh,23px);line-height:1.5;text-align:center}
 .sent .gp{display:inline-block;min-width:3.2em;padding:0 6px;border-bottom:4px solid #b79c6b;color:var(--ink);text-align:center}
 .sent .gp.act{border-color:var(--gold2);background:rgba(242,181,68,.25);border-radius:6px 6px 0 0;animation:pulse 1.2s ease-in-out infinite}
 .sent .gp.fill{color:var(--ok);font-weight:700}
@@ -75,13 +78,13 @@ mark{background:#ffe27a;color:var(--ink);padding:0 6px;border-radius:6px}
 .opts.three{grid-template-columns:repeat(3,minmax(0,1fr))}
 .opts.five{grid-template-columns:repeat(6,minmax(0,1fr))}
 .opts.five .opt{grid-column:span 2}.opts.five .opt:nth-child(4){grid-column:2/span 2}
-.opt{min-height:72px;border-radius:18px;background:#fff;border:3px solid #d9c9a5;font-size:24px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:0 5px 0 #d9c9a5;transition:transform .1s,box-shadow .1s,background .2s}
+.opt{min-height:clamp(50px,8vh,62px);border-radius:16px;background:#fff;border:3px solid #d9c9a5;font-size:clamp(18px,2.8vh,22px);font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:0 5px 0 #d9c9a5;transition:transform .1s,box-shadow .1s,background .2s}
 .opt:active{transform:translateY(4px);box-shadow:0 1px 0 #d9c9a5}
-.opt small{font-size:14px;font-weight:400;color:var(--muted)}
-.opt svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.opt.big{min-height:110px;font-size:20px}
+.opt small{font-size:12px;font-weight:400;color:var(--muted)}
+.opt svg{width:clamp(22px,3.4vh,28px);height:clamp(22px,3.4vh,28px);fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.opt.big{min-height:clamp(70px,11vh,90px);font-size:18px}
 .opt.zeit{color:#2b5aa8}.opt.gef{color:#b8456a}
-.opt.egg{min-height:118px;border-radius:50% 50% 46% 46%/58% 58% 42% 42%;color:#fff;font-size:30px;border:0;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.opt.egg{min-height:clamp(70px,12vh,96px);border-radius:50% 50% 46% 46%/58% 58% 42% 42%;color:#fff;font-size:clamp(22px,3.6vh,28px);border:0;text-shadow:0 2px 0 rgba(0,0,0,.25)}
 .opt.egg.der{background:radial-gradient(circle at 35% 30%,#7fa8ef,var(--der));box-shadow:0 6px 0 #1f4f9e}
 .opt.egg.die{background:radial-gradient(circle at 35% 30%,#ef8a7d,var(--die));box-shadow:0 6px 0 #9e2f23}
 .opt.egg.das{background:radial-gradient(circle at 35% 30%,#7fd09e,var(--das));box-shadow:0 6px 0 #1f6e3e}
@@ -91,10 +94,12 @@ mark{background:#ffe27a;color:var(--ink);padding:0 6px;border-radius:6px}
 .opt.reveal{outline:5px solid var(--gold);outline-offset:3px}
 @keyframes pop{40%{transform:scale(1.08)}}
 @keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
-#hint{margin:0 20px 8px;padding:12px 16px;border-radius:16px;background:#fff4cf;border:2px solid var(--gold);font-size:18px;display:none}
-#hint.show{display:block;animation:pop .35s}
+.msg{flex:none;min-height:clamp(46px,7.5vh,60px);padding:8px 12px;border-radius:14px;border:2px solid transparent;font-size:16px;line-height:1.35}
+.msg.show{background:#fff4cf;border-color:var(--gold);animation:pop .35s}
+.msg.ok{background:#e3f6e8;border-color:var(--ok);text-align:center;font-size:clamp(18px,2.8vh,21px);animation:pop .35s}
+.msg.ok .sent{font-size:clamp(16px,2.6vh,19px)!important}
 #panel footer{display:flex;gap:10px;padding:8px 20px 16px;align-items:center}
-.tbtn{display:flex;align-items:center;gap:8px;min-height:52px;padding:8px 18px;border-radius:16px;background:var(--paper2);font-weight:700;font-size:17px}
+.tbtn{display:flex;align-items:center;gap:6px;min-height:46px;padding:6px 14px;border-radius:16px;background:var(--paper2);font-weight:700;font-size:17px}
 .tbtn svg{width:24px;height:24px;fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .fb{min-height:52px;text-align:center;font-size:24px}
 .fb>*{animation:pop .4s}
@@ -106,7 +111,7 @@ mark{background:#ffe27a;color:var(--ink);padding:0 6px;border-radius:6px}
 .big-btn{min-height:64px;padding:12px 28px;border-radius:20px;background:var(--gold);color:var(--night);font-family:Fredoka,sans-serif;font-weight:700;font-size:24px;box-shadow:0 6px 0 var(--gold2)}
 .big-btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--gold2)}
 .big-btn.alt{background:var(--paper2);color:var(--ink);box-shadow:0 6px 0 #cdbb93}
-.center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;flex:1}
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;flex:1;padding:16px 0}
 .center svg.bone{width:180px;height:80px;fill:#efe3c8;stroke:#b79c6b;stroke-width:1.5;animation:pop .6s}
 
 /* Overlays */
@@ -157,7 +162,8 @@ mark{background:#ffe27a;color:var(--ink);padding:0 6px;border-radius:6px}
     <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg><span>Vorlesen</span></button>
   <button class="hbtn" id="bSound" title="Geräusche an/aus">
     <svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg><span>Töne</span></button>
-  <button class="hbtn" id="bColl"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="11" rx="2"/><rect x="13" y="9" width="8" height="11" rx="2"/></svg><span>Sammlung</span></button>
+  <button class="hbtn" id="bFull" title="Vollbild"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Vollbild</span></button>
+  <button class="hbtn" id="bColl" title="Meine Dino-Karten"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="11" rx="2"/><rect x="13" y="9" width="8" height="11" rx="2"/></svg><span>Sammlung</span></button>
 </div>
 
 <div id="kiki">
@@ -170,16 +176,12 @@ mark{background:#ffe27a;color:var(--ink);padding:0 6px;border-radius:6px}
 <aside id="panel" class="hidden" aria-live="polite">
   <header>
     <div id="ptitle"></div>
+    <button class="tbtn" id="pHint"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/></svg>Tipp</button>
     <button class="ibtn" id="pSay" aria-label="Vorlesen"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg></button>
     <button class="ibtn" id="pClose" aria-label="Zurück in die Halle"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </header>
-  <div class="prog"><i id="progBar"></i></div>
+  <div class="progrow"><div class="prog"><i id="progBar"></i></div><span class="small" id="pLeft"></span></div>
   <div id="task"></div>
-  <div id="hint"></div>
-  <footer id="pfoot">
-    <button class="tbtn" id="pHint"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/></svg>Tipp</button>
-    <span class="small" id="pLeft"></span>
-  </footer>
 </aside>
 
 <div class="ov" id="start">
@@ -380,19 +382,18 @@ function renderTask(){
   lastSay=d.intro+' '+v.say;
   const total=s.solved+s.q.length+1;$('#progBar').style.width=(s.solved/total*100)+'%';
   $('#pLeft').textContent=`Noch ${total-s.solved} ${total-s.solved===1?'Aufgabe':'Aufgaben'}`;
-  $('#pfoot').style.display='';
-  $('#task').innerHTML=`<p class="instr">${d.intro}</p><div class="q">${v.q}</div><div class="opts ${v.cls}">${v.opts.map(o=>`<button class="opt ${o.c||''}" data-v="${o.v}" data-t="${o.t}">${o.h}</button>`).join('')}</div><div class="fb" id="fb"></div>`;
-  $('#hint').className='';$('#hint').innerHTML='';
+  $('#pHint').style.visibility='';
+  $('#task').innerHTML=`<p class="instr">${d.intro}</p><div class="q">${v.q}</div><div class="opts ${v.cls}">${v.opts.map(o=>`<button class="opt ${o.c||''}" data-v="${o.v}" data-t="${o.t}">${o.h}</button>`).join('')}</div><div class="msg" id="hint"></div>`;
   $('#task').querySelectorAll('.opt').forEach(b=>b.onclick=()=>pick(b));
 }
-function showHint(h){const e=$('#hint');e.className='';void e.offsetWidth;e.innerHTML=h;e.className='show';autoSay(h)}
+function showHint(h){const e=$('#hint');if(!e)return;e.className='msg';void e.offsetWidth;e.innerHTML=h;e.className='msg show';autoSay(h)}
 function pick(btn){
   if(busy)return;const d=ST[open],s=run.st[open],it=s.cur,right=d.right(it,s);
   if(btn.dataset.v===right){
     busy=true;sfx.ok();btn.classList.add('good');
     const complete=d.after?d.after(it,s):true;s.tries=0;
     if(!complete){setTimeout(()=>{busy=false;renderTask()},650);return}
-    s.solved++;s.sub=0;const f=d.done(it);$('#fb').innerHTML=`<div>${f.h}</div>`;autoSay(f.s||f.h);
+    s.solved++;s.sub=0;const f=d.done(it);{const m=$('#hint');m.className='msg';void m.offsetWidth;m.innerHTML=f.h;m.className='msg ok'}autoSay(f.s||f.h);
     $('#progBar').style.width=(s.solved/(s.solved+s.q.length)*100)+'%';
     setTimeout(()=>{busy=false;next()},f.s&&store.voice?2300:1400);
   }else{
@@ -413,7 +414,7 @@ function finishStation(){
 }
 const starsHTML=n=>'★'.repeat(n)+`<span class="e">${'★'.repeat(3-n)}</span>`;
 function renderFinished(){
-  const s=run.st[open],d=ST[open];$('#progBar').style.width='100%';$('#pfoot').style.display='none';$('#hint').className='';
+  const s=run.st[open],d=ST[open];$('#progBar').style.width='100%';$('#pHint').style.visibility='hidden';$('#pLeft').textContent='';
   const t=`Super! Du hast ${d.part==='Rippen'||d.part==='Beine'?'die':'den'} ${d.part} gefunden!`;lastSay=t;
   $('#task').innerHTML=`<div class="center"><svg class="bone" viewBox="0 0 48 20"><use href="#boneShape"/></svg>
    <div class="title" style="font-size:30px">${t}</div><div class="stars">${starsHTML(s.stars)}</div>
@@ -461,9 +462,15 @@ function syncToggles(){$('#bVoice').classList.toggle('off',!store.voice);$('#bVo
 $('#bVoice').onclick=()=>{store.voice=!store.voice;save();syncToggles();if(store.voice)say('Ich lese dir jetzt alles vor.');else try{speechSynthesis.cancel()}catch(e){}};
 $('#bSound').onclick=()=>{store.sound=!store.sound;save();syncToggles();sfx.click()};
 syncToggles();
+const fsEl=document.documentElement,fsOn=()=>document.fullscreenElement||document.webkitFullscreenElement;
+const goFs=()=>{try{const f=fsEl.requestFullscreen||fsEl.webkitRequestFullscreen;if(!f)return;const r=f.call(fsEl);if(r&&r.catch)r.catch(()=>{})}catch(e){}};
+if(!(fsEl.requestFullscreen||fsEl.webkitRequestFullscreen))$('#bFull').style.display='none';
+$('#bFull').onclick=()=>{sfx.click();if(fsOn()){try{(document.exitFullscreen||document.webkitExitFullscreen).call(document)}catch(e){}}else goFs()};
+const syncFs=()=>{$('#bFull span').textContent=fsOn()?'Vollbild aus':'Vollbild'};
+document.addEventListener('fullscreenchange',syncFs);document.addEventListener('webkitfullscreenchange',syncFs);
 $('#nm').value=store.name||'';
 $('#startInfo').textContent=store.col.length?`Gesammelt: ${store.col.length} von ${DINOS.length} Dino-Karten`:'';
-$('#bStart').onclick=()=>{ac();sfx.done();store.name=$('#nm').value.trim();save();$('#start').classList.add('hidden');
+$('#bStart').onclick=()=>{ac();if(!fsOn())goFs();sfx.done();store.name=$('#nm').value.trim();save();$('#start').classList.add('hidden');
   kiki(`${store.name?'Hallo '+store.name+'! ':''}Die Tür ist zu! Dem T-Rex fehlen vier Knochen. Wische, um dich umzusehen – und tippe auf eine Station.`)};
 W.onPick=i=>{if(!document.querySelector('.ov:not(.hidden):not(#rot)'))openStation(i)};
 newRun();
