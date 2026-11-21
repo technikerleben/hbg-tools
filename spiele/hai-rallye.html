@@ -3,137 +3,179 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0B3B5C">
 <title>Hai-Rallye</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 /* VOICE: fröhlich, klar, ermutigend – ein Unterwasser-Lernspiel für Drittklässler
-   IDEA: ein Würfel-Brettspiel aus Pappe: Spielplan, Würfel, Aufgabenkarte
-   PICTURE: Spielplan im Meer mit Hai-Figur, Blasenfeldern und Seesternen, daneben der große Würfel
-   COLOUR and TYPE: Tiefseeblau, Lagunentürkis, Korallenorange; Fredoka + Andika (Schulschrift-nah)
-   LAYOUT: Spielplan links, Aufgabenkarte rechts; schmal: Aufgabe zuerst, Spielplan darunter */
+   IDEA: Brettspiel im Meer – zwei Ansichten: Spielplan mit Würfel, danach die Aufgabenkarte ganz allein
+   PICTURE: Spielplan im Meer mit Hai-Figur, Blasenfeldern und Seesternen
+   COLOUR and TYPE: Tiefseeblau, Lagunentürkis, Korallenorange; Fredoka + Andika
+   LAYOUT: iPad quer: Spielplan als Quadrat links, Würfel + Themen rechts, alles ohne Scrollen */
 :root{color-scheme:light;
---slate:#3E5668;--slate-d:#2C3D4C;--slate-p:#D0DCE6;--slate-g:#EEF3F7;
---rust:#D97A4A;--rust-d:#9E4E22;--rust-p:#F5DDD1;
---sage:#7DBB6F;--sage-d:#4D8B3F;--sage-p:#DDF0D8;--sage-t:#2D5C25;
---gold:#C17B00;--gold-p:#FFF3CC;--gold-t:#5C4400;
+--deep:#0B3B5C;--sea:#126A96;--lagoon:#2BA3C7;--foam:#CDEFFA;--coral:#C2410C;--star:#E0603A;--teal:#0F766E;
+--sage-p:#DDF0D8;--sage-d:#4D8B3F;--sage-t:#2D5C25;
 --err:#C0392B;--err-p:#FDECEA;--err-t:#7A1B14;
---bg:#EAF6FB;--ink:#1E2A35;--muted:#5A6A78;
---shadow:0 3px 0 rgba(44,61,76,.16),0 10px 24px rgba(44,61,76,.10)}
+--bg:#EAF6FB;--ink:#1E2A35;--muted:#5A6A78;--line:#C9DDE7;--ghost:#EEF6FA;
+--shadow:0 3px 0 rgba(11,59,92,.14),0 10px 24px rgba(11,59,92,.10);--hh:64px}
 *{box-sizing:border-box;min-width:0}
-body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 Andika,"Trebuchet MS",system-ui,sans-serif;overflow-x:clip}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:18px/1.5 Andika,"Trebuchet MS",system-ui,sans-serif;overflow-x:clip;-webkit-tap-highlight-color:transparent}
 h1,h2,h3{font-family:Fredoka,Andika,system-ui,sans-serif;font-weight:600}
-:focus-visible{outline:3px solid var(--slate);outline-offset:3px;border-radius:6px}
-button{font:inherit}
-header{background:#0B3B5C;color:#fff;border-bottom:6px solid #2BA3C7}
-.hin{max-width:1180px;margin:0 auto;padding:14px max(4vw,16px);display:flex;gap:12px 20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:12px}
-.brand svg{width:52px;height:52px;flex:none}
-header h1{margin:0;font-size:clamp(28px,4vw,40px);line-height:1.05;font-weight:700}
-header p{margin:2px 0 0;color:var(--slate-p);font-size:15px}
+:focus-visible{outline:3px solid var(--deep);outline-offset:3px;border-radius:6px}
+button{font:inherit;color:inherit}
+[hidden]{display:none!important}
+header{background:var(--deep);color:#fff;border-bottom:5px solid var(--lagoon)}
+.hin{max-width:1240px;margin:0 auto;padding:8px max(2vw,14px);display:flex;gap:8px 18px;align-items:center;justify-content:space-between;flex-wrap:wrap;min-height:var(--hh)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand svg{width:52px;height:44px;flex:none}
+header h1{margin:0;font-size:28px;line-height:1.05;font-weight:700}
+header p{margin:0;color:var(--foam);font-size:14px}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{background:rgba(255,255,255,.13);border-radius:999px;padding:5px 14px;font-size:15px;white-space:nowrap}
+.chip{background:rgba(255,255,255,.13);border-radius:999px;padding:4px 14px;font-size:15px;white-space:nowrap}
 .chip b{font-family:Fredoka;font-size:19px;margin-left:4px}
-main{max-width:1180px;margin:0 auto;padding:22px max(4vw,16px) 44px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:22px;align-items:start}
-.panel{background:#fff;border-radius:22px;box-shadow:var(--shadow);padding:clamp(14px,2vw,22px)}
-.meadow{background:radial-gradient(circle at 12% 8%,rgba(255,255,255,.16) 0 5px,transparent 6px),radial-gradient(circle at 88% 4%,rgba(255,255,255,.14) 0 8px,transparent 9px),radial-gradient(circle at 93% 14%,rgba(255,255,255,.12) 0 4px,transparent 5px),linear-gradient(180deg,#126A96,#0B3B5C)}
-.ph{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:12px;flex-wrap:wrap}
-.ph h2{margin:0;font-size:24px;color:#fff}
-.ph span{color:#CDEFFA;font-size:15px}
-@media(max-width:860px){main{grid-template-columns:minmax(0,1fr)}#playP{order:-1}}
-/* Spielplan */
-.board{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
-.f{aspect-ratio:1;border-radius:50%;background:#F2FBFF;display:grid;place-items:center;position:relative;font-family:Fredoka;font-weight:600;color:var(--muted);font-size:clamp(14px,1.7vw,19px);box-shadow:0 3px 0 rgba(44,61,76,.14)}
-.f.done{background:#9ADCEB;color:#0B3B5C}
-.f.star{background:#FFE3D3;color:#E0603A}
-.f.start,.f.ziel{background:#2BA3C7;color:#062a40;font-size:clamp(12px,1.4vw,16px)}
-.f.ziel{background:#F2B13A;color:#4a2c00;border-radius:14px}
+
+/* ---------- Ansicht 1: Spielplan ---------- */
+.bview{max-width:1240px;margin:0 auto;padding:14px max(2vw,12px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:16px;align-items:start}
+.sea{border-radius:22px;padding:14px;background:radial-gradient(circle at 12% 8%,rgba(255,255,255,.16) 0 5px,transparent 6px),radial-gradient(circle at 88% 4%,rgba(255,255,255,.14) 0 8px,transparent 9px),radial-gradient(circle at 93% 14%,rgba(255,255,255,.12) 0 4px,transparent 5px),linear-gradient(180deg,var(--sea),var(--deep));box-shadow:var(--shadow)}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 4px 10px;flex-wrap:wrap}
+.ph h2{margin:0;font-size:22px;color:#fff}
+.ph span{color:var(--foam);font-size:15px}
+.board{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(6,minmax(0,1fr));gap:8px;aspect-ratio:1}
+.f{border-radius:50%;background:#F2FBFF;display:grid;place-items:center;position:relative;font-family:Fredoka;font-weight:600;color:var(--muted);font-size:clamp(14px,1.8vw,20px);box-shadow:0 3px 0 rgba(0,0,0,.18)}
+.f.done{background:#9ADCEB;color:var(--deep)}
+.f.star{background:#FFE3D3;color:var(--star)}
+.f.start{background:var(--lagoon);color:#062a40;font-size:clamp(12px,1.4vw,16px)}
+.f.ziel{background:#F2B13A;color:#4a2c00;border-radius:16px;font-size:clamp(12px,1.4vw,16px)}
 .f .ic{width:58%;height:58%}
-.token{position:absolute;inset:-4% -10%;animation:hop .3s ease-out;filter:drop-shadow(0 3px 2px rgba(0,0,0,.25))}
+.token{position:absolute;inset:-4% -12%;animation:hop .32s ease-out;filter:drop-shadow(0 3px 2px rgba(0,0,0,.3));z-index:2}
 .token svg{width:100%;height:100%}
 @keyframes hop{0%{transform:translateY(0) scale(.85)}45%{transform:translateY(-34%) scale(1.05)}100%{transform:none}}
-.hint{font-size:15px;color:#CDEFFA;margin:16px 0 8px}
-.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:8px}
-.lr{display:flex;gap:12px;align-items:center;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:10px 12px;cursor:pointer;color:inherit;box-shadow:0 2px 0 rgba(44,61,76,.12);min-height:44px}
-.lr:hover{border-color:var(--slate-p)}
+.side{display:flex;flex-direction:column;gap:12px}
+.dicebox{background:#fff;border-radius:22px;box-shadow:var(--shadow);padding:16px;display:grid;justify-items:center;gap:12px;text-align:center}
+.msg{margin:0;font-size:17px;line-height:1.35;color:var(--ink);min-height:2.7em;display:grid;place-items:center}
+.msg.r{color:var(--sage-t)}.msg.f{color:var(--err-t)}
+.legend{background:#fff;border-radius:22px;box-shadow:var(--shadow);padding:10px;display:grid;gap:6px}
+.legend h3{margin:2px 6px 2px;font-size:16px;color:var(--muted);font-weight:500}
+.lr{display:flex;gap:10px;align-items:center;text-align:left;background:var(--ghost);border:2px solid transparent;border-radius:14px;padding:6px 10px;cursor:pointer;min-height:48px}
+.lr:hover{border-color:var(--line)}
 .lt{display:grid;gap:3px;flex:1}
-.lt b{font-family:Fredoka;font-weight:600;font-size:17px;line-height:1.2}
-.lt small{font-size:14px;color:var(--muted);line-height:1.3}
-.bar{height:8px;background:var(--slate-p);border-radius:4px;overflow:hidden;display:block}
-.bar i{display:block;height:100%;background:#2BA3C7;border-radius:4px;transition:width .4s}
+.lt b{font-family:Fredoka;font-weight:600;font-size:16px;line-height:1.2}
+.pc{font-size:13px;color:var(--muted);white-space:nowrap}
+.bar{height:7px;background:var(--line);border-radius:4px;overflow:hidden;display:block}
+.bar i{display:block;height:100%;background:var(--lagoon);border-radius:4px;transition:width .4s}
+@media (orientation:landscape) and (min-width:900px){
+  header .hin{height:var(--hh);flex-wrap:nowrap}
+  .bview{--bs:min(calc(100vh - var(--hh) - 5px - 28px - 28px - 42px),calc(100vw - 470px));--bs:min(calc(100dvh - var(--hh) - 5px - 28px - 28px - 42px),calc(100vw - 470px));grid-template-columns:auto minmax(300px,380px);justify-content:center;height:calc(100dvh - var(--hh) - 5px)}
+  .board{width:var(--bs);height:var(--bs)}
+  .side{height:100%;overflow:auto}
+}
+@media (max-width:899px){.bview{grid-template-columns:minmax(0,1fr)}.side{order:-1}}
+
 /* Würfel */
-.die{display:inline-grid;grid-template:repeat(3,1fr)/repeat(3,1fr);background:#fff;border:3px solid var(--slate-d);border-radius:22%;padding:12%;flex:none}
-.die i{width:72%;aspect-ratio:1;border-radius:50%;place-self:center;background:var(--slate-d);opacity:0}
+.die{display:inline-grid;grid-template:repeat(3,1fr)/repeat(3,1fr);background:#fff;border:3px solid var(--deep);border-radius:22%;padding:12%;flex:none}
+.die i{width:72%;aspect-ratio:1;border-radius:50%;place-self:center;background:var(--deep);opacity:0}
 .die i.on{opacity:1}
-.die.big{width:128px;height:128px;box-shadow:0 6px 0 var(--slate-p)}
-.die.mini{width:40px;height:40px;border:0;padding:7px;border-radius:10px}
+.die.big{width:104px;height:104px;box-shadow:0 6px 0 var(--foam)}
+.die.mini{width:36px;height:36px;border:0;padding:6px;border-radius:9px}
 .die.mini i{background:#fff}
 .rolling{animation:spin .22s linear infinite}
 @keyframes spin{25%{transform:rotate(-14deg) scale(1.05)}75%{transform:rotate(14deg) scale(1.05)}}
-/* Spielbereich */
-.idle{display:grid;justify-items:center;text-align:center;gap:14px;padding:10px 0}
-.idle h2{margin:6px 0 0;font-size:clamp(28px,3.4vw,38px);line-height:1.1}
-.idle p{margin:0;color:var(--muted);max-width:30em}
-.btn{min-height:54px;padding:10px 30px;border:0;border-radius:16px;font-family:Fredoka;font-weight:600;font-size:21px;color:#fff;background:#C2410C;box-shadow:0 5px 0 #8A2E08;cursor:pointer}
+
+/* Buttons */
+.btn{min-height:54px;padding:10px 28px;border:0;border-radius:16px;font-family:Fredoka;font-weight:600;font-size:21px;color:#fff;background:var(--coral);box-shadow:0 5px 0 #8A2E08;cursor:pointer}
 .btn:hover{background:#A8380A}
 .btn:active{transform:translateY(4px);box-shadow:0 1px 0 #8A2E08}
-.btn:disabled{background:#EBEBEA;color:#7A7672;box-shadow:none;cursor:default}
-.btn.g{background:#0F766E;box-shadow:0 5px 0 #0A524C}
+.btn:disabled{background:#E3E8EB;color:#6B7780;box-shadow:none;cursor:default;transform:none}
+.btn.g{background:var(--teal);box-shadow:0 5px 0 #0A524C}
 .btn.g:hover{background:#0C5F58}
-.btn.s{background:#fff;color:var(--slate);border:2px solid var(--slate);box-shadow:none;font-size:17px;min-height:46px}
-.btn.s:hover{background:var(--slate-g)}
+.btn.s{background:#fff;color:var(--deep);border:2px solid var(--deep);box-shadow:none;font-size:16px;min-height:44px;padding:6px 16px}
+.btn.s:hover{background:var(--ghost)}
+.btn.wide{width:100%}
+
+/* ---------- Ansicht 2: Aufgabe ---------- */
+.tview{max-width:960px;margin:0 auto;padding:14px max(2vw,12px)}
+.tcard{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:clamp(16px,2.6vw,30px);min-height:calc(100dvh - var(--hh) - 5px - 28px);display:flex;flex-direction:column}
 .qhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .tname{font-family:Fredoka;font-weight:600;font-size:20px}
-.steps{background:var(--slate-g);color:var(--slate);border-radius:999px;padding:2px 12px;font-size:15px;white-space:nowrap}
-.speak{margin-left:auto;display:inline-flex;gap:6px;align-items:center;background:var(--slate-g);color:var(--slate);border:0;border-radius:999px;padding:8px 14px;min-height:44px;cursor:pointer;font-size:15px}
+.steps{background:var(--ghost);color:var(--deep);border-radius:999px;padding:2px 12px;font-size:15px;white-space:nowrap}
+.speak{margin-left:auto;display:inline-flex;gap:6px;align-items:center;background:var(--ghost);color:var(--deep);border:0;border-radius:999px;padding:8px 14px;min-height:44px;cursor:pointer;font-size:15px}
 .speak svg{width:20px;height:20px}
-.prompt{font-size:clamp(21px,2.4vw,25px);line-height:1.25;margin:16px 0 12px}
-.word{font-family:Fredoka;font-weight:600;font-size:clamp(34px,5vw,50px);text-align:center;padding:18px;background:var(--slate-g);border-radius:18px;color:var(--slate-d)}
-.sent{font-size:clamp(21px,2.4vw,25px);line-height:1.9;margin:0;padding:14px 18px;background:var(--slate-g);border-radius:18px}
-mark{background:var(--gold-p);color:inherit;padding:1px 6px;border-radius:8px;box-shadow:inset 0 -4px 0 #F0C84A}
-.gap{display:inline-block;width:3.4em;border-bottom:3px solid var(--slate);margin:0 4px;vertical-align:-2px}
-.pieces{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;padding:14px;background:var(--slate-g);border-radius:18px}
-.piece{background:#fff;border:3px solid var(--slate);border-radius:14px;padding:8px 16px;font-family:Fredoka;font-weight:600;font-size:clamp(22px,3vw,28px);white-space:nowrap}
-.plus{font-family:Fredoka;font-size:32px;color:var(--muted)}
-.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px;margin-top:16px}
-.opt{min-height:62px;font-weight:700;font-size:22px;background:#fff;border:3px solid var(--slate-p);border-radius:16px;color:var(--ink);cursor:pointer;box-shadow:0 4px 0 var(--slate-p);padding:8px 12px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
-.opt svg{width:28px;height:28px;flex:none}
-.opt:hover:not(:disabled){border-color:var(--slate)}
-.opt:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--slate-p)}
+.pracBar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:16px;color:var(--muted);margin-bottom:6px}
+.bar.big{height:10px;margin:0 0 12px}
+.bar.big i{background:#F2B13A}
+.prompt{font-size:clamp(23px,2.6vw,28px);line-height:1.25;margin:14px 0 4px}
+.sub{margin:0 0 12px;color:var(--muted);font-size:17px}
+.word{font-family:Fredoka;font-weight:600;font-size:clamp(38px,5.4vw,58px);text-align:center;padding:22px;background:var(--ghost);border-radius:20px;color:var(--deep);margin-top:8px}
+.sent{font-size:clamp(23px,2.6vw,28px);line-height:1.9;margin:8px 0 0;padding:16px 20px;background:var(--ghost);border-radius:20px}
+mark{background:#FFF3CC;color:inherit;padding:1px 6px;border-radius:8px;box-shadow:inset 0 -4px 0 #F0C84A}
+.gap{display:inline-block;width:3.4em;border-bottom:3px solid var(--deep);margin:0 4px;vertical-align:-2px}
+.pieces{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;padding:18px;background:var(--ghost);border-radius:20px;margin-top:8px}
+.piece{background:#fff;border:3px solid var(--deep);border-radius:14px;padding:8px 18px;font-family:Fredoka;font-weight:600;font-size:clamp(24px,3vw,30px);white-space:nowrap}
+.plus{font-family:Fredoka;font-size:34px;color:var(--muted)}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:12px;margin-top:18px}
+.opt{min-height:66px;font-weight:700;font-size:23px;background:#fff;border:3px solid var(--line);border-radius:16px;cursor:pointer;box-shadow:0 4px 0 var(--line);padding:8px 12px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.opt svg{width:30px;height:30px;flex:none}
+.opt:hover:not(:disabled){border-color:var(--deep)}
+.opt:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
 .opt:disabled{cursor:default}
-.opt.ok{background:var(--sage-p);border-color:var(--sage-d);color:var(--sage-t);box-shadow:0 4px 0 var(--sage)}
-.opt.ok::before{content:"✓"}
-.opt.no{background:var(--err-p);border-color:var(--err);color:var(--err-t);box-shadow:0 4px 0 #f2b8b1}
-.opt.no::before{content:"✗"}
-.opt.dim{opacity:.5}
-.fb{margin-top:16px;border-radius:0 16px 16px 0;padding:12px 16px;font-size:18px}
+.ok{background:var(--sage-p)!important;border-color:var(--sage-d)!important;color:var(--sage-t)!important}
+.no{background:var(--err-p)!important;border-color:var(--err)!important;color:var(--err-t)!important}
+.opt.ok::before,.wchip.ok::before{content:"✓"}
+.opt.no::before,.wchip.no::before{content:"✗"}
+.dim{opacity:.45}
+/* Wörterliste */
+.wlist{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:8px}
+@media(max-width:600px){.wlist{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.wchip{min-height:62px;border-radius:16px;border:3px solid var(--line);background:#fff;font-weight:700;font-size:21px;cursor:pointer;box-shadow:0 4px 0 var(--line);display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:6px 10px}
+.wchip.on{background:#DDF3FB;border-color:var(--sea);box-shadow:0 4px 0 var(--lagoon);color:var(--deep)}
+.wchip.miss{border-style:dashed;border-color:var(--err);color:var(--err-t)}
+.wchip.miss::after{content:"vergessen";font-size:13px;font-weight:400}
+.wchip:disabled{cursor:default}
+.checkrow{display:flex;justify-content:center;margin-top:16px}
+/* Buchstabengitter */
+.gwrap{display:grid;grid-template-columns:auto minmax(0,1fr);gap:24px;align-items:start;margin-top:6px}
+@media(max-width:760px),(orientation:portrait){.gwrap{grid-template-columns:minmax(0,1fr);justify-items:center}}
+.wg{--c:min(54px,calc((100vw - 90px)/8));--c:min(54px,calc((100vw - 90px)/8),calc((100dvh - 330px)/8));display:grid;grid-template-columns:repeat(8,var(--c));gap:4px;user-select:none;-webkit-user-select:none}
+.gc{width:var(--c);height:var(--c);border:0;border-radius:10px;background:var(--ghost);font-family:Fredoka;font-weight:600;font-size:calc(var(--c) * .5);color:var(--deep);cursor:pointer;padding:0;transition:background .15s}
+.gc:hover{background:#DDF3FB}
+.gc.sel{background:#F2B13A;color:#3d2500}
+.gc.found{background:var(--sage-p);color:var(--sage-t);box-shadow:inset 0 0 0 2px var(--sage-d)}
+.gc.bad{background:var(--err-p);color:var(--err-t);box-shadow:inset 0 0 0 2px var(--err)}
+.gc.reveal{box-shadow:inset 0 0 0 3px var(--star)}
+.ginfo{display:grid;gap:12px}
+.gfound{display:flex;flex-wrap:wrap;gap:8px}
+.slot{border-radius:999px;padding:6px 14px;background:var(--ghost);color:var(--muted);font-weight:700;font-size:18px;border:2px dashed var(--line)}
+.slot.ok{border-style:solid}
+.gmsg{min-height:3em;font-size:17px;color:var(--deep);margin:0}
+.gmsg.f{color:var(--err-t)}
+.ghint{font-size:15px;color:var(--muted);margin:0}
+/* Rückmeldung */
+.fb{margin-top:18px;border-radius:0 16px 16px 0;padding:12px 16px;font-size:19px}
 .fb:empty{display:none}
 .fb.r{background:var(--sage-p);border-left:6px solid var(--sage-d);color:var(--sage-t)}
 .fb.f{background:var(--err-p);border-left:6px solid var(--err);color:var(--err-t)}
 .fb b{font-family:Fredoka;font-weight:600}
-.starmsg{margin-top:8px;display:flex;gap:8px;align-items:center;color:var(--gold-t);font-weight:700}
-.starmsg .ic{width:26px;height:26px;color:#E0603A}
-.next{display:flex;justify-content:flex-end;margin-top:16px}
-.pracBar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:16px;color:var(--muted)}
-.link{background:none;border:0;color:var(--slate);text-decoration:underline;cursor:pointer;min-height:44px;font-size:16px}
-.bar.big{height:10px;margin:6px 0 14px}
-.bar.big i{background:#F2B13A}
-.goal svg.trophy{width:130px;height:130px}
+.tfoot{margin-top:auto;padding-top:18px;display:flex;justify-content:flex-end}
+.link{background:none;border:0;color:var(--deep);text-decoration:underline;cursor:pointer;min-height:44px;font-size:16px}
+/* Ziel */
+.goal{display:grid;justify-items:center;text-align:center;gap:14px;margin:auto 0;padding:20px 0}
+.goal h2{margin:0;font-size:clamp(30px,4vw,44px);line-height:1.1}
+.goal p{margin:0;color:var(--muted);font-size:20px;max-width:30em}
+.goal svg.trophy{width:140px;height:140px}
 .stars{display:flex;gap:6px}
-.stars span{color:var(--slate-p)}
-.stars span.on{color:#E0603A}
-.stars .ic{width:56px;height:56px}
-.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.stars span{color:var(--line)}
+.stars span.on{color:var(--star)}
+.stars .ic{width:60px;height:60px}
+.row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <header>
   <div class="hin">
-    <div class="brand">
-      <svg viewBox="0 0 48 40" aria-hidden="true"><path d="M11 21L2 11l3 11-3 10z" fill="#4F6D85"/><path d="M22 14l6-10 5 11z" fill="#4F6D85"/><path d="M8 21Q16 12 30 13q11 1 16 9-5 7-17 8Q15 30 8 21z" fill="#6D8FA8"/><path d="M12 23q12 6 33-1-5 6-16 7-11 0-17-6z" fill="#fff"/><path d="M24 25l-4 8 8-6z" fill="#4F6D85"/><path d="M30 17v6M32.4 17v6" stroke="#4F6D85" stroke-width="1.3"/><circle cx="37" cy="18" r="1.9" fill="#0B2540"/><path d="M38 24q3 1 6-2" stroke="#0B2540" stroke-width="1.3" fill="none"/></svg>
-      <div><h1>Hai-Rallye</h1><p>Deutsch üben mit Flosse, dem Wort-Hai · Klasse 3</p></div>
-    </div>
+    <div class="brand" id="brand"></div>
     <div class="chips">
       <span class="chip">Feld<b id="cPos">0</b></span>
       <span class="chip">Würfe<b id="cRolls">0</b></span>
@@ -141,15 +183,30 @@ mark{background:var(--gold-p);color:inherit;padding:1px 6px;border-radius:8px;bo
     </div>
   </div>
 </header>
-<main>
-  <section class="panel meadow" aria-label="Spielplan">
+
+<main class="bview" id="boardView">
+  <section class="sea" aria-label="Spielplan">
     <div class="ph"><h2>Spielplan</h2><span>Schwimm mit Flosse zum Schatz!</span></div>
     <div class="board" id="board"></div>
-    <p class="hint">Jede Würfelzahl ist ein Thema. Tippe auf ein Thema, um es extra zu üben.</p>
-    <div class="legend" id="legend"></div>
   </section>
-  <section class="panel" id="playP" aria-label="Aufgabe"><div id="play"></div></section>
+  <aside class="side">
+    <div class="dicebox">
+      <span id="dieSlot"></span>
+      <p class="msg" id="msg" role="status" aria-live="polite">Würfle! Der Würfel bestimmt das Thema.</p>
+      <button class="btn wide" id="roll">Würfeln!</button>
+      <button class="btn s" id="reset">Neues Spiel</button>
+    </div>
+    <div class="legend">
+      <h3>Themen – tippe zum Extra-Üben</h3>
+      <div id="legend" style="display:grid;gap:6px"></div>
+    </div>
+  </aside>
 </main>
+
+<main class="tview" id="taskView" hidden>
+  <section class="tcard" id="task" aria-live="polite"></section>
+</main>
+
 <script>
 {
 const $=s=>document.querySelector(s);
@@ -167,6 +224,7 @@ const CLOCK='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12"
 const HEART='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-8.5-5.3-8.5-11.3A4.7 4.7 0 0 1 12 7a4.7 4.7 0 0 1 8.5 2.7C20.5 15.7 12 21 12 21z" fill="#C0392B"/></svg>';
 const SPEAK='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
 const TROPHY='<svg class="trophy" viewBox="0 0 64 64" aria-hidden="true"><path d="M18 8h28v14a14 14 0 0 1-28 0z" fill="#E3A21A"/><path d="M18 12H9a9 9 0 0 0 10 12M46 12h9a9 9 0 0 1-10 12" stroke="#C17B00" stroke-width="4" fill="none"/><rect x="28" y="35" width="8" height="10" fill="#C17B00"/><rect x="19" y="45" width="26" height="8" rx="3" fill="#3E5668"/><path d="M26 12v10" stroke="#FFF3CC" stroke-width="3" stroke-linecap="round"/></svg>';
+const NONE='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#fff" stroke="#5A6A78" stroke-width="2.5"/><path d="M5.5 18.5l13-13" stroke="#5A6A78" stroke-width="2.5" stroke-linecap="round"/></svg>';
 
 /* ---------- Inhalte ---------- */
 const PRO=[
@@ -215,29 +273,71 @@ const ZUS=[
 ['die Schule','der Hof','der Schulhof'],['das Spiel','der Platz','der Spielplatz'],['die Arbeit','der Platz','der Arbeitsplatz'],
 ['das Wasser','die Flasche','die Wasserflasche'],['die Hand','der Schuh','der Handschuh'],['der Winter','die Jacke','die Winterjacke'],
 ['das Kind','der Garten','der Kindergarten'],['die Tomate','die Suppe','die Tomatensuppe'],['der Hai','die Flosse','die Haiflosse'],['das Meer','das Wasser','das Meerwasser'],['der Fisch','der Schwarm','der Fischschwarm']];
+const NIX=['der Tisch','die Muschel','der Ball','das Auto','die Schule','der Hai','das Buch','der Stift','die Tür','das Fahrrad','der Baum','die Brille','der Teller','die Jacke','das Fenster','die Qualle'];
+const GRIDZ=['TAG','WOCHE','MONAT','JAHR','STUNDE','MINUTE','ABEND','MORGEN','MITTAG','NACHT','SEKUNDE'];
+const GRIDG=['ANGST','WUT','FREUDE','GLÜCK','STOLZ','DURST','HUNGER','TRAUER'];
+const ARTMAP={};[...ZEIT,...GEF].forEach(w=>{ARTMAP[w.split(' ')[1].toUpperCase()]=w});
 
 /* ---------- Aufgaben-Generatoren ---------- */
 const recent={};
 function pk(id,arr){const r=recent[id]||(recent[id]=[]);let i,t=0;do{i=Math.floor(Math.random()*arr.length)}while(r.includes(i)&&++t<30);r.push(i);if(r.length>Math.min(6,arr.length-1))r.shift();return arr[i]}
 const mk=(right,wrong)=>shuffle([{t:right,ok:true},...wrong.map(t=>({t,ok:false}))]);
-const und=l=>l.slice(0,-1).join(', ')+' und '+l[l.length-1];
+const und=l=>l.length<2?l.join(''):l.slice(0,-1).join(', ')+' und '+l[l.length-1];
+const KW={z:'Zeitbegriff',g:'Gefühl oder Zustand'};
+
+function zgSingle(){
+  const x=Math.random(),k=x<.4?'z':x<.8?'g':'n',w=k==='z'?pk('zt',ZEIT):k==='g'?pk('gf',GEF):pk('nx',NIX);
+  return {prompt:'Ist das ein Zeitbegriff, ein Gefühl/Zustand – oder nichts davon?',disp:`<div class="word">${w}</div>`,
+  opts:[{t:CLOCK+' Zeitbegriff',ok:k==='z'},{t:HEART+' Gefühl oder Zustand',ok:k==='g'},{t:NONE+' nichts davon',ok:k==='n'}],
+  expl:k==='z'?`<b>${w}</b> ist ein Zeitbegriff. Er sagt, wann etwas ist oder wie lange es dauert.`
+   :k==='g'?`<b>${w}</b> ist ein Gefühl oder Zustand. Man kann es spüren, aber nicht anfassen.`
+   :`<b>${w}</b> ist weder Zeitbegriff noch Gefühl. Das ist etwas, das man sehen und anfassen kann.`}
+}
+function zgMulti(){
+  const kind=Math.random()<.5?'g':'z',other=kind==='z'?'g':'z',nt=3+(Math.random()<.5?1:0);
+  const T=shuffle(kind==='z'?ZEIT:GEF).slice(0,nt),O=shuffle(kind==='z'?GEF:ZEIT).slice(0,3),N=shuffle(NIX).slice(0,9-nt-3);
+  const items=shuffle([...T.map(w=>({w,k:kind})),...O.map(w=>({w,k:other})),...N.map(w=>({w,k:'n'}))]);
+  return {type:'multi',kind,items,prompt:kind==='g'?'Tippe alle Gefühle und Zustände an.':'Tippe alle Zeitbegriffe an.',
+  sub:`Es sind ${nt} Wörter. Wenn du fertig bist, tippe auf „Prüfen“.`,
+  expl:`${kind==='g'?'Die Gefühle und Zustände sind':'Die Zeitbegriffe sind'}: <b>${und(T)}</b>.`}
+}
+function zgGrid(){
+  const kind=Math.random()<.65?'z':'g',T=shuffle(kind==='z'?GRIDZ:GRIDG).slice(0,3),D=shuffle(kind==='z'?GRIDG:GRIDZ).slice(0,Math.random()<.5?1:2);
+  const G=buildGrid([...T,...D]);
+  G.pl.forEach(p=>p.t=T.includes(p.w));
+  return {type:'grid',kind,T,G,prompt:kind==='z'?'Finde 3 Zeitbegriffe im Buchstabengitter.':'Finde 3 Gefühle im Buchstabengitter.',
+  sub:`Achtung: Es ist auch ${D.length===1?'ein Wort':'Wörter'} versteckt, ${D.length===1?'das':'die'} nicht dazugehör${D.length===1?'t':'en'}!`}
+}
+function buildGrid(words){
+  const N=8,F='ABDEFGHIKLMNOPRSTUW';
+  for(let at=0;at<300;at++){
+    const g=Array.from({length:N},()=>Array(N).fill('')),pl=[];let all=true;
+    for(const w of words){
+      const L=[...w].length,ch=[...w];let placed=false;
+      for(let t=0;t<120&&!placed;t++){
+        const h=Math.random()<.55,r=Math.floor(Math.random()*(h?N:N-L+1)),c=Math.floor(Math.random()*(h?N-L+1:N));
+        let fit=true;for(let i=0;i<L;i++){const v=g[h?r:r+i][h?c+i:c];if(v&&v!==ch[i]){fit=false;break}}
+        if(fit){for(let i=0;i<L;i++)g[h?r:r+i][h?c+i:c]=ch[i];pl.push({w,r,c,h,L});placed=true}
+      }
+      if(!placed){all=false;break}
+    }
+    if(all){for(const row of g)for(let i=0;i<N;i++)if(!row[i])row[i]=F[Math.floor(Math.random()*F.length)];return {g,pl}}
+  }
+}
 
 const TOPICS=[
-{id:'pro',name:'Pronomen',sub:'er, sie, es, wir, ihr',col:'#3E5668',gen(){
+{id:'pro',name:'Pronomen',col:'#3E5668',gen(){
   const [s,w,a,e]=pk('pro',PRO),rest=s.slice(w.length);
   return {prompt:'Welches Pronomen passt für das gelbe Wort?',disp:`<p class="sent"><mark>${w}</mark>${rest}</p>`,
   opts:['Er','Sie','Es','Wir','Ihr'].map(t=>({t,ok:t===a})),
   expl:`${e||low1(w)+' → '+a.toLowerCase()}. So heißt der Satz: <b>${a}${rest}</b>`}}},
-{id:'end',name:'Nomen mit -ung und -heit',sub:'Aus Wörtern Nomen bauen',col:'#9E4E22',gen(){
+{id:'end',name:'Nomen mit -ung / -heit',col:'#9E4E22',gen(){
   const [b,r,w1,w2,k]=pk('end',END);
   return {prompt:'Mach aus dem Wort ein Nomen. Was ist richtig?',disp:`<div class="word">${b}</div>`,opts:mk(r,[w1,w2]),
   expl:`${k==='v'?'Aus dem Verb (Tunwort)':'Aus dem Adjektiv (Wiewort)'} <b>${b}</b> wird mit <b>${k==='v'?'-ung':'-heit'}</b> das Nomen <b>${r}</b>. Nomen schreibt man groß. Wörter mit -ung und -heit haben immer den Artikel <b>die</b>.`}}},
-{id:'zg',name:'Uhr oder Herz?',sub:'Zeitbegriffe und Gefühle',col:'#4D8B3F',gen(){
-  const isT=Math.random()<.5,w=isT?pk('zt',ZEIT):pk('gf',GEF);
-  return {prompt:'Ist das ein Zeitbegriff oder ein Gefühl/Zustand?',disp:`<div class="word">${w}</div>`,
-  opts:[{t:CLOCK+' Zeitbegriff',ok:isT},{t:HEART+' Gefühl oder Zustand',ok:!isT}],
-  expl:isT?`<b>${w}</b> ist ein Zeitbegriff. Er sagt, wann etwas ist oder wie lange es dauert.`:`<b>${w}</b> ist ein Gefühl oder Zustand. Man kann es spüren, aber nicht anfassen.`}}},
-{id:'ob',name:'Oberbegriffe',sub:'Was gehört zusammen?',col:'#A86A00',gen(){
+{id:'zg',name:'Zeit oder Gefühl?',col:'#4D8B3F',gen(){
+  const r=Math.random();return r<.5?zgSingle():r<.75?zgMulti():zgGrid()}},
+{id:'ob',name:'Oberbegriffe',col:'#A86A00',gen(){
   const names=Object.keys(OB);
   if(Math.random()<.6){const n=pk('ob',names),ws=shuffle(OB[n]).slice(0,3);
     return {prompt:'Wie heißt der Oberbegriff für diese Wörter?',disp:`<div class="pieces">${ws.map(w=>`<span class="piece">${w}</span>`).join('')}</div>`,
@@ -246,12 +346,12 @@ const TOPICS=[
   const other=pick(names.filter(x=>x!==n&&!(ZF.includes(x)&&ZF.includes(n)))),odd=pick(OB[other]);
   return {prompt:'Drei Wörter gehören zusammen. Welches Wort passt nicht dazu?',disp:'',opts:mk(odd,ws),
   expl:`${und(ws)} gehören zum Oberbegriff <b>${n}</b>. <b>${odd}</b> gehört zum Oberbegriff ${other}.`}}},
-{id:'art',name:'ein oder der?',sub:'unbestimmte und bestimmte Artikel',col:'#6B4C8A',gen(){
+{id:'art',name:'ein oder der?',col:'#6B4C8A',gen(){
   const [s1,s2,u,b,wu,wb]=pk('art',ART),G='<span class="gap"></span>',f=(x,y)=>`${x} … ${y}`;
   return {prompt:'Welche Artikel passen in die Lücken?',disp:`<p class="sent">${s1.replace('___',G)}<br>${s2.replace('___',G)}</p>`,
   opts:mk(f(u,b),[f(b.toLowerCase(),cap(u)),f(wu,wb)]),
   expl:`Beim ersten Mal ist es neu: <b>${u}</b> (unbestimmter Artikel). Danach kennen wir es schon: <b>${b}</b> (bestimmter Artikel).<br>${s1.replace('___','<b>'+u+'</b>')} ${s2.replace('___','<b>'+b+'</b>')}`}}},
-{id:'zus',name:'Wort-Puzzle',sub:'zusammengesetzte Nomen',col:'#1F6F7C',gen(){
+{id:'zus',name:'Wort-Puzzle',col:'#1F6F7C',gen(){
   const [a,b,res]=pk('zus',ZUS),[aA,aN]=a.split(' '),[bA,bN]=b.split(' '),rw=res.split(' ')[1];
   const others=['der','die','das'].filter(x=>x!==bA),wA=others.includes(aA)?aA:pick(others),first=rw.slice(0,rw.length-bN.length);
   return {prompt:'Setz die beiden Nomen zusammen. Was ist richtig?',disp:`<div class="pieces"><span class="piece">${a}</span><span class="plus">+</span><span class="piece">${b}</span></div>`,
@@ -262,12 +362,16 @@ const TOPICS=[
 let S={pos:0,rolls:0,best:null,stats:{}};
 try{const r=JSON.parse(localStorage.getItem(KEY));if(r)S=Object.assign(S,r)}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
-let mode='rallye',cur=null,prac=null,busy=false,lastRoll=5;
+let mode='rallye',cur=null,prac=null,busy=false,lastRoll=5,pending=null;
 const RIGHT=['Super!','Klasse!','Richtig!','Toll gemacht!','Genau!','Prima!'],WRONG=['Fast!','Nicht ganz.','Knapp daneben.'];
 
 const FACES={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
 const dieHTML=(n,cls,col)=>`<span class="die ${cls}" role="img" aria-label="Würfel ${n}"${col?` style="background:${col}"`:''}>${[...Array(9)].map((_,k)=>`<i class="${FACES[n].includes(k)?'on':''}"></i>`).join('')}</span>`;
 const setPips=(d,n)=>{d.querySelectorAll('i').forEach((p,k)=>p.classList.toggle('on',FACES[n].includes(k)));d.setAttribute('aria-label','Würfel '+n)};
+
+/* ---------- Ansichten ---------- */
+function show(v){$('#boardView').hidden=v!=='board';$('#taskView').hidden=v!=='task';window.scrollTo(0,0)}
+function setMsg(t,c=''){const m=$('#msg');m.className='msg '+c;m.innerHTML=t}
 
 function renderBoard(){
   let h='';
@@ -283,94 +387,149 @@ function renderBoard(){
 }
 function renderLegend(){
   $('#legend').innerHTML=TOPICS.map((t,i)=>{const st=S.stats[t.id]||{r:0,n:0},p=st.n?Math.round(st.r/st.n*100):0;
-    return `<button class="lr" data-t="${i}">${dieHTML(i+1,'mini',t.col)}<span class="lt"><b>${t.name}</b><small>${t.sub}</small><span class="bar"><i style="width:${p}%"></i></span><small>${st.n?`${st.r} von ${st.n} richtig`:'noch nicht geübt'}</small></span></button>`}).join('');
+    return `<button class="lr" data-t="${i}">${dieHTML(i+1,'mini',t.col)}<span class="lt"><b>${t.name}</b><span class="bar"><i style="width:${p}%"></i></span></span><span class="pc">${st.n?`${st.r}/${st.n}`:'neu'}</span></button>`}).join('');
 }
 
-function viewIdle(){
-  cur=null;
-  $('#play').innerHTML=`<div class="idle">${dieHTML(lastRoll,'big')}
-  <h2>${S.pos===0?'Los geht’s!':'Würfle weiter!'}</h2>
-  <p>Der Würfel bestimmt das Thema. Löst du die Aufgabe richtig, darf Flosse so viele Felder weiterschwimmen, wie der Würfel zeigt. Auf den Seestern-Feldern gibt es 2 Felder extra.</p>
-  <button class="btn" id="roll">Würfeln!</button>
-  ${S.pos>0?'<button class="btn s" id="reset">Neues Spiel</button>':''}</div>`;
-  $('#roll').onclick=roll;
-  const rs=$('#reset');
-  if(rs)rs.onclick=()=>{if(rs.dataset.sure){S.pos=0;S.rolls=0;save();renderBoard();viewIdle()}else{rs.dataset.sure=1;rs.textContent='Wirklich neu anfangen? Nochmal tippen'}};
-}
 async function roll(){
   if(busy)return;busy=true;$('#roll').disabled=true;
-  const d=$('.die.big');d.classList.add('rolling');let n=1;
+  const d=$('#dieSlot .die');d.classList.add('rolling');let n=1;
   for(let k=0;k<10;k++){n=1+Math.floor(Math.random()*6);setPips(d,n);await sleep(70+k*14)}
   d.classList.remove('rolling');lastRoll=n;S.rolls++;save();renderBoard();
-  await sleep(500);busy=false;
-  cur={ti:n-1,steps:n,q:TOPICS[n-1].gen()};renderQ();
+  setMsg(`Eine <b>${n}</b>! Thema: <b>${TOPICS[n-1].name}</b>`);
+  await sleep(900);
+  mode='rallye';cur={ti:n-1,steps:n,q:TOPICS[n-1].gen()};renderTask();show('task');
 }
-function renderQ(){
+
+function renderTask(){
   const t=TOPICS[cur.ti],q=cur.q;
-  const head=mode==='prac'?`<div class="pracBar"><span>Übung: <b>${t.name}</b> · Aufgabe ${prac.n+1} von ${prac.total}</span><button class="link" id="back">Zur Rallye</button></div><div class="bar big"><i style="width:${prac.n/prac.total*100}%"></i></div>`:'';
-  $('#play').innerHTML=`${head}<div class="qhead">${dieHTML(cur.ti+1,'mini',t.col)}<span class="tname" style="color:${t.col}">${t.name}</span>${cur.steps?`<span class="steps">um ${cur.steps} ${cur.steps===1?'Feld':'Felder'}</span>`:''}<button class="speak" id="speak">${SPEAK} Vorlesen</button></div>
-  <h2 class="prompt">${q.prompt}</h2>${q.disp}
-  <div class="opts">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${o.t}</button>`).join('')}</div>
+  const head=mode==='prac'
+   ?`<div class="pracBar"><span>Übung: <b>${t.name}</b> · Aufgabe ${prac.n+1} von ${prac.total}</span><button class="link" id="back">Zum Spielplan</button></div><div class="bar big"><i style="width:${prac.n/prac.total*100}%"></i></div>`:'';
+  $('#task').innerHTML=`${head}<div class="qhead">${dieHTML(cur.ti+1,'mini',t.col)}<span class="tname" style="color:${t.col}">${t.name}</span>${cur.steps?`<span class="steps">um ${cur.steps} ${cur.steps===1?'Feld':'Felder'}</span>`:''}<button class="speak" id="speak">${SPEAK} Vorlesen</button></div>
+  <h2 class="prompt">${q.prompt}</h2>${q.sub?`<p class="sub">${q.sub}</p>`:''}<div id="tb"></div>
   <div class="fb" id="fb" role="status" aria-live="polite"></div>
-  <div class="next"><button class="btn g" id="next" hidden>Weiter</button></div>`;
-  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+  <div class="tfoot"><button class="btn g" id="next" hidden>Weiter</button></div>`;
   $('#speak').onclick=speak;
-  const bk=$('#back');if(bk)bk.onclick=toRallye;
+  const bk=$('#back');if(bk)bk.onclick=toBoard;
+  (q.type==='multi'?mountMulti:q.type==='grid'?mountGrid:mountMC)(q,$('#tb'));
 }
-async function answer(i){
-  if(cur.done)return;cur.done=true;
-  const q=cur.q,ok=q.opts[i].ok,t=TOPICS[cur.ti];
-  const st=S.stats[t.id]||(S.stats[t.id]={r:0,n:0});st.n++;if(ok)st.r++;
-  document.querySelectorAll('.opt').forEach((b,k)=>{b.disabled=true;b.classList.add(q.opts[k].ok?'ok':k===i?'no':'dim')});
+function mountMC(q,tb){
+  tb.innerHTML=`${q.disp}<div class="opts">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${o.t}</button>`).join('')}</div>`;
+  tb.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    if(cur.done)return;const i=+b.dataset.i,ok=q.opts[i].ok;
+    tb.querySelectorAll('.opt').forEach((x,k)=>{x.disabled=true;x.classList.add(q.opts[k].ok?'ok':k===i?'no':'dim')});
+    finish(ok,q.expl);
+  });
+}
+function mountMulti(q,tb){
+  tb.innerHTML=`<div class="wlist">${q.items.map((it,i)=>`<button class="wchip" data-i="${i}" aria-pressed="false">${it.w}</button>`).join('')}</div><div class="checkrow"><button class="btn" id="check">Prüfen</button></div>`;
+  const chips=[...tb.querySelectorAll('.wchip')];
+  chips.forEach(c=>c.onclick=()=>{if(cur.done)return;const on=c.classList.toggle('on');c.setAttribute('aria-pressed',on)});
+  $('#check').onclick=()=>{
+    if(cur.done)return;let ok=true;
+    chips.forEach((c,i)=>{const t=q.items[i].k===q.kind,on=c.classList.contains('on');c.disabled=true;c.classList.remove('on');
+      if(t&&on)c.classList.add('ok');else if(!t&&on){c.classList.add('no');ok=false}else if(t&&!on){c.classList.add('miss');ok=false}else c.classList.add('dim')});
+    $('#check').hidden=true;
+    const wrong=q.items.filter((it,i)=>chips[i].classList.contains('no')).map(it=>`${it.w} (${it.k==='n'?'nichts davon':KW[it.k]})`);
+    finish(ok,q.expl+(wrong.length?` Nicht dazu gehört: ${und(wrong)}.`:''));
+  };
+}
+function mountGrid(q,tb){
+  const {g,pl}=q.G,N=8;let a=null,err=0;const bad=[];
+  tb.innerHTML=`<div class="gwrap"><div class="wg" id="wg">${g.map((row,r)=>row.map((ch,c)=>`<button class="gc" data-r="${r}" data-c="${c}">${ch}</button>`).join('')).join('')}</div>
+  <div class="ginfo"><p class="ghint">Tippe zuerst auf den ersten und dann auf den letzten Buchstaben eines Wortes. Die Wörter stehen waagerecht → oder senkrecht ↓.</p>
+  <div><b>Gefunden:</b><div class="gfound" id="gfound"></div></div>
+  <p class="gmsg" id="gmsg" role="status" aria-live="polite"></p>
+  <div><button class="btn s" id="reveal">Lösung zeigen</button></div></div></div>`;
+  const cells=[...tb.querySelectorAll('.gc')],cell=(r,c)=>cells[r*N+c];
+  const cellsOf=p=>[...Array(p.L)].map((_,i)=>cell(p.h?p.r:p.r+i,p.h?p.c+i:p.c));
+  const gm=(t,f)=>{const m=$('#gmsg');m.className='gmsg'+(f?' f':'');m.innerHTML=t};
+  const slots=()=>{$('#gfound').innerHTML=pl.filter(p=>p.t).map(p=>p.found?`<span class="slot ok">${ARTMAP[p.w]}</span>`:'<span class="slot">?</span>').join('')};
+  slots();
+  const done=()=>{const T=q.T.map(w=>ARTMAP[w]);
+    finish(err===0&&!q.gaveUp,`${q.kind==='z'?'Die Zeitbegriffe':'Die Gefühle'} im Gitter: <b>${und(T)}</b>.${bad.length?` <b>${und(bad.map(w=>ARTMAP[w]))}</b> gehört nicht dazu – ${q.kind==='z'?'das ist ein Gefühl.':'das ist ein Zeitbegriff.'}`:''}`)};
+  cells.forEach(b=>b.onclick=()=>{
+    if(cur.done)return;const r=+b.dataset.r,c=+b.dataset.c;
+    if(!a){a=[r,c];b.classList.add('sel');gm('Jetzt tippe auf den letzten Buchstaben.');return}
+    const [r0,c0]=a;a=null;cells.forEach(x=>x.classList.remove('sel'));
+    if(r0===r&&c0===c){gm('');return}
+    if(r0!==r&&c0!==c){gm('Die Wörter stehen nur waagerecht oder senkrecht. Versuch es nochmal.',1);return}
+    const h=r0===r,L=Math.abs(h?c-c0:r-r0)+1,R=h?r:Math.min(r0,r),C=h?Math.min(c0,c):c;
+    const p=pl.find(p=>p.h===h&&p.r===R&&p.c===C&&p.L===L);
+    if(!p){gm('Hier ist kein gesuchtes Wort versteckt. Versuch es nochmal.',1);return}
+    if(p.found){gm('Das hast du schon gefunden.');return}
+    p.found=true;
+    if(p.t){cellsOf(p).forEach(x=>x.classList.add('found'));slots();const left=pl.filter(x=>x.t&&!x.found).length;
+      gm(left?`Super, <b>${ARTMAP[p.w]}</b>! Noch ${left}.`:'Alle gefunden!');if(!left)done()}
+    else{err++;bad.push(p.w);cellsOf(p).forEach(x=>x.classList.add('bad'));
+      gm(`<b>${ARTMAP[p.w]}</b> ist ${q.kind==='z'?'ein Gefühl, kein Zeitbegriff':'ein Zeitbegriff, kein Gefühl'}.`,1)}
+  });
+  $('#reveal').onclick=()=>{if(cur.done)return;q.gaveUp=true;pl.filter(p=>p.t&&!p.found).forEach(p=>cellsOf(p).forEach(x=>x.classList.add('reveal')));$('#reveal').hidden=true;done()};
+}
+
+function finish(ok,expl){
+  cur.done=true;const t=TOPICS[cur.ti];
+  const st=S.stats[t.id]||(S.stats[t.id]={r:0,n:0});st.n++;if(ok)st.r++;save();
   let head;
   if(mode==='prac'){if(ok)prac.r++;head=ok?pick(RIGHT):pick(WRONG)+' Schau mal:'}
-  else head=ok?`${pick(RIGHT)} Flosse schwimmt ${cur.steps} ${cur.steps===1?'Feld':'Felder'} weiter.`:`${pick(WRONG)} Diesmal bleibt Flosse stehen.`;
-  const fb=$('#fb');fb.className='fb '+(ok?'r':'f');fb.innerHTML=`<b>${head}</b><br>${q.expl}`;
-  save();renderLegend();
-  const nx=$('#next');nx.hidden=false;nx.onclick=next;
-  if(mode==='rallye'&&ok){nx.disabled=true;await move(cur.steps);nx.disabled=false}
-  nx.focus({preventScroll:true});
+  else head=ok?`${pick(RIGHT)} Flosse darf ${cur.steps} ${cur.steps===1?'Feld':'Felder'} weiterschwimmen.`:`${pick(WRONG)} Diesmal bleibt Flosse stehen.`;
+  const fb=$('#fb');fb.className='fb '+(ok?'r':'f');fb.innerHTML=`<b>${head}</b><br>${expl}`;
+  const nx=$('#next');nx.hidden=false;
+  nx.textContent=mode==='prac'?(prac.n+1>=prac.total?'Ergebnis ansehen':'Nächste Aufgabe'):'Zurück zum Spielplan';
+  pending={ok,steps:cur.steps};
+  nx.onclick=next;nx.focus({preventScroll:true});
+  const qb=$('.qhead');if(qb&&window.innerHeight<900)fb.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
-async function move(n){
-  for(let k=0;k<n&&S.pos<GOAL;k++){S.pos++;renderBoard();await sleep(320)}
-  if(STARS.includes(S.pos)){
-    await sleep(250);$('#fb').insertAdjacentHTML('beforeend',`<div class="starmsg">${STAR} Seestern-Feld! Flosse schwimmt 2 Felder extra.</div>`);
-    for(let k=0;k<2&&S.pos<GOAL;k++){S.pos++;renderBoard();await sleep(320)}
-  }
+async function next(){
+  if(mode==='prac'){prac.n++;if(prac.n>=prac.total)return viewPracEnd();cur={ti:prac.ti,q:TOPICS[prac.ti].gen()};return renderTask()}
+  const p=pending;pending=null;cur=null;
+  renderBoard();renderLegend();show('board');
+  if(!p.ok){setMsg('Diesmal bleibt Flosse stehen. Würfle nochmal!','f');$('#roll').disabled=false;busy=false;return}
+  setMsg(`Richtig! Flosse schwimmt ${p.steps} ${p.steps===1?'Feld':'Felder'} weiter.`,'r');
+  await sleep(350);
+  for(let k=0;k<p.steps&&S.pos<GOAL;k++){S.pos++;renderBoard();await sleep(330)}
+  if(STARS.includes(S.pos)){await sleep(250);setMsg('Seestern-Feld! Flosse schwimmt 2 Felder extra.','r');for(let k=0;k<2&&S.pos<GOAL;k++){S.pos++;renderBoard();await sleep(330)}}
   save();
-}
-function next(){
-  if(mode==='prac'){prac.n++;if(prac.n>=prac.total)return viewPracEnd();cur={ti:prac.ti,q:TOPICS[prac.ti].gen()};return renderQ()}
-  S.pos>=GOAL?viewGoal():viewIdle();
+  if(S.pos>=GOAL){await sleep(500);return viewGoal()}
+  busy=false;$('#roll').disabled=false;
 }
 function viewGoal(){
   const r=S.rolls,neu=S.best===null||r<S.best;if(neu)S.best=r;save();renderBoard();
-  $('#play').innerHTML=`<div class="idle goal">${TROPHY}<h2>Schatz gefunden!</h2><p>Flosse hat den Schatz erreicht. Du hast <b>${r}</b> Würfe gebraucht.${neu?' Das ist dein neuer Rekord!':` Dein Rekord sind ${S.best} Würfe.`}</p><button class="btn" id="again">Noch eine Runde</button></div>`;
-  $('#again').onclick=()=>{S.pos=0;S.rolls=0;save();renderBoard();viewIdle()};
+  $('#task').innerHTML=`<div class="goal">${TROPHY}<h2>Schatz gefunden!</h2><p>Flosse hat den Schatz erreicht. Du hast <b>${r}</b> Würfe gebraucht.${neu?' Das ist dein neuer Rekord!':` Dein Rekord sind ${S.best} Würfe.`}</p><button class="btn" id="again">Noch eine Runde</button></div>`;
+  $('#again').onclick=()=>{S.pos=0;S.rolls=0;save();toBoard()};
+  show('task');
 }
-function startPractice(ti){
-  mode='prac';prac={ti,n:0,r:0,total:8};cur={ti,q:TOPICS[ti].gen()};renderQ();
-  if(window.innerWidth<860)$('#playP').scrollIntoView({behavior:'smooth',block:'start'});
-}
+function startPractice(ti){mode='prac';prac={ti,n:0,r:0,total:8};cur={ti,q:TOPICS[ti].gen()};renderTask();show('task')}
 function viewPracEnd(){
   const t=TOPICS[prac.ti],p=prac.r/prac.total,s=p>=.9?3:p>=.7?2:p>=.5?1:0;
-  $('#play').innerHTML=`<div class="idle goal"><div class="stars">${[0,1,2].map(k=>`<span class="${k<s?'on':''}">${STAR}</span>`).join('')}</div>
+  $('#task').innerHTML=`<div class="goal"><div class="stars">${[0,1,2].map(k=>`<span class="${k<s?'on':''}">${STAR}</span>`).join('')}</div>
   <h2>${['Übung macht den Meister!','Weiter so!','Gut gemacht!','Ausgezeichnet!'][s]}</h2>
   <p><b>${prac.r} von ${prac.total}</b> Aufgaben richtig bei „${t.name}“.</p>
-  <div class="row"><button class="btn" id="again">Nochmal üben</button><button class="btn s" id="back">Zur Rallye</button></div></div>`;
-  $('#again').onclick=()=>startPractice(prac.ti);$('#back').onclick=toRallye;
+  <div class="row"><button class="btn" id="again">Nochmal üben</button><button class="btn s" id="back">Zum Spielplan</button></div></div>`;
+  $('#again').onclick=()=>startPractice(prac.ti);$('#back').onclick=toBoard;
 }
-function toRallye(){mode='rallye';prac=null;S.pos>=GOAL?viewGoal():viewIdle()}
+function toBoard(){
+  mode='rallye';prac=null;cur=null;pending=null;
+  if(S.pos>=GOAL)return viewGoal();
+  renderBoard();renderLegend();setMsg('Würfle! Der Würfel bestimmt das Thema.');busy=false;$('#roll').disabled=false;show('board');
+}
 function speak(){
-  try{const el=document.createElement('div');el.innerHTML=cur.q.prompt+' '+cur.q.disp;
-    el.querySelectorAll('.gap').forEach(g=>g.textContent=' Lücke ');el.querySelectorAll('.piece').forEach(g=>g.textContent+=', ');
-    const txt=el.textContent+' Antworten: '+cur.q.opts.map(o=>o.t.replace(/<[^>]+>/g,'').replace('…','und')).join('. ');
+  try{const q=cur.q;let txt=q.prompt+' '+(q.sub||'');
+    if(q.type==='multi')txt+=' Die Wörter: '+q.items.map(i=>i.w).join(', ');
+    else if(q.type==='grid')txt+=' Tippe auf den ersten und dann auf den letzten Buchstaben.';
+    else{const el=document.createElement('div');el.innerHTML=q.disp;el.querySelectorAll('.gap').forEach(g=>g.textContent=' Lücke ');el.querySelectorAll('.piece').forEach(g=>g.textContent+=', ');
+      txt+=' '+el.textContent+' Antworten: '+q.opts.map(o=>o.t.replace(/<[^>]+>/g,'').replace('…','und')).join('. ')}
     const u=new SpeechSynthesisUtterance(txt);u.lang='de-DE';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u);
   }catch(e){}
 }
+
+/* ---------- Start ---------- */
+$('#brand').innerHTML=SHARK.replace('aria-label="Hai"','aria-hidden="true"')+'<div><h1>Hai-Rallye</h1><p>Deutsch üben mit Flosse, dem Wort-Hai · Klasse 3</p></div>';
+$('#dieSlot').innerHTML=dieHTML(lastRoll,'big');
+$('#roll').onclick=roll;
+const rs=$('#reset');
+rs.onclick=()=>{if(busy)return;if(rs.dataset.sure){delete rs.dataset.sure;rs.textContent='Neues Spiel';S.pos=0;S.rolls=0;save();toBoard()}else{rs.dataset.sure=1;rs.textContent='Wirklich neu anfangen? Nochmal tippen'}};
 $('#legend').addEventListener('click',e=>{const b=e.target.closest('.lr');if(b&&!busy)startPractice(+b.dataset.t)});
-renderBoard();renderLegend();
-S.pos>=GOAL?viewGoal():viewIdle();
+toBoard();
 }
 </script>
 </body>
