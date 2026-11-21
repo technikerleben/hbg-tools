@@ -169,6 +169,15 @@ mark{background:#FFF3CC;color:inherit;padding:1px 6px;border-radius:8px;box-shad
 .stars span.on{color:var(--star)}
 .stars .ic{width:60px;height:60px}
 .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.sidebtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.btn.s.warn{color:#7A1B14;border-color:#C0392B}
+.btn.s.warn:hover{background:#FDECEA}
+.modal{position:fixed;inset:0;background:rgba(6,30,46,.55);display:grid;place-items:center;padding:20px;z-index:50}
+.mbox{background:#fff;border-radius:24px;box-shadow:0 20px 50px rgba(0,0,0,.3);padding:26px;max-width:460px;width:100%;text-align:center;display:grid;gap:14px}
+.mbox h2{margin:0;font-size:26px;color:var(--err-t)}
+.mbox p{margin:0;color:var(--ink);font-size:18px}
+.btn.danger{background:#C0392B;box-shadow:0 5px 0 #8B2419}
+.btn.danger:hover{background:#A93226}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -194,7 +203,7 @@ mark{background:#FFF3CC;color:inherit;padding:1px 6px;border-radius:8px;box-shad
       <span id="dieSlot"></span>
       <p class="msg" id="msg" role="status" aria-live="polite">Würfle! Der Würfel bestimmt das Thema.</p>
       <button class="btn wide" id="roll">Würfeln!</button>
-      <button class="btn s" id="reset">Neues Spiel</button>
+      <div class="sidebtns"><button class="btn s" id="reset">Neues Spiel</button><button class="btn s warn" id="wipe">Alles zurücksetzen</button></div>
     </div>
     <div class="legend">
       <h3>Themen – tippe zum Extra-Üben</h3>
@@ -202,6 +211,11 @@ mark{background:#FFF3CC;color:inherit;padding:1px 6px;border-radius:8px;box-shad
     </div>
   </aside>
 </main>
+
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="mbox"><h2 id="mTitle"></h2><p id="mText"></p>
+  <div class="row"><button class="btn s" id="mNo">Abbrechen</button><button class="btn danger" id="mYes">Ja, zurücksetzen</button></div></div>
+</div>
 
 <main class="tview" id="taskView" hidden>
   <section class="tcard" id="task" aria-live="polite"></section>
@@ -527,7 +541,15 @@ $('#brand').innerHTML=SHARK.replace('aria-label="Hai"','aria-hidden="true"')+'<d
 $('#dieSlot').innerHTML=dieHTML(lastRoll,'big');
 $('#roll').onclick=roll;
 const rs=$('#reset');
-rs.onclick=()=>{if(busy)return;if(rs.dataset.sure){delete rs.dataset.sure;rs.textContent='Neues Spiel';S.pos=0;S.rolls=0;save();toBoard()}else{rs.dataset.sure=1;rs.textContent='Wirklich neu anfangen? Nochmal tippen'}};
+function ask(title,text,yes,onYes){
+  $('#mTitle').textContent=title;$('#mText').textContent=text;$('#mYes').textContent=yes;$('#modal').hidden=false;$('#mNo').focus();
+  $('#mYes').onclick=()=>{$('#modal').hidden=true;onYes()};
+}
+$('#mNo').onclick=()=>{$('#modal').hidden=true};
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')$('#modal').hidden=true});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#modal').hidden=true});
+rs.onclick=()=>{if(busy)return;ask('Neues Spiel starten?','Flosse schwimmt zurück zum Start und die Würfe werden auf 0 gesetzt. Deine Übungs-Ergebnisse und dein Rekord bleiben erhalten.','Ja, neu starten',()=>{S.pos=0;S.rolls=0;save();toBoard()})};
+$('#wipe').onclick=()=>{if(busy)return;ask('Wirklich alles zurücksetzen?','Spielstand, Rekord und alle Übungs-Ergebnisse werden gelöscht. Das kann man nicht rückgängig machen.','Ja, alles löschen',()=>{S={pos:0,rolls:0,best:null,stats:{}};save();toBoard()})};
 $('#legend').addEventListener('click',e=>{const b=e.target.closest('.lr');if(b&&!busy)startPractice(+b.dataset.t)});
 toBoard();
 }
