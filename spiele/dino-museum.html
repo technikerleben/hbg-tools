@@ -17,7 +17,8 @@
 --der:#2f6fd6;--die:#d64a3a;--das:#2f9e5a;--ok:#2f9e5a;--bad:#d64a3a;color-scheme:dark}
 *{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--night);color:var(--paper);font:18px/1.45 Andika,"Trebuchet MS",sans-serif;user-select:none;-webkit-user-select:none;touch-action:manipulation}
-#scene{position:fixed;inset:0;width:100%;height:100%;display:block}
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#scene:active{cursor:grabbing}
 body.no3d{background:radial-gradient(ellipse at 50% 30%,#2b3a7a,#10173a 70%)}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 button:focus-visible{outline:4px solid var(--gold);outline-offset:3px}
@@ -463,7 +464,7 @@ syncToggles();
 $('#nm').value=store.name||'';
 $('#startInfo').textContent=store.col.length?`Gesammelt: ${store.col.length} von ${DINOS.length} Dino-Karten`:'';
 $('#bStart').onclick=()=>{ac();sfx.done();store.name=$('#nm').value.trim();save();$('#start').classList.add('hidden');
-  kiki(`${store.name?'Hallo '+store.name+'! ':''}Die Tür ist zu! Dem T-Rex fehlen vier Knochen. Tippe auf eine Station.`)};
+  kiki(`${store.name?'Hallo '+store.name+'! ':''}Die Tür ist zu! Dem T-Rex fehlen vier Knochen. Wische, um dich umzusehen – und tippe auf eine Station.`)};
 W.onPick=i=>{if(!document.querySelector('.ov:not(.hidden):not(#rot)'))openStation(i)};
 newRun();
 
@@ -480,6 +481,10 @@ const cam=new THREE.PerspectiveCamera(48,1,.1,140);
 const V=(x,y,z=0)=>new THREE.Vector3(x,y,z);
 const HUB={p:V(0,9.6,18),l:V(0,3.4,-2.5)};
 cam.position.copy(HUB.p);const look=HUB.l.clone();cam.lookAt(look);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+let flying=false,free=true;const OR={y:0,p:0,d:0,ty:0,tp:0,td:0};
+const off0=HUB.p.clone().sub(HUB.l),R0=off0.length(),Y0=Math.atan2(off0.x,off0.z),P0=Math.asin(off0.y/R0);
+const orbPos=(y,p,d)=>{const r=R0+d,a=Y0+y,b=P0+p;return V(HUB.l.x+r*Math.cos(b)*Math.sin(a),HUB.l.y+r*Math.sin(b),HUB.l.z+r*Math.cos(b)*Math.cos(a))};
 function resize(){const w=innerWidth,h=innerHeight;R.setSize(w,h,false);cam.aspect=w/h;cam.fov=w/h<1.25?62:48;cam.updateProjectionMatrix()}
 addEventListener('resize',resize);resize();
 const M=(c,o={})=>new THREE.MeshStandardMaterial({color:c,roughness:.85,metalness:0,...o});
@@ -601,11 +606,11 @@ const dust=new THREE.Points(dg,new THREE.PointsMaterial({color:0xfff2cc,size:.07
 
 // Kamera
 let camTw=null;
-function fly(p,l,d=1.1){return new Promise(res=>{if(camTw&&camTw.kill)camTw.kill();const o={t:0},p0=cam.position.clone(),l0=look.clone();
-  camTw=tw(o,{t:1,duration:d,ease:'power2.inOut',onUpdate:()=>{cam.position.lerpVectors(p0,p,o.t);look.lerpVectors(l0,l,o.t);cam.lookAt(look)},onComplete:res})})}
-W.focus=i=>{const p=SP[i],narrow=innerWidth<=700;
+function fly(p,l,d=1.1){flying=true;return new Promise(res=>{if(camTw&&camTw.kill)camTw.kill();const o={t:0},p0=cam.position.clone(),l0=look.clone();
+  camTw=tw(o,{t:1,duration:d,ease:'power2.inOut',onUpdate:()=>{cam.position.lerpVectors(p0,p,o.t);look.lerpVectors(l0,l,o.t);cam.lookAt(look)},onComplete:()=>{flying=false;res()}})})}
+W.focus=i=>{free=false;const p=SP[i],narrow=innerWidth<=700;
   const cp=V(p.x*.55,5.4,p.z+9.4),lp=narrow?V(p.x,.2,p.z):V(p.x+3.4,2.1,p.z-.6);return fly(cp,lp)};
-W.hub=()=>fly(HUB.p,HUB.l);
+W.hub=async()=>{const t=orbPos(OR.y,OR.p,OR.d);await fly(t,HUB.l);free=true};
 
 W.reveal=i=>new Promise(async res=>{
   const orb=mesh(new THREE.SphereGeometry(.28,16,12),B(0xffe08a),SP[i].x,2.6,SP[i].z,scene,false);
@@ -620,9 +625,9 @@ W.reveal=i=>new Promise(async res=>{
 W.reset=()=>{parts.forEach(ps=>ps.forEach(x=>{x.material=ghostM;x.castShadow=false}));sockets.forEach(s=>s.visible=false);eyes.forEach(e=>e.visible=false);
   head.rotation.set(0,0,0);jaw.rotation.set(0,0,0);leaves.forEach(l=>l.rotation.y=0);glow.material.color.set(0x1a1208);
   rings.forEach((r,i)=>{r.material.color.set(0xffc34d);labels[i].material.map=labelTex(i,false);labels[i].material.needsUpdate=true});
-  spot.color.set(0xffd59a);cam.position.copy(HUB.p);look.copy(HUB.l);cam.lookAt(look)};
+  spot.color.set(0xffd59a);Object.assign(OR,{y:0,p:0,d:0,ty:0,tp:0,td:0});free=true;cam.position.copy(HUB.p);look.copy(HUB.l);cam.lookAt(look)};
 let shake=0;
-W.finale=async snd=>{
+W.finale=async snd=>{free=false;
   await fly(V(1.5,6.5,9),V(1.5,4,-4),1.3);
   eyes.forEach(e=>{e.visible=true;e.scale.setScalar(.01);tw(e.scale,{x:1,y:1,z:1,duration:.6})});await wait(700);
   tw(head.rotation,{z:.35,duration:.5,ease:'power2.out'});await twP(jaw.rotation,{z:-.55,duration:.4,ease:'power2.out'});
@@ -635,8 +640,18 @@ W.finale=async snd=>{
 
 // Antippen
 let down=null;const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
-cv.addEventListener('pointerdown',e=>{down=[e.clientX,e.clientY]});
-cv.addEventListener('pointerup',e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>12||open>=0||busy)return;
+const ptrs=new Map();let pinch0=0,last=null;
+const canLook=()=>free&&!flying&&open<0;
+cv.addEventListener('pointerdown',e=>{down=[e.clientX,e.clientY];last=[e.clientX,e.clientY];ptrs.set(e.pointerId,[e.clientX,e.clientY]);try{cv.setPointerCapture(e.pointerId)}catch(_){}
+  if(ptrs.size===2){const [a,b]=[...ptrs.values()];pinch0=Math.hypot(a[0]-b[0],a[1]-b[1]);down=null}});
+cv.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,[e.clientX,e.clientY]);if(!canLook())return;
+  if(ptrs.size===2){const [a,b]=[...ptrs.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);OR.td=clamp(OR.td-(d-pinch0)*.03,-4,4);pinch0=d;return}
+  const dx=e.clientX-last[0],dy=e.clientY-last[1];last=[e.clientX,e.clientY];
+  OR.ty=clamp(OR.ty-dx*.004,-.65,.65);OR.tp=clamp(OR.tp+dy*.003,-.16,.28)});
+const endPtr=e=>{ptrs.delete(e.pointerId);if(ptrs.size===1)last=[...ptrs.values()][0]};
+cv.addEventListener('pointercancel',endPtr);
+cv.addEventListener('wheel',e=>{e.preventDefault();if(canLook())OR.td=clamp(OR.td+e.deltaY*.01,-4,4)},{passive:false});
+cv.addEventListener('pointerup',e=>{endPtr(e);if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>12||open>=0||busy)return;
   ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);ray.setFromCamera(ndc,cam);const h=ray.intersectObjects(pickables,false)[0];if(h&&W.onPick)W.onPick(h.object.userData.st)});
 
 // Animation
@@ -647,6 +662,7 @@ const clock=new THREE.Clock();
   floaters.forEach(f=>{if(f.type==='egg')f.m.rotation.z=Math.sin(t*3+f.k*1.7)*.12*(Math.sin(t*.7+f.k)>.3?1:.2);if(f.type==='crys')f.m.position.y=f.y+Math.sin(t*2+f.y*5)*.05;if(f.type==='book')f.m.rotation.x=.5+Math.sin(t)*.03});
   const pa=dg.attributes.position.array;for(let i=0;i<N;i++){pa[i*3+1]+=.004;pa[i*3]+=Math.sin(t+i)*.002;if(pa[i*3+1]>13)pa[i*3+1]=0}dg.attributes.position.needsUpdate=true;
   eyes.forEach(e=>{if(e.visible)e.material.color.setHSL(.09,1,.55+Math.sin(t*6)*.1)});
+  if(canLook()){OR.y+=(OR.ty-OR.y)*.12;OR.p+=(OR.tp-OR.p)*.12;OR.d+=(OR.td-OR.d)*.12;cam.position.copy(orbPos(OR.y,OR.p,OR.d));look.copy(HUB.l);cam.lookAt(look)}
   if(shake>.02){cam.position.x+=(Math.random()-.5)*.15*shake;cam.position.y+=(Math.random()-.5)*.15*shake}
   R.render(scene,cam)})();
 })();
