@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fff8e9">
+  <title>Kulleraugen backen – Kinderrezept</title>
+  <style>
+    :root { color-scheme: light; --ink:#233b54; --line:#ead9b8; --yellow:#ffe28a; --blue:#dceeff; }
+    * { box-sizing: border-box; }
+    body { margin:0; color:var(--ink); font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:#fff8e9; }
+    .top { position:sticky; top:0; z-index:5; background:rgba(255,248,233,.97); border-bottom:1px solid var(--line); }
+    .toolbar { max-width:940px; margin:auto; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .home { color:#294966; font-weight:750; text-decoration:none; font-size:.93rem; padding:8px 4px; }
+    .home:focus-visible, button:focus-visible {outline:3px solid #226abc; outline-offset:3px;}
+    .switch { display:flex; padding:4px; gap:4px; border-radius:17px; background:#fff; box-shadow:0 0 0 1px var(--line); }
+    button { font:inherit; font-weight:800; font-size:clamp(.96rem,3.2vw,1.1rem); border:0; border-radius:13px; padding:11px 17px; min-height:48px; color:var(--ink); background:transparent; cursor:pointer; }
+    button[aria-pressed="true"] { background:var(--yellow); box-shadow:0 2px 7px #83610a25; }
+    button:hover:not([aria-pressed="true"]) { background:var(--blue); }
+    main { max-width:940px; margin:0 auto; padding:15px clamp(6px,2vw,20px) 30px; }
+    h1 { text-align:center; font-size:clamp(1.35rem,4.6vw,2rem); margin:5px 0 5px; }
+    p.hint {text-align:center; margin:0 0 14px; color:#526879; font-size:.93rem;}
+    .poster { display:block; width:100%; height:auto; border-radius:15px; background:#fff; box-shadow:0 6px 24px #553d1820; }
+    .poster[hidden] { display:none; }
+    .error { margin:20px auto; max-width:560px; border:2px solid #b54343; border-radius:12px; background:white; padding:14px; text-align:center; }
+    .error[hidden] {display:none;}
+    @media (max-width:520px) { .toolbar{flex-wrap:wrap; justify-content:center; gap:5px;} .home{width:100%;text-align:center;} .switch{width:100%;} button{flex:1;} main{padding-top:10px;} }
+    @media print { .top,.hint{display:none!important;} body{background:white;} main{max-width:100%;padding:0;} h1{display:none;} .poster{box-shadow:none;border-radius:0;max-width:100%;max-height:98vh;object-fit:contain;} }
+  </style>
+</head>
+<body>
+  <nav class="top" aria-label="Rezeptauswahl">
+    <div class="toolbar">
+      <a class="home" href="index.html">← Zurück zur Kinder-Startseite</a>
+      <div class="switch" role="group" aria-label="Welche Rezeptversion möchtest du sehen?">
+        <button type="button" id="normal" aria-pressed="true">Normal</button>
+        <button type="button" id="pokemon" aria-pressed="false">Pokémon</button>
+      </div>
+    </div>
+  </nav>
+  <main>
+    <h1>Kulleraugen backen</h1>
+    <p class="hint">Wähle oben deine Lieblingsversion. Du kannst das Bild auf dem Tablet vergrößern.</p>
+    <img class="poster" id="bild-normal" src="https://d2ol7oe51mr4n9.cloudfront.net/user_36l85Ny3LLOpg24AAAn7md1G7SK/999caf52-e8c5-4ab1-81ce-0c8783e9fec7.png" alt="Kulleraugen backen: einfache bebilderte Anleitung für Kinder ohne Pokémon. Mit Zutaten und fünf Backschritten." width="1087" height="1536" fetchpriority="high">
+    <img class="poster" id="bild-pokemon" src="https://d2ol7oe51mr4n9.cloudfront.net/user_36l85Ny3LLOpg24AAAn7md1G7SK/4fe9b5ea-cfa8-4360-984c-d3cc07267607.jpg" alt="Kulleraugen backen: bebilderte Anleitung für Kinder in der Pokémon-Version. Mit Pikachu, Zutaten und fünf Backschritten." width="1147" height="1536" hidden>
+    <p class="error" id="fehler" role="alert" hidden>Das Bild konnte nicht geladen werden. Prüfe bitte deine Internetverbindung.</p>
+  </main>
+  <script>
+    (function () {
+      'use strict';
+      const names = ['normal','pokemon'];
+      const buttons = Object.fromEntries(names.map(name => [name, document.getElementById(name)]));
+      const images = Object.fromEntries(names.map(name => [name, document.getElementById('bild-' + name)]));
+      const error = document.getElementById('fehler');
+      function show(name) {
+        names.forEach(key => {
+          const active = key === name;
+          buttons[key].setAttribute('aria-pressed', String(active));
+          images[key].hidden = !active;
+        });
+        error.hidden = images[name].complete && images[name].naturalWidth === 0 ? false : true;
+      }
+      names.forEach(name => {
+        buttons[name].addEventListener('click', () => show(name));
+        images[name].addEventListener('error', () => { if (!images[name].hidden) error.hidden = false; });
+        images[name].addEventListener('load', () => { if (!images[name].hidden) error.hidden = true; });
+      });
+      show(new URLSearchParams(location.search).get('version') === 'pokemon' ? 'pokemon' : 'normal');
+    })();
+  </script>
+</body>
+</html>
